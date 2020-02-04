@@ -1,0 +1,140 @@
+# pr3.2
+# A data set from Oehlert (2000) \emph{A First Course in Design and
+# Analysis of Experiments}, New York: W. H. Freeman.
+#
+# Data originally from Hanley, J.~A. and S.~H. Shapiro (1994).
+# ``Sexual activity and the lifespan of male fruitflies: a dataset that
+# gets attention.''  {\em Journal of Statistics Education\/}~{\em 2}.
+#
+# Life spans of male fruit flies with differing numbers
+# of female companions each day.  Column 1 is treatment
+# (treatments 1 through 5 are 0, 1 pregnant, 1 virgin,
+# 8 pregnant, or 8 virgin female companions per day).
+# Column 2 is lifespan in days.  
+      trt   days
+      1     35
+      1     37
+      1     49
+      1     46
+      1     63
+      1     39
+      1     46
+      1     56
+      1     63
+      1     65
+      1     56
+      1     65
+      1     70
+      1     63
+      1     65
+      1     70
+      1     77
+      1     81
+      1     86
+      1     70
+      1     70
+      1     77
+      1     77
+      1     81
+      1     77
+      2     40
+      2     37
+      2     44
+      2     47
+      2     47
+      2     47
+      2     68
+      2     47
+      2     54
+      2     61
+      2     71
+      2     75
+      2     89
+      2     58
+      2     59
+      2     62
+      2     79
+      2     96
+      2     58
+      2     62
+      2     70
+      2     72
+      2     75
+      2     96
+      2     75
+      3     46
+      3     42
+      3     65
+      3     46
+      3     58
+      3     42
+      3     48
+      3     58
+      3     50
+      3     80
+      3     63
+      3     65
+      3     70
+      3     70
+      3     72
+      3     97
+      3     46
+      3     56
+      3     70
+      3     70
+      3     72
+      3     76
+      3     90
+      3     76
+      3     92
+      4     21
+      4     40
+      4     44
+      4     54
+      4     36
+      4     40
+      4     56
+      4     60
+      4     48
+      4     53
+      4     60
+      4     60
+      4     65
+      4     68
+      4     60
+      4     81
+      4     81
+      4     48
+      4     48
+      4     56
+      4     68
+      4     75
+      4     81
+      4     48
+      4     68
+      5     16
+      5     19
+      5     19
+      5     32
+      5     33
+      5     33
+      5     30
+      5     42
+      5     42
+      5     33
+      5     26
+      5     30
+      5     40
+      5     54
+      5     34
+      5     34
+      5     47
+      5     47
+      5     42
+      5     47
+      5     54
+      5     54
+      5     56
+      5     60
+      5     44
+
