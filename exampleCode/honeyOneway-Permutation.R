@@ -34,3 +34,19 @@ pvalue <- mean(permDist >= obs.F)
 eta2 <- sjstats::eta_sq(model2)
 w2 <- sjstats::omega_sq(model2)
 eps2 <- sjstats::epsilon_sq(model2)
+
+## Monte Carlo Permutation Simulation Example
+data(InsectSprays)
+set.seed(461)
+for(i in 1:2500){
+  InsectSprays[ , ncol(InsectSprays) +1 ] <-
+    sample(InsectSprays$spray, nrow(InsectSprays), replace = FALSE)
+}
+model1 <- aov(count ~ spray, data = InsectSprays)
+obs.F <- anova(model1)$'F value'[1]
+permDist <- rep(NA, 2500)
+for(i in 1:2500){
+  permDist[i] <- anova(aov(
+    InsectSprays$count ~ InsectSprays[, i + 1]))$'F value'[1]
+}
+pvalue <- mean(permDist >= obs.F)
