@@ -22,6 +22,7 @@ honeyPerms <- multicool::allPerm(honeyGroups)
 size <- nrow(honeyPerms)
 honeyPerms <- as.data.frame(t(honeyPerms))
 honeyP <- cbind(honey, honeyPerms)
+permDist <- rep(NA, size)
 for(k in 1:size){
   permDist[k] <- anova(aov(
     honeyP$Surplus ~ honeyP[, k + 2]
