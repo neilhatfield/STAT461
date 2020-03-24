@@ -71,3 +71,21 @@ kw.PostHoc <- function(x, g){
                       Prob.Super = .probSup(d))
   return(temp0)
 }
+
+block.RelEff <- function(aov.obj, blockName, trtName){
+  temp0 <- anova(aov.obj)
+  g <- temp0[trtName, "Df"]
+  r <- temp0[blockName, "Df"]
+  rcb <- r * g
+  crd <- (g + 1) * r
+  MSE <- temp0$`Mean Sq`[3]
+  MSblk <- temp0[blockName, "Mean Sq"]
+  sCRD <- (r * MSblk + (g + rcb) * MSE) / (r + g + rcb)
+  eff <- (((rcb + 1) * (crd + 3)) / ((rcb + 3) * (crd + 1))) * (sCRD / MSE)
+  return(
+    paste0(
+      "The relative efficiency of the Block, ",
+      blockName, ", is ", round(eff, 3)
+    )
+  )
+}
