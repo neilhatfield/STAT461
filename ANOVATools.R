@@ -42,34 +42,9 @@ anova.PostHoc <- function(aov.obj){
   return(hl)
 }
 
-kw.PostHoc <- function(x, g){
-  temp0 <- data.frame(x, g)
-  us <- unstack(temp0)
-  sink("/dev/null")
-  temp1 <- dunn.test::dunn.test(x, g)
-  sink()
-  hl <- rep(NA, length(temp1$comparisons))
-  z <- temp1$Z
-  pbs <- z
-  d <- z
-  k <- 1
-  for (i in 1:(length(temp1$comparisons)-1)){
-    for (j in (i+1):length(temp1$comparisons)){
-      hl[k] <- .hodgesLehmann(us[, i], us[, j])
-      pbs[k] <- pbs[k] / (sqrt(length(us[, i]) + length(us[, j])))
-      k <- k + 1
-    }
-  }
-
-  pbs <- sapply(pbs, function(x){
-    ifelse(x <= -1, -0.9999, ifelse(x >= 1, 0.9999, x))})
-
-  d <- sapply(pbs, function(x){(2 * x) / sqrt(1 - (x)^2)})
-
-  temp0 <- data.frame(Pair = temp1$comparisons,
-                      Hodges.Lehmann = as.numeric(hl),
-                      Prob.Super = .probSup(d))
-  return(temp0)
+.strsplitN <- function(x, N){
+  temp0 <- strsplit(as.character(x), " - ")
+  return(temp0[[1]][N])
 }
 
 block.RelEff <- function(aov.obj, blockName, trtName){
