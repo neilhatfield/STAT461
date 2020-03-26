@@ -73,7 +73,7 @@ kw.PostHoc <- function(x, g){
     ifelse(x <= -1, -0.9999, ifelse(x >= 1, 0.9999, x))})
 
   output$PS <- sapply(output$pbs, function(x){
-    .probSub((2 * x) / sqrt(1 - (x)^2))})
+    .probSup((2 * x) / sqrt(1 - (x)^2))})
 
   output <- output[, -c("A","B","z","pbs")]
   names(output) <- c("Pair", "Hodges.Lehman","Prob. Super")
