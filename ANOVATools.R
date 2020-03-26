@@ -47,6 +47,40 @@ anova.PostHoc <- function(aov.obj){
   return(temp0[[1]][N])
 }
 
+kw.PostHoc <- function(x, g){
+  temp0 <- data.frame(x, g)
+  us <- unstack(temp0)
+  sink("/dev/null")
+  temp1 <- dunn.test::dunn.test(x, g)
+  sink()
+
+  output <- data.frame(comp = temp1$comparison)
+  output$A <- sapply(output$comp, .strsplitN, N = 1)
+  output$B <- sapply(output$comp, .strsplitN, N = 2)
+  output$z <- temp1$Z
+  output$pbs <- temp1$Z
+  output$hl <- NA
+  output$PS <- NA
+
+  for (i in 1:nrow(output)){
+    tempA <- unlist(us[output[i,"A"]], use.names = FALSE)
+    tempB <- unlist(us[output[i,"B"]], use.names = FALSE)
+    output[i, "pbs"] <- output[i, "pbs"] / (sqrt(length(tempA) + length(tempB)))
+    output[i, "hl"] <- .hodgesLehmann(tempA, tempB)
+  }
+
+  output$pbs <- sapply(output$pbs, function(x){
+    ifelse(x <= -1, -0.9999, ifelse(x >= 1, 0.9999, x))})
+
+  output$PS <- sapply(output$pbs, function(x){
+    .probSub((2 * x) / sqrt(1 - (x)^2))})
+
+  output <- output[, -c("A","B","z","pbs")]
+  names(output) <- c("Pair", "Hodges.Lehman","Prob. Super")
+
+  return(output)
+}
+
 block.RelEff <- function(aov.obj, blockName, trtName){
   temp0 <- anova(aov.obj)
   g <- temp0[trtName, "Df"]
