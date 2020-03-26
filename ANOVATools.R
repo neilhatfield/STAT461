@@ -1,4 +1,4 @@
-req.packages <- c("DescTools", "sjstats", "dunn.test")
+req.packages <- c("DescTools", "sjstats", "dunn.test", "dplyr")
 new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(req.packages, require, character.only = TRUE)
@@ -75,7 +75,7 @@ kw.PostHoc <- function(x, g){
   output$PS <- sapply(output$pbs, function(x){
     .probSup((2 * x) / sqrt(1 - (x)^2))})
 
-  output <- output[, -c("A","B","z","pbs")]
+  output <- dplyr::select(output, -c("A","B", "z", "pbs"))
   names(output) <- c("Pair", "Hodges.Lehman","Prob. Super")
 
   return(output)
