@@ -1,0 +1,32 @@
+# ex11.2
+# A data set from Oehlert (2000) \emph{A First Course in Design and
+# Analysis of Experiments}, New York: W. H. Freeman.
+#
+# Weight gain of offspring of 4 bulls. Columns are bull
+# and response.
+bull wtgain
+A 1.46
+A 1.23
+A 1.12
+A 1.23
+A 1.02
+A 1.15
+B 1.17
+B 1.08
+B 1.20
+B 1.08
+B 1.01
+B 0.86
+C 0.98
+C 1.06
+C 1.15
+C 1.11
+C 0.83
+C 0.86
+D 0.95
+D 1.10
+D 1.07
+D 1.11
+D 0.89
+D 1.12
+
