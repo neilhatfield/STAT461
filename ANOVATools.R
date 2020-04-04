@@ -3,9 +3,21 @@ new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"
 if(length(new.packages)) install.packages(new.packages)
 lapply(req.packages, require, character.only = TRUE)
 
-anova.PostHoc <- function(aov.obj){
+anova.PostHoc <- function(aov.obj, response, mainEffect){
   df <- aov.obj$model
-  unDF <- unstack(df)
+  if(missing(response) && missing(mainEffect)){
+    unDF <- unstack(df)
+  }
+  if(missing(response) && !missing(mainEffect)){
+    stop("You need to enter the response column name.")
+  }
+  if(!missing(response) && missing(mainEffect)){
+    stop("You need to enter the main effect of interest column name.")
+  }
+  else{
+    df <- subset(df, select = c(response, mainEffect))
+    unDF <- unstack(df)
+  }
   n <- (factorial(length(unDF))/(2*factorial(length(unDF)-2)))
   temp0a <- rep(NA, n)
   temp0b <- rep(NA, n)
@@ -50,7 +62,7 @@ anova.PostHoc <- function(aov.obj){
 kw.PostHoc <- function(x, g){
   temp0 <- data.frame(x, g)
   us <- unstack(temp0)
-  sink("/dev/null")
+  sink("/dev/null") #Need to update this to work on Windows: sink("Nul")
   temp1 <- dunn.test::dunn.test(x, g)
   sink()
 
@@ -94,7 +106,7 @@ block.RelEff <- function(aov.obj, blockName, trtName){
   return(
     paste0(
       "The relative efficiency of the Block, ",
-      blockName, ", is ", round(eff, 3)
+      blockName, ", is ", round(eff, 3), "."
     )
   )
 }
