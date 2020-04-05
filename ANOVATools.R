@@ -3,7 +3,7 @@ new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"
 if(length(new.packages)) install.packages(new.packages)
 lapply(req.packages, require, character.only = TRUE)
 
-anova.PostHoc <- function(aov.obj, response, mainEffect){
+anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
   df <- aov.obj$model
   if(missing(response) && missing(mainEffect)){
     unDF <- unstack(df)
@@ -14,7 +14,7 @@ anova.PostHoc <- function(aov.obj, response, mainEffect){
   if(!missing(response) && missing(mainEffect)){
     stop("You need to enter the main effect of interest column name.")
   }
-  else{
+  if(!missing(response) && !missing(mainEffect)){
     df <- subset(df, select = c(response, mainEffect))
     unDF <- unstack(df)
   }
