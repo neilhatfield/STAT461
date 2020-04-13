@@ -111,7 +111,7 @@ block.RelEff <- function(aov.obj, blockName, trtName){
   )
 }
 
-anovaFixer <- function (aov.obj, fixed, random){
+anovaFixer <- function (aov.obj, fixed, random, type = "unrestricted"){
   if ( is.null(fixed) && is.null(random) ){
     print("You are missing arguments")
     return(aov.obj)
@@ -125,7 +125,7 @@ anovaFixer <- function (aov.obj, fixed, random){
     if ( length(fixed) == 2) {
       print("Two-way Fixed Effect design detected; there is nothing to fix.")
       return(aov.obj)
-    } else {
+    } else if (length(random) == 2 || (length(random) == 1 && type == "unrestricted")) {
       print("Using the interaction term for F Ratios...")
       temp0 <- anova(aov.obj)
       temp0[1, "F value"] <- temp0[1, "Mean Sq"] / temp0[3, "Mean Sq"]
@@ -133,6 +133,13 @@ anovaFixer <- function (aov.obj, fixed, random){
       temp0[1, "Pr(>F)"] <- pf(temp0[1, "F value"], df1 = temp0[1, "Df"],
                                df2 = temp0[3, "Df"], lower.tail = FALSE)
       temp0[2, "Pr(>F)"] <- pf(temp0[2, "F value"], df1 = temp0[2, "Df"],
+                               df2 = temp0[3, "Df"], lower.tail = FALSE)
+      return(temp0)
+    } else {
+      print("Using a restricted model...")
+      temp0 <- anova(aov.obj)
+      temp0[random, "F value"] <- temp0[random, "Mean Sq"] / temp0[3, "Mean Sq"]
+      temp0[random, "Pr(>F)"] <- pf(temp0[random, "F value"], df1 = temp0[random, "Df"],
                                df2 = temp0[3, "Df"], lower.tail = FALSE)
       return(temp0)
     }
