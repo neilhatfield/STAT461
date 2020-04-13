@@ -110,3 +110,40 @@ block.RelEff <- function(aov.obj, blockName, trtName){
     )
   )
 }
+
+anovaFixer <- function (aov.obj, fixed, random){
+  if ( is.null(fixed) && is.null(random) ){
+    print("You are missing arguments")
+    return(aov.obj)
+  }
+  if ((is.null(fixed) && length(random) == 1) ||
+      (length(fixed) == 1 && is.null(random))){
+    print("One-way design detected; there is nothing to fix.")
+    return(aov.obj)
+  }
+  if ( length(fixed) + length(random) == 2 ){
+    if ( length(fixed) == 2) {
+      print("Two-way Fixed Effect design detected; there is nothing to fix.")
+      return(aov.obj)
+    } else {
+      print("Using the interaction term for F Ratios...")
+      temp0 <- anova(aov.obj)
+      temp0[1, "F value"] <- temp0[1, "Mean Sq"] / temp0[3, "Mean Sq"]
+      temp0[2, "F value"] <- temp0[2, "Mean Sq"] / temp0[3, "Mean Sq"]
+      temp0[1, "Pr(>F)"] <- pf(temp0[1, "F value"], df1 = temp0[1, "Df"],
+                               df2 = temp0[3, "Df"], lower.tail = FALSE)
+      temp0[2, "Pr(>F)"] <- pf(temp0[2, "F value"], df1 = temp0[2, "Df"],
+                               df2 = temp0[3, "Df"], lower.tail = FALSE)
+      return(temp0)
+    }
+  }
+  if ( length(fixed) + length(random) > 2 ){
+    if(length(random) == 0){
+      print("No random effects listed. There is nothing to fix.")
+      return(aov.obj)
+    } else {
+      print("This function has not been updated for more than twoway fixes.")
+      return(aov.obj)
+    }
+  }
+}
