@@ -1,0 +1,21 @@
+# exmpl17.2
+# A data set from Oehlert (2000) \emph{A First Course in Design and
+# Analysis of Experiments}, New York: W. H. Freeman.
+#
+# First column is keyboard type, second column is number
+# of hours in two weeks keyboarding, third column is
+# number of hours in two weeks of rmd pain.
+         kbd.type          hrs.kbd         hrs.pain
+                1               60               85
+                1               72               95
+                1               61               69
+                1               50               58
+                2               54               41
+                2               68               74
+                2               66               71
+                2               59               52
+                3               56               41
+                3               56               34
+                3               55               50
+                3               51               40
+
