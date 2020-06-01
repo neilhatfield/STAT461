@@ -26,7 +26,7 @@ boot.out <- boot::boot(
   formula = Surplus ~ Varietal
 )
 
-boot::boot.ci(boot.out, conf = 0.93, type = "BCa")
+boot::boot.ci(boot.out, conf = 0.93, type = "bca")
 
 out1 <- lmboot::ANOVA.boot(Surplus ~ Varietal,
                            data = honey,

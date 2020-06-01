@@ -20,7 +20,7 @@ barleyLabels <- c("1 Grand Mean 1", "4 Field 3",
                 "4 Variety 3", "16 (Crop/Error) 9")
 barleyMat <- matrix(data = F, nrow = 4, ncol = 4)
 barleyMat[1, c(2:4)] = barleyMat[2, 4] = barleyMat[3, 4] = T
-hasseDiagram::hasse(barelyMat, barelyLabels)
+hasseDiagram::hasse(barleyMat, barleyLabels)
 
 # Look at the data
 ggplot2::ggplot(data = barley,
@@ -34,10 +34,10 @@ ggplot2::ggplot(data = barley,
   xlab("Planting/Havesting Order") +
   ylab("Yield (bushels per acre)")
 
-geom_line()# Fit the Model
+# Fit the Model
 barleyModel <- aov(Yield ~ Treatment + Field, data = barley)
 
-# Check Asumptions
+# Check Asumptions-Properly
 ## Normality of Residuals
 a <- car::qqPlot(
   x = barleyModel$residuals,
@@ -51,7 +51,8 @@ a <- car::qqPlot(
 ## Homoscedasticity on Residuals
 plot(barleyModel, which = 1, pch = 19, col= "red")
 
-## Code for Problematic Homoscedasticity Check
+# Ignoring the Block-Don't Do!
+## Checking Homoscedasticity
 test <- aov(Yield ~ Treatment, data= barley)
 plot(test, which = 1, pch = 19, col= "blue")
 
@@ -65,7 +66,7 @@ stripchart(
   col = "blue"
 )
 
-## Interaction
+# Check for Interaction
 ggplot2::ggplot(data = barley,
                 mapping = aes(x = Treatment,
                               y = Yield,
@@ -105,7 +106,9 @@ knitr::kable(
 block.RelEff(barleyModel, "Field", "Treatment")
 
 # Post Hoc Analysis
-barley.PH <- TukeyHSD(barleyModel)
+barley.PH <- TukeyHSD(barleyModel,
+                      which = "Treatment",
+                      conf.level = 0.9)
 
 # Nice Looking Table
 knitr::kable(

@@ -13,6 +13,11 @@ source("https://raw.github.com/neilhatfield/STAT461/master/ANOVATools.R")
 options("contrasts" = c("contr.sum","contr.poly"))
 
 # Hasse Diagram-On Your Own
+batLabels <- c("1 GM 1", "3 Plate 2", "3 Temperature 2",
+               "9 P X T 4", "36 (Batteries/Error) 25")
+batMat <- matrix(data = F, nrow = 5, ncol = 5)
+batMat[1, c(2:5)] = batMat[c(2:3), c(4:5)] = batMat[4, 5] = T
+hasseDiagram::hasse(batMat, batLabels)
 
 # Get Data
 battery <- read.table(
@@ -24,9 +29,12 @@ battery$material <- as.factor(battery$material)
 battery$temperature <- as.factor(battery$temperature)
 
 # Explore the Data--On Your Own
-## Data Visualizations-histograms, density plots, box plots
-## Descriptive Statistics--5 number summary, SAM,
-### Measures of Variation (SAV, SASD, MAD, IQR), Skewness & Kurtosis
+## Data Visualizations
+boxplot(life ~ temperature * material, data = battery,
+        ylab = "Life (hrs)",
+        xlab = "Temp (ºF).Material")
+
+## Descriptive Statistics
 
 # Two-way ANOVA Model
 ## You have two options for specifying the formula
@@ -115,19 +123,11 @@ postMat <- emmeans::emmeans(batteryModel,
                             adjust = "sidak",
                             level = 0.9)
 
-# EMMeans
 summary(postTemp)
-# Compare with Tukey
-TukeyHSD(batteryModel, which = "temperature", conf.level = 0.9)
+confint(postTemp, level = 0.9)
 
 summary(postMat)
-TukeyHSD(batteryModel, which = "material", conf.level = 0.9)
-
-
-# EMMeans Confint class
-confint(postTemp, level = 0.9)
 confint(postMat, level = 0.9)
-
 
 ### Cohen's d
 tempEMM <- emmeans::emmeans(batteryModel, "temperature")
@@ -140,3 +140,11 @@ cohenMat <- emmeans::eff_size(matEMM,
                   sigma = sigma(batteryModel),
                   edf = df.residual(batteryModel))
 
+
+pnas <- matrix(data = F, nrow = 9, ncol = 9)
+pnas[1, c(2:9)] = pnas[c(2:3), c(5:9)] = pnas[4, 9] = pnas[5, c(6:9)] = pnas[c(6:8), 9] = T
+pnasLabels <- c("1 GM 1","2 (Instructor) 1","4 Semester 3",
+                "2 Gender 1", "8 (Treatment) 3", "Cov: FCI 1",
+                "Cov: CLASS 1","Cov: Midterms 1",
+                "149 (Student/Error) 137")
+hasseDiagram::hasse(data = pnas, labels = pnasLabels)

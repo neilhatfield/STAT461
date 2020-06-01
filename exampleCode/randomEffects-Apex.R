@@ -32,9 +32,9 @@ hasseDiagram::hasse(apexMat, apexLabels)
 
 # Fit Models
 options("contrasts" = c("contr.sum","contr.poly"))
-apexFE <- aov(candidate ~ officer, data = apex)
+apexFE <- aov(score ~ officer, data = apex)
 apexRE <- lme4::lmer(
-  candidate ~ (1|officer),
+  score ~ (1|officer),
   data = apex,
   REML = TRUE)
 

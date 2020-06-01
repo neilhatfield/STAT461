@@ -28,6 +28,7 @@ hardModel <- aov(depth ~ tip + blank, data = hardness)
 
 # Check Asumptions
 ## Normality of Residuals
+
 a <- car::qqPlot(
   x = hardModel$residuals,
   distribution = "norm",
@@ -87,7 +88,7 @@ knitr::kable(
   caption = "Post Hoc Tukey HSD Comparisons",
   col.names = c("Difference", "Lower Bound",
                 "Upper Bound", "Adj. p-Value"),
-  align = 'lcccc'
+  align = 'cccc'
 ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
