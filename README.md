@@ -52,7 +52,7 @@ Future plans include adding on handeling of interactions for Factorial ANOVAs.
 
 The kw.PostHoc function takes two arguments, both required: x, and g. The x argument should be the response vector and g a vector of group membership (i.e., the factor). 
 
-THe kw.PostHoc function returns a data frame of effect sizes that can be formatted by another function (e.g., knitr::kable) consisting of the following columns: Pair , Hodges-Lehmann \(\widehat{\Delta}\), and the Probability of Superiority.
+THe kw.PostHoc function returns a data frame of effect sizes that can be formatted by another function (e.g., knitr::kable) consisting of the following columns: Pair , Hodges-Lehmann ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D), <!--\(\widehat{\Delta}\)--> and the Probability of Superiority.
 
 There is a known issue where the internal sink call will cause problems on Windows machines.
 
@@ -78,7 +78,7 @@ The .probSup function takes a Cohen's *d* value as the input and returns the pro
 
 ##### .hodgesLehmann
 
-The .hodgesLehmann function takes two vectors of values, *x* and *y*, and calculates the value of Hodges-Lehman ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D) <!--(\widehat{\Delta}\)-->.
+The .hodgesLehmann function takes two vectors of values, *x* and *y*, and calculates the value of Hodges-Lehman ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D). <!--(\widehat{\Delta}\)-->
 
 ### Data Files
 
