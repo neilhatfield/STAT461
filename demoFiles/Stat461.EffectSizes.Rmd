@@ -115,7 +115,7 @@ twoColOreo <- unstack(
   form = Filling.Mass ~ Type
 )
 
-hlEst <- .hodgesLehmann(
+hlEst <- hodgesLehmann(
   x = twoColOreo$Regular,
   y = twoColOreo$Double.Stuf
 )
@@ -132,7 +132,7 @@ Suppose that you find the Probability of Superiority of Double Stuf Oreos' crém
 You may get this value by using the `probSup` function from my set of ANOVA Tools. However, you'll need to first calculate Cohen's *D* and use that value as the input.
 
 ```{r effectEx3, echo=TRUE, eval=TRUE}
-ps <- .probSup(effectOut1$cohen.d[2])
+ps <- probSup(effectOut1$cohen.d[2])
 
 ```
 
@@ -140,7 +140,9 @@ For my data, the Probability of Superiority is `r round(ps, digits = 4)` (`round
 
 # Final Remarks
 
-This guide served two purposes: demonstrate how you can use R to calculate the values of various descriptive/incisive statistics and how to prepare tables of values in a document. Again, the best way to improve your skills is by practicing. 
+The above methods work well for two sample situations. Part of what you'll learn in our course are how to get these values and the Variance Explained family within the ANOVA context. So, be on the lookout for these as the semester progresses.
+
+Remember, the best way to improve your skills is by practicing. 
 
 -   Motor Trend Car Road Tests---access with `data(mtcars)`
 -   Weight versus Age of Chicks on Different Diets---access with `data(ChickWeight)`
@@ -148,4 +150,4 @@ This guide served two purposes: demonstrate how you can use R to calculate the v
 -   The Iris data set---access with `data(iris)`
 -   Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
-This concludes this guide to descriptive statistics in R/RStudio.
+This concludes this guide to Effect Sizes in R/RStudio.
