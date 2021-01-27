@@ -41,15 +41,15 @@ anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
   }
   temp0 <- data.frame(Pair = temp0a, Cohens.d = temp0b, Hedges.g = temp0c)
   temp0$Cohens.d <- as.numeric(temp0$Cohens.d)
-  temp0$'Prob.Super' <- .probSup(temp0$Cohens.d)
+  temp0$'Prob.Super' <- probSup(temp0$Cohens.d)
   return(temp0)
 }
 
-.probSup <- function(d){
+probSup <- function(d){
 	pnorm(-0.7071067*d, mean = 0, sd = 1, lower.tail = FALSE)
 }
 
-.hodgesLehmann <- function(x, y){
+hodgesLehmann <- function(x, y){
   hl <- median(outer(x, y, "-"))
   return(hl)
 }
@@ -78,14 +78,14 @@ kw.PostHoc <- function(x, g){
     tempA <- unlist(us[output[i,"A"]], use.names = FALSE)
     tempB <- unlist(us[output[i,"B"]], use.names = FALSE)
     output[i, "pbs"] <- output[i, "pbs"] / (sqrt(length(tempA) + length(tempB)))
-    output[i, "hl"] <- .hodgesLehmann(tempA, tempB)
+    output[i, "hl"] <- hodgesLehmann(tempA, tempB)
   }
 
   output$pbs <- sapply(output$pbs, function(x){
     ifelse(x <= -1, -0.9999, ifelse(x >= 1, 0.9999, x))})
 
   output$PS <- sapply(output$pbs, function(x){
-    .probSup((2 * x) / sqrt(1 - (x)^2))})
+    probSup((2 * x) / sqrt(1 - (x)^2))})
 
   output <- dplyr::select(output, -c("A","B", "z", "pbs"))
   names(output) <- c("Pair", "Hodges.Lehman","Prob. Super")

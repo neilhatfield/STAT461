@@ -16,7 +16,8 @@ checkSetup <- function(){
   reqPackages <- c("tidyverse", "knitr", "kableExtra", "car", "sjstats", "psych",
                    "parameters", "lattice", "lme4", "DescTools", "afex", "emmeans",
                    "rstatix", "rsm", "coin", "rcompanion", "boot", "lmboot",
-                   "multicool", "dunn.test", "tinytex", "rmarkdown")
+                   "multicool", "dunn.test", "tinytex", "rmarkdown", "perm"
+                   )
   newPackages <- reqPackages[!(reqPackages %in% installed.packages()[,"Package"])]
   if (length(newPackages)) {install.packages(newPackages)}
 

@@ -38,3 +38,7 @@ vignettes/*.pdf
 
 # RProject Files
 *.Rproj
+
+# Ignore these folders
+/CourseProject/
+/Assignments/

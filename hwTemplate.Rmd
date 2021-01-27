@@ -37,22 +37,22 @@ options("contrasts" = c("contr.sum", "contr.poly"))
 
 # Use Headers
 
-Use headers to organize your document. The first level heading is denoted by a single octothorp (pound sign/hash tag, `#`). Each new problem/exercise should get a Level 1 Heading. For subparts, increase the heading level by increasing the number of octothorps. 
+Use headers to organize your document. The first level heading is denoted by a single octothorp (pound sign/hash tag, `#`). Each new problem/exercise should get a Level 1 Heading. For subparts, increase the heading level by increasing the number of octothorps.
 
 For example, if Problem 1 has Parts A (with parts i-ii) and B, your R Markdown file would have the following:
-```
-# Problem 1
-[text]
-## Part A
-[text]
-### Part i
-[text]
-### Part ii
-[text]
-## Part B
-[text]
-```
-# Code 
+
+    # Problem 1
+    [text]
+    ## Part A
+    [text]
+    ### Part i
+    [text]
+    ### Part ii
+    [text]
+    ## Part B
+    [text]
+
+# Code
 
 There are two ways to include code in your document: inline and chunks.
 
@@ -66,8 +66,8 @@ Inline code is good for calling values you have stored and doing quick calculati
 
 For more complicated code such as data manipulation and cleaning, creating graphs or tables, model building and testing, you'll want to use code chunks. You can do this in two ways:
 
-+ You can click the Insert button found just above the RStudio's editor page (has an icon of a white circle with a green plus sign and a green square with a white C) and selecting R from the drop down list.
-+ You can create your own code chunk by typing three graves in a row, returning twice and typing three more graves. You should see the editor become shaded gray for those three lines. You will want to write your code starting in the middle blank line. In the first line, right after the third grave, you'll want to set options including coding language and chunk name as well as other options (e.g., figure caption and dimensions).
+-   You can click the Insert button found just above the RStudio's editor page (has an icon of a white circle with a green plus sign and a green square with a white C) and selecting R from the drop down list.
+-   You can create your own code chunk by typing three graves in a row, returning twice and typing three more graves. You should see the editor become shaded gray for those three lines. You will want to write your code starting in the middle blank line. In the first line, right after the third grave, you'll want to set options including coding language and chunk name as well as other options (e.g., figure caption and dimensions).
 
 # Mathematics
 
@@ -76,6 +76,7 @@ To type mathematical formulas, you will need to use LaTeX commands. For inline m
 The following code will automatically create your Code Appendix by grabbing all of your code chunks and writing that code here. Take a moment to look through the appendix and make sure that your code is fully readable. Use comments in your code to help create markers for what code does what.
 
 \newpage
+
 # Code Appendix
 
 ```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
