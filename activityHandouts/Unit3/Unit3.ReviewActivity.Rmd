@@ -1,0 +1,148 @@
+---
+title: "Putting Units 1-3 Into Practice"
+author: "[Your Name Here]"
+date: "March 3, 2021"
+output: pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes:
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{xcolor}
+---
+
+```{r setupFiles, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+# Add additional packages by name to the following list
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "hasseDiagram", "car", "psych", "parameters") 
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE
+)
+
+# Set constraint
+options("contrasts" = c("contr.sum", "contr.poly"))
+
+options(knitr.kable.NA = "")
+
+```
+
+We are going to work through the following situation to put into practice everything that we've covered in Units 1-3. To assist us, I've created this R Markdown document with placeholders for R code and narrative interpretations.
+
+# The Context
+
+We are members of the statistical consulting firm, STAT461 Inc., and we have been approached by a new client, J & N Toys.
+
+J & N Toys manufactures a variety of children's plastic toys and would like to limit how much scrap content (i.e., defective toys) that gets generated in each production run. They have considered the introduction of a statistical process control (SPC) as well as an engineering process control (EPC) in order to achieve this aim at each of their nine manufacturing plants (located in different parts of three different regions). To assess the effects of these quality control practices, they have asked us to design and carry out an experiment over the course of a six-month period.
+
+Of primary interest is the impact of using SPC, SPC + EPC, or no quality control on defect rate (measured as decrease in the number of defective toys per 1000 toys) at the end of the six month period.
+
+## What is the Statistical Research Question?
+
+[Write a SRQ.]
+
+# Study Design
+
+With our SRQ in mind, let us design an experiment which will allow us to answer the SRQ.
+
+## Key Elements
+
++ Response: [fill in]
++ Measurement Unit: [fill in]
++ Factor: [fill in]
++ Experimental Design:
+    1) [fill in both the elements AND what goes here]
+    2) [ditto]
+    3) [ditto]
++ What kind of design? [fill in]
+
+## Study Design Description
+
+[Transform the Key Elements list into a descriptive narrative of how you will conduct the study]
+
+# Exploratory Data Analysis
+
+```{r loadData}
+# Load the data
+toyData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/toyProcessControl.dat",
+  header = TRUE,
+  sep = ","
+)
+
+```
+
+[Your Data Explorations Go Here]
+
+```{r exploration1}
+# You'll have several code blocks here as you engage in EDA.
+# You should create several data visualizations as well as
+# tables of summary statistics.
+```
+
+# Statistical Inference Methods
+
+```{r hasseDiagram, fig.cap="Hasse Diagram for Process Control Study", fig.height=2}
+# Create your Hasse Diagram here
+
+
+```
+
+[Explain how our study does or does not meet the base requirements of One-way ANOVA.]
+
+## Hypotheses
+
+Given our statistical research question (), we may explore two hypotheses:
+\begin{align*}
+H_0: y_{ij} &= \mu_{\cdot\cdot}+\epsilon_{ij}\\
+H_1: y_{ij} &= \mu_{\cdot\cdot}+\alpha_i+\epsilon_{ij}
+\end{align*}
+for some \(\alpha_i \neq 0\).
+
+## Method
+
+To decide between the hypotheses and answer our research question, we will use [insert method choice here] with an Unusualness Threshold/Level of Significance of [value] \(UT = 0.??\).
+
+```{r analysisMethod}
+# Apply your chosen method for the sampling distribution here
+
+```
+
+## Assumptions
+
+[List and discuss the assumptions of your selected method to get to a sampling distribution]
+
+```{r assumptions1}
+# Assess each of your assumptions and discuss your assessment
+
+```
+
+# Results
+
+```{r anovaTable}
+# Create a professional looking ANOVA Table, if applicable
+
+```
+
+[Write Up your results]
+
+# Discussion
+
+[Discuss the implications of the results section in the context of the study. What will you tell the client?]
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```
