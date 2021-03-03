@@ -1,0 +1,10 @@
+defectRate, process
+1.1, Null Treatment
+0.5, Null Treatment
+-2.1, Null Treatment
+4.2, SPC
+3.7, SPC
+0.8, SPC
+3.2, SPC + EPC
+2.8, SPC + EPC
+6.3, SPC + EPC
