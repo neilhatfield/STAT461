@@ -2,9 +2,9 @@ defectRate, process, measOrder, region
 1.1, Null Treatment, 1, A
 0.5, Null Treatment, 4, B
 -2.1, Null Treatment, 2, C
-4.2, SPC, 3, A
+4.2, SPC, 3, B
 3.7, SPC, 5, A
 0.8, SPC, 9, C
-3.2, SPC + EPC, 7, B
+3.2, SPC + EPC, 7, C
 2.8, SPC + EPC, 8, B
-6.3, SPC + EPC, 6, C
+6.3, SPC + EPC, 6, A
