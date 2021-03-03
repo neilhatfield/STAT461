@@ -2,12 +2,11 @@
 title: "Descriptive (Incisive) Statistics"
 author: "Neil J. Hatfield"
 date: "1/24/2021"
-output: 
-  pdf_document
+output:
+  pdf_document: default
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
-header-includes: 
-  \usepackage{subfig}
+header-includes: \usepackage{subfig}
 ---
 
 ```{r setupFiles, include = FALSE}
@@ -531,11 +530,7 @@ Table \ref{tab:kableEx7} provides an alternative approach to using `psych::descr
 
 Interpreting values of statistics is important. First, doing so forces you to critically think about 1) what the statistic tells us about the data collection, and 2) how this value enriches the data story. Second, providing interpretations helps your readers to make connections and build their own understanding of the data and what *you* are trying to say about the data and the context. Finally, providing interpretations will better enable you to make decisions and defend those decisions.
 
-*I'm going to hold off on providing guidance on interpreting any values until after HW #1.1.*
-
-<!--
-
-I'm going to use example statements draw from the oreo data context and looking at the mass (g) of créme filling in oreos.
+I'm going to give example interpretative statements drawn from the oreo data context and looking at the mass (g) of créme filling in oreos.
 
 + Size: There are `r summaryOreo$n` cookies in the data collection.
 + *Sample Minimum*: The smallest amout of créme filling observed was `r round(summaryOreo$min, digits = 2)` grams.
@@ -558,7 +553,6 @@ I'm going to use example statements draw from the oreo data context and looking 
     - A zero value inicates that the process generates just as many outlier cookies as we would expect of a Guassian (normal) distribution.
     - __Important__: don't attempt to over interpret the values. A value of 8 for *Sample Ex. Kurtosis* does not mean that the process produces 8 times as many outliers.
 
--->
 
 # Final Remarks
 

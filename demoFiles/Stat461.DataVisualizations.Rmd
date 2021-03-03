@@ -31,9 +31,10 @@ freedmanDiaconis <- function(x) {
 }
 ```
 
-Welcome to the latest installment of using R and RStudio. This guide will be looking at data visualizations. As you look through this guide, attempt to create the visualizations for yourself using the example code. Do this with both the demo data and a new data set (say from HW #1.1). Also see what element you can customize.
+Welcome to the latest installment of using R and RStudio. This guide will be looking at data visualizations. As you look through this guide, attempt to create the visualizations for yourself using the example code. Do this with both the demo data and a new data set (say from HW \#1.1). Also see what element you can customize.
 
 # Getting Started
+
 
 To get started we need to do two major tasks: load the necessary packages and load our data.
 
@@ -66,7 +67,7 @@ The `tidyverse` package will load `ggplot2` along with some other packages that 
 
 ## Load Data
 
-For this guide I'm going to use the class demo Oreo data set. That way you can see an example that will translate well to your Homework #1.1.
+For this guide I'm going to use the class demo Oreo data set. That way you can see an example that will translate well to your Homework \#1.1.
 
 ```{r loadData, echo=TRUE, eval=TRUE}
 oreoData <- read.table(
@@ -85,7 +86,7 @@ The second thing that I want to point out is the assignment operator `<-`. This 
 
 # Making Data Visualizations
 
-Now that we have loaded both the packages and our data, we can turn to making data visualizations. If you can imagine the data visualization, there is a way to make that visualization in R. (Provided you have the patience and perseverance to figure out how.) 
+Now that we have loaded both the packages and our data, we can turn to making data visualizations. If you can imagine the data visualization, there is a way to make that visualization in R. (Provided you have the patience and perseverance to figure out how.)
 
 I will point out that what I have below are just a few of the many different types of data visualizations you can create using R. And for each one, there are many different ways you can go about creating the visualization. You are by no means bound to the methods I use here. However, the methods that I demonstrate create professional looking graphics. Thus, if you are preparing a report, I would recommend that you try to emulate these. If you are just wanting to make a quick visualization for yourself, you can use other methods.
 
@@ -96,7 +97,7 @@ str(oreoData)
 
 ```
 
-Generally speaking, __DO NOT__ include the output of a `str` call in your analysis reports. This information is more or less just for you as you start EDA. In this case, I notice that I have two attributes; Filling Mass which is numeric (which I know is in grams) (with variable `Filling.Mass`) and type which is character (`chr`; with variable `Type`). Please note that R is case sensitive; thus, `type` and `Type` are treated as two *different* objects.
+Generally speaking, **DO NOT** include the output of a `str` call in your analysis reports. This information is more or less just for you as you start EDA. In this case, I notice that I have two attributes; Filling Mass which is numeric (which I know is in grams) (with variable `Filling.Mass`) and type which is character (`chr`; with variable `Type`). Please note that R is case sensitive; thus, `type` and `Type` are treated as two *different* objects.
 
 The other thing that don't want to include in your analysis reports are raw code. You'll notice that in these guides, I'm including the raw code chunks. This is so you can see the codes that makes the resulting visualization. Raw code has only one viable place in a report--an appendix at the end. Be sure that your reports do not include raw code.
 
@@ -113,10 +114,10 @@ oreoData <- oreoData %>%
 
 The above code says to do the following:
 
-1) Grab the data frame, the `%>%` reads as "and then"
-2) mutate (change) the data set by
-3) looking across all of the columns to see where the character attributes are; change those character attributes to factors
-4) save the altered data as `oreoData`.
+1)  Grab the data frame, the `%>%` reads as "and then"
+2)  mutate (change) the data set by
+3)  looking across all of the columns to see where the character attributes are; change those character attributes to factors
+4)  save the altered data as `oreoData`.
 
 You'll notice that `mutate` and `across` have `dplyr::` in front of them. This is a way to ensure that you are calling these functions from the `dplyr` package. If you know that you have loaded the package, you can leave `dplyr::` out of your code. I often use the package signifier to demonstrate what packages I'm calling different functions out of.
 
@@ -126,7 +127,7 @@ Let's now begin to make some visualizations.
 
 ## Histograms and Bar Charts
 
-Some people get very touchy about when you call a histogram a bar chart or a bar chart a histogram. I'm not one of them. The crux of the distinction (histograms are for numeric data and and bar charts are categorical data) has __nothing__ to do with the information presented in the visualization nor how a person reads them. Thus, histograms are bar charts and bar charts are histograms. Sadly, software developers have enshrined the distinction without a difference into the code we use to make these kinds of visualizations.
+Some people get very touchy about when you call a histogram a bar chart or a bar chart a histogram. I'm not one of them. The crux of the distinction (histograms are for numeric data and and bar charts are categorical data) has **nothing** to do with the information presented in the visualization nor how a person reads them. Thus, histograms are bar charts and bar charts are histograms. Sadly, software developers have enshrined the distinction without a difference into the code we use to make these kinds of visualizations.
 
 ```{r histEx1, echo=TRUE, eval=TRUE, fig.cap="Histogram of Oreo Créme Filling Mass"}
 oreoData %>%
@@ -151,13 +152,19 @@ Since we aren't storing this plot in an object, we don't need to use the assignm
 
 This brings us to `ggplot2::geom_histogram` which says that we want to make a histogram. The arguments here are important for you think about.
 
-+ `binwidth`: how wide do you want the bins? You might need to play around with this value OR you can use the Freedman-Diaconis rule by using `binwidth = function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`. 
-    - If I know that I'm going to be making multiple histograms and that I'll be using the Freedman-Diaconis rule, I'll define a function in my file once (`freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`) and then in my histograms I use `binwidth = freedmanDiaconis`.
-+ `boundry`: this is an optional argument and will set whatever value you put here to be the edge of a bin and work from there; useful to making nice looking visualizations.
-+ `closed`: Most people are familiar with (and except) histograms that include the value on the left edge in the bar, but not the value on the right. This argument allows you match that expectation. The default is the exact opposite (that is, the right value is included but not the left).
-+ `na.rm`: by saying `TRUE` you are saying "remove the missing values SILENTLY". The R will remove any missing values (`NA`) as the plot gets built but unless you say `na.rm = TRUE` R will be noisy and print messages in your report that should not appear.
-+ `col`: determines the color of the piping/edges of the bars.
-+ `fill`: determines the color of the bars.
+-   `binwidth`: how wide do you want the bins? You might need to play around with this value OR you can use the Freedman-Diaconis rule by using `binwidth = function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`.
+
+    -   If I know that I'm going to be making multiple histograms and that I'll be using the Freedman-Diaconis rule, I'll define a function in my file once (`freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`) and then in my histograms I use `binwidth = freedmanDiaconis`.
+
+-   `boundry`: this is an optional argument and will set whatever value you put here to be the edge of a bin and work from there; useful to making nice looking visualizations.
+
+-   `closed`: Most people are familiar with (and except) histograms that include the value on the left edge in the bar, but not the value on the right. This argument allows you match that expectation. The default is the exact opposite (that is, the right value is included but not the left).
+
+-   `na.rm`: by saying `TRUE` you are saying "remove the missing values SILENTLY". The R will remove any missing values (`NA`) as the plot gets built but unless you say `na.rm = TRUE` R will be noisy and print messages in your report that should not appear.
+
+-   `col`: determines the color of the piping/edges of the bars.
+
+-   `fill`: determines the color of the bars.
 
 The last three lines set a default theme (background color, font sizes, etc.) and the labels for the axes.
 
@@ -204,7 +211,7 @@ ggplot2::ggplot(
 
 ```
 
-Pretty much the only thing that changed was that instead of `geom_histogram` we used `geom_bar`. Within `ggplot2` the `geom_*` functions control the various geometries of data visualizations. 
+Pretty much the only thing that changed was that instead of `geom_histogram` we used `geom_bar`. Within `ggplot2` the `geom_*` functions control the various geometries of data visualizations.
 
 ## Density Plots
 
@@ -249,7 +256,7 @@ lattice::densityplot(
 )
 ```
 
-The `lattice` package's density plot includes all of the data points (the circles) along the plot's bottom. There is a new argument here: `x = ~ Filling.Mass`. The tilde, ~, is R's formula notation. We will be using throughout the semester. Using the formula notation `lattice`'s is similar to `ggplot2`'s `mapping` argument.
+The `lattice` package's density plot includes all of the data points (the circles) along the plot's bottom. There is a new argument here: `x = ~ Filling.Mass`. The tilde, \~, is R's formula notation. We will be using throughout the semester. Using the formula notation `lattice`'s is similar to `ggplot2`'s `mapping` argument.
 
 It is possible to use `ggplot2` to create a density plot like the `lattice` package. Think of this as a challenge for you to figure out how to do. Hint: you might need to use two geometries.
 
@@ -286,7 +293,7 @@ oreoData %>%
 
 ## Box plots
 
-As you might guess, making a box plot in `gglot2` will involve using `geom_boxplot`. 
+As you might guess, making a box plot in `gglot2` will involve using `geom_boxplot`.
 
 ```{r boxEx1, echo=TRUE, eval=TRUE, fig.cap="Box plot of créme filling mass by type"}
 ggplot2::ggplot(
@@ -316,6 +323,7 @@ I should point out that `ggplot2` did NOT produce a true box plot. Rather R crea
 Strip charts (or dot plots) are a type of scatter plot where instead of using two numeric attributes you use one numeric and one categorical. There are two ways to make strip charts: one using base R and the other using `ggplot2`.
 
 The base R method is pretty easy to do:
+
 ```{r stripEx1, echo=TRUE, eval=TRUE, fig.cap="Strip chart for the Oreo data using base R"}
 stripchart(
   x = Filling.Mass ~ Type,
@@ -349,10 +357,10 @@ ggplot2::ggplot(
 
 Notice that I used the `fill` aesthetic with the Type attribute. Within `geom_dotplot` there are a couple of arguments we need to talk about.
 
-+ `binaxis`: states which axis R should try to create bins for; this should be whichever axis you place the numerical data on.
-+ `binwidth`: this value controls how wide the bins are and to a certain extent the size of the dots. If you omit this argument, `binwidth = NULL`, you might get a warning message. You can either ignore the message (and suppress the printing of the message in your report) OR you can try various values to see what works well with your data.
-+ `binpositions`: generally if you are displaying some type of group like I did you'll want to bin the values separately by each group. 
-+ `stackdir`: the direction you want the dots to stack. The most common is `"up"` which will make the dots stack on top of each other (or to the right depending on orientation). Another method is `"center"` (or `"centerwhole"`) which stakes the dots in both directions from the center point.
+-   `binaxis`: states which axis R should try to create bins for; this should be whichever axis you place the numerical data on.
+-   `binwidth`: this value controls how wide the bins are and to a certain extent the size of the dots. If you omit this argument, `binwidth = NULL`, you might get a warning message. You can either ignore the message (and suppress the printing of the message in your report) OR you can try various values to see what works well with your data.
+-   `binpositions`: generally if you are displaying some type of group like I did you'll want to bin the values separately by each group.
+-   `stackdir`: the direction you want the dots to stack. The most common is `"up"` which will make the dots stack on top of each other (or to the right depending on orientation). Another method is `"center"` (or `"centerwhole"`) which stakes the dots in both directions from the center point.
 
 ## QQ Plots
 
@@ -370,7 +378,7 @@ car::qqPlot(
 )
 ```
 
-The `car` package's method produces a scatter plot of the empirical and theoretical quantiles for each point as well as plotting the line of perfect match (solid blue) as well as a confidence envelope (dashed blue lines). 
+The `car` package's method produces a scatter plot of the empirical and theoretical quantiles for each point as well as plotting the line of perfect match (solid blue) as well as a confidence envelope (dashed blue lines).
 
 Here the key arguments are the `formula` argument to specify the attribute's variable you want to explore, `data` to set which data set to use, `distribution` for which named distribution you want to reference (`"norm"` will give you the "normal" or Gaussian distribution), and `envelope` is where you specify the confidence level (if you don't want an envelope you can use `envelope = FALSE` to turn this off).
 
@@ -407,11 +415,11 @@ The `dparams` argument is where you can specify particular parameters. Notice th
 
 # Figure Options in R Markdown
 
-There are a variety of options that you can apply to your data visualizations in R Markdown. If you aren't using R Markdown, your visualizations will appear in the Plots window in the lower-right of RStudio. You can click the <img src = "data:image/png;base64,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" /> Export button and copy the plot to your clipboard or save as a file. You can then put that picture into Word or Google Docs. You will then manipulate the following aspects there.
+There are a variety of options that you can apply to your data visualizations in R Markdown. If you aren't using R Markdown, your visualizations will appear in the Plots window in the lower-right of RStudio. You can click the <img src="data:image/png;base64,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"/> Export button and copy the plot to your clipboard or save as a file. You can then put that picture into Word or Google Docs. You will then manipulate the following aspects there.
 
 ## Basic Format
 
-All of the figure options in R Markdown will need to be listed in the chunk options for the code chunk that creates the visualization. 
+All of the figure options in R Markdown will need to be listed in the chunk options for the code chunk that creates the visualization.
 
 When you create a chunk, you should have a some text inside of a set of curly braces immediately after the opening three graves. These are the chunk options. The first thing should be a lower case r to set the language, followed by a space, and then the *unique* name you're going to give that chunk. You will then place a comma after the name and begin listing the options you want. Here are the options for the very first histogram I created in this guide: `{r histEx1, echo=TRUE, eval=TRUE, fig.cap="Histogram of Oreo Créme Filling Mass"}`.
 
@@ -438,31 +446,30 @@ There are two aspects to size for a visualization: height and width. All visuali
 
 ## Caption
 
-The `fig.cap` option adds a caption to your visualization AND will put "Figure #" out in front. This is consistent with many publication standards. If you omit the `fig.cap` option, then your visualization will not get a label. In such cases, be sure to add a title to your visualizations.
+The `fig.cap` option adds a caption to your visualization AND will put "Figure \#" out in front. This is consistent with many publication standards. If you omit the `fig.cap` option, then your visualization will not get a label. In such cases, be sure to add a title to your visualizations.
 
 Your caption should appear in quotation marks just after the equals sign: `fig.cap="QQ plot for Oreo créme filling mass using ggplot2"`. Captions should describe the visualization by stating what kind of visualization and of what data. Try not to be overly wordy with your captions.
 
 ### Referencing
 
-One of the most useful aspects about using `fig.cap` is that your figures become numbered and referenceable. Have you ever read something and you come across something like "As shown in Figure 3.1..."?  This is an example of referencing a figure. The computer figures out the appropriate number for you...provided you've set up a caption for the visualization.
+One of the most useful aspects about using `fig.cap` is that your figures become numbered and referenceable. Have you ever read something and you come across something like "As shown in Figure 3.1..."? This is an example of referencing a figure. The computer figures out the appropriate number for you...provided you've set up a caption for the visualization.
 
-In R Markdown, you need to have two things first: you have to name your code chunk and provide something as `fig.cap`. Once you have those things, you can that visualization. Start by typing the word "Figure" and then`\ref{fig:chunkName}`. When you knit your file, R will replace the ref code with the appropriate value. For example, if I were to type "Figure `\ref{fig:histEx1}`", I will get Figure \@ref(fig:histEx1) ---the reference to the first histogram.
+In R Markdown, you need to have two things first: you have to name your code chunk and provide something as `fig.cap`. Once you have those things, you can that visualization. Start by typing the word "Figure" and then`\ref{fig:chunkName}`. When you knit your file, R will replace the ref code with the appropriate value. For example, if I were to type "Figure `\ref{fig:histEx1}`", I will get Figure \@ref(fig:histEx1)---the reference to the first histogram.
 
 You can add captions, auto numbered labels, and cross references in programs like Word. From the Insert menu select caption to set up what you want. To add a reference to a figure, select Cross-reference from the Insert menu, select the appropriate type and then the correct figure. Do set the cross reference to only include the label and number, not the whole caption.
 
 ## Position
 
-The last option I'm going to mention is one of the trickier ones to use; `fig.pos` *attempts* to control of the location of the visualization. When you knit the document, R will attempt to find the optimal location for the visualization. You can attempt to override this by setting the value of `fig.pos`. For example, `fig.pos='h'` says "hey, I want the visualization the appear "here" in my document. R will attempt to do that but if your figure is too large for the space at that place, your visualization will be moved (typically, the top of the next page). 
-
+The last option I'm going to mention is one of the trickier ones to use; `fig.pos` *attempts* to control of the location of the visualization. When you knit the document, R will attempt to find the optimal location for the visualization. You can attempt to override this by setting the value of `fig.pos`. For example, `fig.pos='h'` says "hey, I want the visualization the appear "here" in my document. R will attempt to do that but if your figure is too large for the space at that place, your visualization will be moved (typically, the top of the next page).
 
 # Final Remarks
 
 Hopefully as you've gone through this guide, you have a better idea of how to make just a few of the many different data visualizations possible in R. Further, I hope that you're getting a better idea of how to use R Markdown to write code to your advantage. Practicing these examples is the best way to improve your fluency. For some additional datasets to work with, feel free to explore the following data sets:
 
-+ Motor Trend Car Road Tests---access with `data(mtcars)`
-+ Weight versus Age of Chicks on Different Diets---access with `data(ChickWeight)`
-+ Effectiveness of Insect Sprays---access with `data(InsectSprays)`
-+ The Iris data set---access with `data(iris)`
-+ Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
+-   Motor Trend Car Road Tests---access with `data(mtcars)`
+-   Weight versus Age of Chicks on Different Diets---access with `data(ChickWeight)`
+-   Effectiveness of Insect Sprays---access with `data(InsectSprays)`
+-   The Iris data set---access with `data(iris)`
+-   Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
 This concludes this guide to data visualizations in R/RStudio.
