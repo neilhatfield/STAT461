@@ -358,13 +358,69 @@ For post hoc tests, particularly pairwise comparisons, we will use two sets of e
 
 I've created some helper functions that will calculate the appropriate effect sizes and append them to a table for display in a report.
 
-To access these functions, you'll need to enclude the following code in your R file. My recommendation is to stick this right next to where you set the sum to zero constraint. Both of them should be towards the top of your document, near where you have placed all of your library calls.
+To access these functions, you'll need to include the following code in your R file: 
 
 ```{r echo=TRUE, eval=FALSE}
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
 
 ```
 
+My recommendation is to stick this right next to where you set the sum to zero constraint. Both of them should be towards the top of your document, near where you have placed all of your library calls.
+
+### Parametric Example
+
+When you have used the Parametric Shortcuts, you'll want to use the `anova.PostHoc` function and pass your model object (the result of calling `aov` or `lm`) as the input. 
+
++ Note 1: this will generate ALL pairwise comparisons. If you only did a subset, you'll want to remove the extra rows.
++ Note 2: some special characters (e.g., &) will get get replaced with periods. I am working on fixing this.
+
+```{r parametricES, echo=TRUE}
+anova.PostHoc(cheeseModel) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Post Hoc Comparison Effect Sizes",
+    col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
+                  "Prob. Superiority"),
+    align = 'lccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+## Nonparametric Example -- NOT WORKING :(
+
+Unfortunately, I have discovered a bug in my code. I'm attempting to track down and fix the issue.
+
+<!--
+When you have used Nonparametric Shortcuts (either through Dunn's Test or the DSCF Test), you'll want to use the `kw.PostHoc` function. You'll need to provide two inputs: the response vector and the treatment vector.
+
+```{r npEffectSizes, echo=FALSE, eval=FALSE}
+# This codes is not working; my apologies
+kw.PostHoc(
+    response = cheese$acids,
+    treatments = cheese$strain
+  ) %>%
+knitr::kable(
+  digits = 3,
+  caption = "Post Hoc Comparison Effect Sizes",
+  col.names = c("Pairwise Comparison","Hodges Lehmann Estimate",
+                "Prob. Superiority"),
+  align = 'lcc'
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+-->
 
 # Visualizing Pairwise Comparisons
 

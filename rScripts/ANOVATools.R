@@ -83,11 +83,13 @@ anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
 
 # Post Hoc for Kruskal-Wallis ----
 ## Given data vector and group vector, return data frame of post hoc results
+### Not currently working.
 kw.PostHoc <- function(response, treatments){
-  temp1 <- data.frame(response = response, groups = treatments)
-  dunn <- purrr::quietly(dunn.test::dunn.test)(
+  temp0 <- data.frame(x = response, g = treatments)
+  us <- unstack(temp0)
+  temp1 <- purrr::quietly(dunn.test::dunn.test)(
     x = response,
-    g = groups,
+    g = treatments,
     kw = FALSE,
     table = FALSE
   )$result
