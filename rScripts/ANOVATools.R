@@ -1,80 +1,114 @@
-req.packages <- c("DescTools", "sjstats", "dunn.test", "dplyr")
+# Check, Install, and Load Required Packages
+req.packages <- c("DescTools", "sjstats", "dunn.test", "dplyr", "purrr")
 new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
+if (length(new.packages)) {install.packages(new.packages)}
 lapply(req.packages, require, character.only = TRUE)
 
-anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
-  df <- aov.obj$model
-  if(missing(response) && missing(mainEffect)){
-    unDF <- unstack(df)
-  }
-  if(missing(response) && !missing(mainEffect)){
-    stop("You need to enter the response column name.")
-  }
-  if(!missing(response) && missing(mainEffect)){
-    stop("You need to enter the main effect of interest column name.")
-  }
-  if(!missing(response) && !missing(mainEffect)){
-    df <- subset(df, select = c(response, mainEffect))
-    unDF <- unstack(df)
-  }
-  n <- (factorial(length(unDF))/(2*factorial(length(unDF)-2)))
-  temp0a <- rep(NA, n)
-  temp0b <- rep(NA, n)
-  temp0c <- rep(NA, n)
-  k <- 1
-  for (i in 1:(length(unDF)-1)){
-    for (j in (i+1):length(unDF)){
-      temp0a[k] <- paste0(names(unDF)[i], " vs. ", names(unDF)[j])
-      temp0b[k] <- as.numeric(DescTools::CohenD(x = unlist(unDF[i]),
-                                                 y = unlist(unDF[j]),
-                                                 correct = FALSE,
-                                                 conf.level = NA,
-                                                 na.rm = TRUE))
-      temp0c[k] <- as.numeric(DescTools::CohenD(x = unlist(unDF[i]),
-                                                 y = unlist(unDF[j]),
-                                                 correct = TRUE,
-                                                 conf.level = NA,
-                                                 na.rm = TRUE))
-      k <- k + 1
-    }
-  }
-  temp0 <- data.frame(Pair = temp0a, Cohens.d = temp0b, Hedges.g = temp0c)
-  temp0$Cohens.d <- as.numeric(temp0$Cohens.d)
-  temp0$'Prob.Super' <- probSup(temp0$Cohens.d)
-  return(temp0)
-}
-
-probSup <- function(d){
-	pnorm(-0.7071067*d, mean = 0, sd = 1, lower.tail = FALSE)
-}
-
-hodgesLehmann <- function(x, y){
-  hl <- median(outer(x, y, "-"))
-  return(hl)
-}
-
+# String Splitter (Helper Function) ----
 .strsplitN <- function(x, N){
   temp0 <- strsplit(as.character(x), " - ")
   return(temp0[[1]][N])
 }
 
-kw.PostHoc <- function(x, g){
-  temp0 <- data.frame(x, g)
-  us <- unstack(temp0)
-  sink("/dev/null") #Need to update this to work on Windows: sink("Nul")
-  temp1 <- dunn.test::dunn.test(x, g)
-  sink()
+# Probability of Superiority ----
+## Calculate the Probability of Superiority from Cohen's D
+probSup <- function(d){
+  return(
+    pnorm(-0.7071067 * d, mean = 0, sd = 1, lower.tail = FALSE)
+  )
+}
+
+# Hodges-Lehmann Estimator ----
+## Given two vectors, return the HL estimate
+hodgesLehmann <- function(x, y){
+  hl <- median(outer(x, y, "-"))
+  return(hl)
+}
+
+# ANOVA Post Hoc ----
+## Return a data frame of Post Hoc Results and Effect Sizes
+anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
+  df <- aov.obj$model
+  if (missing(response) && missing(mainEffect)) {
+    unDF <- unstack(df)
+  }
+  if (missing(response) && !missing(mainEffect)) {
+    stop("You need to enter the response column name.")
+  }
+  if (!missing(response) && missing(mainEffect)) {
+    stop("You need to enter the main effect of interest column name.")
+  }
+  if (!missing(response) && !missing(mainEffect)) {
+    df <- subset(df, select = c(response, mainEffect))
+    unDF <- unstack(df)
+  }
+  n <- (factorial(length(unDF)) / (2 * factorial(length(unDF) - 2)))
+  temp0a <- rep(NA, n)
+  temp0b <- rep(NA, n)
+  temp0c <- rep(NA, n)
+  k <- 1
+  for (i in 1:(length(unDF) - 1)) {
+    for (j in (i + 1):length(unDF)) {
+      temp0a[k] <- paste0(names(unDF)[i], " vs. ", names(unDF)[j])
+      temp0b[k] <- as.numeric(
+        DescTools::CohenD(
+          x = unlist(unDF[i]),
+          y = unlist(unDF[j]),
+          correct = FALSE,
+          conf.level = NA,
+          na.rm = TRUE
+        )
+      )
+      temp0c[k] <- as.numeric(
+        DescTools::CohenD(
+          x = unlist(unDF[i]),
+          y = unlist(unDF[j]),
+          correct = TRUE,
+          conf.level = NA,
+          na.rm = TRUE
+        )
+      )
+      k <- k + 1
+    }
+  }
+  temp0 <- data.frame(
+    Pair = temp0a,
+    Cohens.d = temp0b,
+    Hedges.g = temp0c
+  )
+  temp0$Cohens.d <- as.numeric(temp0$Cohens.d)
+  temp0$'Prob.Super' <- probSup(temp0$Cohens.d)
+  return(temp0)
+}
+
+# Post Hoc for Kruskal-Wallis ----
+## Given data vector and group vector, return data frame of post hoc results
+kw.PostHoc <- function(response, treatments){
+  temp1 <- data.frame(response = response, groups = treatments)
+  dunn <- purrr::quietly(dunn.test::dunn.test)(
+    x = response,
+    g = groups,
+    kw = FALSE,
+    table = FALSE
+  )$result
 
   output <- data.frame(comp = temp1$comparison)
-  output$A <- sapply(output$comp, .strsplitN, N = 1)
-  output$B <- sapply(output$comp, .strsplitN, N = 2)
+  output$A <- sapply(
+    X = output$comp,
+    FUN = .strsplitN,
+    N = 1
+  )
+  output$B <- sapply(
+    X = output$comp,
+    FUN = .strsplitN,
+    N = 2
+  )
   output$z <- temp1$Z
   output$pbs <- temp1$Z
   output$hl <- NA
   output$PS <- NA
 
-  for (i in 1:nrow(output)){
+  for (i in 1:nrow(output)) {
     tempA <- unlist(us[output[i,"A"]], use.names = FALSE)
     tempB <- unlist(us[output[i,"B"]], use.names = FALSE)
     output[i, "pbs"] <- output[i, "pbs"] / (sqrt(length(tempA) + length(tempB)))
@@ -93,6 +127,8 @@ kw.PostHoc <- function(x, g){
   return(output)
 }
 
+# Relative Efficiency for Using Blocks
+## Given model object and names of blocks/factors, return relative efficiency
 block.RelEff <- function(aov.obj, blockName, trtName){
   temp0 <- anova(aov.obj)
   g <- temp0[trtName, "Df"]
@@ -111,21 +147,23 @@ block.RelEff <- function(aov.obj, blockName, trtName){
   )
 }
 
-anovaFixer <- function (aov.obj, fixed, random, type = "unrestricted"){
-  if ( is.null(fixed) && is.null(random) ){
+# Fix ANOVA Tables for Multi-factor Models with Random Effects
+anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
+  if (is.null(fixed) && is.null(random)) {
     print("You are missing arguments")
     return(aov.obj)
   }
   if ((is.null(fixed) && length(random) == 1) ||
-      (length(fixed) == 1 && is.null(random))){
+      (length(fixed) == 1 && is.null(random))) {
     print("One-way design detected; there is nothing to fix.")
     return(aov.obj)
   }
-  if ( length(fixed) + length(random) == 2 ){
-    if ( length(fixed) == 2) {
+  if (length(fixed) + length(random) == 2) {
+    if (length(fixed) == 2) {
       print("Two-way Fixed Effect design detected; there is nothing to fix.")
       return(aov.obj)
-    } else if (length(random) == 2 || (length(random) == 1 && type == "unrestricted")) {
+    } else if (length(random) == 2 ||
+               (length(random) == 1 && type == "unrestricted")) {
       print("Using the interaction term for F Ratios...")
       temp0 <- anova(aov.obj)
       temp0[1, "F value"] <- temp0[1, "Mean Sq"] / temp0[3, "Mean Sq"]
@@ -144,8 +182,8 @@ anovaFixer <- function (aov.obj, fixed, random, type = "unrestricted"){
       return(temp0)
     }
   }
-  if ( length(fixed) + length(random) > 2 ){
-    if(length(random) == 0){
+  if (length(fixed) + length(random) > 2 ) {
+    if (length(random) == 0) {
       print("No random effects listed. There is nothing to fix.")
       return(aov.obj)
     } else {
