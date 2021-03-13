@@ -83,10 +83,12 @@ anova.PostHoc <- function(aov.obj, response = NULL, mainEffect = NULL){
 
 # Post Hoc for Kruskal-Wallis ----
 ## Given data vector and group vector, return data frame of post hoc results
-### Not currently working.
 kw.PostHoc <- function(response, treatments){
   temp0 <- data.frame(x = response, g = treatments)
-  us <- unstack(temp0)
+  sizes <- temp0 %>%
+    dplyr::group_by(g) %>%
+    dplyr::summarize(n = n())
+
   temp1 <- purrr::quietly(dunn.test::dunn.test)(
     x = response,
     g = treatments,
@@ -110,21 +112,59 @@ kw.PostHoc <- function(response, treatments){
   output$hl <- NA
   output$PS <- NA
 
+  output$sizeA <- sapply(
+    X = 1:nrow(output),
+    FUN = function(x){
+      return(sizes$n[which(sizes$g == output$A[x])])
+    }
+  )
+  output$sizeB <- sapply(
+    X = 1:nrow(output),
+    FUN = function(x){
+      return(sizes$n[which(sizes$g == output$B[x])])
+    }
+  )
+
+  output <- output %>%
+    dplyr::mutate(
+      pbs = pbs / sqrt(sizeA + sizeB)
+    )
+
   for (i in 1:nrow(output)) {
-    tempA <- unlist(us[output[i,"A"]], use.names = FALSE)
-    tempB <- unlist(us[output[i,"B"]], use.names = FALSE)
-    output[i, "pbs"] <- output[i, "pbs"] / (sqrt(length(tempA) + length(tempB)))
-    output[i, "hl"] <- hodgesLehmann(tempA, tempB)
+    temp2 <- temp0 %>%
+      dplyr::filter(g == output$A[i] | g == output$B[i])
+    temp3 <- purrr::compact(unstack(temp2))
+    output$hl[i] <- hodgesLehmann(temp3[[1]], temp3[[2]])
   }
 
-  output$pbs <- sapply(output$pbs, function(x){
-    ifelse(x <= -1, -0.9999, ifelse(x >= 1, 0.9999, x))})
+  output$pbs <- sapply(
+    X = output$pbs,
+    FUN = function(x){
+      return(
+        ifelse(
+          test = x <= -1,
+          yes = -0.9999,
+          no = ifelse(
+            test = x >= 1,
+            yes = 0.9999,
+            no = x
+          )
+        )
+      )
+    }
+  )
 
-  output$PS <- sapply(output$pbs, function(x){
-    probSup((2 * x) / sqrt(1 - (x)^2))})
+  output$PS <- sapply(
+    X = output$pbs,
+    FUN = function(x){
+      return(
+        probSup((2 * x) / sqrt(1 - (x)^2))
+      )
+    }
+  )
 
-  output <- dplyr::select(output, -c("A","B", "z", "pbs"))
-  names(output) <- c("Pair", "Hodges.Lehman","Prob. Super")
+  output <- dplyr::select(output, c("comp", "hl", "PS"))
+  names(output) <- c("Comparison", "Hodges.Lehman","Prob. Super")
 
   return(output)
 }

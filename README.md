@@ -50,8 +50,6 @@ Future plans include adding on handeling of interactions for Factorial ANOVAs.
 
 ##### kw.PostHoc
 
-__CURRENTLY BROKEN__
-
 The kw.PostHoc function takes two arguments, both required: x, and g. The x argument should be the response vector and g a vector of group membership (i.e., the factor). 
 
 THe kw.PostHoc function returns a data frame of effect sizes that can be formatted by another function (e.g., knitr::kable) consisting of the following columns: Pair , Hodges-Lehmann ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D), <!--\(\widehat{\Delta}\)--> and the Probability of Superiority.
