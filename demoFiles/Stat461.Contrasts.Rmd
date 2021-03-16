@@ -145,7 +145,7 @@ Perhaps the easiest approach is to use the base packages of R. However, I must q
 See the example code below.
 
 ```{r baseContrast, echo=TRUE}
-# Base Packages Appraoch to ANOVA Contrasts
+# Base Packages Approach to ANOVA Contrasts
 ## Step 1--Bind contrasts to the factor
 contrasts(cheese$strain) <- cbind(c1, c2)
 
