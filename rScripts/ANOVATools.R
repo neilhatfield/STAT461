@@ -4,6 +4,15 @@ new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"
 if (length(new.packages)) {install.packages(new.packages)}
 lapply(req.packages, require, character.only = TRUE)
 
+# P Value Rounding ----
+pvalRound <- function(x){
+  if (x < 0.0001) {
+    return("< 0.0001")
+  } else {
+    return(x)
+  }
+}
+
 # String Splitter (Helper Function) ----
 .strsplitN <- function(x, N){
   temp0 <- strsplit(as.character(x), " - ")
