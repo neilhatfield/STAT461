@@ -23,7 +23,8 @@ shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
     scale_x_continuous(
       limits = c(
         min(dataVec, na.rm = TRUE) - 5,
-        max(dataVec, na.rm = TRUE) + 5)
+        max(dataVec, na.rm = TRUE) + 5),
+      expand = expansion(mult = 0, add = 0)
     )
 
   for (i in 1:layers) {
@@ -38,7 +39,12 @@ shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
       )
   }
 
-  basePlot <- basePlot + xlab(label = label)
+  basePlot <- basePlot +
+    xlab(label = label) +
+    ylab("Density") +
+    scale_y_continuous(
+      expand = expansion(mult = c(0,0.01), add = 0)
+    )
 
   return(basePlot)
 }
