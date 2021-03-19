@@ -5,11 +5,11 @@ if (length(new.packages)) {install.packages(new.packages)}
 lapply(req.packages, require, character.only = TRUE)
 
 # P Value Rounding ----
-pvalRound <- function(x){
+pvalRound <- function(x, digits = 4){
   if (x < 0.0001) {
     return("< 0.0001")
   } else {
-    return(x)
+    return(round(x, digits = digits))
   }
 }
 
