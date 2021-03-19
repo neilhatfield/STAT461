@@ -1,4 +1,6 @@
-shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
+shadowgram <- function(dataVec, label = NULL, layers = 50,
+                       color = "black", aStep = 5){
+  require(tidyverse)
   distMat <- as.matrix(dist(dataVec))
   distMat[which(distMat == 0)] <- NA
 
@@ -7,11 +9,23 @@ shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
   q1Dist <- quantile(distMat, na.rm = TRUE, probs = c(0.25))
   q3Dist <- quantile(distMat, na.rm = TRUE, probs = c(0.75))
 
-  adjustments <- seq(
-    from = min(minDist, 0.25, na.rm = TRUE),
-    to = max(range, 10, na.rm = TRUE),
-    length.out = layers
+  adj <- data.frame(
+    adjustments = seq(
+      from = min(minDist, 0.25, na.rm = TRUE),
+      to = max(range, 10, na.rm = TRUE),
+      length.out = layers
+    )
   )
+
+  adj$alpha <- NA
+
+  for (i in 1:aStep) {
+    a <- (i - 1) * floor(layers / aStep)
+    b <- i * floor(layers / aStep)
+    for (j in a:min(b, nrow(adj))) {
+      adj$alpha[j] <- (aStep - i + 1) / layers
+    }
+  }
 
   basePlot <- ggplot(
     data = data.frame(
@@ -31,9 +45,9 @@ shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
     basePlot <- basePlot +
       geom_density(
         size = 0,
-        adjust = adjustments[i],
+        adjust = adj$adjustments[i],
         fill = color,
-        alpha = 2/layers,
+        alpha = adj$alpha[i],
         na.rm = TRUE,
         color = NA
       )
