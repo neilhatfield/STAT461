@@ -1,4 +1,4 @@
-shadowgram <- function(dataVec, label = NULL, layers = 50){
+shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
   distMat <- as.matrix(dist(dataVec))
   distMat[which(distMat == 0)] <- NA
 
@@ -8,8 +8,8 @@ shadowgram <- function(dataVec, label = NULL, layers = 50){
   q3Dist <- quantile(distMat, na.rm = TRUE, probs = c(0.75))
 
   adjustments <- seq(
-    from = q1Dist,
-    to = q3Dist,
+    from = min(minDist, 0.25, na.rm = TRUE),
+    to = max(range, 10, na.rm = TRUE),
     length.out = layers
   )
 
@@ -31,8 +31,8 @@ shadowgram <- function(dataVec, label = NULL, layers = 50){
       geom_density(
         size = 0,
         adjust = adjustments[i],
-        fill = "black",
-        alpha = 1/layers,
+        fill = color,
+        alpha = 2/layers,
         na.rm = TRUE
       )
   }
