@@ -33,7 +33,8 @@ shadowgram <- function(dataVec, label = NULL, layers = 50, color = "black"){
         adjust = adjustments[i],
         fill = color,
         alpha = 2/layers,
-        na.rm = TRUE
+        na.rm = TRUE,
+        color = NA
       )
   }
 
