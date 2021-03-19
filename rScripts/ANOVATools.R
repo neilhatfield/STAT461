@@ -9,7 +9,7 @@ pvalRound <- function(x, digits = 4){
   if (x < 0.0001) {
     return("< 0.0001")
   } else {
-    return(round(x, digits = digits))
+    return(format(round(x, digits = digits), scientific = FALSE))
   }
 }
 
