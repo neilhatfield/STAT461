@@ -1,0 +1,164 @@
+---
+title: "Apex Enterprises"
+author: "[Your Name Here]"
+date: "March 22, 2021"
+output: pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes:
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{xcolor}
+---
+
+```{r setupFiles, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+# Add additional packages by name to the following list
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "hasseDiagram", "car", "psych", "parameters",
+              "DescTools") 
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE
+)
+
+# Set constraint
+options("contrasts" = c("contr.sum", "contr.poly"))
+
+options(knitr.kable.NA = "")
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+We're going to use this activity to practice working with a One-way Random Effects model
+
+# The Context
+
+Apex Enterprises is a company that 1) builds roadside restaurants carrying one of a several promoted trade names, 2) leases franchises to individuals to operate the restaurants, and 3) provides management services. This company employs a large number of personnel officers who interview applicants for jobs in the restaurants. 
+
+When a person applies to a job opening for a restaurant, their application is first processed and screened. If they pass, they are then randomly assigned to on of the personnel officers who meets them for an interview. After the interview ends, the personnel officer assigns a rating between 0 and 100 to indicate the applicant's potential value on the job.
+
+## What are the Statistical Research Questions?
+
+Apex Enterprises would like to know two things:
+
+1) How great is the variation is in ratings among *all* personnel officers?
+2) What is the Expected Rating Value given by *all* personnel officers?
+
+# Study Design
+
+With our SRQs in mind, let us design a study which will allow us to answer the SRQ.
+
+## Key Elements
+
+<!--HINT: go look at the data-->
+
++ Response: [fill in]
+    - Unit of Measure: [fill in]
++ Measurement Unit: [fill in]
++ Factor: [fill in, fixed or random effect?]
++ Experimental Design:
+    1) Experimental Units: [fill in]
+    2) Treatments: [fill in]
+    3) Treatment Selection Method: [fill in]
+    4) Treatment Assignment Method: [fill in]
++ What kind of design? [fill in]
+
+## Study Design Description
+
+[Transform the Key Elements list into a descriptive narrative of how you will conduct the study]
+
+# Exploratory Data Analysis
+
+```{r loadData}
+# Data
+apex <- data.frame(
+  officer = as.factor(
+    rep(
+      x = LETTERS[1:5],
+      each = 4
+    )
+  ),
+  score = c(
+    76, 65, 85, 74,
+    59, 75, 81, 67,
+    49, 63, 61, 46,
+    74, 71, 85, 89,
+    66, 84, 80, 79
+  )
+)
+
+```
+
+[Your Data Explorations Go Here]
+
+```{r exploration1}
+# You'll have several code blocks here as you engage in EDA.
+# You should create several data visualizations as well as
+# tables of summary statistics.
+```
+
+# Statistical Inference Methods
+
+```{r hasseDiagram, fig.cap="Hasse Diagram for Package Design Study", fig.height=2}
+# Create your Hasse Diagram here
+
+
+```
+
+[Explain how our study does or does not meet the base requirements of One-way ANOVA.]
+
+## Hypotheses
+
+[State your hypotheses here.]
+
+## Method
+
+To decide between the hypotheses and answer our research question, we will use [insert method choice here]. To account for multiple comparison problems, we will conceptualize the following testing family(-ies):
+
++ [describe testing family]
+
+Further, we will control the [name] Type I Error Rate, with an overall Type I risk of [value]. We will achieve this by using the [name] method.
+
+```{r inference1}
+# Apply your chosen method for the sampling distribution here
+
+```
+
+## Assumptions
+
+[List and discuss the assumptions of your selected method to get to a sampling distribution]
+
+```{r assumptions1}
+# Assess each of your assumptions and discuss your assessment
+
+```
+
+# Results
+
+```{r results1}
+# copy this block (and update the name) as needed to complete your analyses.
+
+```
+
+[Write Up your results]
+
+# Discussion
+
+[Discuss the implications of the results section in the context of the study. What will you tell the client?]
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```

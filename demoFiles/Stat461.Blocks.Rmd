@@ -1,0 +1,396 @@
+---
+title: "ANOVA Models with a Block"
+author: "Neil J. Hatfield"
+date: "3/25/2021"
+output: 
+  pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes: 
+  \usepackage{subfig}
+---
+
+```{r setupFiles, echo=FALSE, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "DescTools")
+lapply(packages, library, character.only = TRUE)
+
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+```
+
+In this tutorial, we are going to explore using a block in One-way layouts.
+
+# Context
+
+A farmer wants to test out four varieties of barley and see if there is any difference in yield (bussels per acre). He has four fields in which he can plant the barley. However, the farmer is aware of differences between each field. For example,
+
++ One field has a higher clay content in the soil than the others
++ One field has rockier soil than the others
++ Two fields are in wetter climates; two are in drier climates
++ One field has loose soil while another field has much more compacted soil.
++ Two fields are relatively flat, one has a hill in the middle, and the last has a valley.
+
+Given that the fields will be our measurement units, there is quite a bit of variation between them. This variation could easily become confounded with the impact of barley variety on crop yield. Thus, we're in a perfect situation to make use a block of field.
+
+(Details of the study design are in the slides.)
+
+```{r barleyHD, fig.cap="Hasse Diagram for Barley Crop Yield Study", fig.height=2}
+modelLabels <- c("1 Grow Barley 1", "4 Field 3", "4 Variety 3", "16 (Field Sections) 9")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+## Fit the Model
+
+Since are varietals and fields are fixed effects, we don't need any special packages (i.e., `lme4`) to fit our model. Rather we will go ahead and use the `aov` function.
+
+```{r barleyModel, echo=TRUE}
+# Load Data
+barley <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
+  header = TRUE,
+  sep = ","
+)
+
+# Glancing at the data frame, we need to go ahead and set 
+# Treatment to a factor and change the name to Varietal
+# I'm also going to simplify Planting.Harvesting.Order to Order
+
+barley$Treatment <- as.factor(barley$Treatment)
+names(barley)[3] <- "Varietal"
+names(barley)[4] <- "Order"
+
+# This will seem counter-intuitive, but we need to tell R
+# to view Field also like a factor. This is so we can get
+# estimates.
+
+barley$Field <- as.factor(barley$Field)
+
+# Fixed effects model with block
+barleyModel <- aov(
+  formula = Yield ~ Varietal + Field,
+  data = barley
+)
+
+```
+
+## Check Assumptions
+
+In terms of assumptions, we still have our core three: Gaussian Residuals, Homoscedasticity, and Independence of Observations. With the block, we also want to check an interaction plot to make sure that there isn't anything strange/unexpected going on when you plant a particular varietal in a particular field.
+
+### Gaussian Residuals
+
+Use a QQ plot like usual:
+
+```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+# QQ plot for residuals
+car::qqPlot(
+  x = residuals(barleyModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (BPA)"
+)
+
+```
+
+There is very little that is concerning in the QQ plot, even with the two points just outside of the envelope. We will take the Gaussian assumption to be essentially satisfied.
+
+### Homoscedasticity
+
+When we account for the the block in our model, we won't get the nice strips that we're used to seeing. However, we can still use the basic idea of the strip chart to assess homoscedasticity. We can still look for patterns and we'll add a smoother to our plot, transforming the strip chart to a Tukey-Anscombe Plot.
+
+```{r barleyVar, fig.cap="Tukey-Anscombe Plot for Barley Crop Yield Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+# Strip chart, notice the calls to the random effects model
+ggplot(
+  data = data.frame(
+    residuals = residuals(barleyModel),
+    fitted = fitted.values(barleyModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    size = 0.5
+  ) +
+  theme_bw() +
+  xlab("Fitted values (BPA)") +
+  ylab("Residuals (BPA)")
+
+```
+
+We don't see any patterns to the plot, which is a good sign. While there does appear to be more variation on the high end of the fitted values, the smoothed line is fairly flat. The upticks at the ends might be the result of the small sample size. In all, we will take the homoscedasticity assumption to be satisified.
+
+### Independence of Observations
+
+```{r barleyIO, fig.cap="Index Plot for Barley Crop Yield Residuals", fig.width=5, fig.height=4, echo=TRUE, fig.pos="H"}
+# Index Plot for Barley Yields
+ggplot(
+  data = barley,
+  mapping = aes(
+    x = Order,
+    y = Yield,
+    color = Field,
+    shape = Varietal
+  )
+) +
+  geom_point(size = 3) +
+  geom_path(
+    mapping = aes(group = Field)
+  ) +
+  ggplot2::theme_bw() +
+  xlab("Planting/Havesting Order") +
+  ylab("Yield (BPA)") 
+```
+
+While at first glance, there appears to be a pattern to the response, we can see that this is an artifact of the block and treatments.
+
+### Interaction of Field and Varietal
+
+The last aspect we need to check is whether there is an interaction between our block and our factor. If there is an interaction, then our model (response = factor + block) is not valid. We will make an interaction plot to assess this issue.
+
+```{r barleyInteraction, fig.cap="Interaction Plot for Barley Varietal and Field", fig.height=4, fig.width=5, echo=TRUE, fig.pos="H"}
+# Interaction Plot for Field and Treatment
+ggplot2::ggplot(
+  data = barley,
+  mapping = aes(
+    x = Varietal,
+    y = Yield,
+    color = Field,
+    group = Field
+  )
+) +
+  ggplot2::geom_point(size = 2) +
+  ggplot2::geom_line(size = 1) +
+  ggplot2::theme_bw() +
+  xlab("Variety") +
+  ylab("Yield (BPA)") +
+  labs(color = "Field") +
+  theme(
+    legend.position = "right"
+  )
+
+```
+
+In the interaction plot, we see essentially the same behavior of barley variety in each field. This indicates that there is not any type of interaction between field and barley varietal. 
+
+## Results
+
+Remember, there are essentially two parts to results: the omnibus test and the post hoc analysis.
+
+### Omnibus Results
+
+```{r barleyTable, echo=TRUE}
+# Omnibus Test/Modern ANOVA Table
+parameters::model_parameters(
+    model = barleyModel,
+    omega_squared = "partial",
+    eta_squared = "partial",
+    epsilon_squared = "partial"
+) %>%
+  knitr::kable(
+    digits = 4,
+  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+  caption = "ANOVA Table for Barley Crop Yield Study",
+  align = c('l',rep('c',8)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 10,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+Remember, we need to ignore the Field row's *p*-value (and effect sizes) as R automatically assumes that the block effect is of interest.
+
+In addition, we can look at the relative efficiency of our block:
+
+```{r barleyRE, echo=TRUE}
+# Relative Efficiency of Block
+block.RelEff(
+  aov.obj = barleyModel,
+  blockName = "Field",
+  trtName = "Varietal"
+)
+
+```
+
+Note: you can run this code inline to not have the result appear as raw output: `r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")` 
+
+### Post Hoc Analysis
+
+#### Point Estimates
+
+If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can.
+
+```{r barleyPoint, echo=TRUE}
+# Point Estimates for Insect Sprays
+pEst <- dummy.coef(barleyModel)
+pEst <- unlist(pEst)
+names(pEst) <- c(
+  "Grand Mean",
+  levels(barley$Varietal),
+  levels(barley$Field)
+  )
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 3,
+  caption = "Point Estimates from the Barley Crop Yield Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+#### Pairwise Comparisons
+
+From the slides, we noted that we were going to control the MEER at 0.1 by using Tukey's HSD. Thus, we will do so for our pairwise comparisons.
+
+```{r barleyTukey, echo=TRUE}
+# Post Hoc Analysis--Pairwise comparisons
+barleyPH <- TukeyHSD(
+  x = barleyModel,
+  which = "Varietal", #We need to specify which model term we want
+  conf.level = 0.9
+)
+
+knitr::kable(
+  barleyPH$Varietal,
+  digits = 4,
+  caption = "Post Hoc Tukey HSD Comparisons",
+  col.names = c("Difference", "Lower Bound",
+                "Upper Bound", "Adj. p-Value"),
+  align = 'cccc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+### Effect Sizes
+
+To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function:
+
++ The `aov.obj` is the primary argument and is where we pass the `aov` (or `lm`) output to.
++ The `response` argument takes a character string as the name of the response attribute.
++ The `mainEffect` argument takes a character string that names the factor you are wanting to do pairwise comparisons on.
+
+```{r effectSizes, echo=TRUE}
+anova.PostHoc(
+  aov.obj = barleyModel, # Our aov output
+  response = "Yield", # Our response variable
+  mainEffect = "Varietal" # Our factor variable
+) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Post Hoc Comparison Effect Sizes",
+    col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
+                  "Prob. Superiority"),
+    align = 'lccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+We need to make an important note here: suppose that our overall Unusualness Threshold was 0.1. From the Tukey HSD results, Variety 3 vs 2, 4 vs 2, and 4 vs 3 would NOT be statistically significant. From the effect size table, we would say that there are rather large effects. Just as effect sizes temper statistical significance, statistical significance moderates effect sizes. In these three cases, while there appears to be a large effect, there is enough variation in those groups that the effect is not statistically large enough.
+
+### Contrasts
+
+Even with a block, we can still use make use of the idea of contrasts. For example, let's say that barley varieties 1 and 2 are from one company while 3 and 4 are from a second company. We can test the contrast of companies, even in this blocking design.
+
+```{r barleyBlock, echo=TRUE}
+# Define the contrast
+company <- c(1/2, 1/2, -1/2, -1/2)
+
+# Bind the contrast to our factor
+contrasts(barley$Varietal) <- company
+
+# Refit our model so that our contrast gets tested
+barleyContrast <- aov(
+  formula = Yield ~ Varietal + Field,
+  data = barley
+)
+
+# Get the updated ANOVA Table
+## Remember, you could also use the DescTools package for Scheffé here
+conOut <- summary.aov(
+  object = barleyContrast,
+  split = list( 
+    Varietal = list(
+      "Company A vs. Company B" = 1
+    )
+  )
+)
+
+# Make a nice table
+knitr::kable(
+  x = conOut[[1]], 
+  digits = 4,
+  col.names = c(
+    "DF", "SS", "MS", "F", "p-value"), 
+  caption = "ANOVA Table for Barley Crop Yield Contrasts",
+  booktabs = TRUE,
+  align = rep("c", 5)
+) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```

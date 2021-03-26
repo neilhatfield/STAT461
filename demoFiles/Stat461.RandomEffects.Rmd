@@ -1,0 +1,337 @@
+---
+title: "Random Effects Models"
+author: "Neil J. Hatfield"
+date: "3/19/2021"
+output: 
+  pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes: 
+  \usepackage{subfig}
+---
+
+```{r setupFiles, echo=FALSE, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "DescTools",
+              "lme4")
+lapply(packages, library, character.only = TRUE)
+
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+```
+
+In this tutorial, we are going to explore using the Random Effects Model in several ANOVA situations.
+
+# New Key Package
+
+To fit Random Effects (and Mixed Effect) Models, we will need to use the `lme4` package. If you used the `checkSetup` function, then you should have this package installed. If you didn't, you'll want to install this package (`install.packages("lme4")`)
+
+# Looms and Fabric Strength
+
+Our example comes from Test 1: 
+
+A textile company weaves fabric on a large number of looms which they then supply to other companies. As such, they would like the looms to be as homogeneous as possible so that the fabric has the same strength. One of the process engineers suspects that in addition to naturally occurring variation in the fabric strength within a bolt, there is variation in the strength due to what loom gets used. You will be allowed to use four of the company's looms and create 1 bolt of the same type of fabric (1 bolt = 100 yards). You will test four, 3-inch squares from each bolt for the fabric strength.
+
+This is a CRD (One-way ANOVA) situation with an added wrinkle that we are going to need to develop a random sampling method to pick which four looms we will use in the study. Thus, we have a random effect. Our Hasse diagram (Figure \ref{fig:loomHD}) will need to reflect this.
+
+```{r loomHD, fig.cap="Hasse Diagram fro Loom/Fabric Strength Study", fig.height=2}
+modelLabels <- c("1 Make fabric 1", "4 (loom) 3", "16 (Squares) 12")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
+  nrow = 3,
+  ncol = 3,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+## Fit the Model
+
+We are going to fit both a Fixed and Random Effects model. We do so that you can see the differences/similarities between them and so that we can get useful output (i.e., the ANOVA table.)
+
+```{r loomModels, echo=TRUE}
+# Load Data
+fabric <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/fabric.csv",
+  header = TRUE,
+  sep = ","
+)
+
+# Set Loom to be a Factor not integers
+fabric$loom <- dplyr::recode_factor(
+  .x = fabric$loom,
+  `1` = "Loom 1",
+  `2` = "Loom 2",
+  `3` = "Loom 3",
+  `4` = "Loom 4"
+)
+
+# Fixed effects model
+loomFixed <- aov(
+  formula = strength ~ loom,
+  data = fabric
+)
+
+# Random effects model
+loomRandom <- lme4::lmer(
+  formula = strength ~ (1|loom),
+  data = fabric
+)
+
+```
+
+## Check Assumptions
+
+To check our assumptions we will need to use the random effects object, `loomRandom`. However, we will need to make use of the `residuals` function rather than `$residuals`.
+
+### Gaussian Residuals
+
+Use a QQ plot like usual:
+
+```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+# QQ plot for residuals
+car::qqPlot(
+  x = residuals(loomRandom), # Notice we're using the random effects model
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals"
+)
+
+```
+
+We still work with the QQ plot of Residuals exactly like we would for a fixed effects model.
+
+### Gaussian Treatment Effects
+
+We will use another QQ plot for the treatment effects. To get the appropriate values, we will need to use `lme4::ranef` on our random effects model to call up the effects and then use the `whichel` to specify we want the loom factor. (You will need to wrap `ranef` in `unlist` to make sure that `qqPlot` can act on the values.)
+
+```{r treatmentQQ, fig.cap="QQ Plot for Residuals", fig.width=4, fig.height=3, fig.pos="H", echo=TRUE}
+# QQ plot for the Treatment effects
+car::qqPlot(
+  x = unlist( # This code will allow us to get the appropriate treatment effects
+    lme4::ranef(
+      object = loomRandom,
+      whichel = c("loom")
+    )
+  ),
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Treatment Effects"
+)
+
+```
+
+You interpret this plot just like a QQ plot for residuals. Unless there is an extreme violation, you can not small/moderate violations, like the one here, and note that "we'll proceed with extreme caution".
+
+### Homoscedasticity
+
+```{r loomVar, fig.cap="Strip Chart for Loom/Fabric Strength Study", fig.width=4, fig.height=3, echo=TRUE}
+# Strip chart, notice the calls to the random effects model
+ggplot(
+  data = data.frame(
+    residuals = residuals(loomRandom),
+    fitted = fitted.values(loomRandom)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 1) +
+  theme_bw() +
+  xlab("Fitted values") +
+  ylab("Residuals")
+
+```
+
+Once again, we use the strip chart exactly as we would for a fixed effects model.
+
+### Independence of Observations
+
+We don't know the measurement order so using an index plot and the Durbin-Watson statistic are not going to be meaningful. However, if we think through our study design, we will recognize that we used a valid random sampling process to select the looms. Further, since the looms don't feed into each other, they produced separate bolts of fabric. We used a second random sampling process to select squares of fabric to test. Thus, if there is any relationship between measurement units it will be dependent upon the loom used. Thus, we can reason that we satisfied the assumption of independence of observations.
+
+If we were to know measurement order, then you would build an index plot and interpret the plot just as we would do in a fixed effects model. I would still use `residuals(randomEffectModel)` to call up the residuals.
+
+## Results
+
+Remember, there are essentially two parts to results: the omnibus test and the post hoc analysis.
+
+### Omnibus Results
+
+```{r loomTable, echo=TRUE}
+# The p-value is 0.0002 but R wanted to show 2e-4 
+# You can tell R to NOT use Scientific Notation with the following:
+options(scipen = 999)
+
+# Remember, we can use the fixed effects model to get the appropriate ANOVA table:
+parameters::model_parameters(
+    model = loomFixed,
+    omega_squared = "raw",
+    eta_squared = "raw",
+    epsilon_squared = "raw"
+) %>%
+  knitr::kable(
+    digits = 4,
+  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
+  caption = "ANOVA Table for Fabric Strength Study",
+  align = c('l',rep('c',8)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 10,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+If you were to use the random effects model output, you would get the following:
+
+```{r anovaTab2, echo=TRUE}
+parameters::model_parameters(
+    model = loomRandom,
+    omega_squared = "raw",
+    eta_squared = "raw",
+    epsilon_squared = "raw"
+) %>%
+  knitr::kable(
+    digits = 4,
+  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
+  caption = "ANOVA Table for Fabric Strength Study",
+  align = c('l',rep('c',8)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 10,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+Notice how Table \ref{tab:anovaTab2} gives essentially nonsense. Stick with using the fixed effects model for reporting the ANOVA table.
+
+### Post Hoc Analysis
+
+For random effects models, we're often interested in both point estimates and confidence intervals for several different parameters. While you can do these for fixed effects models, we often do pairwise comparisons instead.
+
+#### Point Estimates
+
+One of the parameters of interest for Random Effects is the Grand Mean. We can get this estimate through the following call:
+
+```{r pointEst1, echo=TRUE}
+# Random Effects-Grand Mean Point Estimate
+lme4::fixef(loomRandom)
+
+# Fixed Effects-Grand Mean Point Estimate
+coef(loomFixed)[1]
+```
+
+Notice that the Grand Mean's point estimate is the same regardless of whether you use the Random Effects or the Fixed Effects model. This is due to the fact that we're estimating the same thing in both cases and, more importantly, *we're still thinking about the Grand Mean in the same way* (i.e., a fixed effect).
+
+For Random Effects models, the primary parameters we want to estimate are the variances for treatments (\(\sigma^2_{\alpha}\)) and residuals (\(\sigma^2\)). The best way to examine these is look at the output of the `summary` call on the random effects model:
+
+```{r pointEst2, echo=TRUE}
+# Point Estimates of Variance Components
+summary(loomRandom)
+
+```
+
+We want to focus on the "Random effects" portion of the raw output. The row labeled "loom" contains the point estimates for \(\sigma^2_{\alpha}\) and \(\sigma_{\alpha}\): 6.958 and 2.638 respectively. Be sure that you double check which you're asked to report: Variance or Standard Deviation. The row labeled "Residual" has our point estimates for \(\sigma^2\) and \(\sigma\).
+
+Keep in mind that `summary` returns raw output, which does not look professional. You can use this to look at your results, but you'll want to format them for reports. (Note: you can also get the point estimate for the Grand Mean from the "Fixed effects" listing.)
+
+
+##### Optional  
+
+If you wanted to examine point estimates of the treatment *effects*, you can also do so:
+
+```{r pointEst3, echo=TRUE}
+# Random Effects-Treatment Effects
+lme4::ranef(loomRandom)
+
+# Fixed Effects-Treatment Effects
+## Don't forget to set the constraint
+dummy.coef(loomFixed)$loom
+
+```
+
+Notice that these *aren't* in agreement. This is a result of the differences in the ways that we are thinking about our factors between the two models.
+
+#### Confidence Intervals
+
+For confidence intervals, you'll need to remember to first apply your chosen method to account for the Multiple Comparison/Simultaneous Inference problem. For this example, we had chosen to control the SCI at \(\mathcal{E}_I=0.1\) with the Bonferonni method. Our testing family consists of 4 acts: the omnibus, and confidence intervals for the Grand Mean (\(\mu_{\cdot\cdot}\)), variance of treatments (\(\sigma^2_{\alpha}\)), and variance of residuals (\(\sigma^2\)). This makes our individualized Type I error rates 0.025 (\(\mathcal{E}^{\star}_I=0.1/4\)), which we will use as our Unusualness Thresholds.
+
+We can use the following code to make a professional looking table for our intervals:
+
+```{r confIntervals, echo=TRUE}
+# Confidence intervals for our random effects parameters
+intervals <- confint(
+  object = loomRandom,
+  level = 0.975,
+  oldNames = FALSE
+)
+
+row.names(intervals) <- c(
+  "Treatment Standard Deviation",
+  "Residual Standard Deviation",
+  "Grand Mean"
+)
+
+knitr::kable(
+  intervals,
+  digits = 3,
+  caption = "Upper and Lower Confidence Bounds-90\\% SCI, Bonferroni Adj.",
+  align = c('l',rep('c',2)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+Notice that Table \ref{tab:confIntervals} provides estimates of the *Standard Deviations* not the Variances. If you need the Variances, you may just square the lower and upper bounds. 
+
+##### A Caution  
+
+If you wanted to get confidence intervals for the *Fixed Effects* model's parameters of interest (i.e., Grand Mean and Treatment Effects), you can use the following code:
+
+```{r confIntFixed, echo=TRUE}
+# Confidence intervals for Fixed Effects Model
+confint(
+  object = loomFixed,
+  level = 0.975,
+  oldNames = FALSE
+)
+
+```
+
+You'll notice that interval for the Grand Mean is (94.56, 96.32) from this output, which isn't the same as the (91.70, 99.18) from Table \ref{tab:confIntervals}. The confidence intervals from the Fixed Effects model are *too narrow* as they have not accounted for the fact that our treatments came from a randomized selection process. This is true for the Grand Mean as well as the treatment effects themselves. Keep in mind that for Random Effects models, our interest is on the *Variance of Treatment Effects* not the actual treatment effects.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```

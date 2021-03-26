@@ -192,7 +192,7 @@ block.RelEff <- function(aov.obj, blockName, trtName){
   eff <- (((rcb + 1) * (crd + 3)) / ((rcb + 3) * (crd + 1))) * (sCRD / MSE)
   return(
     paste0(
-      "The relative efficiency of the Block, ",
+      "The relative efficiency of the block, ",
       blockName, ", is ", round(eff, 3), "."
     )
   )
