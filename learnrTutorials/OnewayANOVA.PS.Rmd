@@ -1,0 +1,109 @@
+---
+title: "Parametric Shortcut for One-way ANOVA"
+author: "Neil J. Hatfield"
+date: "2/24/2021"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Learn how to conduct the parametric shortcut known as the
+  One-way ANOVA *F* Test. This will include assessing whether
+  the situation is amenable to ANOVA as well as assessing the 
+  assumptions for the parametric shortcut.
+---
+```{r setup0, include=FALSE}
+library(learnr)
+
+learnr::tutorial_options(exercise.timelimit = 60)
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  error = TRUE,
+  fig.align = "center"
+)
+
+packages <- c("tidyverse", "hasseDiagram", "knitr", 
+              "kableExtra", "car", "psych",
+              "parameters")
+lapply(packages, library, character.only = TRUE)
+
+# Tell Knitr to use empty space instead of NA in printed tables
+options(knitr.kable.NA = "")
+
+
+```
+
+In this tutorial, we are going to explore using R to fit a One-way ANOVA model to two data sets using the parametric shortcut known as the One-way ANOVA *F* Test.
+
+# Prepare R
+
+The first thing that we need to do is to make sure that R is ready for us to do our work. There are two aspects to this: loading packages and putting in our constraint.
+
+## Loading Packages
+
+For this tutorial we are going to need the following packages:
+
++ For Analysis: `tidyverse`, `hasseDiagram`, `car`, `psych`, and `parameters`
++ For Professionalism: `knitr` and `kableExtra`
+
+Use the code block below to load these packages into your session.
+
+```{r loadPackages, exercise=TRUE}
+
+```
+
+```{r loadPackages-solution, exercise.reveal_solution = TRUE}
+packages <- c("tidyverse", "hasseDiagram", "knitr", 
+              "kableExtra", "car", "psych",
+              "parameters")
+lapply(packages, library, character.only = TRUE)
+
+# Note you could also use individual library calls for each package
+
+```
+
+## Set Our Constraints
+
+Recall that in order to ensure that we have estimable functions, we must set a side condition or constraint on our treatments: 
+\[\sum_i^k\alpha_i=0\]
+This is not what R does by default, but we can tell R to adopt this constraint with the following code:
+
+```{r setConstraint, echo=TRUE}
+options(contrasts = c("contr.sum", "contr.poly"))
+
+```
+
+Now that we have both of these, we can turn our attention to the next step.
+
+# Load Data
+
+Our first step will be to load data into our R session. We are going to use two data sets: the honey example from class and Example 3.2 Resin Lifetimes from the Oehlert textbook. For the honey data, we will create the data frame manually; for resin lifetimes, we'll import the data.
+
+```{r getData, exercise=TRUE}
+## DEMO CODE
+
+# Honey Data
+honey <- data.frame(
+  Amount = c(150, 50, 100, 85, 90, 95, 130, 50, 80),
+  Varietal = rep(c("Clover", "Orange Blossom", "Alfalfa"), each = 3)
+)
+## Set Varietal to factor
+honey$Varietal <- as.factor(honey$Varietal)
+
+# Resin Lifetimes Data
+resin <- oreoData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/resinLifetimes.dat",
+  header = TRUE,
+  sep = ""
+)
+## Set temp to factor
+resin$temp <- as.factor(resin$temp)
+
+```
