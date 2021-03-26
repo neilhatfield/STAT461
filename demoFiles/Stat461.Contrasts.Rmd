@@ -158,7 +158,7 @@ cheeseModelC <- aov(
 ## Step 3--Save the output table
 conOut <- summary.aov(
   object = cheeseModelC,
-  split = list( # You can give meaning to your constrats here
+  split = list( # You can give meaning to your contrasts here
     strain = list(
       "A, A&B, B vs. Null" = 1,
       "A, B vs. A&B" = 2
