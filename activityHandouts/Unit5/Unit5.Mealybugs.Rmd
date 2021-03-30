@@ -1,0 +1,164 @@
+---
+title: "Mealybugs on Cycads"
+author: "[Your Name Here]"
+date: "March 29, 2021"
+output: pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes:
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{xcolor}
+---
+
+```{r setupFiles, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+# Add additional packages by name to the following list
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "hasseDiagram", "car", "psych", "parameters",
+              "DescTools") 
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE
+)
+
+# Set constraint
+options("contrasts" = c("contr.sum", "contr.poly"))
+
+options(knitr.kable.NA = "")
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+Use this activity sheet to guide you through practicing designing a Randomized Complete Block Design (RCBD).
+
+# The Context
+
+Modern zoos try to reproduce natural habitats in their exhibits as much as possible. They therefore use appropriate plants, but these plants can be infested with inappropriate insects. Zoos need to take great care with pesticides, because the variety of species in a zoo makes it more likely that sensitive species is present.
+
+Cycads (plants that look vaguely like palms) can be infested with mealybug and the zoo wishes to test three treatments: water (a null treatment/placebo), horticultural oil (a standard no-mammalian-toxicity pesticide), and fungal spores in water (*Beauveria bassiana*, a fungus that grows exclusively on insects). Five infested cycads are removed to a testing area. Three branches are randomly chosen on each cycad and two 3cm by 3cm patches are marked on each branch; the number of mealybugs in these patches is noted. The three branches on each cycad are randomly assigned to the three treatments. After three days, the patches are counted again, and the response is the change in the number of mealybugs (before -- after).
+
+## What are the Statistical Research Questions?
+
+[Develop at least two SRQs for this study]
+
+# Study Design
+
+With our SRQs in mind, let us design a study which will allow us to answer the SRQ.
+
+## Key Elements
+
++ Response: [fill in]
+    - Unit of Measure: [fill in]
++ Measurement Unit: [fill in]
++ Factor: [fill in, fixed or random effect?]
++ Block: [fill in]
++ Experimental Design:
+    1) Experimental Units: [fill in]
+    2) Treatments: [fill in]
+    3) Treatment Selection Method: [fill in]
+    4) Treatment Assignment Method: [fill in]
++ What kind of design? Randomized Complete Block Design
+
+## Study Design Description
+
+[Transform the Key Elements list into a descriptive narrative of how you will conduct the study]
+
+# Exploratory Data Analysis
+
+```{r loadData}
+# Data
+mealybugs <- data.frame(
+  change = c(
+    -9, 18, 3, 9, 5,
+    -6, 5, 9, 0, 13,
+    -4, 29, 4, -2, 11,
+    7, 10, -1, 6, -1,
+    4, 29, 14, 14, 7,
+    11, 36, 16, 18, 15
+  ),
+  plant = as.factor(
+    rep(1:5, times = 6)
+  ),
+  treatment = as.factor(
+    rep(
+      x = c("Water", "Spores", "Oil"),
+      each = 10
+    )
+  )
+)
+
+```
+
+[Your Data Explorations Go Here]
+
+```{r exploration1}
+# You'll have several code blocks here as you engage in EDA.
+# You should create several data visualizations as well as
+# tables of summary statistics.
+```
+
+# Statistical Inference Methods
+
+```{r hasseDiagram, fig.cap="Hasse Diagram for Mealbug Treatment Study", fig.height=2}
+# Create your Hasse Diagram here
+
+
+```
+
+[Explain how our study does or does not meet the base requirements of One-way ANOVA.]
+
+## Hypotheses
+
+[State your hypotheses here.]
+
+## Method
+
+To decide between the hypotheses and answer our research question, we will use [insert method choice here]. To account for multiple comparison problems, we will conceptualize the following testing family(-ies):
+
++ [describe testing family]
+
+Further, we will control the [name] Type I Error Rate, with an overall Type I risk of [value]. We will achieve this by using the [name] method.
+
+```{r inference1}
+# Apply your chosen method for the sampling distribution here
+
+```
+
+## Assumptions
+
+[List and discuss the assumptions of your selected method to get to a sampling distribution]
+
+```{r assumptions1}
+# Assess each of your assumptions and discuss your assessment
+
+```
+
+# Results
+
+```{r results1}
+# copy this block (and update the name) as needed to complete your analyses.
+
+```
+
+[Write Up your results]
+
+# Discussion
+
+[Discuss the implications of the results section in the context of the study. What will you tell the client?]
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```

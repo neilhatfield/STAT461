@@ -9,16 +9,30 @@ I will use this repository to store and share data files and other resources for
 There are several key elements to this repo:
 
 + Homework Template File
-+ rScripts
++ activityHandouts
 + dataFiles
 + demoFiles
-+ exampleCode
++ rScripts
++ exampleCode (archive)
++ learnrTutorials (under development)
 
 ## Homework Template File
 
 I have included a template file you may use for assignments if you are using R Markdown. The template is based upon one developed by [Alex Hayes](https://github.com/alexpghayes/rmarkdown_homework_template).
 
-## r Scripts
+## Activity Handouts
+
+This directory contains various RMD files for different activities used throughout the course.
+
+### Data Files
+
+This sub-directory contains various data files (mostly *.dat) that I have used in STAT 461 either as in-class examples, homework assignments, or projects.
+
+### Demo Files
+
+This sub-directory will be the home of various R Markdown files and future files that help students learn R and develop fluency.
+
+## R Scripts
 
 This sub-directory contains R files which define multiple helpful functions for Stat 461.
 
@@ -38,57 +52,62 @@ The ANOVATools.R file contains a set of functions that I've written to help indi
 
 #### Public Functions
 
-As of 4/4/2020, there are three public functions: anova.PostHoc, kw.PostHoc, and block.RelEff.
+As of 3/30/2021, there are seven public functions: `anova.PostHoc`, `anovaFixer`, `block.RelEff`, `hodgesLehmann`, `kw.PostHoc`, `probSup`, and `pvalRound`.
 
 ##### anova.PostHoc
 
-The anova.PostHoc function takes three arguments: aov.obj-required, response-optional, and mainEffect-optional. The aov.obj should be the output of the function aov in R. The response and mainEffect arguments take a string value to identify the response of the model as well as the main effect of interest for post hoc analysis. These two optional arguments are useful for conducting Post Hoc analysis for Oneway + Blocking ANOVA as well as exploring Main Effects for a Factorial ANOVA.
+The `anova.PostHoc` function takes three arguments: `aov.obj`-required, `response`-optional, and `mainEffect`-optional. The `aov.obj` should be the output of the function `aov` in R. The `response` and `mainEffect` arguments take a string value to identify the response of the model as well as the main effect of interest for post hoc analysis. These two optional arguments are useful for conducting Post Hoc analysis for Oneway + Blocking ANOVA as well as exploring Main Effects for a Factorial ANOVA.
 
-The anova.PostHoc returns a data frame of effect sizes that can be formatted by another function (e.g., knitr::kable) consisting of the following columns: Pair , Cohen's *d*, Hedge's *g*, and the Probability of Superiority.
+The `anova.PostHoc` returns a data frame of effect sizes that can be formatted by another function (e.g., `knitr::kable`) consisting of the following columns: Pair , Cohen's *d*, Hedge's *g*, and the Probability of Superiority.
 
-Future plans include adding on handeling of interactions for Factorial ANOVAs.
+Future plans include adding on handling of interactions for Factorial ANOVAs.
 
-##### kw.PostHoc
+##### anovaFixer
 
-The kw.PostHoc function takes two arguments, both required: x, and g. The x argument should be the response vector and g a vector of group membership (i.e., the factor). 
-
-THe kw.PostHoc function returns a data frame of effect sizes that can be formatted by another function (e.g., knitr::kable) consisting of the following columns: Pair , Hodges-Lehmann ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D), <!--\(\widehat{\Delta}\)--> and the Probability of Superiority.
-
-There is a known issue where the internal sink call will cause problems on Windows machines.
+The `anovaFixer` function will return a data frame for use in a `kable` call that adjusted denominators for mixed effect models. This is currently looking at be retired.
 
 ##### block.RelEff
 
-The block.RelEff function takes three arguments, all required: aov.obj, blockName, trtName. The aov.objt should be the output of the function aov in R using a formula that contains a block term. The blockName should be a string identifying the column name of the block, and trtName should be a string identifying the column name for the treatment.
+The `block.RelEff` function takes three arguments, all required: `aov.obj`, `blockName`, `trtName`. The `aov.obj` should be the output of the function `aov` in R using a formula that contains a block term. The `blockName` should be a string identifying the column name of the block, and `trtName` should be a string identifying the column name for the treatment.
 
-The block.RelEff will return a string giving the relative efficiency of the randomized complete block design used when compared to a complete randomized design. A relative efficiency of *x* means that we would need *x* times as many measurement units per treatment level as what we used in the RCB design to produce the same level of information.
+The `block.RelEff` will return a string giving the relative efficiency of the randomized complete block design used when compared to a complete randomized design. A relative efficiency of *x* means that we would need *x* times as many measurement units per treatment level as what we used in the RCB design to produce the same level of information.
 
-#### Prive Functions
+##### hodgesLehmann
 
-As of 4/4/2020, there are three private functions which act as helper functions: .strsplitN, .probSup, .hodgesLehmann.
+The `hodgesLehmann` function takes two vectors of values, *x* and *y*, and calculates the value of Hodges-Lehman ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D). <!--(\widehat{\Delta}\)-->
 
-##### .strsplitN
+##### kw.PostHoc
 
-The .strsplitN function splits strings generated by dunn.test::dunn.test on the "-" and returns *N*th word.
+The `kw.PostHoc` function takes two arguments, both required: `x`, and `g`. The `x` argument should be the response vector and `g` a vector of group membership (i.e., the factor). 
 
-##### .probSup
+THe `kw.PostHoc` function returns a data frame of effect sizes that can be formatted by another function (e.g., `knitr::kable`) consisting of the following columns: Pair , Hodges-Lehmann ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D), <!--\(\widehat{\Delta}\)--> and the Probability of Superiority.
 
-The .probSup function takes a Cohen's *d* value as the input and returns the probability of superiority, via
+##### probSup
+
+The `probSup` function takes a Cohen's *d* value as the input and returns the Probability of Superiority, via
 ![equation](https://latex.codecogs.com/gif.latex?PS%28d%29%3D1-C_%7B%5Cmathcal%7BN%7D%7D%5Cleft%28%5Cfrac%7B-d%7D%7B%5Csqrt%5B2%5D%7B2%7D%7D%5Cbigg%7C0%2C1%5Cright%29)
 <!--\[PS(d)=1-C_{\mathcal{N}}\left(\frac{-d}{\sqrt[2]{2}}\bigg|0,1\right)\]-->
 
-##### .hodgesLehmann
+##### pvalRound
 
-The .hodgesLehmann function takes two vectors of values, *x* and *y*, and calculates the value of Hodges-Lehman ![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cwidehat%7B%5CDelta%7D). <!--(\widehat{\Delta}\)-->
+The `pvalRound` function looks at a value (particularly *p*-values) and if the value is less than 0.0001 will return the character string "< 0.0001", otherwise will return the value rounded to four decimal places. This is to help limit instances were rounding make *p*-values look like zero.
 
-### Data Files
+#### Prive Functions
 
-This sub-directory contains various data files (mostly *.dat) that I have used in STAT 461 either as in-class examples, homework assignments, or projects.
+As of 3/30/2021, there is one private function which acts as a helper function: .strsplitN.
 
-### Demo Files
+##### .strsplitN
 
-This sub-directory will be the home of various R Markdown files and future files that help students learn R and develop fluency.
+The `.strsplitN` function splits strings generated by `dunn.test::dunn.test` on the "-" and returns *N*th word.
 
-### Example Code
+### Shadowgram (under development)
 
-This sub-directory houses individual R files that have example code for STAT 461.
+The `shadowgram` function is under development. The goal is the bring the shadowgram from JMP to R via `ggplot2`. While the current code functions, there is still more work to be done to fine tune the function.
 
+## Example Code (archive)
+
+This sub-directory is acting as an archive of individual R files that served as example code for Spring 2020.
+
+## learnrTutorials
+
+This sub-directory is where I'm working on creating some learnr based tutorials for STAT 461. They are in rather incomplete states.
