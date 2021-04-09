@@ -74,7 +74,7 @@ summary(sysRE)
 confint(sysRE, level = 0.9, oldNames = FALSE)
 
 
-# Because of the sigularity issues (Var Interaction is 0)
+# Because of the singularity issues (Var Interaction is 0)
 # we should fit a reduced model.
 reducedFE <- aov(measure ~ partNum + operator, data = mSystem)
 

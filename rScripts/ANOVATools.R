@@ -205,7 +205,8 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
     return(aov.obj)
   }
   if ((is.null(fixed) && length(random) == 1) ||
-      (length(fixed) == 1 && is.null(random))) {
+      (length(fixed) == 1 && is.null(random))
+  ) {
     print("One-way design detected; there is nothing to fix.")
     return(aov.obj)
   }
@@ -214,22 +215,35 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
       print("Two-way Fixed Effect design detected; there is nothing to fix.")
       return(aov.obj)
     } else if (length(random) == 2 ||
-               (length(random) == 1 && type == "unrestricted")) {
+               (length(random) == 1 && type == "unrestricted")
+    ) {
       print("Using the interaction term for F Ratios...")
       temp0 <- anova(aov.obj)
       temp0[1, "F value"] <- temp0[1, "Mean Sq"] / temp0[3, "Mean Sq"]
       temp0[2, "F value"] <- temp0[2, "Mean Sq"] / temp0[3, "Mean Sq"]
-      temp0[1, "Pr(>F)"] <- pf(temp0[1, "F value"], df1 = temp0[1, "Df"],
-                               df2 = temp0[3, "Df"], lower.tail = FALSE)
-      temp0[2, "Pr(>F)"] <- pf(temp0[2, "F value"], df1 = temp0[2, "Df"],
-                               df2 = temp0[3, "Df"], lower.tail = FALSE)
+      temp0[1, "Pr(>F)"] <- pf(
+        q = temp0[1, "F value"],
+        df1 = temp0[1, "Df"],
+        df2 = temp0[3, "Df"],
+        lower.tail = FALSE
+      )
+      temp0[2, "Pr(>F)"] <- pf(
+        q = temp0[2, "F value"],
+        df1 = temp0[2, "Df"],
+        df2 = temp0[3, "Df"],
+        lower.tail = FALSE
+      )
       return(temp0)
     } else {
       print("Using a restricted model...")
       temp0 <- anova(aov.obj)
       temp0[random, "F value"] <- temp0[random, "Mean Sq"] / temp0[3, "Mean Sq"]
-      temp0[random, "Pr(>F)"] <- pf(temp0[random, "F value"], df1 = temp0[random, "Df"],
-                               df2 = temp0[3, "Df"], lower.tail = FALSE)
+      temp0[random, "Pr(>F)"] <- pf(
+        q = temp0[random, "F value"],
+        df1 = temp0[random, "Df"],
+        df2 = temp0[3, "Df"],
+        lower.tail = FALSE
+      )
       return(temp0)
     }
   }
@@ -238,7 +252,7 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
       print("No random effects listed. There is nothing to fix.")
       return(aov.obj)
     } else {
-      print("This function has not been updated for more than twoway fixes.")
+      print("This function has not been updated for more than two-way fixes.")
       return(aov.obj)
     }
   }
