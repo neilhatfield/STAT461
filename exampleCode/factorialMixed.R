@@ -58,6 +58,15 @@ emmeans::emmip(pressureFE, gasTemp:operator ~ gasTemp)
 emmeans::emmip(pressureFE, gasTemp:gauge ~ gasTemp)
 
 
+test1 <- lmerTest::lmer(
+  coded ~ gasTemp + (1|operator) + (1|gauge) +
+    (1|gasTemp:operator) + (1|gasTemp:gauge) + (1|operator:gauge) +
+    (1|gasTemp:operator:gauge),
+  data = pressure
+)
+
+anova(test1)
+
 # Omnibus Table--Warning
 ## Helper Function from my ANOVATools.R File--Warning
 ## Warning: anovaFixer is not currently set up for 3-way+
