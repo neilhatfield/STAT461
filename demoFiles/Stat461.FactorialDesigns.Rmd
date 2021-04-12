@@ -389,7 +389,7 @@ We treat this type just like we have before, except that now we're interested in
 
 ### Post Hoc Analysis
 
-#### Point Estiamtes
+#### Point Estimates
 
 I want to quickly remind you that you can get point estimates for your main effects and treatment effects using the `dummy.coef` function. If you need confidence intervals for these, you can use the `confint` function (don't forget to provide an *adjusted* confidence level).
 
@@ -691,7 +691,7 @@ You'll want to use the `anovaFixer` function first before creating your ANOVA ta
 
 __WARNING!__ The `anovaFixer` function ONLY currently works for Two-way Random Effects models.
 
-```{r gaugeTable}
+```{r gaugeTable, echo=TRUE}
 anovaFixer(
   aov.obj = gaugeOmni,
   fixed = NULL, # character vector of Fixed Effects
