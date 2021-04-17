@@ -6,6 +6,9 @@ lapply(req.packages, require, character.only = TRUE)
 
 # P Value Rounding ----
 pvalRound <- function(x, digits = 4){
+  if (is.na(x)) {
+    return(NA)
+  }
   if (x < 0.0001) {
     return("< 0.0001")
   } else {
