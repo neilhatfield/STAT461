@@ -259,3 +259,49 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
     }
   }
 }
+
+# Sphericity Plot ----
+## Make a plot of pairwise comparisons of treatments for each subject
+sphericityPlot <- function(dataWide, subjectID){
+  require(tidyverse)
+  temp1 <- tibble::column_to_rownames(
+    dataWide,
+    var = subjectID
+  )
+
+  temp2 <- data.frame(row.names = row.names(temp1))
+  for (i in 1:(ncol(temp1) - 1)) {
+    for (j in (i + 1):ncol(temp1)) {
+      temp2[,paste(names(temp1)[i], names(temp1)[j], sep = " - ")] <- temp1[,i] - temp1[,j]
+    }
+  }
+  temp2 <- tibble::rownames_to_column(
+    .data = temp2,
+    var = subjectID
+  )
+
+  temp2 <- pivot_longer(
+    data = temp2,
+    cols = !subjectID,
+    names_to = "comparison",
+    values_to = "difference"
+  )
+
+  plot <- ggplot(
+    data = temp2,
+    mapping = aes(
+      x = comparison,
+      y = difference,
+      color = comparison
+    )
+  ) +
+    geom_jitter(size = 2, width = 0.2, height = 0.2) +
+    theme_bw() +
+    xlab("Comparison") +
+    ylab("Difference") +
+    guides(
+      color = FALSE
+    )
+
+  return(plot)
+}

@@ -52,7 +52,7 @@ The ANOVATools.R file contains a set of functions that I've written to help indi
 
 #### Public Functions
 
-As of 3/30/2021, there are seven public functions: `anova.PostHoc`, `anovaFixer`, `block.RelEff`, `hodgesLehmann`, `kw.PostHoc`, `probSup`, and `pvalRound`.
+As of 4/18/2021, there are seven public functions: `anova.PostHoc`, `anovaFixer`, `block.RelEff`, `hodgesLehmann`, `kw.PostHoc`, `probSup`, `pvalRound`, and `sphericityPlot`.
 
 ##### anova.PostHoc
 
@@ -91,6 +91,10 @@ The `probSup` function takes a Cohen's *d* value as the input and returns the Pr
 ##### pvalRound
 
 The `pvalRound` function looks at a value (particularly *p*-values) and if the value is less than 0.0001 will return the character string "< 0.0001", otherwise will return the value rounded to four decimal places. This is to help limit instances were rounding make *p*-values look like zero.
+
+##### sphericityPlot (under development)
+
+The `sphericityPlot` provides a scatter plot of the pairwise differences of the treatments for each subject in a Within Subjects Repeated Measures design.
 
 #### Prive Functions
 
