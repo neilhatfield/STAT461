@@ -282,7 +282,7 @@ sphericityPlot <- function(dataWide, subjectID){
 
   temp2 <- pivot_longer(
     data = temp2,
-    cols = !subjectID,
+    cols = !all_of(subjectID),
     names_to = "comparison",
     values_to = "difference"
   )
@@ -301,7 +301,8 @@ sphericityPlot <- function(dataWide, subjectID){
     ylab("Difference") +
     guides(
       color = FALSE
-    )
+    ) +
+    scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
 
   return(plot)
 }
