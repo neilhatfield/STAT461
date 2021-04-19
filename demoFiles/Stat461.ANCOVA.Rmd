@@ -390,7 +390,7 @@ Notice that our intercept is negative! For the ANCOVA models, the `(Intercept)` 
 To get the the covariate-adjusted point estimates (i.e., the marginal cell means), we will turn to the `emmeans` package.
 
 ```{r emMeans, echo=TRUE}
-## Use emmeans to get the appropiate margins AND do Pairwise
+## Use emmeans to get the appropriate margins AND do Pairwise
 emmOut <- emmeans::emmeans(
   object = keyboardModel,
   specs = pairwise ~ kbd.type,
@@ -420,7 +420,7 @@ as.data.frame(emmOut$emmeans) %>%
 
 Just as with Factorial models, we will use the `emmeans` package here as well. Since I've already stored the output, I don't need to call `emmeans` a second time. I had forgotten to mention that the using `$contrasts` on the output of `emmeans` will give you when I made the Factorial Designs document.
 
-```{r batteryPH1, echo=TRUE, eval=FALSE}
+```{r batteryPH1, echo=TRUE }
 # Pairwise Comparisons
 as.data.frame(emmOut$contrasts) %>%
   knitr::kable(
