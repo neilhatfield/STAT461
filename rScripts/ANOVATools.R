@@ -262,8 +262,14 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
 
 # Sphericity Plot ----
 ## Make a plot of pairwise comparisons of treatments for each subject
-sphericityPlot <- function(dataWide, subjectID){
+sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
   require(tidyverse)
+
+  if (!is.null(colsIgnore)) {
+    dataWide <- dataWide %>%
+      select(!all_of(colsIgnore))
+  }
+
   temp1 <- tibble::column_to_rownames(
     dataWide,
     var = subjectID
