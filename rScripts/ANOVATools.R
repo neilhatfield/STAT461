@@ -296,12 +296,12 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
   }
   temp2 <- tibble::rownames_to_column(
     .data = temp2,
-    var = subjectID
+    var = paste(subjectID, collapse = ":")
   )
 
   temp2 <- pivot_longer(
     data = temp2,
-    cols = !all_of(subjectID),
+    cols = !all_of(paste(subjectID, collapse = ":")),
     names_to = "comparison",
     values_to = "difference"
   )
