@@ -270,10 +270,23 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
       select(!all_of(colsIgnore))
   }
 
-  temp1 <- tibble::column_to_rownames(
-    dataWide,
-    var = subjectID
-  )
+  if (length(subjectID) == 1) {
+    temp1 <- tibble::column_to_rownames(
+      dataWide,
+      var = subjectID
+    )
+  } else if (length(subjectID) > 1) {
+    dataWide <- dataWide %>%
+      unite(
+        col = "id",
+        all_of(subjectID),
+        remove = TRUE
+      )
+    temp1 <- tibble::column_to_rownames(
+      dataWide,
+      var = id
+    )
+  }
 
   temp2 <- data.frame(row.names = row.names(temp1))
   for (i in 1:(ncol(temp1) - 1)) {
