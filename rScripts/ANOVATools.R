@@ -284,7 +284,7 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
       )
     temp1 <- tibble::column_to_rownames(
       dataWide,
-      var = id
+      var = "id"
     )
   }
 
