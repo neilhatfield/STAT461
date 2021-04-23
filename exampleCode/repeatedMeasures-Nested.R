@@ -71,7 +71,7 @@ outRM <- summary(tabPigs, multivariate=FALSE)
 
 ## Omnibus Method 3--Using the Afex package
 ## This blends the two methods together
-model3 <- afex::aov_car(weight ~ trt*Time + Error(Subject/Time),
+model3 <- afex::aov_car(weight ~ trt*Time + Error(Subject %in% trt),
                         data = pigsL)
 
 ## Raw Output
