@@ -610,7 +610,7 @@ shoesAssumptions <- nlme::lme(
 
 ## Assessing the Assumptions
 
-The methods here are the same as for the Within Subjects Repeated Measures design. I'm going to use the output of the `afex` package.
+The methods here are the same as for the Within Subjects Repeated Measures design.
 
 ### Gaussian Residuals
 
