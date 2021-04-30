@@ -97,7 +97,7 @@ The choice of which version is entirely up to you.
 
 ## Data
 
-For this example, you'll want to import the data as shown below. You'll notice that I'm using the `recode_factor` function from the `dplyr` package to translate the integers for both temperature and plate into more meaningful values (plus this tells R to treat those as factors).
+For this example, you'll want to import the data as shown below.
 
 ```{r loadKeyboarding, echo=TRUE}
 # Load Keyboarding data

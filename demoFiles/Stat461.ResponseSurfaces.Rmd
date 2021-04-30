@@ -1,0 +1,330 @@
+---
+title: "Response Surface Methods"
+author: "Neil J. Hatfield"
+date: "4/30/2021"
+output: 
+  pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes: 
+  \usepackage{subfig}
+---
+
+```{r setupFiles, echo=FALSE, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "rsm")
+lapply(packages, library, character.only = TRUE)
+
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+In this tutorial, we are going to explore Response Surface Methods in R.
+
+# New Package
+
+We are going to make use of one new package, `rsm`.
+
+# Context
+
+We would like to explore improving boxed cake mix. In particular, we're interested in making our cake more palatable (appeal) . While there are many quantities we could manipulate (e.g., the amount of flour, sugar, number of eggs, amount of oil, water), we are going to focus on just two attributes: the baking temperature and baking time. 
+
+We're using these two options as they are both fairly easy for us to manipulate and a good starting point for improving. We are also going to keep things simple for the example and only work with two design variables (factors).
+
+From the package, we're told to bake our cake at 350ºF for 35 minutes. We will use this as our basis for our __*sequence*__ of experiments.
+
+# Experiment 1
+
+We are going to start with a relatively simple response surface design called *Central Composite*. We will have just three levels for each our factors: a "low", a "center", and a "high" value. For temperature, we will use 340ºF, 350ºF, and 360ºF. For time, we'll use 33, 35, and 37 minutes.
+
+We will *not* do a full crossing. Rather, we're going to only cross the low and high levels. We will keep the the central values together. Thus, our treatments (Temp-Time) will be Low-Low, Low-High, High-Low, High-High, and Center-Center. The first four treatments are *factorial points* as they are a whole step above or below center; the last treatment is called a *center point*.
+
+We will also use imbalance to our advantage: we are going to bake three cakes at the Center and just one cake on the outer edges.
+
+For each cake, we'll invite a group of tasters over to to eat cake, and provide scores. We will record the *SAM* of the scores for each cake. This means we will have just one score for each cake.
+
+## Data From Experiment 1
+
+I'm going to create a data frame that contains the *uncoded* data values generated via our first experiment. Keep in mind that the appeal contains values of the *SAM* for each cake across all testers. Thus, our data frame's rows are the observations of a single cake.
+
+```{r bakingData1, echo=TRUE}
+baking1 <- data.frame(
+  time = c(33,37,33,37,35,35,35),
+  temp = c(340,340,360,360,350,350,350),
+  appeal = c(3.89, 6.36, 7.65, 6.79, 8.36, 7.63, 8.12)
+)
+
+```
+
+## Analyzing the Experiment 1 Data
+
+### Step 1--Code the Data
+
+Remember that for Response Surface methods, we don't use the values of our data directly. Rather we use *coded* versions of data. 
+
+When your data come to you in *uncoded* form, our first step is to created coded versions. The `rsm` package has a function that can automatically do this for us: `coded.data`.
+
+Unfortunately, this function will rename our factors to generic `x#`. Thus, we will want to fix those. Luckily, the order of columns is still the same as our original data frame.
+
+```{r bake1Code, echo=TRUE}
+# Coding the data
+coded1 <- rsm::coded.data(
+  data = baking1
+)
+
+names(coded1) <- c("codedTime", "codedTemp", "appeal")
+
+```
+
+### Step 2--Check What Models Work
+
+We can look to see if a first order and/or second order model will work by attempting to create visualization for the scaled variance function. The details of the scaled variance function are beyond what we are going to concern ourselves with for this course.
+
+For right now, we are mainly concerned with whether we can actually create the plot. If we can, then our model has sufficient information to be able to estimate key pieces of information. If we can't get the plot to generate, then that would indicate that we do not have sufficient information to properly fit the model.
+
+```{r bakeModelCheck1a, fig.cap="Does First Order Model Work?", fig.pos="H", echo=TRUE, fig.width=4, fig.height=3}
+# Checking First Order
+rsm::varfcn(
+  design = coded1,
+  formula = ~ rsm::FO(codedTime,codedTemp), # FO for First Order
+  contour = TRUE,
+  main = "Variance Function for 1st Experiment"
+)
+
+```
+
+```{r bakeModelCheck2a, fig.cap="Does Second Order Model Work?", error=TRUE, fig.pos="H", echo=TRUE}
+# Check Second Order
+rsm::varfcn(
+  design = coded1,
+  formula = ~ rsm::SO(codedTime,codedTemp), # SO for Second Order
+  contour = TRUE,
+  main = "Variance Function for 1st Experiment"
+)
+
+```
+
+Notice that we were able to get a plot for a First Order model (what we were aiming for), but we got an error message for the Second Order model. This indicates that we can continue to fitting a First Order model.
+
+(Further interpretation of the plot is beyond this course.)
+
+### Step 3--Fit the First Order Model
+
+We will now fit the first order model to our experiment data. For this, we'll use the `rsm` function from the `rsm` package. To help us specify that we want a First Order model, we will also use the `FO` function. This will ensure that you get all appropriate terms (and that R thinks about the data in the right way) that we need.
+
+```{r bakingFOModel, echo=TRUE}
+## Fitting the First Order Model
+bakingFOModel <- rsm::rsm(
+  formula = appeal ~ rsm::FO(codedTime, codedTemp),
+  data = coded1
+)
+
+```
+
+### Step 4--Look at Plots
+
+Let's look at a perspective plot for our model:
+
+```{r bakingPP1, echo=TRUE, fig.cap="Perspective Plot for First Baking Experiment", fig.pos="H"}
+## Perspective Plot
+persp(
+  x = bakingFOModel,
+  form = ~ codedTime + codedTemp
+)
+
+```
+
+From the perspective plot, we can see our linear response surface (a plane) and we can see that there does appear to be an increase in the cake's appeal as we increase baking time and temperature.
+
+Let's look at a contour plot for our model:
+
+```{r bakingCP1, echo=TRUE, fig.cap="Contour Plot for First Baking Experiment", fig.pos="H"}
+## Perspective Plot
+contour(
+  x = bakingFOModel,
+  form = ~ codedTime + codedTemp
+)
+
+```
+
+From the contour plot, we can see that as we increase the baking time and temperature, we end up with higher appeal values.
+
+### Step 5--Look at the Summary
+
+For this, we will just concern ourselves with raw output.
+
+```{r bakingFOSummary, echo=TRUE}
+summary(bakingFOModel)
+
+```
+
+The *t* values and *p*-values for `codedTime` and `codedTemp` tell us that neither baking time nor baking temperature appear to impact the appeal of the cake.
+
+If we look at the `Lack of fit` line ofthe ANOVA table, we can see that there is evidence that our First Order model is missing something.
+
+Because we have a lack of fit, the last section for the direction of steepest ascent is not reliable.
+
+IF we did not have a lack of fit, these values represent the rate of change of baking time (or baking temperature) with respect to appeal. This the inverse of what we usually have (rate of change of *appeal* with respect to *baking time*). You can use the multiplicative inverse to correct this
+
++ \(0.717361^{-1}=`r 0.717361^(-1)`\) appeal units per minute
++ \(9.334604^{-1}=`r 9.3346041^(-1)`\) appeal units per degree
+
+# Experiment 2
+
+We had a lack of fit of our first order model. Thus, we are going to a second experiment. To see about getting some improvements, we will add some *axial points*. Axial points will have center values for one factor and then a "key value" for the other factor. See Table 19.1 in Oehlert for coded key values.
+
+In our second experiment we will bake 7 more cakes: one at each of 4 axial points and three more at the center point.
+
+Once we bake the cakes, we will do the same procedure as in Experiment 1 (invite people, eat cake, score, calculate values of *SAM*). However, we will do something unique, we will __combine__ the new data with the old data. 
+
+We will add a block to both the data frame and the model do denote which experiment each datum comes from.
+
+## Data From Experiment 2
+
+For this portion, we're going to import the data in an already coded form:
+
+```{r bakingData2, echo=TRUE}
+baking2 <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/bake2.dat",
+  header = TRUE
+)
+# Tell R to not treat our experiment numbers, the block, as numbers
+baking2$block <- as.factor(baking2$block)
+
+```
+
+Notice that we used the `as.factor` function to tell R that the block column should not be treated as integers.
+
+## Analyze the Experiment 2
+
+When you have already coded data, the process is a bit different. Essentially, we need to provide how to *uncode* the data:
+
+### Step 1--Code/Uncode the Data
+
+When you load coded data, we don't have to tell R to code the data. However, you'll notice that R did tell us values in both coded and uncoded form. Thus, we do need to R how to uncode the data.
+
+We need to give R a formula which will "uncode" the coded data. In essence, the formula has the form \[coded = \frac{uncoded-\text{Center Value}}{\text{step size}}\] where the step size is how far from the center value we are calling a single step.
+
+```{r bake2Code, echo=TRUE}
+coded2 <- rsm::as.coded.data(
+  data = baking2,
+  codedTime ~ (time - 35) / 2,
+  codedTemp ~ (temp - 350) / 10,
+  block = "block"
+)
+
+```
+
+### Step 2--Will a Second Order Modle Work?
+
+We will again see if we can generate a scaled variance plot. If so, we have the information to fit a Second Order model.
+
+```{r bakeModelCheck3, fig.cap="Does Second Order Model Work?", error=TRUE, fig.pos="H", echo=TRUE, fig.width=4, fig.height=3}
+# Check Second Order
+rsm::varfcn(
+  design = coded2,
+  formula = ~ rsm::SO(codedTime, codedTemp), # SO for Second Order
+  contour = TRUE,
+  main = "Variance Function for 2nd Experiment"
+)
+
+```
+
+Success, we do.
+
+### Step 3--Fit the Second Order Model
+
+We will now fit the second order model to our second experiment's data, __combined with__ the data from the first experiment.
+
+Notice that we will need to add the experiment number (our block) to the formula statement.
+
+```{r bakingSOModel, echo=TRUE}
+## Fitting the Second Order Model
+bakingSOModel <- rsm::rsm(
+  formula = appeal ~ block + rsm::SO(codedTime, codedTemp),
+  data = coded2
+)
+
+```
+
+### Step 4--Look at Plots
+
+Let's look at a perspective plot for our model:
+
+```{r bakingPP2, echo=TRUE, fig.cap="Perspective Plot for Second Baking Experiment", fig.pos="H"}
+## Perspective Plot
+persp(
+  x = bakingSOModel,
+  form = ~ codedTime + codedTemp
+)
+
+```
+
+From the perspective plot, we can see our quadratic surface appears to have maximum point.
+
+Let's look at a contour plot for our model:
+
+```{r bakingCP2, echo=TRUE, fig.cap="Contour Plot for Second Baking Experiment", fig.pos="H", fig.height=4}
+## Perspective Plot
+contour(
+  x = bakingSOModel,
+  form = ~ codedTime + codedTemp
+)
+
+```
+
+In the contour plot, we have a concentric ellipses highlighting increasing levels of appeal. We can use these along with the axes to see where the highest appeals occur.
+
+### Step 5--Look at the Summary
+
+For this, we will just concern ourselves with raw output.
+
+```{r bakingSOSummary, echo=TRUE}
+summary(bakingSOModel)
+
+```
+
+#### Table of *t* Statistics
+
+The first portion of the output has our table for seeing which terms have a statistically significant impact on appeal. All first and second order terms are significant, so we will not remove any terms. Additionally, the estimates listed here are our coefficients for each term (i.e., the \(\beta\) values).
+
+You'll notice that I skipped saying anything about the block. Just like RCBDs, we aren't interested in testing whether the block is statistically significant. Rather, this is an aspect that we jsut want to have accounted for.
+
+Notice that the Adjusted R-squared value (i.e., \(\epsilon^2\)) is approximately 91%! Our second order model explains essentially 91% of the variation in the *SAM* of appeal.
+
+#### ANOVA Table
+
+The next table (the ANOVA table) has our lack of fit test, which shows us that the second order model appears to be doing well. That is, the second order model does a decent job of explaining the response surface given the times and temperatures we used.
+
+#### Stationary Points and Eigenanalysis
+
+The last section of the summary points out our stationary points (either a maximum, a minimum, or saddle point). The coordinates are 35.83 minutes and 352.59ºF. These are not far off from our Center Point (our original "best guess").
+
+To decide what kind of stationary point we have, we need to look at the eigenvalues. (This would be equivalent to checking the second derivative when using calculus for an optimization problem.)
+
++ All negative eigenvalues--Maximum
++ All positive eigenvalues--Minimum
++ Mixture--Saddle Point--a maximum in one direction, a minimum in the other direction
+
+Since both of the eigenvalues (-0.4076 and -1.4152) are negative, our stationary point reflects a maximumization of the *SAM* of cake appeal.
+
+A quick word of caution: the stationary points are *estimates* and the level of precision is unclear (we don't have any measure of standard error). You can use these values but don't treat them as perfect measures.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```
