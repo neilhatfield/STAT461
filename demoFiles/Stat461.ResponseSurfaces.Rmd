@@ -150,7 +150,7 @@ From the perspective plot, we can see our linear response surface (a plane) and 
 Let's look at a contour plot for our model:
 
 ```{r bakingCP1, echo=TRUE, fig.cap="Contour Plot for First Baking Experiment", fig.pos="H"}
-## Perspective Plot
+## Contour Plot
 contour(
   x = bakingFOModel,
   form = ~ codedTime + codedTemp
@@ -226,7 +226,7 @@ coded2 <- rsm::as.coded.data(
 
 ```
 
-### Step 2--Will a Second Order Modle Work?
+### Step 2--Will a Second Order Model Work?
 
 We will again see if we can generate a scaled variance plot. If so, we have the information to fit a Second Order model.
 
@@ -276,7 +276,7 @@ From the perspective plot, we can see our quadratic surface appears to have maxi
 Let's look at a contour plot for our model:
 
 ```{r bakingCP2, echo=TRUE, fig.cap="Contour Plot for Second Baking Experiment", fig.pos="H", fig.height=4}
-## Perspective Plot
+## Contour Plot
 contour(
   x = bakingSOModel,
   form = ~ codedTime + codedTemp
