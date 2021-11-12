@@ -42,3 +42,4 @@ vignettes/*.pdf
 # Ignore these folders
 /CourseProject/
 /Assignments/
+.DS_Store
