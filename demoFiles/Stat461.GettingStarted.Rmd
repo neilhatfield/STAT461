@@ -2,8 +2,8 @@
 title: "Beginning with R/RStudio 1"
 author: "Neil J. Hatfield"
 date: "1/21/2021"
-output:
-  html_document: default
+output:  
+  pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: \usepackage{subfig}

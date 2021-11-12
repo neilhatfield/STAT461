@@ -140,7 +140,7 @@ Let's look at a perspective plot for our model:
 ## Perspective Plot
 persp(
   x = bakingFOModel,
-  form = ~ codedTime + codedTemp
+  foro = ~ codedTime + codedTemp
 )
 
 ```

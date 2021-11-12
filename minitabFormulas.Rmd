@@ -1,0 +1,124 @@
+---
+title: "Formula Sheet for Minitab"
+author: "Neil J. Hatfield"
+date: "3/24/2021"
+output: 
+  pdf_document
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+header-includes: 
+  \usepackage{subfig}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use this guide as a resource for getting additional values that are not possible in Minitab.
+
+I will draw upon the output of the omnibus test and Tukey's Post Hoc as much as possible here.
+
+# Omnibus Effect Sizes
+
+There are three key measures here "eta-sq." ($\eta^2$), "epsilon-sq." ($\epsilon^2$), and "omega-sq." ($\omega^2$).
+
+## "Raw" Values (Good for One-way)
+
+For Eta-sq., use the "R-sq" value reported in the Model Summary of the output.
+
+For Epsilon-sq., use the "R-sq(adj)" value reported in the Model Summary.
+
+Ignore both "S" and "R-sq(pred)".
+
+For Omega-sq., use the following: $$\omega^2=\frac{SSQ_{\text{factor}}-\left(df_{\text{factor}}\cdot MS_{\text{Error}}\right)}{SSQ_{\text{Total}} + MS_{\text{Error}}}$$
+
+You should be able to get all of these values from the ANOVA table. Make sure that you use as many decimals as possible to minimize the propagation of rounding errors.
+
+## "Partial" Values (for models multiple terms)
+
+In the following formulas, *F* will refer to the *F* ratio for the particular term you are testing, \(df_{\text{num}}\) is the *degrees of freedom* for the numerator for the selected *F* ratio; \(df_{\text{denom}}\) will be the *degrees of freedom* for the denominator used in the *F* ratio.
+
+\[\eta^2_p=\frac{F\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}}\]
+\[\epsilon^2_p=\frac{(F-1)\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}}\]
+\[\omega^2_p=\frac{(F-1)\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}+1}\]
+
+# Post Hoc Effect Sizes
+
+For these you will need to use either the column "Difference of Means" from the Minitab output or calculate the outputs yourself. Further, you will need to get the values of the *Sample Arithmetic Variance* for each individual group. These values are not part of the ANOVA/Post Hoc Output. 
+
+## Cohen's *d*
+
+To calculate Cohen's *d* you will need the following:
+
++ The difference in means for the two groups
++ The *Sample Arithmetic Variance* for both groups
+
+The first step is to calculate the *Pooled Standard Deviation*:
+\[SD_{\text{pd}}=\sqrt[2]{\frac{SAV(\text{group 1})+SAV(\text{group 2})}{2}}\]
+
+Once you have calculated this value, you get Cohen's *d* via
+\[d=\frac{\text{diff in means}}{SD_{\text{pd}}}\]
+
+## Hedge's *g*
+
+For Hedge's *g*, you will need:
+
++ The difference in the means for the two groups
++ The *Sample Arithmetic Variance* values for both groups
++ The sample sizes for both groups. 
+
+The first step is to calculate the *Weighted Pooled Standard Deviation*:
+\[SD_{\text{wpd}}=\sqrt[2]{\frac{(n_1-1)SAV(\text{group 1})+(n_2-1)SAV(\text{group 2})}{n_1+n_2-2}}\]
+
+Then Hedge's *g* is found 
+\[g=\frac{\text{difference in means}}{SD_{\text{wpd}}}\]
+
+## Small Sample Size 
+
+In the event that the answers aren't accepted and you are in a situation with small sample sizes (say total sample size is under 50), try multiplying both Hedge's *g* and Cohen's *d* by 
+\[\left(\frac{N-3}{N-2.25}\right)\cdot\sqrt[2]{\frac{N-2}{N}}\] (I'm unsure if R is doing this adjustment automatically.)
+
+## Hodges-Lehmann Estimator
+
+For the non-parametric setting, you replace both Cohen's *d* and Hedges *g* with the Hodges-Lehman Estimator, \(\widehat{\Delta}\). The ANOVA/Post Hoc output can't help you here. I do not know if Minitab can calculate this for you. 
+
+Let's imagine that we have two groups we want to compare: \(\mathcal{A}=(1,2,10,11)\) and \(\mathcal{B}=(4,5,6)\). To find the Hodges-Lehmann Estimate we would need to:
+
+1) Form all pairwise comparisons of members of A to members of B
+    + 1-4, 1-5, 1-6, 2-4, 2-5, 2-6, 10-4, 10-5, 10-6, 11-4, 11-5, 11-6
+2) Calculate the differences and treat as a new collection
+    + \(\mathcal{D}=(-3,-4,-5,-2,-3,-6,6,5,4,7,6,5)\)
+3) Find the value of the *Sample Median* for this new collection, this will be the estimate
+    + \(\widehat{\Delta}=`r median(c(-3,-4,-5,-2,-3,-6,6,5,4,7,6,5))`\)
+
+## Probability of Superiority
+
+You will need to first calculate Cohen's *d*. Then go to the [ANOVA Helper1 app](https://rstudio-connect.tlt.psu.edu:3939/content/334) (https://rstudio-connect.tlt.psu.edu:3939/content/334) and enter *d* into the appropriate field. NOTE: you will need to log into PSU's VPN if you are off-campus to access this app.
+
+# Post Hoc Methods Not in Minitab
+
+Minitab limits which post hoc methods you can do. I'm not going to re-invent the wheel for how to perform these methods. However, I will point you towards where you can see how to do these.
+
+## Bonferroni Style
+
+In these methods, you are not adjusting any *p*-values, rather you are going to adjust your Unusualness Thesholds.
+
+See Discussion 22 (3/10/21) and Section 5.2 of Oehlert.
+
+## Adjusting Methods
+
+These methods would be similar to Tukey's HSD, which Minitab will do for you. Section 5.4 of Oehlert is the key section you'll need to reference.
+
++ REGWR--Section 5.4.4 of Oehlert
++ SNK--Section 5.4.5 of Oehlert
+
+The major challenge is getting the appropriate value of the *Studentized Range* for both REGWR and SNK methods. To get this value, you will need to make use of the [ANOVA Helper1 app](https://rstudio-connect.tlt.psu.edu:3939/content/334) (https://rstudio-connect.tlt.psu.edu:3939/content/334). NOTE: you will need to log into PSU's VPN if you are off-campus to access this app. Once there, you will need to enter in
+
++ The Overall Type I Error Rate,
++ The number of groups you're comparing (this would be *k* in Oehlert for REGWR/SNK), and
++ The *degrees of freedom* for the Residuals/Error term from the ANOVA table.
+
+# Scheffé Methods
+
+For dealing with contrasts, you are going to want to reference Chapter 4 of Oehlert. Let me know what additional tools you need. However, I'm going to encourage you to seriously consider using R instead of doing all of this by hand.
+
