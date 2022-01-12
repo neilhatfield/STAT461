@@ -1,7 +1,7 @@
 ---
 title: "Descriptive (Incisive) Statistics"
 author: "Neil J. Hatfield"
-date: "1/24/2021"
+date: "1/11/2022"
 output:
   pdf_document: default
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -21,8 +21,6 @@ knitr::opts_chunk$set(
 ```
 
 Welcome to the latest installment of using R and RStudio. This guide will be looking at descriptive/incisive statistics. As you look through this guide, attempt to calculate the for yourself using the example code. Do this with both the demo data and a new data set (say from HW #1.1).
-
-You'll notice that unlike the previous guides, this one appears as a PDF, rather than a web page (HTML). I've done this to ensure that the examples I present will look like what you will see, especially when we get to presenting tables.
 
 # Getting Started
 
@@ -144,7 +142,7 @@ You can adjust what type of quantile you're looking at with the `probs` argument
 
 ## Group Performance
 
-Group Performance deals with how well a collection did in terms of some goal. Most often, the goals deal with amassing something. There are two statistics which measure this that are worth mentioning: *GP+* and *GP\**. The key between them deals with whether your data values may be meaningfully combined with addition or if multiplication is the way to do.
+Group Performance deals with how well a collection did in terms of some goal. Most often, the goals deal with amassing something. There are two statistics which measure this that are worth mentioning: *GP+* and *GP\**. The key between them deals with whether your data values may be meaningfully combined with addition or if multiplication is the way to go.
 
 If your values are additive in nature, then you can use the `sum` function in R; `sum(penguins$body_mass_g, na.rm = TRUE)` yields the total amassed mass of the penguins (`r sum(penguins$body_mass_g, na.rm = TRUE)` grams).
 
@@ -175,7 +173,7 @@ The group performance attribute of a data collection is only useful if 1) you ha
 + *Gauss’ Arithmetic-Geometric Mean*
 + And more
 
-Thus, you need to have care with which statistic you're using. Just saying "the value of the *sample mean* is..." is __too vague__; which mean do you mean? I will not go into depth for all of the means, but I will briefly discuss the three most commonly useful means.
+Thus, you need to have care with which statistic you're using. Just saying "the value of the *sample mean* is..." is __too vague__; which mean do you mean? I will not go into depth for all of the means, but I will briefly discuss the three most commonly used means.
 
 ### *Sample Arithmetic Mean*
 
@@ -201,7 +199,7 @@ Just as with the *SGM*, you can also use the `DescTools` package's `Hmean` funct
 
 ### When Data Are Rates
 
-Rates are special types of numbers. Knowing a bit about how the data was collected and the rates constructed will help you decide which of the above *sample means* is most appropriate. To help you get a sense of what to look for, I'll use the example of speed---the rate (of change) of distance traveled with respect to the time spent traveling.
+Rates are special types of numbers. Knowing a bit about how the data were collected and the rates constructed will help you decide which of the above *sample means* is most appropriate. To help you get a sense of what to look for, I'll use the example of speed---the rate (of change) of distance traveled with respect to the time spent traveling, which I'll represent with \(X_i\).
 
 + If everyone traveled for the same amount of time BUT could go any distance in that time, then use the *SAM*.
     - \(x_i = \frac{\text{any distance}}{\text{same amount of time}}\) use *SAM*
@@ -285,7 +283,7 @@ summaryOreo
 
 The `describe` function will yield values of the following statistics when you used the above code: *SAM*, *SASD*, *Sample Median*, a *10% Trimmed SAM* (10% from both ends of ordered data), *MAD*, *Sample Min*, *Sample Max*, *Sample Range*, *Sample Skewness*, *Sample Excess Kurtosis*, *Standard Error* for the *SAM*, *IQR*, *First Quartile*, and *Third Quartile*. Additionally, we have the number of observations. The `vars` column is just the index number and may be safely ignored.
 
-Notice that assigned the output of `describe` to the object `summaryOreo`. This is so I can manipulate the data frame as well as call values as I need. For example, if I were to use `summaryOreo["Filling Mass", "mean"]` in an inline code chunk, I would be able to display the value of the *SAM*: `r summaryOreo["Filling Mass", "mean"]` grams/cookie. A little further on in this guide, I'll show you how to format a table to display your results.
+Notice that I assigned the output of `describe` to the object `summaryOreo`. This is so I can manipulate the data frame as well as call values as I need. For example, if I were to use `summaryOreo["Filling Mass", "mean"]` in an inline code chunk, I would be able to display the value of the *SAM*: `r summaryOreo["Filling Mass", "mean"]` grams/cookie. A little further on in this guide, I'll show you how to format a table to display your results.
 
 You can customize what statistics get calculated through the various arguments. If you don't want *Sample Skewness* or *Sample Excess Kurtosis*, use `skew = FALSE`. Don't want the value of the *Sample Range*; use `range = FALSE`. Similarly for the *IQR*. If you want different quantiles change the argument to a vector of portions you want. For example `quant = seq(0, 1, 1/8)` will yield all nine octiles. If you don't want any quantiles then use `quant = NULL`
 
@@ -353,6 +351,7 @@ While the table does look better than the raw display's above, there is still mu
 + Change the names of the columns
 + Remove extra columns
 + Adjust the styling of the table to improve readbility
++ Ensure that the table doesn't run off the page
 
 ## Improved Tables
 
@@ -365,11 +364,14 @@ summaryOreo %>%
     caption = "Summary Statistics for Oreo Filling Masses",
     digits = 3,
     format.args = list(big.mark = ",")
-  ) 
+  ) %>%
+  kableExtra::kable_styling(
+    latex_options = c("HOLD_position", "scale_down")
+  )
 
 ```
 
-While Table \ref{tab:kableEx2} is an improvement, we can do bettr. For column alignment and column names, we will need to know how many columns there are AND the order the columns are currently being displayed. We will use the `align` argument which is looking for a series of `'l'` (left), `'c'` (center), and/or `'r'` (right)---one for each column. For the column names, we'll set `col.names` equal to vector that contains the improved names.
+While Table \ref{tab:kableEx2} is an improvement, we can do better. For column alignment and column names, we will need to know how many columns there are AND the order the columns are currently being displayed. We will use the `align` argument which is looking for a series of `'l'` (left), `'c'` (center), and/or `'r'` (right)---one for each column. For the column names, we'll set `col.names` equal to vector that contains the improved names.
 
 ```{r kableEx3, echo=TRUE, eval=TRUE}
 # Table 2 Code
@@ -381,7 +383,10 @@ summaryOreo %>%
     align = rep('c', ncol(summaryOreo)),
     col.names = c("Vars", "n", "SAM", "SASD", "Median", "Trimmed SAM", "MAD", "Min", "Max",
                   "Range", "Sample Skew", "Sample Ex. Kurtosis", "SE", "IQR", "Q1", "Q3")
-  ) 
+  ) %>%
+  kableExtra::kable_styling(
+    latex_options = c("HOLD_position", "scale_down")
+  )
 
 ```
 
@@ -402,7 +407,10 @@ summaryOreo %>%
     align = rep('c', 11),
     col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
                   "Sample Ex. Kurtosis")
-  ) 
+  ) %>%
+  kableExtra::kable_styling(
+    latex_options = c("HOLD_position", "scale_down")
+  )
 
 ```
 
@@ -437,7 +445,7 @@ summaryOreo %>%
 
 Notice that we've added two arguments (`format` and `booktabs`) to the `kable` call. These tell R to be sure to make the table ready for LaTeX production and to get rid of the vertical lines between the columns (`booktabs = TRUE`).
 
-We also called `kableExtra::kable_styling` to give ourselves two extra arguments. We can use `font_size` to stipulate what size of font to use in the table. I would not go much smaller than 8 or 9 point font---and only if your table is extremely big. I do not recommend that you use a font size larger than what your narrative is (typically 12pt). The other argument, `latex_options` has a vector of two values at the moment: `"scale_down"` and `"HOLD_position"`. These will make sure that the table fits the width of the page and will appear where you placed the code. If you have a table with multiple rows, you can include a third value to the vector `"striped"`. This will make a "zebra table" where the rows will alternate between white and grey backgrounds.
+Hopefully you noticed that at the end of each of chunk of code making the tables, I used `kableExtra::kable_styling`. This gives us some additional controls. For example, we can use `font_size` to stipulate what size of font to use in the table. I would not go much smaller than 8 or 9 point font---and only if your table is extremely big. I do not recommend that you use a font size larger than what your narrative is (typically 12pt). The other argument, `latex_options` has a vector of two values at the moment: `"scale_down"` and `"HOLD_position"`. These will make sure that the table fits the width of the page and will appear where you placed the code, respectively. If you have a table with multiple rows, you can include a third value to the vector `"striped"`. This will make a "zebra table" where the rows will alternate between white and grey backgrounds.
 
 ## Displaying Grouped Summarries and Table Footnotes
 

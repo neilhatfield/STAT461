@@ -1,7 +1,7 @@
 ---
 title: "Statistical Inference"
 author: "Neil J. Hatfield"
-date: "1/26/2021"
+date: "1/11/2022"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -85,7 +85,7 @@ Whether you're doing a Hull Hypothesis Significance Test (NHST) or building a co
     -   NHSTs: You look to see how unusual your esti**mate** is given the long-run behavior of the esti**mator** under the null hypothesis
     -   Confidence Intervals: you look to see if your esti**mate** and null hypothesis are consistent with each other.
 
-Remember, the esti**mator** is a function of data, while the esti**mate** is the output of an esti**mator** for a particular data collection.
+Remember, the esti**mator** is a function, while the esti**mate** is the output of an esti**mator** for a particular data collection.
 
 You have many choices to make throughout this process. While you can't just pick any set of methods, there are multiple which are valid for any particular statistical research question (SRQ).
 
@@ -183,7 +183,7 @@ For a Two Sample *t* test, I would just report values in my narrative and not wo
 
 What I typed in my R Markdown file: 
 
-> Using Welch's \*t\* test, we find that \*t\*(`round(testOutput1$parameter, digits = 2)`) \\(\\approx\\) `round(testOutput1$statistic, digits = 2)`; this yielded a \*p\*-value `ifelse(test = testOutput1$p.value < 0.0001, yes = "< 0.0001", no = round(testOutput1$p.value, digits = 4))`. The 97% confidence interval is (`round(testOutput1$conf.int, digits = 2)`).
+> Using Welch's \*t\* test, we find that \*t\*(\``round(testOutput1$parameter, digits = 2)`\`) \\(\\approx\\) \``round(testOutput1$statistic, digits = 2)`\`; this yielded a \*p\*-value \``ifelse(test = testOutput1$p.value < 0.0001, yes = "< 0.0001", no = round(testOutput1$p.value, digits = 4))`\`. The 97% confidence interval is (\``round(testOutput1$conf.int, digits = 2)`\`).
 
 ## Nonparametric Shortcut
 

@@ -1,7 +1,7 @@
 ---
 title: "Data Visualizations"
 author: "Neil J. Hatfield"
-date: "1/22/2021"
+date: "1/11/2022"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
