@@ -26,7 +26,7 @@ singleSD <- function(x){
   return(list("lower" = lB, "upper" = uB))
 }
 
-## IQR Method ---
+## IQR Method ----
 ## Use the first and third quartiles
 ## Multiple Groups
 iqrMethod <- function(x){
@@ -35,7 +35,7 @@ iqrMethod <- function(x){
   return(list("lower" = lB, "upper" = uB))
 }
 
-## Method X ---
+## Method X ----
 ## Median +- MAD
 xMethod <- function(x){
   lB <- median(x, na.rm = TRUE) - mad(x, na.rm = TRUE)
@@ -71,10 +71,60 @@ medianManipulation <- function(x){
 ## Z for 99% is 2.576
 cltCI <- function(x){
   lB <- mean(x, na.rm = TRUE) - 2.576 * sd(x, na.rm = TRUE)/sqrt(length(na.omit(x)))
-  uB <- mean(x, na.rm = TRUE) + 2.576 * sd(x, na.rm = TRUE)/swrt(length(na.omit(x)))
+  uB <- mean(x, na.rm = TRUE) + 2.576 * sd(x, na.rm = TRUE)/sqrt(length(na.omit(x)))
   return(list("lower" = lB, "upper" = uB))
 }
 
+## Simon Method ----
+## Sample Arithmetic Mean +- SD -+ SE
+simon <- function(x){
+  lB <- mean(x, na.rm = TRUE) - sd(x, na.rm = TRUE) + sd(x, na.rm = TRUE)/sqrt(length(na.omit(x)))
+  uB <- mean(x, na.rm = TRUE) + sd(x, na.rm = TRUE) - sd(x, na.rm = TRUE)/sqrt(length(na.omit(x)))
+  return(list("lower" = lB, "upper" = uB))
+}
+
+## Skew Resistant Interval ----
+## Sample Arithmetic (?) Mean +- 0.5 * MAD
+skewResistant <- function(x){
+  lB <- mean(x, na.rm = TRUE) - 0.5 * mad(x, na.rm = TRUE)
+  uB <- mean(x, na.rm = TRUE) + 0.5 * mad(x, na.rm = TRUE)
+  return(list("lower" = lB, "upper" = uB))
+}
+
+## QHCP Method ----
+## Use the 2.5%-tile and 97.5%-tile
+qhcp <- function(x){
+  lB <- quantile(x, probs = 0.025, na.rm = TRUE)
+  uB <- quantile(x, probs = 0.975, na.rm = TRUE)
+  return(list("lower" = lB, "upper" = uB))
+}
+
+## Spilt IQR Method ----
+## Sample Arithmetic Mean +- 0.75 * IQR
+splitIQR <- function(x){
+  lB <- mean(x, na.rm = TRUE) - 0.75 * IQR(x, na.rm = TRUE)
+  uB <- mean(x, na.rm = TRUE) + 0.75 * IQR(x, na.rm = TRUE)
+  return(list("lower" = lB, "upper" = uB))
+}
+
+## Quantile-Adjusted Method ----
+## Q0.1 + SD/n, Q0.9 - SD/n
+quantileAdjusted <- function(x){
+  lB <- quantile(x, probs = 0.1, na.rm = TRUE) + sd(x, na.rm = TRUE)/(length(na.omit(x)))
+  uB <- quantile(x, probs = 0.9, na.rm = TRUE) - sd(x, na.rm = TRUE)/(length(na.omit(x)))
+  return(list("lower" = lB, "upper" = uB))
+}
+
+## Skewness Standardized ----
+## Sample Arithmetic Mean +- IQR/Skew * SE^2
+skewnessStandardized <- function(x){
+  require(psych)
+  lB <- mean(x, na.rm = TRUE) - IQR(x, na.rm = TRUE)/psych::skew(x) *
+    (sd(x, na.rm = TRUE)/sqrt(length(na.omit(x))))^2
+  uB <- mean(x, na.rm = TRUE) + IQR(x, na.rm = TRUE)/psych::skew(x) *
+    (sd(x, na.rm = TRUE)/sqrt(length(na.omit(x))))^2
+  return(list("lower" = lB, "upper" = uB))
+}
 
 # Testing the Methods ----
 set.seed(461)
@@ -99,8 +149,8 @@ temp1 <- rep(0, 10000)
 temp0 <- sapply(
   X = 1:10000,
   FUN = function(x){
-    lB <- kwitkowskiConrad(samples[[x]])$lower
-    uB <- kwitkowskiConrad(samples[[x]])$upper
+    lB <- skewnessStandardized(samples[[x]])$lower
+    uB <- skewnessStandardized(samples[[x]])$upper
     ifelse(
       test = lB < target & uB > target,
       yes = 1,
@@ -112,14 +162,15 @@ temp0 <- sapply(
 temp1 <- sapply(
   X = 1:10000,
   FUN = function(x){
-    lB <- kwitkowskiConrad(samples[[x]])$lower
-    uB <- kwitkowskiConrad(samples[[x]])$upper
+    lB <- skewnessStandardized(samples[[x]])$lower
+    uB <- skewnessStandardized(samples[[x]])$upper
     uB - lB
   }
 )
+
 studentResults <- rbind(
   studentResults,
-  c(name = "kwitkowskiConrand", successRate = mean(temp0), samWidth = mean(temp1))
+  c("Skewness Standardized", as.numeric(mean(temp0)), as.numeric(mean(temp1)))
 )
 
 
