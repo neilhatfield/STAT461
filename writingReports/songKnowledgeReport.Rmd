@@ -1,0 +1,107 @@
+---
+title: "STAT461 Undergraduate Song Knowledge"
+author: "Your Name Here"
+date: "Date"
+output: pdf_document
+geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+urlcolor: blue
+header-includes:
+  - \usepackage{subfig}
+---
+
+```{r setupFiles, include = FALSE}
+# Setting Document Options
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center"
+)
+
+# Add additional packages by name to the following list
+packages <- c(
+  "tidyverse", "knitr", "kableExtra", "hasseDiagram"
+  ) 
+lapply(X = packages, FUN = library, character.only = TRUE)
+
+# Loading Helper Files and Setting Global Options
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+options("contrasts" = c("contr.sum", "contr.poly"))
+
+```
+
+
+```{r loadData}
+songData <- read.csv(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+  header = TRUE,
+  sep = ","
+)
+```
+
+<!-- If you wish to embed comments in the non-code chunk portion of your R Markdown
+file then you do so by using the four characters that begin this comment and
+then end with the three characters that end this line -->
+
+## Introduction and Background
+<!-- This is where you'll write the portion of your narrative which frames the
+context for the SRQ. This is also where you will 1) explicitly state the SRQ and
+2) incorporate any additional references (if applicable) -->
+
+## Study Design and Methods
+<!-- In this portion you'll write the narrative format of the study design-that
+is everything we've discussed in Unit 2. You'll want to incorporate the Hasse
+diagram, your hypotheses for any SRQs, any sample size considerations, as well
+as how you are going to handle the multiple comparison problem.-->
+
+```{r hasseDiagram, fig.cap="Hasse Diagram for the Song Knowledge Study"}
+# Create a Hasse diagram for the study
+
+
+```
+
+### Population 
+<!--If applicable; this is a subsection where you describe the sample/population
+that you will be working with along demographic lines.-->
+
+## Exploration of the Data
+<!-- This is the section where you'll engage in EDA. You will want to create and
+discuss various data visualizations and descriptive statistics on your sample to
+establish a beginning understanding of what is going on. -->
+
+## Results
+<!-- This is the section of the report where you'll carry out an inferential methods.-->
+
+### Assumptions
+<!-- As this subsection's title implies, you'll discuss any assessment of assumptions
+in this section BEFORE you share any results for the related methods. -->
+
+<!-- The following subsections are but one way to structure the report. You can
+also structure by SRQ (if you have multiple), with sub-subsections as necessary.-->
+### Overarching 
+<!-- "Overarching" is a placeholder for how you wish to title this section. The
+main point is that this is the section where you'll first present and interpret
+results from omnibus test. Don't forget effect sizes. -->
+
+### Post Hoc
+<!--If applicable; this is where you're present and interpret the results of any
+post hoc analyses. Don't forget effect sizes. -->
+
+## Discussion and Limitations
+<!-- This is the section where you will take the results and bring them more fully
+into the context. That is, not only will you restate the results to clearly answer
+your SRQ(s) but you'll also discuss what those answer might mean for the context.
+You'll also discuss any limitations to the study (suggest ways to improve) and 
+where we might want to go next for future work. -->
+
+
+<!-- ## References -->
+<!-- When applicable -->
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+
+```
