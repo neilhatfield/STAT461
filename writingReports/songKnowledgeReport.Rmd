@@ -25,8 +25,10 @@ packages <- c(
 lapply(X = packages, FUN = library, character.only = TRUE)
 
 # Loading Helper Files and Setting Global Options
-source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+options(knitr.kable.NA = "")
 options("contrasts" = c("contr.sum", "contr.poly"))
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
 
 ```
 
