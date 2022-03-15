@@ -1,7 +1,7 @@
 ---
 title: "Parametric Shortcut: One-way ANOVA"
 author: "Neil J. Hatfield"
-date: "2/26/2021"
+date: "3/15/2021"
 output: 
   pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
@@ -21,79 +21,186 @@ knitr::opts_chunk$set(
 
 packages <- c("tidyverse", "hasseDiagram", "knitr", 
               "kableExtra", "car", "psych",
-              "parameters")
+              "parameters", "DescTools", "multcompView")
 lapply(packages, library, character.only = TRUE)
 
 # Tell Knitr to use empty space instead of NA in printed tables
 options(knitr.kable.NA = "")
 
+# Set constratint
+options(contrasts = c("contr.sum", "contr.poly"))
+
+# Load extra tools
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
 ```
 
 In this tutorial, we are going to explore using R to fit a One-way ANOVA model to two data sets using the parametric shortcut known as the One-way ANOVA *F* Test.
 
-# Set Our Constraints
+I'll be interweaving a couple of different examples throughout the text. The general structure to this tutorial is:
+
++ Setting up `R` and Reading in Data
++ Explore Your Data
++ Discussion on whether ANOVA methods are appropriate
++ Fitting the ANOVA Model
++ Assessing the Assumptions of the Parametric Shortcut for One-way ANOVA
++ Conducting the Omnibus Test
+    - Quick Look at Results
+    - Making Professional Looking Tables
+    - Interpreting Results
++ Reporting Point Estimates
+    - Formatting
+    - Interpretations
++ Post Hoc Analysis
+    - Choice of Type I Error Rate
+    - Recommended Default (Tukey-Kramer HSD)
+    - Other Approaches
+    - Special Comparisons
+    - Effect Sizes
+
+# Setting Up `R` and Reading in Data
+
+There are two parts to this portion of the tutorial: getting `R` in order and reading in the data. If you are already familiar with these activities, you can skip ahead. HOWEVER, make sure you check out the code for setting up our constraint.
+
+## Getting `R` Ready
+
+The first thing that we need to do is ensure that `R` is set up so that we can have success. For this particular tutorial, we will be using the following packages: `tidyverse`, `hasseDiagram`, `knitr`, `kableExtra`, `car`, `psych`, `parameters`, `DescTools`, and `multcompView`. You can load these packages into your session by running the following code in the Console or by placing this code into a code chunk in your R Markdown file:
+
+```{r packageLoadingExample, eval=FALSE, echo=TRUE}
+# Demo code for loading packages for the tutorial
+packages <- c("tidyverse", "hasseDiagram", "knitr", 
+              "kableExtra", "car", "psych",
+              "parameters", "DescTools", "multcompView")
+lapply(packages, library, character.only = TRUE)
+
+```
+
+## Specifying `R` Options
+
+While there are many options we can set, two options are particularly useful to set at the start: table formatting and on model constraint.
+
+### Table Formatting
+
+To make professional looking tables in a R Markdown file, I recommend using the `knitr` and `kableExtra` packages. One thing to keep in mind is that by default, `R` does not like truly empty table cells (typically printing "NA"). Thus, to keep our tables as uncluttered as possible, we need to instruct `R` to leave empty table cells visually empty. We can do this with the following code:
+
+```{r tableOption, eval=FALSE, echo=TRUE}
+# Demo code for controlling table options
+# Tell Knitr to use empty space instead of NA in printed tables
+options(knitr.kable.NA = "")
+
+```
+
+I typically place this code right after I load my packages.
+
+### Set Our Constraints
 
 Recall that in order to ensure that we have estimable functions, we must set a side condition or constraint on our treatments: 
 \[\sum_i^k\alpha_i=0\]
 This is not what R does by default, but we can tell R to adopt this constraint with the following code:
 
-```{r setConstraint, echo=TRUE}
-## DEMO CODE
+```{r setConstraint, eval=FALSE, echo=TRUE}
+## Demo code for setting the constraint
 options(contrasts = c("contr.sum", "contr.poly"))
 
 ```
 
-# Load Data
+Again, I place this just after I set my table options. NOTE: you have to specify this option BEFORE you build any models in `R`.
 
-Our first step will be to load data into our R session. We are going to use two data sets: the honey example from class and Example 3.2 Resin Lifetimes from the Oehlert textbook. For the honey data, we will create the data frame manually; for resin lifetimes, we'll import the data.
+## Some Additonal Handy Tools
 
-```{r getData, echo=TRUE}
-## DEMO CODE
+Over the years I have created some additional tools which can be useful as you perform ANOVA analyses. To access them, you must first load them into your `R` session/R Markdown document:
 
-# Honey Data
+```{r extraTools, eval=FALSE, echo=TRUE}
+# Demo code for loading Neil's extra tools
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+This is typically the last line of code in my first code chunk of any R Markdown file for ANOVA.
+
+## Load Data
+
+Once you have set the `R` options, now comes reading in data. For this tutorial, we're going to work with three different data sets: our Song Knowledge data, data from a honey study, and data from Example 3.2 Resin Lifetimes from the Oehlert textbook. 
+
+The following code demonstrates how we can read in the three data sets:
+```{r loadData, echo=TRUE}
+# Song Data
+songData <- read.csv(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+  header = TRUE,
+  sep = ","
+)
+# Set year to an ordered factor
+songData$year <- factor(
+  x = songData$year,
+  levels = c("sophomore", "junior", "senior")
+)
+
+# Honey Data--Manual Entry
 honey <- data.frame(
   Amount = c(150, 50, 100, 85, 90, 95, 130, 50, 80),
   Varietal = rep(c("Clover", "Orange Blossom", "Alfalfa"), each = 3)
 )
-## Set Varietal to factor
+## Set Varietal to factor (no particular order)
 honey$Varietal <- as.factor(honey$Varietal)
 
 # Resin Lifetimes Data
 resin <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/resinLifetimes.dat",
   header = TRUE,
-  sep = ""
+  sep = "" # Notice the change in separator
 )
 ## Set temp to factor
 resin$temp <- as.factor(resin$temp)
 
+## Change the name of the y column to something more meaningful
+names(resin)[which(names(resin) == "y")] <- "log10Lifetime"
+
 ```
+
+# Explore Your Data
+
+At this point in time, you should engage in exploratory data analysis including creating professional looking data visualizations (I recommend using `ggplot2`) as well as looking at descriptive statistics by groups (I recommend using `psych`). For more details on both of these topics, see the starting guides for Data Visualizations and Descriptive Statistics I've posted.
 
 # Is ANOVA Even Appropriate?
 
 Recall the base requirements for One-way ANOVA are:
 
-+ you are working with a categorized factor,
++ you are working with a qualitative/categorical factor,
++ you are working with a quantitative response,
 + you are working with an additive model,
 + you have estimable effects, and
 + you have estimable errors/residuals.
 
-You can check these four requirements rather quickly. First, use the `str` function to ensure that R is thinking about the `Varietal` (or `temp`) as a factor. Second, examine your Hasse diagram and algebraic model--did you build upon the additivity of terms? (If you've followed the methods that we've been using, then yes.) Third, did you tell R to set the constraint? Look at the term nodes in the Hasse diagram. Do each of the terms you want to test have non-zero (and non-negative) *Degrees of Freedom*? (Yes, you're good; no, there are problems.)
-Fourth, look at the error term in your Hasse diagram. Do you have a positive (i.e., non-zero, non-negative) number of *Degrees of Freedom*? (Yes, you're good; no, there are problems.)
+The first two requirements you can check quickly in `R` by using the `str` function or by clicking on the blue circle with a white triangle to the left of each data frame's name in the Environment tab of R Studio. This is __not__ something that you put into any reports but is just for you. In essence, this check to make sure `R` is thinking about your data correctly.
 
-Notice the work that the Hasse diagram is doing for us. They not only help us visualize our model but they also set up our screens, and allow for us to check whether we meet the basic requirements for doing ANVOA. The [Hasse Diagram App](https://psu-eberly.shinyapps.io/Hasse_Diagrams/) will through an error if you run into problems with your *Degrees of Freedom*.
+```{r checkingAttributes, echo=TRUE}
+# Checking the first two base requirements
+str(songData)
+str(honey)
+str(resin)
 
-# Example 1-Honey Data
+```
 
-We will begin the Honey example from class. Before we look at any *p*-values and make any decisions, we need to ensure that the prerequisites and then assumptions are met.
+What we want to see is that for our factor(s), `R` has the word "`Factor`" immediately after their (column) name. For our response, we want to see either "`num`" or "`int`" after their (column) name. If we see these AND they match our expectations of the data, then we can say that we've met these two requirements.
 
-Figure \ref{fig:honeyHD} shows the Hasse diagram for our Honey Study. We're interested in testing the type of varietal. Both that node and our error node have positive values for *Degrees of Freedom*. This taken with our study design, support our using One-way ANOVA methods.
+The last three base requirements stem from the Hasse diagram. Essentially, if you 
+can build the Hasse diagram and have positive (i.e., non-zero and non-negative)
+degrees of freedom everywhere, then all three of these are satisfied.
+
+Hasse diagrams can be included in your reports. The following is an example for how we might do so with the Honey study. For putting Hasse diagrams into your R Markdown files, I recommend using the [Hasse Diagram App](https://psu-eberly.shinyapps.io/Hasse_Diagrams/) and copying the `R` code generated there.
+
+## Hasse Diagram Example-Honey Study
+
+In investigating the effect of the type of varietal (species of flower) has on the
+production of excess honey, we constructed the Hasse diagram in Figure \ref{fig:honeyHD}. With our nine hives of the same species of bee, we can see that we have sufficient degrees of freedom to estimate the effects for our three levels
+of varietal and have degrees of freedom for our error term. Given that we're measuring our response (excess honey) in pounds, along with the additive model shown in Figure \ref{fig:honeyHD}, a one-way ANOVA model is a valid approach.
 
 ```{r honeyHD, fig.cap="Hasse Diagram for Honey Study", fig.height=2, echo=TRUE}
 # DEMO CODE
 
 # Hasse Diagram for the Honey Study
-modelLabels <- c("1 Make Honey 1", "3 Type 2", "9 (Hives) 6")
+modelLabels <- c("1 Make Honey 1", "3 Varietal 2", "9 (Hives) 6")
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
   nrow = 3,
@@ -107,38 +214,73 @@ hasseDiagram::hasse(
 
 ```
 
-\newpage
+### Your Turn
 
-## Assessing Assumptions
+Try creating the code (either on your own or via the app) for the Hasse diagrams for the Song Knowledge and the Resin Lifetime studies (see p. 32 of Oehlert).
 
-To assess our assumptions, we first need to fit the model. This will provide us with the residuals that we need for checking the assumptions.
+# Fit the ANOVA Model
 
-The following code demonstrates how we can fit the One-way ANOVA model:
+In order to check out the assumptions of the Parametric Shortcut (a.k.a. "the ANOVA *F* Test"), we first need to fit the ANOVA model in `R`. This will enable us to access the residuals in an easy way. I must give a word of caution here: don't look at the results of the model just yet. You must first assess all of the assumptions so that you can build trust in what the model results are.
 
-```{r honeyModel, echo=TRUE}
-# DEMO CODE
+To fit our ANOVA model, we will primarily use the `aov` function that is part of base `R`. We will want to save our model to a named object so that we can call them at later times. Here is how we would build/fit the model:
 
-# Fit our One-way ANOVA model to the honey data
+```{r buildModels, echo=TRUE}
+# Demo code for building ANOVA models
+## Song Knowledge study
+songModel <- aov(
+  formula = score ~ year,
+  data = songData,
+  na.action = "na.omit"
+)
+
+## Honey study
 honeyModel <- aov(
   formula = Amount ~ Varietal,
   data = honey,
   na.action = "na.omit"
 )
 
+## Resin Lifetime study
+resinModel <- aov(
+  formula = log10Lifetime ~ temp,
+  data = resin,
+  na.action = "na.omit"
+)
+
 ```
 
-We can now use `honeyModel$residuals` to access the residuals from the model. We can use them just like we would use any column of a data frame.
+Notice that in all three examples, we used the same three arguments: `formula`, `data`, and `na.action`.
 
-### Assessing the Gaussian Assumption
++ The `formula` argument is how we express our model. In essence, you put in all of our factors/terms. `R` automatically knows to account for the first and last nodes of our Hasse diagrams (the action screen and measurement units).
+    - The structure of the formulas are `responseName ~ factorName` for one-way ANOVA
++ The `data` argument is where you tell `aov` the name of the data frame you want to use.
++ The `na.action` argument is a safety precaution. You are instructing `R` that if there is an observation with missing values, then `R` is to omit that observation from the model. (You may leave this argument off if you desire and are willing to run the risk of problems.)
 
-The first assumption is that our residuals follow a Gaussian ("normal") distribution, A QQ plot is the tool of choice; one of the better versions of this plot comes from the `car` package.
+# Assessing Assumptions
 
-```{r honeyQQ, fig.cap="QQ Plot of Honey Residuals", fig.width=4, fig.height=3.5, echo=TRUE}
-# DEMO CODE
+Before we look at the results of fitting the ANOVA model, we must first assess the assumptions. `R` automatically does the parametric shortcut test when we call the results of fitting the model. Thus, we need to be convinced that we've met the assumptions of the test well enough to trust the results.
 
-# QQ plot for Honey Residuals
+For the parametric shortcut (a.k.a. "the ANOVA *F* test"), there are three assumptions:
+
+1) Our residuals need to follow a Gaussian distribution, 
+2) We have homoscedasticity among the residuals, and
+3) We have Independent Observations
+
+For the first two assumptions, we will need to access the residuals from our model. We can do this in two different ways: `songModel$residuals` or `residuals(honeyModel)`. Either method will give the same set of things.
+
+Remember, we want to *__assess__* not test our assumptions. Thus, we will be relying on specific data visualizations to help us. (All of which can go into your reports.)
+
+## Assessing the Gaussian Assumption
+
+The first assumption is that our residuals follow a Gaussian ("normal") distribution, A QQ plot is the tool of choice; one of the better versions of this plot comes from the `car` package. The following code demonstrates creating QQ Plots for the Song Knowledge and Honey studies:
+
+```{r songHoneyQQ, fig.cap="QQ Plot Residuals for Song Knowledge (left) and Honey (right) Studies", fig.show="hold", out.width="100%", fig.height=3.5, echo=TRUE}
+# Demo code for making QQ plots
+## Configure side-by-side plots
+par(mfrow = c(1,2), mar = c(4, 4, 0.1, 0.1))
+## Song Knowledge study
 car::qqPlot(
-  x = honeyModel$residuals,
+  x = songModel$residuals,
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
@@ -146,13 +288,43 @@ car::qqPlot(
   ylab = "Residuals"
 )
 
+# QQ plot for Honey Residuals
+car::qqPlot(
+  x = residuals(honeyModel),
+  distribution = "norm",
+  envelope = FALSE,
+  id = TRUE,
+  pch = 19,
+  ylab = "Residuals"
+)
+
 ```
 
-The QQ Plot (Figure \ref{fig:honeyQQ}) for our residuals here is concerning. Nearly half of the residuals are beyond our 90% confidence envelope. The values of the *Sample Skewness* (`r round(psych::skew(honeyModel$residuals), digits = 2)`) and *Sample Excess Kurtosis* (`r round(psych::kurtosi(honeyModel$residuals), digits = 2)`) also suggest that a Gaussian distribution is not the greatest match for our residuals.
+You'll notice that in the `qqPlot` function there are several arguments that allow you to customize the plots. The two arguments that are required are `x` (where you'll call the residuals) and `distribution` (where you will use `"norm"`). 
 
-Use `psych::skew(honeyModel$residuals)` and `psych::kurtosi(honeyModel$residuals)` to get the values of *Sample Skewness* and *Sample Excess Kurtosis*, respectively.
+The `id`, `pch`, and `ylab` arguments are meant to improve the visual display of the graph. The `id` argument will label the two points with the most extreme vertical distances from the solid blue reference line. These labels can be distracting, thus I recommend using `id = FALSE`. You'll also notice that there is an errant `## [1] 2 1` that appears just above the plots. This is consequence of setting `id = TRUE`. The `pch` (plotting character) controls the type of dot used. The default value is 1 for an open circle; solid dots are typically better. Thus, you'll want to use `pch = 19` or `pch = 20` for solid dots; the 19 version is slightly larger in size than 20. Finally, the `ylab` is a way to make the label for the vertical axis a bit nicer. You can use `ylab = "Residuals"` for your plots. 
 
-### Assessing Homoscedastcitiy
+The `envelope` argument is particuarly useful when assessing the Gaussian assumption. To turn off the envelope you use `envelope = FALSE`. To add the envelope you used `envelope = num` where num is your confidence level such as 0.90 for the Song Knowledge context. This helps in our assessment as any points that are away from the line but yet still inside the envelope aren't of much conern. This lets us focus on residuals which are truly far from the blue reference line. The level of confidence we use has a direct impact on how concerned we should be for violations of the Gaussian assumption. For 90%, then we are okay with at most ~10% of the observed residuals being outside the envelope. This decision banks upon us capitalizing that balanced designs have moderate robustness to violating the Guassian assumption.
+
+For the Song Knowledge QQ Plot (left of Figure \ref{fig:songHoneyQQ}), we can see that 2 residuals are outside the envelope; 2 is close enough to 10% of 15 (i.e., 1.5) for us to proceed (perhaps cautiously) with the Gaussian assumption being satisfied. 
+
+Take a look that the QQ Plot for the Honey Study (right of Figure \ref{fig:songHoneyQQ}). How would you judge the Gaussian assumption? Notice that the lack of envelope makes the judgement a bit harder. However, we can note that there are four observations (out of 9) whose residuals are quite far from the blue reference line. This suggests that our residuals do not follow a Gaussian distribution.
+
+### Your Turn
+
+Try replicating the QQ plot code for the Resin Lifetime study. How would you assess the Gaussian assumption?
+
+### Secondary Tool
+
+Another tool that you can use for assessing the Gaussian assumption are two descriptive statistics: *Sample Skewness* and *Sample Excess Kurtosis*. These are generated by the `psych` package's `describe` function (i.e., `psych::describe(songModel$residuals)`. You can also call them directly with `psych::skew(songModel$residuals)` and `psych::kurtosi(songModel$residuals)`. Ideally, we want the value of *Sample Skewness* and *Sample Excess Kurtosis* to be as close to zero as possible.
+
+For the Song Knowledge context, the value of *Sample Skewness* is `r round(psych::skew(songModel$residuals), digits = 2)` and the value of *Sample Excess Kurtosis* is `r round(psych::kurtosi(honeyModel$residuals), digits = 2)`. These values are questionable but when partnered with the QQ plot and our knowledge of the study design, they are cautiously acceptable.
+
+For the Honey study, the value of *Sample Skewness* is `r round(psych::skew(honeyModel$residuals), digits = 2)` and the value *Sample Excess Kurtosis* is `r round(psych::kurtosi(honeyModel$residuals), digits = 2)`. Using these values in conjunction with the QQ plot re-affirms that we should question whether we've satisified the Gaussian assumption with the honey data.
+
+__There is no hard and fast rule for assessing the Gaussian assumption.__
+
+## Assessing Homoscedastcitiy
 
 ```{r honeyVar, fig.cap="Stripchart for Honey Residuals", fig.width=4, fig.height=2, echo=TRUE}
 # DEMO CODE
@@ -244,7 +416,7 @@ Again, we will need to first fit the One-way model to our data in order to asses
 ```{r resinModel}
 # Fit our One-way ANOVA model to the honey data
 resinModel <- aov(
-  formula = y ~ temp,
+  formula = log10Lifetime ~ temp,
   data = resin,
   na.action = "na.omit"
 )
