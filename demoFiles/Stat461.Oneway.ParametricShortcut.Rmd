@@ -20,14 +20,13 @@ knitr::opts_chunk$set(
 )
 
 packages <- c("tidyverse", "hasseDiagram", "knitr", 
-              "kableExtra", "car", "psych",
-              "parameters", "DescTools", "multcompView")
+              "kableExtra", "car", "psych", "parameters")
 lapply(packages, library, character.only = TRUE)
 
 # Tell Knitr to use empty space instead of NA in printed tables
 options(knitr.kable.NA = "")
 
-# Set constratint
+# Set constraint
 options(contrasts = c("contr.sum", "contr.poly"))
 
 # Load extra tools
@@ -40,23 +39,23 @@ In this tutorial, we are going to explore using R to fit a One-way ANOVA model t
 I'll be interweaving a couple of different examples throughout the text. The general structure to this tutorial is:
 
 + Setting up `R` and Reading in Data
+    - Loading Packages
+    - Setting Options
+    - Set Our Side Condition/Constraint 
+    - Loading Data
 + Explore Your Data
 + Discussion on whether ANOVA methods are appropriate
+    - Incoroporating Hasse diagrams
 + Fitting the ANOVA Model
 + Assessing the Assumptions of the Parametric Shortcut for One-way ANOVA
 + Conducting the Omnibus Test
+    - Pre-look decisions
     - Quick Look at Results
     - Making Professional Looking Tables
     - Interpreting Results
 + Reporting Point Estimates
     - Formatting
     - Interpretations
-+ Post Hoc Analysis
-    - Choice of Type I Error Rate
-    - Recommended Default (Tukey-Kramer HSD)
-    - Other Approaches
-    - Special Comparisons
-    - Effect Sizes
 
 # Setting Up `R` and Reading in Data
 
@@ -64,13 +63,12 @@ There are two parts to this portion of the tutorial: getting `R` in order and re
 
 ## Getting `R` Ready
 
-The first thing that we need to do is ensure that `R` is set up so that we can have success. For this particular tutorial, we will be using the following packages: `tidyverse`, `hasseDiagram`, `knitr`, `kableExtra`, `car`, `psych`, `parameters`, `DescTools`, and `multcompView`. You can load these packages into your session by running the following code in the Console or by placing this code into a code chunk in your R Markdown file:
+The first thing that we need to do is ensure that `R` is set up so that we can have success. For this particular tutorial, we will be using the following packages: `tidyverse`, `hasseDiagram`, `knitr`, `kableExtra`, `car`, `psych`, and `parameters`. You can load these packages into your session by running the following code in the Console or by placing this code into a code chunk in your R Markdown file:
 
 ```{r packageLoadingExample, eval=FALSE, echo=TRUE}
 # Demo code for loading packages for the tutorial
 packages <- c("tidyverse", "hasseDiagram", "knitr", 
-              "kableExtra", "car", "psych",
-              "parameters", "DescTools", "multcompView")
+              "kableExtra", "car", "psych", "parameters")
 lapply(packages, library, character.only = TRUE)
 
 ```
@@ -172,7 +170,7 @@ Recall the base requirements for One-way ANOVA are:
 + you have estimable effects, and
 + you have estimable errors/residuals.
 
-The first two requirements you can check quickly in `R` by using the `str` function or by clicking on the blue circle with a white triangle to the left of each data frame's name in the Environment tab of R Studio. This is __not__ something that you put into any reports but is just for you. In essence, this check to make sure `R` is thinking about your data correctly.
+The first two requirements you can check quickly in `R` by using the `str` function or by clicking on the blue circle with a white triangle to the left of each data frame's name in the Environment tab of R Studio. This is __not__ something that you put into any reports but is just for you. In essence, this check is to make sure `R` is thinking about your data correctly.
 
 ```{r checkingAttributes, echo=TRUE}
 # Checking the first two base requirements
@@ -268,16 +266,19 @@ For the parametric shortcut (a.k.a. "the ANOVA *F* test"), there are three assum
 
 For the first two assumptions, we will need to access the residuals from our model. We can do this in two different ways: `songModel$residuals` or `residuals(honeyModel)`. Either method will give the same set of things.
 
-Remember, we want to *__assess__* not test our assumptions. Thus, we will be relying on specific data visualizations to help us. (All of which can go into your reports.)
+Remember, we want to *__assess not test__* our assumptions. Thus, we will be relying on specific data visualizations to help us. (All of which can go into your reports.)
 
 ## Assessing the Gaussian Assumption
 
 The first assumption is that our residuals follow a Gaussian ("normal") distribution, A QQ plot is the tool of choice; one of the better versions of this plot comes from the `car` package. The following code demonstrates creating QQ Plots for the Song Knowledge and Honey studies:
 
-```{r songHoneyQQ, fig.cap="QQ Plot Residuals for Song Knowledge (left) and Honey (right) Studies", fig.show="hold", out.width="100%", fig.height=3.5, echo=TRUE}
+```{r qqPlots, fig.cap="QQ Plot Residuals for Song Knowledge (left) and Honey (right) Studies", fig.show="hold", out.width="100%", fig.height=3.5, echo=TRUE}
 # Demo code for making QQ plots
-## Configure side-by-side plots
+## Chunk options for side-by-side plots
+### fig.show="hold", out.width="100%", fig.height=3.5
+## R option for side-by-side plots
 par(mfrow = c(1,2), mar = c(4, 4, 0.1, 0.1))
+
 ## Song Knowledge study
 car::qqPlot(
   x = songModel$residuals,
@@ -294,7 +295,7 @@ car::qqPlot(
   distribution = "norm",
   envelope = FALSE,
   id = TRUE,
-  pch = 19,
+  pch = 1,
   ylab = "Residuals"
 )
 
@@ -306,9 +307,9 @@ The `id`, `pch`, and `ylab` arguments are meant to improve the visual display of
 
 The `envelope` argument is particuarly useful when assessing the Gaussian assumption. To turn off the envelope you use `envelope = FALSE`. To add the envelope you used `envelope = num` where num is your confidence level such as 0.90 for the Song Knowledge context. This helps in our assessment as any points that are away from the line but yet still inside the envelope aren't of much conern. This lets us focus on residuals which are truly far from the blue reference line. The level of confidence we use has a direct impact on how concerned we should be for violations of the Gaussian assumption. For 90%, then we are okay with at most ~10% of the observed residuals being outside the envelope. This decision banks upon us capitalizing that balanced designs have moderate robustness to violating the Guassian assumption.
 
-For the Song Knowledge QQ Plot (left of Figure \ref{fig:songHoneyQQ}), we can see that 2 residuals are outside the envelope; 2 is close enough to 10% of 15 (i.e., 1.5) for us to proceed (perhaps cautiously) with the Gaussian assumption being satisfied. 
+For the Song Knowledge QQ Plot (left of Figure \ref{fig:qqPlots}), we can see that 2 residuals are outside the envelope; 2 is close enough to 10% of 15 (i.e., 1.5) for us to proceed (perhaps cautiously) with the Gaussian assumption being satisfied. 
 
-Take a look that the QQ Plot for the Honey Study (right of Figure \ref{fig:songHoneyQQ}). How would you judge the Gaussian assumption? Notice that the lack of envelope makes the judgement a bit harder. However, we can note that there are four observations (out of 9) whose residuals are quite far from the blue reference line. This suggests that our residuals do not follow a Gaussian distribution.
+Take a look that the QQ Plot for the Honey Study (right of Figure \ref{fig:qqPlots}). How would you judge the Gaussian assumption? Notice that the lack of envelope makes the judgement a bit harder. However, we can note that there are four observations (out of 9) whose residuals are quite far from the blue reference line. This suggests that our residuals do not follow a Gaussian distribution.
 
 ### Your Turn
 
@@ -320,40 +321,85 @@ Another tool that you can use for assessing the Gaussian assumption are two desc
 
 For the Song Knowledge context, the value of *Sample Skewness* is `r round(psych::skew(songModel$residuals), digits = 2)` and the value of *Sample Excess Kurtosis* is `r round(psych::kurtosi(honeyModel$residuals), digits = 2)`. These values are questionable but when partnered with the QQ plot and our knowledge of the study design, they are cautiously acceptable.
 
-For the Honey study, the value of *Sample Skewness* is `r round(psych::skew(honeyModel$residuals), digits = 2)` and the value *Sample Excess Kurtosis* is `r round(psych::kurtosi(honeyModel$residuals), digits = 2)`. Using these values in conjunction with the QQ plot re-affirms that we should question whether we've satisified the Gaussian assumption with the honey data.
+For the Honey study, the value of *Sample Skewness* is `r round(psych::skew(honeyModel$residuals), digits = 2)` and the value *Sample Excess Kurtosis* is `r round(psych::kurtosi(honeyModel$residuals), digits = 2)`. Using these values in conjunction with the QQ plot re-affirms that we should question whether we've satisfied the Gaussian assumption with the honey data.
 
 __There is no hard and fast rule for assessing the Gaussian assumption.__
 
-## Assessing Homoscedastcitiy
+## Assessing Homoscedasticity
 
-```{r honeyVar, fig.cap="Stripchart for Honey Residuals", fig.width=4, fig.height=2, echo=TRUE}
-# DEMO CODE
+The second assumption for the parametric shortcut is that of homoscedasticity. This assumption deals with there being the same or similar amounts of variation within each group. For this assumption, you can make use of the values of the *Sample Arithmetic Standard Deviation* or *Sample Arithmetic Variance* IF you are looking by groups. The `describeBy` function from the `psych` package is your friend here. However, there is also visual method which you can use: the strip chart.
+
+A strip chart is a variation on a scatter plot. If you have done regression, you might have looked at a scatter plot of residuals by fitted values. A strip chart the exact same idea. However, rather than having many different fitted values, we'll only have the same number as groups. This is what creates the strips. For this visualization, we will use the `ggplot2` package rather than the output of the `plot` function. (We always want to aim for professional looking plots.)
+
+```{r stripCharts, fig.cap="Strip Chart Examples", fig.subcap=c("Song Knowledge Study", "Honey Study"), fig.ncol=2, out.width="50%", echo=TRUE}
+# Demo code for making strip charts
+# Chunk options for side-by-side
+### fig.subcap=c("Song Knowledge Study", "Honey Study"), fig.ncol=2,
+### out.width="50%"
+## There are no special par calls needed with this approach (only good for PDF outputs)
+
+# Strip chart for Song Knowledge Residuals
+ggplot(
+  data = data.frame(
+    residuals = songModel$residuals,
+    fitted = songModel$fitted.values
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  theme_bw() +
+  xlab("Fitted values (points)") +
+  ylab("Residuals (points)")
 
 # Strip chart for Honey Residuals
 ggplot(
   data = data.frame(
-    residuals = honeyModel$residuals,
-    fitted = honeyModel$fitted.values
+    residuals = residuals(honeyModel),
+    fitted = fitted(honeyModel)
   ),
   mapping = aes(x = fitted, y = residuals)
 ) +
-  geom_point(size = 1) +
+  geom_point(size = 2) +
   theme_bw() +
   xlab("Fitted values (lbs)") +
   ylab("Residuals (lbs)")
 
 ```
 
-In Figure \ref{fig:honeyVar}, we can see that one strip (located at a fitted value of 90) is rather close together. The vertical space that group uses is well under half the vertical space used by any other strip. This  along with the essential bow-tie shape to the plot suggest that we do not have the same level of variation within each level of treatment.
+When we look at strip charts for assessing homoscedasticity, we're primarily focused two aspects: comparing the lengths of the strips and if there are any patterns. 
 
-### Assessing Independence of Observations
+Let's first focus on the Song Knowledge portion of Figure \ref{fig:stripCharts}. We have three strips of 5 points (note: three points for the lowest fitted value are all on top of each other). The lengths of these strips are such that the first strip is well under half of either of the others. This is a rule of thumb that we want to look out for: if any group has more than twice the length of another group, we should start worrying about homoscedasticity. If we turn our attention to the Honey portion of Figure \ref{fig:stripCharts}, we can see the same kind of worry. Having a single group with different amount of variation is not a terminal violation, especially if we have a balanced design. However, we will want to proceed with caution.
 
-In order to truly assess whether our observations are truly independent, we must know something about the order in which measurements were taken (or how they were arranged spatially).
+A bigger issue for homoscedasticity is that of patterns in a strip chart. The most common pattern to look out for is a megaphone or funnel shape. We have a (right-opening) megaphone if the length of the strips get larger as you move from the left to the right along the horizontal axis. We have a funnel (left-opening megaphone) if the length of the strips gets smaller as you move from left to right. Keep an eye out for other patterns or shapes. These indicate deeper issues that result in violating the homoscedasticity assumption.
 
-For the honey data, we know that the order of the values reflects the measurement order. Thus, we can use an index plot.
+Turning back to Figure \ref{fig:stripCharts}, we need to keep in mind that having only three strips makes judging patterns challenging. When I look at the Song Knowledge strip chart, I see a bit of a megaphone shape; but the last strip narrows instead of expands. When I look at the Honey strip chart, I see a bow tie (wide on the outsides, narrow in the middle). 
+
+Taking the two pieces together, I'm mildly cautious for the Song Knowledge data satisfying the homoscedasticity assumption. For the Honey study, I'm closer to saying we've violated the homoscedasticity assumption. (In practice, I would recommend looking at performing some kind of transformation on the data and refitting the model.)
+
+### Your Turn
+
+Try replicating the strip chart code for the Resin Lifetime study. How would you assess the Homoscedasticity assumption?
+
+## Assessing Independence of Observations
+
+The last assumption is not only the most important but the hardest to check. I want to stress that this assumption is about the __Independence of Observations__. There are many kinds of independence in Statistics (e.g., independence of attributes), thus you *must* clearly articulate which kind of independence you're talking about here.
+
+### Knowledge of Study Design and Sample
+
+The first method we have available to us is not graphical or statistical in nature. Rather, we focus on what we know about the study design, how the data were collected, and the make up of the sample (i.e., the measurement units). For example, did we take precautions to draw a random sample for our measurement units? Did we take a convenience sample? Did we end up getting a chunk of closely related family members? Think through all possible ways that we could end up with measurement units directly impacting each other and then check the study to see if any of those methods could have/did slip through our guards.
+
+For the Song Knowledge study, while all students present that day took part, the 15 students in our sample were selected via `R`'s `sample` function in a stratified manner. Given this set up, we can proceed with some confidence that we have satisfied the assumption of Independent Observations.
+
+### Graphical and Statistical Methods
+
+In order to use graphical and/or statistical methods, we must know the order in which measurements were taken or how they were arranged spatially. In the case of the Song Knowledge study, we do not have this information, thus we __can not__ use these methods.
+
+#### Index Plots
+
+For the Honey data, we know that the order of the values reflects the measurement order (provided you entered the data in the same way as I did). Since we know ordering, we can make use of a visualization known as a index plot (Figure \ref{fig:honeyIO}).
 
 ```{r honeyIO, fig.cap="Index Plot for Honey Residuals", fig.width=4, fig.height=2, echo=TRUE}
-# DEMO CODE
+# Demo code for index plots
 
 # Index Plot for Honey Residuals
 ggplot(
@@ -375,13 +421,234 @@ ggplot(
   ylab("Residuals")
 ```
 
-Given the order that measurements were made, there does not appear to be any strong indications of autocorrelation in Figure \ref{fig:honeyIO}. If there was an issue, we would expect to see some patterning and/or clusters of values. Further, the Durbin-Watson statistic has a value of `r round(car::durbinWatsonTest(honeyModel)$dw, digits = 2)` which is fairly close to the 2.5 Rule of Thumb cutoff.
+What we're looking for is a pattern. A "cloud" of points or the lack of any pattern is what we're hoping for. If instead we see something that reminds of things we saw in college algebra, pre-calculus, trig, calculus, or other math classes, then we have a problem. For the Honey data, I do not see any indication of a pattern.
 
-Use `car::durbinWatsonTest(honeyModel)$dw` to get the value of the Durbin-Watson statistic.
+#### Durbin-Watson
 
-## Conduct the Test
+In addition to the index plots, we can also use the Durbin-Watson statistic to measure the level of autocorrelation (or serial correlation) in our data. Again, we must know the measurement order of our data.
 
-Since two of the assumptions are violated (and fairly badly), conducting the significance test is not recommended without first taking corrective actions. Thus, we will __NOT__ use the parametric shortcut with the Honey Study data.
+If there is no autocorrelation (i.e., independent observations), then the DW statistic should be around 2. A *__rough__* Rule of Thumb is that DW values that are less than 1.5 or greater than 2.5 are causes for concern. However, the DW statistic is sensitive to things such as long runs of the same treatment/group in the data. Only use the DW statistic in conjunction with the index plot AND your knowledge of the study. Use `car::durbinWatsonTest(honeyModel)$dw` to get the value of the Durbin-Watson statistic.
+
+For the Honey data, the value of the Durbin-Watson statistic is `r round(car::durbinWatsonTest(honeyModel)$dw, digits = 2)`, which is fairly close to the 2.5 cutoff, so I'm not concerned about violations of the Independence of Observations assumptions.
+
+### Your Turn
+
+Use the information in Oehlert about the Resin Lifetime example as well as knowledge that the data appear in measurement order to assess the assumption of Independent Observations. What do you come up with?
+
+# Conducting the Parametric Shortcut (ANOVA *F* Test)
+
+There are a couple of things that we will want to make sure that we have before we actually look at the results of the ANOVA *F* test. First, we need to make a set of choices related to our decision rule. Second, we need to assess the assumptions of the shortcut.
+
+## Decision Rule
+
+For this shortcut we will make use of a *p*-value decision rule. This is standard practice for ANOVA problems. However, we need to be sure that we've made two choices before we look at the results. First, we need to be sure that we've set our chosen which Type I error rate we're going to use (more on this later) and set the Type I risk level, \(\mathcal{E}_{I}\). Second, we need to decide what our *Unusualness Threshold*, *UT*, is going to serve as the way to decide whether we reject or fail to reject the null hypothesis. The Unusualness Threshold is the maximum percentage of the time we anticipate seeing "unusual events" given the null hypothesis. This is a probability value and we're free to choose the value provided that \(UT \leq \mathcal{E}_{I}\). (There are some subtle distinctions between the ideas of Unusualness Threshold, Level of Significance, and Type I risk that we won't get into.)
+
+For this tutorial, I'm going to use \(\mathcal{E}_{I}=0.1\) and \(UT=0.03\).
+
+## Assessment of Assumptions
+
+We will proceed cautiously with the Song Knowledge data. We will NOT proceed with the parametric shortcut for the Honey data. Remember, the parametric shortcut is robust to moderate and minor violations of assumptions. In the case of Honey data, I have concerns about two of the three assumptions, so I would not want to use this shortcut without taking additional steps (beyond this tutorial).
+
+I also feel that we can proceed cautiously with the Resin Lifetimes data.
+
+## Quick Look Method
+
+Technically, you've already done the parametric shortcut (ANOVA *F* test). When you used the *aov* command, `R` took the shortcut automatically. Thus, all we really need to do is look at the results. If you are just looking for yourself, the "quick look" method is great. However, this method is absolutely __TERRIBLE__ for reports. To quickly look at the results you use either the `summary` or `anova` functions on your model objects (the outputs of the `aov` call):
+
+```{r quickLook, echo=TRUE}
+# Demo code
+# Summary example with Song Knowledge
+summary(songModel)
+
+# Anova example with Resin Lifetime
+anova(resinModel)
+
+```
+
+The `anova` function is special wrapper of the `summary` function that adds just a bit more formatting to the output. However, we can do MUCH better.
+
+## Professional ANOVA Tables
+
+There are two kinds of professional looking ANOVA tables. The first is a classical table that is essentially the output (sans the significance codes) in a nice table format. However, these are *lacking*. The modern ANOVA table incorporates effect sizes (practical significance) into the table along with statistical significance.
+
+To make these modern tables, we will need the `parameters` package along with `knitr` and `kableExtra`.
+
+```{r songANOVATable, echo=TRUE}
+# Demo Code
+# Create professional looking modern ANOVA table for Song Knowledge
+parameters::model_parameters(
+  model = songModel,
+  omega_squared = "raw",
+  eta_squared = "raw",
+  epsilon_squared = "raw"
+) %>%
+  knitr::kable(
+  digits = 4,
+  col.names = c(
+    "Source", "SS", "df", "MS", "F", "p-value",
+    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
+  caption = "ANOVA Table for Song Knowledge Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = c("l", rep("c", 8))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 10,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+Since our *p*-value is less than *UT* (0.0145 < 0.03), we will reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does impact their song knowledge score (see Table \ref{tab:songANOVATable}). In particular, their year in school accounts for around 40% of the variation in their score.
+
+```{r resinANOVATable, echo=TRUE}
+# Demo Code
+# Create professional looking modern ANOVA table for Resin Lifetimes
+parameters::model_parameters(
+  model = resinModel,
+  omega_squared = "raw",
+  eta_squared = "raw",
+  epsilon_squared = "raw"
+) %>%
+  knitr::kable(
+  digits = 4,
+  col.names = c(
+    "Source", "SS", "df", "MS", "F", "p-value",
+    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
+  caption = "ANOVA Table for Resin Lifetimes Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = c("l", rep("c", 8))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 10,
+    latex_options = c("scale_down", "HOLD_position")
+  ) %>%
+  kableExtra::footnote(
+    general = "Computer rounding has made the p-value look like zero.",
+    general_title = "Note. ",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+From Table \ref{tab:resinANOVATable}, we can see that we will reject the null hypothesis that the temperature impacts lifetime of the resin. The temperature accounts for essentially 91% of all variation in lifetimes.
+
+Notice that both Table \ref{tab:songANOVATable} and Table \ref{tab:resinANOVATable} look much more professional than the raw output we got from using `summary` and `anova`. Further, by using this approach with the `model_parameters` function, we've gotten our three estimates of effect size for the model.
+
+There is a downside in this approach: the *p*-value has been made to look equal to zero. We know that while *p*-values may be essentially equal to zero, they are never actually zero. We added a footnote to Table \ref{tab:resinANOVATable}. However, we could attempt to fix this issue using the following function:
+
+```{r pvalueRounding, echo=TRUE}
+# Set up the p-value rounding function.
+pvalRound <- function(x){
+  if (x < 0.0001) {
+    return("< 0.0001")
+  } else {
+    return(x)
+  }
+}
+
+```
+
+```{r resinTable2, echo=TRUE}
+# Demo Code to fix p-value rounding issues
+# Professional looking modern ANOVA table with fixed p-value
+parameters::model_parameters(
+  model = resinModel,
+  omega_squared = "raw",
+  eta_squared = "raw",
+  epsilon_squared = "raw"
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+  digits = 4,
+  col.names = c(
+    "Source", "SS", "df", "MS", "F", "p-value",
+    "Omega Sq.", "Eta Sq.", "Epslion Sq."),
+  caption = "ANOVA Table for Resin Lifetimes Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = c("l", rep("c", 8))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 10,
+    latex_options = c("scale_down", "HOLD_position")
+  ) 
+
+```
+
+Either table (Table \ref{tab:resinANOVATable} or Table \ref{tab:resinTable2}) is sufficient; you only need to worry about this IF you have a *p*-value that is sufficiently close to zero. You can then proceed with providing interpretations of *F*, the *p*-value, the effect sizes, and make a decision.
+
+# Reporting Point Estimates
+
+One of the last things that we're going to do here is get the point estimates for our Grand Mean and treatment effects.
+
+__Make sure that you've told R to use the Sum to Zero constraint before proceeding.__
+
+To get these point estimates, we will use the `dummy.coef` function. To make the results look professional, we'll again make use the `knitr` and `kableExtra` packages
+
+```{r coefficientsSong, echo=TRUE}
+# Demo making a profession talbe of coefficients/point estimates
+## If you want to quickly look, just enter dummy.coef(songModel) into the Console
+
+# Song Knowledge Data
+pEst <- dummy.coef(songModel)
+pEst <- unlist(pEst)
+names(pEst) <- c("Grand Mean", "Sophomores", "Juniors",
+                 "Seniors")
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 2,
+  caption = "Point Estimates from the Song Knowledge Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+The values labelled `(Intercept)` are the values of the *Grand Sample Arithmetic Mean*. Remember that these are *rates*. Thus, for the Song Knowledge study, we would interpret this value as `r round(dummy.coef(songModel)$'(Intercept)', 2)` points per student; our entire sample accumulated `r round(dummy.coef(songModel)$'(Intercept)', 2)` times as many points as sampled students.
+
+We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Juniors, they accumulated an additional `r round(dummy.coef(songModel)$year[2], 2)` points per student where as the Sophomores only accumulated `r round(dummy.coef(songModel)$year[1], 2)` points per student and the Seniors accumulated `r round(dummy.coef(songModel)$year[3], 2)` points per student. This suggests that Seniors performing worse that baseline (*GSAM*).
+
+### Your Turn
+
+Attempt to come up with the code that makes the following table for the Resin Lifetime study. Additionally, practice interpreting these point estimates.
+
+```{r coefficientsResin, echo=FALSE}
+# Demo making a profession table of coefficients/point estimates
+
+# Resin Lifetime Data
+pEst <- dummy.coef(resinModel)
+pEst <- unlist(pEst)
+names(pEst) <- c("Grand Mean", "175ºC", "194ºC",
+                 "213ºF", "231ºF", "250ºF")
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 2,
+  caption = "Point Estimates from the Resin Lifetime Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
 
 \newpage
 
@@ -514,7 +781,7 @@ anova(resinModel)
 
 ```
 
-The `anova` function is special wrapper of the `summary` function that adds just a bit more formatting to the output. However, we can do MUCH better.
+
 
 ### Professional Looking ANOVA Tables
 
@@ -522,113 +789,8 @@ We are going to combine professional looking tables from the Descriptive Statist
 
 To get the effect sizes, we will make use of the `parameters` package's `model_parameters` function.
 
-\newpage
-
-```{r resinANOVATable, echo=TRUE}
-# DEMO CODE
-
-# Create professional looking modern ANOVA table
-parameters::model_parameters(
-  model = resinModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
-) %>%
-  knitr::kable(
-  digits = 4,
-  col.names = c(
-    "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
-  caption = "ANOVA Table for Resin Lifetimes Study",
-  format = "latex",
-  booktabs = TRUE,
-  align = c("l", rep("c", 8))
-  ) %>%
-  kableExtra::kable_styling(
-    font_size = 10,
-    latex_options = c("scale_down", "HOLD_position")
-  ) %>%
-  kableExtra::footnote(
-    general = "Computer rounding has made the p-value look like zero.",
-    general_title = "Note. ",
-    footnote_as_chunk = TRUE
-  )
-
-```
-
-Notice that Table \ref{tab:resinANOVATable} looks much more professional than the raw output we got from using `summary` and `anova`. Further, by using this approach with the `model_parameters` function, we've gotten our three estimates of effect size for the model.
-
-There is a downside in this approach: the *p*-value has been made to look equal to zero. We know that while *p*-values may be essentially equal to zero, they are not actually zero. We added a footnote to Table \ref{tab:resinANOVATable}. However, we could attempt to fix this issue using the following function:
-
-```{r pvalueRounding, echo=TRUE}
-# Set up the p-value rounding function.
-pvalRound <- function(x){
-  if (x < 0.0001) {
-    return("< 0.0001")
-  } else {
-    return(x)
-  }
-}
-
-```
-
-```{r resinTable2, echo=TRUE}
-# DEMO CODE
-
-# Professional looking modern ANOVA table with fixed p-value
-parameters::model_parameters(
-  model = resinModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
-) %>%
-  dplyr::mutate(
-    p = ifelse(
-      test = is.na(p),
-      yes = NA,
-      no = pvalRound(p)
-    )
-  ) %>%
-  knitr::kable(
-  digits = 4,
-  col.names = c(
-    "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."),
-  caption = "ANOVA Table for Resin Lifetimes Study",
-  format = "latex",
-  booktabs = TRUE,
-  align = c("l", rep("c", 8))
-  ) %>%
-  kableExtra::kable_styling(
-    font_size = 10,
-    latex_options = c("scale_down", "HOLD_position")
-  ) 
-
-```
-
-Either table is sufficient; you only need to worry about this IF you have a *p*-value that is sufficiently close to zero. You can then proceed with providing interpretations of *F*, the *p*-value, the effect sizes, and make a decision.
 
 \newpage
-
-## Reporting Point Estimates
-
-One of the last things that we're going to do here is get the point estimates for our Grand Mean and treatment effects.
-
-__Make sure that you've told R to use the Sum to Zero constraint before proceeding.__
-
-To get these point estimates, we will use the `dummy.coef` function:
-
-```{r coefficients, echo=TRUE}
-# DEMO CODE
-
-# Getting coefficients/point estimates
-dummy.coef(resinModel)
-
-```
-
-A couple of things to note: these values are slightly different from what Oehlert tabulated in Example 3.5 (p. 42). However, if you add the Grand Mean value (i.e., "(Intercept)") and the estimate for each treatment effect, you will get to the values of \(\widehat{\mu_i}\) in Example 3.5 as well as the listed mean values in Listings 3.1 (p. 50) and 3.2 (p. 51). (I have programmed the homework answers based on R's evaluations.) 
-
-You should be prepared to interpret these estimates as well as format them in a professional layout. Note: `dummy.coef` will return a list of two elements: the grand mean and the treatment effects.
 
 # Your Turn
 
