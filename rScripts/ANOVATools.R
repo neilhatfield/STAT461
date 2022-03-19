@@ -1,8 +1,8 @@
 # Check, Install, and Load Required Packages
-req.packages <- c("DescTools", "sjstats", "dunn.test", "dplyr", "purrr")
+req.packages <- c("DescTools", "sjstats", "dunn.test", "dplyr", "purrr", "NSM3")
 new.packages <- req.packages[!(req.packages %in% installed.packages()[,"Package"])]
 if (length(new.packages)) {install.packages(new.packages)}
-lapply(req.packages, require, character.only = TRUE)
+lapply(req.packages, require, character.only = TRUE, quietly = TRUE)
 
 # P Value Rounding ----
 pvalRound <- function(x, digits = 4){
@@ -324,4 +324,25 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
     scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
 
   return(plot)
+}
+
+# DSCF Test ----
+## Given an apparent issue with the PMCMRplus package, I'm writing
+## a function for the DSCF test
+dscfTest <- function(response, factor){
+  temp1 <- NSM3::pSDCFlig(
+    x = response,
+    g = factor,
+    method = "Asymptotic"
+  )
+  newLabels <- gsub(
+    pattern = " - ",
+    replacement = " vs. ",
+    x = temp1$labels
+  )
+  temp2 <- data.frame(
+    Comparison = newLabels,
+    `p-value` = temp1$p.val
+  )
+  return(temp2)
 }
