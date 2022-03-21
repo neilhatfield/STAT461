@@ -54,7 +54,7 @@ The ANOVATools.R file contains a set of functions that I've written to help indi
 
 #### Public Functions
 
-As of 3/20/2022, there are seven public functions: `anova.PostHoc`, `anovaFixer`, `block.RelEff`, `hodgesLehmann`, `kw.PostHoc`, `probSup`, `pvalRound`, `sphericityPlot`, and `dscfTest`.
+As of 3/20/2022, there are nine public functions: `anova.PostHoc`, `anovaFixer`, `block.RelEff`, `hodgesLehmann`, `kw.PostHoc`, `probSup`, `pvalRound`, `sphericityPlot`, and `dscfTest`.
 
 ##### anova.PostHoc
 
