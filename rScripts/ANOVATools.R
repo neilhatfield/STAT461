@@ -346,3 +346,37 @@ dscfTest <- function(response, factor){
   )
   return(temp2)
 }
+
+# pValue Adjustments ----
+## A wrapper to apply the p.adjust function to contrasts without applying the
+## adjustment to the omnibus test.
+adjustPValues <- function(contrastObject, method = "bonferroni"){
+  temp1 <- contrastObject[[1]] # Grab the appropriate output
+  temp1$method <- method
+  temp1$contrastIndicator <- stringr::str_detect(row.names(temp1), pattern = ":")
+  colnames(temp1)[which(colnames(temp1) == "Pr(>F)")] <- "rawP"
+  m <- sum(temp1$contrastIndicator)
+  temp1$m <- m
+  temp1$adjP <- sapply(
+    X = 1:nrow(temp1),
+    FUN = function(x){
+      p.adjust(
+        p = temp1$rawP[x],
+        method = ifelse(
+          test = temp1$contrastIndicator[x] == TRUE,
+          yes = temp1$method[x],
+          no = "none"
+        ),
+        n = ifelse(
+          test = temp1$contrastIndicator[x] == TRUE,
+          yes = temp1$m[x],
+          no = 1
+        )
+      )
+    }
+  )
+
+  temp1 <- temp1[,-which(colnames(temp0) %in% c("contrastIndicator", "method", "m"))]
+
+  return(temp1)
+}
