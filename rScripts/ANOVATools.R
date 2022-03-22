@@ -360,23 +360,21 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
   temp1$adjP <- sapply(
     X = 1:nrow(temp1),
     FUN = function(x){
-      p.adjust(
-        p = temp1$rawP[x],
-        method = ifelse(
-          test = temp1$contrastIndicator[x] == TRUE,
-          yes = temp1$method[x],
-          no = "none"
-        ),
-        n = ifelse(
-          test = temp1$contrastIndicator[x] == TRUE,
-          yes = temp1$m[x],
-          no = 1
+      if (temp1$contrastIndicator[x] == TRUE) {
+        return(
+          p.adjust(
+            p = temp1$rawP[x],
+            method = temp1$method[x],
+            n = temp1$m[x]
+          )
         )
-      )
+      } else {
+        return(NA)
+      }
     }
   )
 
-  temp1 <- temp1[,-which(colnames(temp0) %in% c("contrastIndicator", "method", "m"))]
+  temp1 <- temp1[,-which(colnames(temp1) %in% c("contrastIndicator", "method", "m"))]
 
   return(temp1)
 }
