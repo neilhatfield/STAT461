@@ -1,7 +1,7 @@
 ---
 title: "Contrasts and ANOVA"
 author: "Neil J. Hatfield"
-date: "3/21/2022"
+date: "3/22/2022"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -233,7 +233,6 @@ In this formula, the weighting of the weights comes from the sample size for eac
 &=0
 \end{align*}
 
-
 Thus our two contrasts, `c1` and `c2`, are orthogonal to each other.
 
 We can use `R` to help us check orthogonality of our contrasts:
@@ -253,52 +252,75 @@ Once you have set up your contrasts, you have two routes to take for testing the
 
 ## Base Package Approach
 
-Perhaps the easiest approach is to use the base packages of R. However, I must quickly caution that you __do not__ get any Type I Error Rate control with this method. Thus, if you go down this route, you will need to manually apply your selected method. There is a four-step process that you'll need to do:
+The base package approach allows you to explore a variety of contrasts on multiple different factors. However, analyzing contrasts takes a series of steps. 
 
-1) You need to take the contrasts that you saved and bind them to your factor.
-    + Use `contrasts(dataFrame$factor)` then
-    + Assign (`<-`) your contrast to this call.
-    + If you have more than one contrast, wrap them all in `cbind`.
-2) (Re-)Run the ANOVA *F* Test via the `aov` or `lm` calls.
-    + Note: I typically run one `aov` call for checking residuals and then run a __new__ call for applying my contrasts.
-3) Save the classical ANOVA table to an object using the `summary.aov` call.
-    + You will not be able to use the `parameters` package nor the regular `summary` call and get the contrasts to appear.
-4) Make a professional looking table.
+### The Steps of Doing Contrasts in Base `R`
 
-See the example code below.
+1) Construct the contrast weight vectors
+2) Connect the contrast weight vectors to each factor
+3) (Re-) Run the ANOVA *F* Test
+4) Store the Correct ANOVA Output
+5) Adjust the *p*-values
+6) Make a Professional Looking Table
 
-```{r baseContrast, echo=TRUE}
-# Demo code for testing contrasts
-# Base Packages Approach to ANOVA Contrasts
-## Step 1--Bind contrasts to the factor
+### Exploring the Code
+
+We've already discussed how we can construct, store, and check our contrast weight vectors. We will use both `c1` and c2` in our work.
+
+The next step is to connect these contrasts to our factor. There's nothing inherent in how we constructed the vectors that says "Hey, these are for the strain of bacteria!". We have to tell `R` that this is what we want. To do this, we'll used the `contrasts` function:
+
+```{r settingContrasts, echo=TRUE}
+# Demo code for setting contrasts in the Cheese study
 contrasts(cheeseData$strain) <- cbind(c1, c2)
 
-## Step 2--Run the ANOVA omnibus
-cheeseModelC <- aov(
+# Generic example
+# contrasts(dataFrame$factor) <- weightMatrix
+
+```
+
+Now we need to (re-)run the ANOVA model. If you ran the ANOVA model to get residuals but hadn't yet added on the contrasts, then you need to re-run everything. This will ensure that the contrasts get tested with the parametric shortcut.
+
+```{r testingContrasts, echo=TRUE}
+# Demo code for testing contrasts in the Cheese study
+cheeseContrasts <- aov(
   formula = acids ~ strain,
   data = cheeseData
 )
 
-## Step 3--Save the output table
-contrastOut1 <- summary.aov(
-  object = cheeseModelC,
-  split = list( # You can give meaning to your contrasts here
+```
+
+Now we get to a bit of a tricky point: we need to isolate the appropriate portion of the model results. For quick examinations we would use `summary` to do this. However, neither of these methods will display the tests for the contrasts. Thus, we need to make use of a new argument: `split`
+
+```{r outputContrasts, echo=TRUE}
+contrastOut <- summary(
+  object = cheeseContrasts,
+  split = list( # Apply meaningful labels to your contrasts here
     strain = list(
-      "(A&B), A, and B vs. Null" = 1,
+      "(A&B), A, and B vs. None" = 1,
       "(A&B) vs. A or B" = 2
     )
   )
 )
 
-## Step 4--Create a Professional looking table
-knitr::kable(
-  x = contrastOut1[[1]], # Grab the summary.aov output
-  digits = 4,
-  col.names = c(
-    "DF", "SS", "MS", "F", "p-value"), 
-  caption = "ANOVA Table for Free Amino Acids in Cheese Study",
-  booktabs = TRUE,
-  align = rep("c", 5)
+```
+
+The `split` argument allows us to call the contrasts we want to explore. The structure of the `split` argument is a list of lists. The outer list has elements which start with the name of the factor; `stain = list(`. The inner lists begin with the meaningful labels (e.g., `"(A&B), A, and B vs. None"`) and then a number which corresponds to order in which you listed the weight vectors in the `cbind` call.
+
+Now that we have stored the output that we need, `contrastOut`, we can impose our adjustments for the multiple comparison problem and create a professional looking table.
+
+```{r contrastTable, echo=TRUE}
+# Demo code for adjusting p-values and making a professional table
+adjustPValues(
+  contrastObject = contrastOut,
+  method = "fdr"
+) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c(
+      "DF", "SS", "MS", "F", "Raw p-value", "Adj. p-value"), 
+    caption = "ANOVA Table for Free Amino Acids in Cheese Study",
+    booktabs = TRUE,
+    align = rep("c", 5)
   ) %>%
   kableExtra::kable_styling(
     font_size = 12,
@@ -307,7 +329,16 @@ knitr::kable(
 
 ```
 
-Notice how the two contrasts are now listed as the second and third rows of our table. Keep in mind that their *p*-values are __not adjusted__. You will need to manually calculate \(\mathcal{E}_{I}^{\star}\) using your chosen method to figure out what to use for each test's individual unusualnesss threshold.
+The `adjustPValues` function comes from my set of helper tools (`ANOVATools`). You need to pass this function the output of the `summary` call with the `split` argument and you need to state which method you want to use. The `method` argument supports all of the following methods:
+
+| Chosen Method | Set `method =` |
+|:--------------|:-----------------------:|
+| Bonferroni | `"bonferroni"` |
+| Holm | `"holm"` |
+| Hochberg | `"hochberg"` |
+| Benjamini & Hochberg | `"BH"` OR `"fdr"` |
+
+We can pipe the output of `adjustPValues` into a `kable` call to make our professional table. We will not be using the `parameters` package with contrasts to make modern ANOVA tables. (Still working on some bugs.) In Table \ref{tab:contrastTable}, the two contrasts appear as the second and third rows of our table. 
 
 ## `DescTools` Package
 
