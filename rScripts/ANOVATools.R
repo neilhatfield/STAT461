@@ -342,6 +342,7 @@ dscfTest <- function(response, factor){
   )
   temp2 <- data.frame(
     Comparison = newLabels,
+    w = temp1$obs.stat,
     `p-value` = temp1$p.val
   )
   return(temp2)
