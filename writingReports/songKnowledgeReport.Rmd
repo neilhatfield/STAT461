@@ -1,9 +1,9 @@
 ---
 title: "STAT461 Undergraduate Song Knowledge"
-author: "Your Name Here"
+author: "Neil Hatfield and Your Name Here"
 date: "Date"
 output: pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes:
   - \usepackage{subfig}
@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
 
 # Add additional packages by name to the following list
 packages <- c(
-  "tidyverse", "knitr", "kableExtra", "hasseDiagram"
+  "tidyverse", "knitr", "kableExtra", "hasseDiagram",
+  "psych", "car", "parameters"
   ) 
 lapply(X = packages, FUN = library, character.only = TRUE)
 
@@ -28,6 +29,8 @@ lapply(X = packages, FUN = library, character.only = TRUE)
 options(knitr.kable.NA = "")
 options("contrasts" = c("contr.sum", "contr.poly"))
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R")
 
 
 ```
@@ -39,66 +42,407 @@ songData <- read.csv(
   header = TRUE,
   sep = ","
 )
+
+songData$year <- factor(
+  x = songData$year,
+  levels = c("sophomore", "junior", "senior")
+)
 ```
 
-<!-- If you wish to embed comments in the non-code chunk portion of your R Markdown
-file then you do so by using the four characters that begin this comment and
-then end with the three characters that end this line -->
+<!-- If you wish to embed comments in the non-code chunk portion of your R Markdown file then you do so by using the four characters that begin this comment and then end with the three characters that end this line -->
 
-## Introduction and Background
-<!-- This is where you'll write the portion of your narrative which frames the
-context for the SRQ. This is also where you will 1) explicitly state the SRQ and
-2) incorporate any additional references (if applicable) -->
+<!-- Between the header and the Introduction/Background header is the typical place that you put an abstract or Executive Summary. The choice of including a header is up to you. -->
 
-## Study Design and Methods
-<!-- In this portion you'll write the narrative format of the study design-that
-is everything we've discussed in Unit 2. You'll want to incorporate the Hasse
-diagram, your hypotheses for any SRQs, any sample size considerations, as well
-as how you are going to handle the multiple comparison problem.-->
+# Introduction and Background
+<!-- This is where you'll write the portion of your narrative which frames the context for the SRQ. This is also where you will 1) explicitly state the SRQ and 2) incorporate any additional references (if applicable) -->
 
-```{r hasseDiagram, fig.cap="Hasse Diagram for the Song Knowledge Study"}
+Bar or pub trivia are a growing event in American bars/pubs that came from the 1970s British culture. While increasing in popularity, pub trivia is emblematic of a common phenomenon of trivia and game nights. A common round of pub trivia is a music round where short snippets of songs are played over the PA system. Trivia contestants then try to identify the artist and title of each song. 
+
+Dr. Hatfield is a big fan of pub trivia and has noticed that the ages of contestants seemed to play a role in how people did at identifying songs. To make exploring his noticing accessible to his students, he designed an sequence of activities to allow STAT 461 students to not only design a study to investigate, but also collect and analyze data. 
+
+To this end, we want to explore whether a STAT461 undergraduate student's year in school impacts how well they can identify song title and artist (i.e., their song knowledge)?
+
+# Study Design and Methods
+<!-- In this portion you'll write the narrative format of the study design-that is everything we've discussed in Unit 2. You'll want to incorporate the Hasse diagram, your hypotheses for any SRQs, any sample size considerations, as well as how you are going to handle the multiple comparison problem.-->
+
+In order to investigate our research question, we've designed a quasi-experimental study. Dr. Hatfield constructed a set of 20-second snippets of 10 different songs. Each member of STAT461 present on the quizzing day, took part in the activity. They recorded their year in school (Sophomore, Junior, Senior) and then wrote down the titles and main artist for each of the 10 songs. Baring spelling issues, students received one point for each correct answer.
+
+Dr. Hatfield collected the un-scored answer sheets from all present students and sorted them into three strata based upon year in school. From each stratum, he used R to randomly sample, without replacement, five answer sheets to score and make up our data set. The data is publicly available[^1].
+
+[^1]: Data available at [https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv](https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv)
+
+Our primary response is a student's level of song knowledge. We've operationalized this through the score based upon their correct identification of song title and primary artist. Our only factor of interest is their categorical year in school. Taken together and with our research question, ANOVA methods appear to be appropriate. Figure \ref{fig:hasseDiagram} shows the Hasse diagram for this study. We can see that an additive model will work and that we have sufficient degrees of freedom to estimate effects and residuals/errors.
+
+```{r hasseDiagram, fig.cap="Hasse Diagram for the Song Knowledge Study", fig.height=2, fig.pos="H"}
 # Create a Hasse diagram for the study
+# Feel free to use the Hasse diagram wizard app to generate the code for you:
+## https://psu-eberly.shinyapps.io/Hasse_Diagrams/
 
+modelLabels <- c("1 Answer Questions 1", "3 Year in School 2", "15 (Students) 12")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
+  nrow = 3,
+  ncol = 3,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
 
 ```
 
-### Population 
-<!--If applicable; this is a subsection where you describe the sample/population
-that you will be working with along demographic lines.-->
+Thus, we will adopt the following null hypothesis: there is no statistically significant impact of year in school on song knowledge score. Our alternative hypothesis is then: there is a statistically significant impact of year in school on song knowledge score. We will control our overall Type I risk at 6%, and we'll use a personal unusualness threshold of 4%\footnote{We encourage our readers to select their own unusualness thresholds when examining our results.}. For multiple comparisons, we'll use Tukey's HSD.
 
-## Exploration of the Data
-<!-- This is the section where you'll engage in EDA. You will want to create and
-discuss various data visualizations and descriptive statistics on your sample to
-establish a beginning understanding of what is going on. -->
+<!-- ## Population -->
+<!--If applicable; this is a subsection where you describe the sample/population that you will be working with along demographic lines.-->
 
-## Results
+# Exploration of the Data
+<!-- This is the section where you'll engage in EDA. You will want to create and discuss various data visualizations and descriptive statistics on your sample to establish a beginning understanding of what is going on. -->
+
+```{r shadowgram, fig.cap="Shadowgram of Song Knowledge Scores", fig.height=2, fig.width=4, fig.pos="H"}
+# Note: you do not have to use shadowgrams. 
+# You can use a histogram or any other kind of data visualization.
+shadowgram(
+  dataVec = songData$score,
+  label = "Score",
+  layers = 50,
+  color = "blue",
+  aStep = 4
+)
+
+```
+
+Figure \ref{fig:shadowgram} provides the shadowgram for our 15 song knowledge scores. In examining the shadowgram, we can see two modal clumps: the first covering scores of one to six points and the second stretching from eight to eleven points. While we know that we have three groups based upon year in school, Figure \ref{fig:shadowgram} suggests that we might only have two.
+
+```{r descStats}
+scoreStats <- psych::describeBy(
+  x = songData$score,
+  group = songData$year,
+  na.rm = TRUE,
+  skew = TRUE,
+  ranges = TRUE,
+  quant = c(0.25, 0.75),
+  IQR = FALSE,
+  mat = TRUE,
+  digits = 4
+)
+
+scoreStats %>%
+  tibble::remove_rownames() %>%
+  tibble::column_to_rownames(
+    var = "group1"
+  ) %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  knitr::kable(
+    caption = "Summary Statistics for Song Knowledge Scores",
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep('c', 11),
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD",
+                  "Sample Skew", "Sample Ex. Kurtosis"),
+    booktabs = TRUE
+  )  %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+Table \ref{tab:descStats} shows the values of various descriptive statistics broken out by year in school. Visually, we can see that the seniors tend to have lower scores than juniors; the max score of the seniors is the same as the minimum score of the juniors. Sophomores cover both. Visually, we can see this in the box plots of Figure \ref{fig:boxplots}. There does appear to be differences in the performance of each year when we look at values of the *Sample Arithmetic Mean* (*SAM*). There also appears to be different amounts of variation with each year as evidenced by the values of the *Sample Arithmetic Standard Deviation* (*SASD*). 
+
+```{r boxplots, fig.cap="Side-by-side Box Plots of Score by Year", fig.width=4, fig.height=2, fig.pos="H"}
+ggplot(
+  data = songData,
+  mapping = aes(x = year, y = score, fill = year)
+) +
+  geom_boxplot() +
+  theme_bw() +
+  xlab("Year in School") +
+  ylab("Score") +
+  theme(
+    legend.position = "none",
+    text = element_text(size = 12)
+  )
+
+```
+
+# Results
 <!-- This is the section of the report where you'll carry out an inferential methods.-->
 
-### Assumptions
-<!-- As this subsection's title implies, you'll discuss any assessment of assumptions
-in this section BEFORE you share any results for the related methods. -->
+To answer our research question, we will seek to use the parametric shortcut known as the ANOVA *F* test. There are three assumptions that our data must satisfy to use this approach: residuals follow a Gaussian distribution, homoscedasticity, and independence of observations.
 
-<!-- The following subsections are but one way to structure the report. You can
-also structure by SRQ (if you have multiple), with sub-subsections as necessary.-->
-### Overarching 
-<!-- "Overarching" is a placeholder for how you wish to title this section. The
-main point is that this is the section where you'll first present and interpret
-results from omnibus test. Don't forget effect sizes. -->
+```{r songModel}
+songModel <- aov(
+  formula = score ~ year,
+  data = songData,
+  na.action = "na.omit"
+)
 
-### Post Hoc
+```
+
+## Assumptions
+<!-- As this subsection's title implies, you'll discuss any assessment of assumptions in this section BEFORE you share any results for the related methods. -->
+
+```{r assumptionPlots, fig.cap="Assessing Assumptions for Song Knowledge Study", fig.subcap=c("QQ Plot", "Srip Chart"), fig.ncol=2, out.width="50%", fig.pos="H"}
+car::qqPlot(
+  x = songModel$residuals,
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals"
+)
+
+ggplot(
+  data = data.frame(
+    residuals = songModel$residuals,
+    fitted = songModel$fitted.values
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  theme_bw() +
+  xlab("Fitted values (points)") +
+  ylab("Residuals (points)")
+
+```
+
+Let us first turn towards the Gaussian assumption. Figure \ref{fig:assumptionPlots} shows the QQ plot for our residuals with a 90% confidence envelope. Only two observations (~`r round(2/15,2)*100`%) fall outside of this envelope. Additionally from Table \ref{tab:descStats}, we can see that two of the groups (sophomores and juniors) have negative skewness while the seniors have positive skewness. All groups have negative excess kurtosis. Taken together, we have questions about the whether we've fully satisfied the Gaussian assumption.
+
+Further, in Figure \ref{fig:assumptionPlots} we can also see the strip chart for assessing the homoscedasticity assumption. The groups to the middle and right appear to have more than twice the variation of the leftmost group. This raises a question about whether we satisfy the homoscedasticity assumption.
+
+For the issue of independence of observations, we know that each student completed the quizzes individually. Further, Dr. Hatfield used a computerized system to carry out the selection of individuals from the broader pools. Thus, we can be relatively assured that we have the independence of observations.
+
+MAKE A DECISION
+
+<!-- You will need to make a decision about whether you want to proceed with the parametric or nonparametric shortcut -->
+
+<!-- Choose one of the following:
+
+Given that we have a balanced design, we will cautiously proceed with the parametric ANOVA *F* test and our planned post hoc analysis.
+
+Given our concerns with the Gaussian and homoscedasticity assumptions, we will opt to make use of the nonparametric versions of our planned analyses. This includes the Kruskal-Wallis *H* test for the omnibus and DSCF tests for post hoc analysis.
+
+Given our concerns with the assumptions, we will transform the data by [describe transformation]. When we examine the residuals of the transformed data we see [describe what you see]. [Include new plots] [The next statement is included IF your transformation has worked:] Given these results, we will proceed with the transformed data using our planned analysis methods. [Note: if the transformations don't work, you can always switch to the nonparametric option.]
+
+<!-- The following subsections are but one way to structure the report. You can also structure by SRQ (if you have multiple), with sub-subsections as necessary.-->
+## Omnibus  
+
+MAKE A DECISION
+
+<!-- Parametric Case
+
+```{r parametricCase}
+parameters::model_parameters(
+  model = songModel,
+  omega_squared = "raw",
+  eta_squared = "raw",
+  epsilon_squared = "raw"
+) %>%
+  knitr::kable(
+  digits = 4,
+  col.names = c(
+    "Source", "SS", "df", "MS", "F", "p-value",
+    "Omega Sq.", "Eta Sq.", "Epsilon Sq."), 
+  caption = "ANOVA Table for Song Knowledge Study",
+  booktabs = TRUE,
+  align = c("l", rep("c", 8))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 10,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+As we can see from Table \ref{tab:parametricCase}, a STAT461 undergradute's year in school accounts for 6.14 times as much variation as the residuals. Since our *p*-value is less than our unusualness threshold (0.0145 < 0.04), we will reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does impact their song knowledge score. In particular, their year in school accounts for around 41% of the variation in their score (\(\omega^2=0.41\), \(\epsilon^2=0.42\), \(\eta^2=0.51\)).
+
+```{r pointEstimates}
+pointEst <- dummy.coef(songModel)
+pointEst <- unlist(pointEst)
+names(pointEst) <- c("Grand Mean", "Sophomores", "Juniors",
+                     "Seniors")
+
+data.frame("Estimate" = pointEst) %>%
+  knitr::kable(
+  digits = 2,
+  caption = "Point Estimates from the Song Knowledge Study",
+  format = "latex",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Juniors, they accumulated an additional `r round(dummy.coef(songModel)$year[2], 2)` points per student where as the Sophomores only accumulated `r round(dummy.coef(songModel)$year[1], 2)` points per student and the Seniors accumulated `r round(dummy.coef(songModel)$year[3], 2)` points per student. This suggests that Seniors performing worse that baseline (*GSAM*).
+
+-->
+
+<!-- Nonparametric Case
+
+```{r nonparametricCase}
+songKW <- kruskal.test(
+  formula = score ~ year,
+  data = songData,
+  na.action = "na.omit"
+)
+
+songEffectSize <- rcompanion::epsilonSquared(
+  x = songData$score,
+  g = songData$year,
+  digits = 4
+)
+
+```
+
+In using the Kruskal-Wallis *H* test, we found that \(H=`r round(songKW$statistic, digits = 2)`\) with `r songKW$parameter` degrees of freedom. This results in a *p*-value of `r round(songKW$p.value, digits = 4)`. Since this is larger than our stated unusualness threshold (\(UT = 0.04\)), we will reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does impact their song knowledge score.
+
+-->
+
+## Post Hoc
 <!--If applicable; this is where you're present and interpret the results of any
-post hoc analyses. Don't forget effect sizes. -->
+post hoc analyses. Don't forget effect sizes. Remove this section if you do not need post hoc analyses.-->
 
-## Discussion and Limitations
-<!-- This is the section where you will take the results and bring them more fully
-into the context. That is, not only will you restate the results to clearly answer
-your SRQ(s) but you'll also discuss what those answer might mean for the context.
+For our post hoc analyses, we are interested in all of the pairwise comparisons between the three years in school (sophomore, junior, and senior).
+
+MAKE A DECISION
+
+<!-- Parametric Case
+
+```{r tukeyHSD}
+hsdSong <- TukeyHSD(
+  x = songModel, # Your aov/lm object
+  conf.level = 0.94 # 1 -- Your overall Type I Error level
+)
+
+## Kable Code for Tukey HSD
+knitr::kable(
+  x = hsdSong$year, # Notice the factor's name
+  digits = 3,
+  caption = "Post Hoc Tukey HSD Comparisons",
+  col.names = c("Difference", "Lower Bound",
+                "Upper Bound", "Adj. p-Value"),
+  align = 'cccc',
+  booktabs = TRUE,
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+From Table \ref{tab:tukeyHSD}, we can see that the differences in performance between juniors and sophomores and seniors and sophomores are at last as large in magnitude as what we observed 36.2% and 13.9% of time under the null hypothesis. We will take these as usual or typical events when there is no distinction between juniors and sophomores and seniors and sophomores. However, there does appear to a statistical difference between juniors and seniors. We would only anticipate seeing a difference at least as large as 5.4 (in magnitude) about 1% of the time if there was truly no difference between these groups. Approximately 98% of the time we randomly select a junior from STAT461 and a senior from STAT461, the junior will have the higher song knowledge score (see Table \ref{tab:postHocES1}). 
+
+```{r postHocES1}
+anova.PostHoc(songModel) %>%
+  knitr::kable(
+    digits = 3,
+    caption = "Post Hoc Comparison Effect Sizes",
+    col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
+                  "Prob. Superiority"),
+    align = 'lccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+-->
+
+<!-- Nonparametric Case
+
+```{r dscf}
+dscfSong <- dscfTest(
+  response = songData$score,
+  factor = songData$year
+)
+
+# Kable Code for DSCF
+knitr::kable(
+  x = dscfSong,
+  digits = 3,
+  col.names = c("Comparison", "Observed W", "Adj. p-value"),
+  caption = paste("Post Hoc-Dwass-Steel-Critchlow-Fligner Tests"),
+  align = 'lcc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+The Dwass-Steel-Critchlow-Fligner analyses of our levels of year in school allows us to see if any pairs of years are statistically dissimilar. Table \ref{tab:dscf} shows that the differences in performance for sophomores and juniors as well as sophomores and seniors at least as large (in magnitude) as what we observed happen fairly regularly (47% and 30% of the time there is no difference in performance). On the other hand, the difference between juniors and seniors occurs less frequently under the null (3% of the time) and we'll take this to be unusual. Examining Table \ref{tab:postHocES2}, we can see that half of all pairings of a junior and senior show the junior ahead by at least 6 points. In fact, 98% of the time we select a junior and senior via a lottery, the junior will have the higher song knowledge score.
+
+```{r postHocES2}
+kw.PostHoc(
+    response = songData$score,
+    treatments = songData$year
+  ) %>%
+knitr::kable(
+  digits = 3,
+  caption = "Post Hoc Comparison Effect Sizes",
+  col.names = c("Pairwise Comparison","Hodges Lehmann Estimate",
+                "Prob. Superiority"),
+  align = 'lcc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+-->
+
+# Discussion and Limitations
+<!-- This is the section where you will take the results and bring them more fully into the context. That is, not only will you restate the results to clearly answer your SRQ(s) but you'll also discuss what those answer might mean for the context.
 You'll also discuss any limitations to the study (suggest ways to improve) and 
 where we might want to go next for future work. -->
 
+We explored our research question of whether a STAT461 undergraduate student's year in school impacted their song knowledge. From our data, we found that year in school does appear to influence the score they got on the trivia quiz. However, this effect appears to be limited to just juniors and seniors.
 
-<!-- ## References -->
+Our study has several limitations. First, we are looking at a niche population of just students taking STAT461 in the Spring 2022 semester. In future work, we may want to broaden this to a larger population. Second, our total sample size was only 15 students. We may want to increase this sample size along with the broadening of the population. Additionally, we may want to incorporate additional attributes that will allow us to more accurately investigate what might be going on. For example, we might collect information on what a student's most commonly listened to genre of music might be.
+
+<!-- # References -->
 <!-- When applicable -->
+
+\newpage
+
+# Author Contributions
+
+<!-- This section is where you will note who contributed to what aspects of the report/study. You can use as much detail as you wish. -->
+
+The authors of this report would like to acknowledge their individual contributions to the report.
+
++ Dr. Hatfield contributed to the design of the study, collection of data, analysis of data, and writing of the report.
++ [Your Name] contributed to the design of the study, participated in the study, analyzed the data, and the writing of the report.
+
+<!-- Generic example,
++ Person 1 did [list activities they were responsible for]
++ Person 2 did [list activities they were responsible for; can overlap]
++ continue for all members
+-->
+
+
 
 \newpage
 

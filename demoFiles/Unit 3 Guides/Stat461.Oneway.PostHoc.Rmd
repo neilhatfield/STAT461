@@ -478,9 +478,10 @@ dscf <- dscfTest(
 knitr::kable(
   x = dscf,
   digits = 3,
-  col.names = c("Comparison", "Adj. p-value"),
+  col.names = c("Comparison", "Observed W", "Adj. p-value"),
   caption = paste("Post Hoc-Dwass-Steel-Critchlow-Fligner Tests"),
-  align = 'lc'
+  align = 'lcc',
+  booktabs = TRUE
 ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("condensed"),
