@@ -123,7 +123,7 @@ Once you have set the `R` options, now comes reading in data. For this tutorial,
 The following code demonstrates how we can read in the three data sets:
 ```{r loadData, echo=TRUE}
 # Song Data
-songData <- read.csv(
+songData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
   header = TRUE,
   sep = ","
@@ -493,7 +493,6 @@ parameters::model_parameters(
     "Source", "SS", "df", "MS", "F", "p-value",
     "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
   caption = "ANOVA Table for Song Knowledge Study",
-  format = "latex",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) %>%
@@ -523,7 +522,6 @@ parameters::model_parameters(
     "Source", "SS", "df", "MS", "F", "p-value",
     "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
   caption = "ANOVA Table for Resin Lifetimes Study",
-  format = "latex",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) %>%
@@ -582,7 +580,6 @@ parameters::model_parameters(
     "Source", "SS", "df", "MS", "F", "p-value",
     "Omega Sq.", "Eta Sq.", "Epslion Sq."),
   caption = "ANOVA Table for Resin Lifetimes Study",
-  format = "latex",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) %>%
@@ -617,7 +614,6 @@ data.frame("Estimate" = pointEst) %>%
   knitr::kable(
   digits = 2,
   caption = "Point Estimates from the Song Knowledge Study",
-  format = "latex",
   booktabs = TRUE,
   align = "c"
   ) %>%
@@ -651,7 +647,6 @@ data.frame("Estimate" = pointEst) %>%
   knitr::kable(
   digits = 2,
   caption = "Point Estimates from the Resin Lifetime Study",
-  format = "latex",
   booktabs = TRUE,
   align = "c"
   ) %>%
@@ -785,7 +780,6 @@ parameters::model_parameters(
     "Omega Sq.", "Eta Sq.", "Epslion Sq."
     ),
   caption = "ANOVA Table for Insect Spray Study",
-  format = "latex",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) %>%
@@ -807,7 +801,6 @@ data.frame("Estimate" = pointEst) %>%
   knitr::kable(
   digits = 2,
   caption = "Point Estimates from the Insect Spray Study",
-  format = "latex",
   booktabs = TRUE,
   align = "c"
   ) %>%
