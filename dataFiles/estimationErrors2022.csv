@@ -1,0 +1,25 @@
+﻿Sex,Method,Estimate,degrees,distance,estimationError
+Female,Visual,63.3,,,-37.7
+Not Female,Visual,67.5,,,-33.5
+Not Female,Visual,132,,,31
+Female,Visual,70,,,-31
+Not Female,Visual,100,,,-1
+Not Female,Visual,200,,,99
+Female,Visual,48,,,-53
+Female,Visual,65,,,-36
+Female,Tool,260.68,61,144.5,159.68
+Not Female,Tool,369.87,67,157,268.87
+Female,Tool,278.66,62,148.1667,177.66
+Not Female,Tool,50.36,18,155,-50.64
+Female,Tool,10.06,30,17.41667,-90.94
+Female,Tool,3.42816E+17,90,21,3.42816E+17
+Not Female,Tool,249.65,58,156,148.65
+Not Female,Tool,906.78,85,79.33333,805.78
+Not Female,Training,80.93,29,146,-20.07
+Not Female,Training,164.37,48,148,63.37
+Female,Training,102.23,35,146,1.23
+Not Female,Training,42.45,28,79.833333,-58.55
+Not Female,Training,141.05,62,75,40.05
+Female,Training,91,29,164.1667,-10
+Female,Training,99.64,53,75.0833,-1.36
+Female,Training,81.89,47.2,75.833333,-19.11
