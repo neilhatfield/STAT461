@@ -1,7 +1,7 @@
 ---
 title: "ANOVA Models with a Block"
 author: "Neil J. Hatfield"
-date: "3/30/2022"
+date: "4/4/2022"
 output: 
   pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
@@ -29,9 +29,114 @@ options(contrasts = c("contr.sum", "contr.poly"))
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
 ```
 
-In this tutorial, we are going to explore using a block in One-way layouts.
+In this tutorial, we are going to explore looking at ANOVA models involving blocks. Specifically, we'll look at Randomized Complete Block Designs (RCBDs). While we'll focus mainly on One-way ANOVA + a Block, we can expand/extend this to incorporate more than one factor. We will only look at a parametric shortcut approach. The general structure for this guide is as follows:
 
-# Context
++ Setting up `R`
+  - Loading Packages, Setting Options, and Additional Tools
++ Data Contexts
+  - Discussion of Two Contexts
+  - Loading Data
+  - Checking Appropriateness
++ Fit the Models
++ Assessing Assumptions
+  - Residuals follow a Gaussian Distribution
+  - Homoscedasticity
+  - Independence of Observations
+  - Lack of Interaction Between Factor(s) and Block
++ Results
+  - Omnibus Results
+  - Relative Efficiency
+  - Point Estimates
+  - Post Hoc--Pairwise
+  - Post Hoc--Contrasts
+
+# Setting up `R`
+
+Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. As a reminder, the following code does all of these things:
+
+```{r setR, echo=TRUE, eval=FALSE}
+# Demo code to set up R
+## Load packages
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "DescTools")
+lapply(packages, library, character.only = TRUE)
+
+## Set options and constraint
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+## Load useful tools
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+# Data Contexts
+
+For this tutorial, we're going to look at two contexts: __Estimation Errors__ and __Farming Barley__. I'll give a brief description of each context, show how to load the data, and discuss whether a One-way ANOVA + Block model is appropriate.
+
+## Estimation Errors
+
+This context comes from our design with the same name in Unit 2. Here, we wanted to explore the impact of three different methods on estimating the height of the US flag pole, when accounting for the sex of the person doing the estimating. 
+
+In this context, we were using sex (dichotomous; Female, Not Female) as a block so that we can attempt to get a "cleaner"/better read on the impact of the estimation method (three levels; visual, tool, tool plus training). We can get the data from the URL that I emailed out:
+
+```{r loadData1, echo=TRUE}
+# Demo code for loading data
+## Estimation Errors data
+estimationData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/estimationErrors2022.csv",
+  header = TRUE,
+  sep = ","
+)
+
+## Set method as factor
+### I'm choosing to impose a particular order
+estimationData$Method <- factor(
+  x = estimationData$Method,
+  levels = c("Visual", "Tool", "Training")
+)
+
+## Set the block as a "factor"
+estimationData$Sex <- as.factor(estimationData$Sex)
+
+```
+
+Notice that immediately after loading the data I told `R` what my factor is (`Method`). I also told `R` to think of `Sex` as a factor, even though this is a block and not a factor. We want to do this so that `R` will do the correct calculations for us.
+
+### Checking Appropriateness
+
+To check the appropriateness of our model, we engage in the same kinds of reasoning as we did in Unit 3. Specifically,
+
++ Do we have a quantitative response?
++ Do we have a qualitative/categorical factor?
++ Are we forming an additive model?
++ Can we estimate all of the effects?
++ Can we estimate the errors?
+
+The only new piece here is to ask ourselves "Did we incorporate our block into the design and model?"
+
+Just as in Unit 3, we can use a Hasse diagram to help us out.
+
+```{r hasseErrors, fig.cap="Hasse Diagram for Estimation Errors Study", fig.height=2}
+# Demo Code for Hasse diagram for Estimation Errors
+modelLabels <- c("1 Estimate Height 1", "2 Sex 1", "3 Method 2", "24 (Participants) 20")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+As we look at Figure \ref{fig:hasseErrors}, we can see that we've incorporated our block, we have an additive model, and we have positive degrees of freedom everywhere indicating that we can estimate both effects and errors.
+
+## Farming Barley
 
 A farmer wants to test out four varieties of barley and see if there is any difference in yield (bussels per acre). He has four fields in which he can plant the barley. However, the farmer is aware of differences between each field. For example,
 
@@ -43,7 +148,30 @@ A farmer wants to test out four varieties of barley and see if there is any diff
 
 Given that the fields will be our measurement units, there is quite a bit of variation between them. This variation could easily become confounded with the impact of barley variety on crop yield. Thus, we're in a perfect situation to make use a block of field.
 
-(Details of the study design are in the slides.)
+We can access and clean the data through the following code:
+
+```{r barleyModel, echo=TRUE}
+# Load Barley Data
+barleyData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
+  header = TRUE,
+  sep = ","
+)
+
+# Glancing at the data frame, we need to go ahead and set 
+# Treatment to a factor and change the name to Varietal
+# I'm also going to simplify Planting.Harvesting.Order to Order
+
+barleyData$Treatment <- as.factor(barleyData$Treatment)
+names(barleyData)[3] <- "Varietal"
+names(barleyData)[4] <- "Order"
+
+barleyData$Field <- as.factor(barleyData$Field)
+
+
+```
+
+### Checking Appropriateness
 
 ```{r barleyHD, fig.cap="Hasse Diagram for Barley Crop Yield Study", fig.height=2}
 modelLabels <- c("1 Grow Barley 1", "4 Field 3", "4 Variety 3", "16 (Field Sections) 9")
@@ -61,50 +189,52 @@ hasseDiagram::hasse(
 
 ```
 
-## Fit the Model
+From Figure \ref{fig:barleyHD} we can see that for our continuous response crop yield (bushels per acre) and our factor of variety of barley planted (4 types), we have an additive model with estimable effects and errors. Further, we've incorporated our four fields into the model to block any confounding between them and the type of barely.
 
-Since are varietals and fields are fixed effects, we don't need any special packages (i.e., `lme4`) to fit our model. Rather we will go ahead and use the `aov` function.
+# Fit the Models
 
-```{r barleyModel, echo=TRUE}
-# Load Data
-barley <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
-  header = TRUE,
-  sep = ","
+Keep in mind that all we are doing is adding new screens/terms into our model. Thus, fitting our new models is essentially just like in Unit 3. The only difference is that we place more terms after the `~` in our formula statements.
+
+```{r fitModels, echo=TRUE}
+# Demo code for fitting models
+## Estimation Errors Study
+estimationModel <- aov(
+  formula = Estimate ~ Sex + Method,
+  data = estimationData
 )
 
-# Glancing at the data frame, we need to go ahead and set 
-# Treatment to a factor and change the name to Varietal
-# I'm also going to simplify Planting.Harvesting.Order to Order
-
-barley$Treatment <- as.factor(barley$Treatment)
-names(barley)[3] <- "Varietal"
-names(barley)[4] <- "Order"
-
-# This will seem counter-intuitive, but we need to tell R
-# to view Field also like a factor. This is so we can get
-# estimates.
-
-barley$Field <- as.factor(barley$Field)
-
-# Fixed effects model with block
+## Farming Barley Study
 barleyModel <- aov(
-  formula = Yield ~ Varietal + Field,
-  data = barley
+  formula = Yield ~ Field + Varietal,
+  data = barleyData
 )
 
 ```
 
-## Check Assumptions
+# Assessing Assumptions
 
-In terms of assumptions, we still have our core three: Gaussian Residuals, Homoscedasticity, and Independence of Observations. With the block, we also want to check an interaction plot to make sure that there isn't anything strange/unexpected going on when you plant a particular varietal in a particular field.
+In terms of assumptions, we still have our core three: Gaussian Residuals, Homoscedasticity, and Independence of Observations. With the block, we also want to check an interaction plot to make sure that there isn't anything strange/unexpected going on.
 
-### Gaussian Residuals
+## Gaussian Residuals
 
-Use a QQ plot like usual:
+Just as before we will make use of QQ Plots.
 
-```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
-# QQ plot for residuals
+```{r gaussian, fig.cap="QQ Plots", fig.subcap=c("Estimation Errors Study", "Farming Barley Study"), fig.ncol=2, out.width="50%", echo=TRUE}
+# Chunk options for side-by-side
+### fig.subcap=c("Estimation Errors Study", "Farming Barley Study"), fig.ncol=2,
+### out.width="50%"
+
+# QQ Plot for Estimation Model Residuals
+car::qqPlot(
+  x = residuals(estimationModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (ft)"
+)
+
+# QQ Plot for Barley Model Residuals
 car::qqPlot(
   x = residuals(barleyModel), 
   distribution = "norm",
@@ -116,14 +246,42 @@ car::qqPlot(
 
 ```
 
-There is very little that is concerning in the QQ plot, even with the two points just outside of the envelope. We will take the Gaussian assumption to be essentially satisfied.
+For the Farming Barley study, we have two of 16 residuals beyond the envelope or 12.5%. Given the balanced design, we will proceed with saying that this assumption has been satisfied for the Farming Barley study. 
 
-### Homoscedasticity
+We have a bigger issue for the Estimation Errors study--we have potential outlier that may be highly influential. Participant 14 gave an estimate of `r round(estimationData[14, 3], 2)` feet; this is several orders of magnitude (~15) beyond all other observations. Let's look at this model without this participant:
+
+```{r dropObs, echo=TRUE, fig.cap="Updated QQ Plot for Estimation Errors Study", fig.width=4}
+# Demo code for dropping single observation
+## Estimation Errors Study
+newEstModel <- aov(
+  formula = Estimate ~ Sex + Method,
+  data = estimationData[-14,] #drops row 14
+)
+
+car::qqPlot(
+  x = residuals(newEstModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (ft)"
+)
+
+```
+
+In Figure \ref{fig:dropObs}, we can see that we now have about four observations outside the envelope of 23 total. This is approximately 17%. We will want to cautiously proceed with the Gaussian assumption given our near balanced design.
+
+## Assessing Homoscedasticity
 
 When we account for the the block in our model, we won't get the nice strips that we're used to seeing. However, we can still use the basic idea of the strip chart to assess homoscedasticity. We can still look for patterns and we'll add a smoother to our plot, transforming the strip chart to a Tukey-Anscombe Plot.
 
+### Farming Barley
+
+We don't see any patterns to the plot (Figure \ref{fig:barleyVar}), which is a good sign. While there does appear to be more variation on the high end of the fitted values, the smoothed line is fairly flat. The upticks at the ends might be the result of the small sample size. In all, we will take the homoscedasticity assumption to be satisfied.
+
 ```{r barleyVar, fig.cap="Tukey-Anscombe Plot for Barley Crop Yield Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
-# Strip chart, notice the calls to the random effects model
+# Demo code for making Tukey-Anscombe plot
+## Farming Barley Study
 ggplot(
   data = data.frame(
     residuals = residuals(barleyModel),
@@ -150,49 +308,151 @@ ggplot(
 
 ```
 
-We don't see any patterns to the plot, which is a good sign. While there does appear to be more variation on the high end of the fitted values, the smoothed line is fairly flat. The upticks at the ends might be the result of the small sample size. In all, we will take the homoscedasticity assumption to be satisified.
+### Estimation Errors
 
-### Independence of Observations
+```{r estimationVar, fig.cap="Tukey-Anscombe Plots for Estimation Errors Study", fig.subcap=c("Full Data Set", "Dropping Extreme Potential Outlier"), fig.ncol=2, out.width="50%",}
+# Demo code for making Tukey-Anscombe plot
+## Estimation Errors Study--All Observations
+ggplot(
+  data = data.frame(
+    residuals = residuals(estimationModel),
+    fitted = fitted.values(estimationModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    size = 0.5
+  ) +
+  theme_bw() +
+  xlab("Fitted values (ft)") +
+  ylab("Residuals (ft)")
+
+## Estimation Errors Study--Drop Extreme Potential Outlier
+ggplot(
+  data = data.frame(
+    residuals = residuals(newEstModel),
+    fitted = fitted.values(newEstModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    size = 0.5
+  ) +
+  theme_bw() +
+  xlab("Fitted values (ft)") +
+  ylab("Residuals (ft)")
+
+```
+
+Figure \ref{fig:estimationVar} highlights the continued impact of the one extreme potential outlier. On the left, we can see that this one point causes all other senses of variation become obscured. While the smoothed line is fairly flat, I am concerned about the megaphone pattern that appears in the right panel. I question whether we satisfy the Homoscedasticity assumption for the Estimation Errors Study.
+
+## Assessing Independence of Observations
+
+Again, we can assess the Independence of Observations in the same ways as from Unit 3: making use of our knowledge of the study design, and, IF we know measurement order, index plots.
+
+### Estimation Errors
+
+We do not have an accurate accounting of measurement order for the Estimation Errors study. Thus, we will only have to go off of our knowledge of the study design and how we carried out the study. We took every precaution to ensure that our participants did not influence each other. 
+
+### Farming Barley
+
+In the Farming Barley study, we do know measurement order. Thus, we can make use of an Index plot.
+
+```{r barleyIO1, fig.cap="Index Plot for Farming Barley Residuals", fig.width=4, fig.height=2, echo=TRUE}
+# Demo code for index plots
+## Farming Barley Study
+ggplot(
+  data = data.frame(
+    residuals = barleyModel$residuals,
+    index = 1:length(barleyModel$residuals)
+  ),
+  mapping = aes(x = index, y = residuals)
+) +
+  geom_point(size = 1.5) +
+  geom_line() +
+  theme_bw() +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "red"
+  ) +
+  xlab("Measurement order") +
+  ylab("Residuals")
+```
+
+From Figure \ref{fig:barleyIO1}, we don't necessarily see any patterns which would indicate a threat of the assumption of independent observations.
+
+We can also form Index Plots in a different way: rather than looking at the residuals, we can also plot the actual response values. However, if we go this route, we will want to incorporate our block into the Index Plot.
 
 ```{r barleyIO, fig.cap="Index Plot for Barley Crop Yield Residuals", fig.width=5, fig.height=4, echo=TRUE, fig.pos="H"}
-# Index Plot for Barley Yields
+# Demo code
+# Alternative Index Plot for Barley Yields
 ggplot(
-  data = barley,
+  data = barleyData,
   mapping = aes(
     x = Order,
     y = Yield,
     color = Field,
-    shape = Varietal
+    shape = Varietal,
+    linetype = Field
   )
 ) +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_path(
     mapping = aes(group = Field)
   ) +
   ggplot2::theme_bw() +
   xlab("Planting/Havesting Order") +
   ylab("Yield (BPA)") 
+
 ```
 
-While at first glance, there appears to be a pattern to the response, we can see that this is an artifact of the block and treatments.
+While at first glance, there appears to be a pattern to the response (Figure \ref{fig:barleyIO}; a repeating downward line), we can see that this is an artifact of the block and treatments.
 
-### Interaction of Field and Varietal
+## Assessing Interaction
 
 The last aspect we need to check is whether there is an interaction between our block and our factor. If there is an interaction, then our model (response = factor + block) is not valid. We will make an interaction plot to assess this issue.
 
+For an interaction plot, we will plot the values of the *Sample Arithmetic Mean* across all combinations of blocks and factors look for consistency in performance. If there is no interaction, then we should see consistent behaviors (essentially parallel lines). If there is interaction, then we should switches in behavior such as non-parallel lines moving in opposite directions.
+
+### Farming Barley
+
 ```{r barleyInteraction, fig.cap="Interaction Plot for Barley Varietal and Field", fig.height=4, fig.width=5, echo=TRUE, fig.pos="H"}
+# Demo code for an interaction plot
 # Interaction Plot for Field and Treatment
 ggplot2::ggplot(
-  data = barley,
+  data = barleyData,
   mapping = aes(
     x = Varietal,
     y = Yield,
     color = Field,
+    shape = Field,
+    linetype = Field,
     group = Field
   )
 ) +
-  ggplot2::geom_point(size = 2) +
-  ggplot2::geom_line(size = 1) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
   ggplot2::theme_bw() +
   xlab("Variety") +
   ylab("Yield (BPA)") +
@@ -203,13 +463,87 @@ ggplot2::ggplot(
 
 ```
 
-In the interaction plot, we see essentially the same behavior of barley variety in each field. This indicates that there is not any type of interaction between field and barley varietal. 
+In the interaction plot (Figure \ref{fig:barleyInteraction}), we see essentially the same behavior of barley variety in each field. This indicates that there is not any type of interaction between field and barley varietal. While the lines are not perfectly parallel, they all reflect the same general behavior. An interaction to be concerned about would be if for Variety 2, Field 4 had a yield higher than Variety 1, Field 2's yield
 
-## Results
+### Estimation Errors Study
 
-Remember, there are essentially two parts to results: the omnibus test and the post hoc analysis.
+For the Estimation Errors study, we're going to look at two interaction plots: one involving the full data set (Figure \ref{fig:fullEstInteraction}) and one dropping the extreme potential outlier (Figure \ref{fig:estimationInt}).
+
+```{r fullEstInteraction, fig.cap="Interaction Plot for Full Estimation Errors Study", fig.height=3, fig.width=5, echo=TRUE, fig.pos="H"}
+# Demo code for an interaction plot
+# Interaction Plot for Sex and Method
+ggplot2::ggplot(
+  data = estimationData,
+  mapping = aes(
+    x = Method,
+    y = Estimate,
+    color = Sex,
+    shape = Sex,
+    linetype = Sex,
+    group = Sex
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+  xlab("Estimation Method") +
+  ylab("Estimate (ft)") +
+  labs(color = "Sex") +
+  theme(
+    legend.position = "right"
+  )
+
+```
+
+Again, we can see the impact of our extreme potential outlier. Visually, the outlier suggests in Figure \ref{fig:fullEstInteraction} that we have an interaction between Sex and Method: for the female group we have a huge spike as we move through the methods while for the not female group we're fairly level. 
+
+If we remove this extreme potential outlier, we can see a different story altogether. Figure \ref{fig:estimationInt} shows that there does not appear to be any interaction between our block (sex) and our factor (estimation method).
+
+```{r estimationInt, fig.cap="Interaction Plot for Reduced Estimation Errors Study", fig.height=3, fig.width=5, echo=TRUE, fig.pos="H"}
+# Demo code for an interaction plot
+# Interaction Plot for Sex and Method
+ggplot2::ggplot(
+  data = estimationData[-14,],
+  mapping = aes(
+    x = Method,
+    y = Estimate,
+    color = Sex,
+    shape = Sex,
+    linetype = Sex,
+    group = Sex
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+  xlab("Estimation Method") +
+  ylab("Estimate (ft)") +
+  labs(color = "Sex") +
+  theme(
+    legend.position = "right"
+  )
+
+```
+
+## Assumption Decisions
+
+For the Farming Barley study, I'm going to say that all four of the assumptions are satisfied.
+
+For the Estimation Errors study, our assumptions are NOT satisfied. We have an extreme potential outlier as well as concerns to both the Gaussian and Homoscedasticity Assumptions. I'm going to propose that we fit a new model where we drop the extreme outlier and transform the data. 
+
+### Your Turn--Transform the Estimation Data
+
+Decide for yourself how best to transform the Estimation Errors data. Then re-check the assumptions.
+
+# Results
+
+For the Results portion of this guide/tutorial, I'm going to focus on the Farming Barley study. I'll leave the transformed version of the Estimation Errors study to you as an exercise.
+
+Remember, for any results section for a parametric shortcut, we have several parts: the omnibus tests and effect sizes, point estimates, and Post Hoc (pairwise and/or contrasts).
 
 ### Omnibus Results
+
+We generate our omnibus results *almost* exactly like we would for a one-way ANOVA model. The only change is in the Modern ANOVA table for the effect size estimates. Rather than using `"raw"`, we will use `"partial"` to reflect the fact that we now have multiple terms in our model
 
 ```{r barleyTable, echo=TRUE}
 # Omnibus Test/Modern ANOVA Table
@@ -235,12 +569,17 @@ parameters::model_parameters(
 
 ```
 
-Remember, we need to ignore the Field row's *p*-value (and effect sizes) as R automatically assumes that the block effect is of interest.
+We still interpret all values just as we did in Unit 3. The biggest catch is how we treat the row of Table \ref{tab:barleyTable} connected to our block, Field. That is to say, we don't actually care about this row. This means that we won't interpret the *F* ratio, the *p*-value, or the effect sizes for Field. After all, we didn't want to test the impact of field on the barley yield; we just didn't want field to become confounded with the kind of barley planted (varietal).
 
-In addition, we can look at the relative efficiency of our block:
+We would still point out that the varietal planted accounted for nearly 24 times as much variation as what was left unexplained/accounted for by our model. This translates to varietal explaining around 85% of the total variation in yield. Under the null hypothesis, we would only anticipate this extreme of a result 1/100th of a percent of the time.
+
+## Relative Efficiency
+
+One of the things that Randomized Complete Block Designs can help with is design efficiency. By this we mean, how much we can save in terms of sample size by using a block design versus a completely randomized design. To help us get this measure, I've written the `block.RelEff` function to help us.
 
 ```{r barleyRE, echo=TRUE}
-# Relative Efficiency of Block
+# Demo code for Relative Efficiency of the Block
+## Farming Barley Study
 block.RelEff(
   aov.obj = barleyModel,
   blockName = "Field",
@@ -249,13 +588,13 @@ block.RelEff(
 
 ```
 
-Note: you can run this code inline to not have the result appear as raw output: `r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")` 
+You can also run this code inline to have the resulting sentence appear as part of your narrative. For example, `r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")`.
 
-### Post Hoc Analysis
+We can interpret this relative efficiency as telling us how many times larger we would need the per group sample size to be if we didn't use the block.
 
-#### Point Estimates
+## Point Estimates
 
-If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can.
+If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can. We use the same methods as before. I recommend that you first run `dummy.coef(anovaModel)` in your console so you can see the order of terms.
 
 ```{r barleyPoint, echo=TRUE}
 # Point Estimates for Insect Sprays
@@ -263,8 +602,8 @@ pEst <- dummy.coef(barleyModel)
 pEst <- unlist(pEst)
 names(pEst) <- c(
   "Grand Mean",
-  levels(barley$Varietal),
-  levels(barley$Field)
+  levels(barleyData$Field),
+  levels(barleyData$Varietal)
   )
 
 data.frame("Estimate" = pEst) %>%
@@ -281,7 +620,33 @@ data.frame("Estimate" = pEst) %>%
 
 ```
 
-#### Pairwise Comparisons
+Again, we interpret these are rates: bushels per acre per test plot or more simply, yield per plot.
+
+If you don't want the estimates for the block, you can do the following:
+
+```{r noBlockEstimates, echo=TRUE}
+pEst <- dummy.coef(barleyModel)
+pEst <- unlist(pEst[which(names(pEst) != "Field")])
+names(pEst) <- c(
+  "Grand Mean",
+  levels(barleyData$Varietal)
+  )
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 3,
+  caption = "Point Estimates from the Barley Crop Yield Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+## Post Hoc--Pairwise
 
 From the slides, we noted that we were going to control the MEER at 0.1 by using Tukey's HSD. Thus, we will do so for our pairwise comparisons.
 
@@ -342,7 +707,8 @@ anova.PostHoc(
 
 We need to make an important note here: suppose that our overall Unusualness Threshold was 0.1. From the Tukey HSD results, Variety 3 vs 2, 4 vs 2, and 4 vs 3 would NOT be statistically significant. From the effect size table, we would say that there are rather large effects. Just as effect sizes temper statistical significance, statistical significance moderates effect sizes. In these three cases, while there appears to be a large effect, there is enough variation in those groups that the effect is not statistically large enough.
 
-### Contrasts
+
+## Post Hoc--Contrasts
 
 Even with a block, we can still use make use of the idea of contrasts. For example, let's say that barley varieties 1 and 2 are from one company while 3 and 4 are from a second company. We can test the contrast of companies, even in this blocking design.
 
@@ -351,12 +717,12 @@ Even with a block, we can still use make use of the idea of contrasts. For examp
 company <- c(1/2, 1/2, -1/2, -1/2)
 
 # Bind the contrast to our factor
-contrasts(barley$Varietal) <- company
+contrasts(barleyData$Varietal) <- company
 
 # Refit our model so that our contrast gets tested
 barleyContrast <- aov(
   formula = Yield ~ Varietal + Field,
-  data = barley
+  data = barleyData
 )
 
 # Get the updated ANOVA Table
@@ -386,6 +752,10 @@ knitr::kable(
   ) 
 
 ```
+
+# Your Turn
+
+Using your transformed Estimation Errors data, attempt to create the omnibus ANOVA table, get the relative efficiency for the block design, point estimates, and the pairwise comparisons.
 
 \newpage
 

@@ -57,7 +57,7 @@ As a quick vocabulary note, we often use the term "omnibus" to refer to the hypo
 
 # Setting up `R` and Loading Data
 
-As is always the case, we must do a bit of housekeeping to ensure that `R` will work for us nicely.
+As is always the case, we must do a bit of housekeeping to ensure that `R` will work for us nicely. 
 
 ## Loading Packages, Setting Options, and Additional Tools
 
