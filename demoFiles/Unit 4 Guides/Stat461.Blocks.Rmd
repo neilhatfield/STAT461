@@ -1,10 +1,10 @@
 ---
 title: "ANOVA Models with a Block"
 author: "Neil J. Hatfield"
-date: "4/4/2022"
+date: "4/5/2022"
 output: 
   pdf_document
-geometry: left=1in,right=1in,top=1in,bottom=1in
+geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
@@ -34,12 +34,17 @@ In this tutorial, we are going to explore looking at ANOVA models involving bloc
 + Setting up `R`
   - Loading Packages, Setting Options, and Additional Tools
 + Data Contexts
-  - Discussion of Two Contexts
-  - Loading Data
-  - Checking Appropriateness
+  - Estimation Errors
+    - Background
+    - Load Data
+    - Check Appropriateness of ANOVA Methods
+  - Farming Barley
+    - Background
+    - Load Data
+    - Check Appropriateness of ANOVA Methods
 + Fit the Models
 + Assessing Assumptions
-  - Residuals follow a Gaussian Distribution
+  - Gaussian Residuals
   - Homoscedasticity
   - Independence of Observations
   - Lack of Interaction Between Factor(s) and Block
@@ -49,6 +54,7 @@ In this tutorial, we are going to explore looking at ANOVA models involving bloc
   - Point Estimates
   - Post Hoc--Pairwise
   - Post Hoc--Contrasts
++ Your Turn--Results for Estimation Errors
 
 # Setting up `R`
 
@@ -78,7 +84,7 @@ For this tutorial, we're going to look at two contexts: __Estimation Errors__ an
 
 This context comes from our design with the same name in Unit 2. Here, we wanted to explore the impact of three different methods on estimating the height of the US flag pole, when accounting for the sex of the person doing the estimating. 
 
-In this context, we were using sex (dichotomous; Female, Not Female) as a block so that we can attempt to get a "cleaner"/better read on the impact of the estimation method (three levels; visual, tool, tool plus training). We can get the data from the URL that I emailed out:
+In this context, we were using sex (dichotomous; Female, Not Female) as a block so that we can attempt to get a "cleaner"/better read on the impact of the estimation method (three fixed levels: visual, tool, tool plus training). We can get the data from the URL that I emailed out:
 
 ```{r loadData1, echo=TRUE}
 # Demo code for loading data
@@ -150,7 +156,7 @@ Given that the fields will be our measurement units, there is quite a bit of var
 
 We can access and clean the data through the following code:
 
-```{r barleyModel, echo=TRUE}
+```{r loadData2, echo=TRUE}
 # Load Barley Data
 barleyData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
@@ -158,16 +164,20 @@ barleyData <- read.table(
   sep = ","
 )
 
-# Glancing at the data frame, we need to go ahead and set 
-# Treatment to a factor and change the name to Varietal
-# I'm also going to simplify Planting.Harvesting.Order to Order
+# Glancing at the data frame, we can improve our column names (variables)
+# as well as set our factor and block to be.
 
-barleyData$Treatment <- as.factor(barleyData$Treatment)
-names(barleyData)[3] <- "Varietal"
-names(barleyData)[4] <- "Order"
+## I'm going to change "Treatment" to "Varietal"
+names(barleyData)[which(names(barleyData) == "Treatment")] <- "Varietal"
 
+## Set Varietal as a Factor
+barleyData$Varietal <- as.factor(barleyData$Varietal)
+
+## Tell R to consider our block, Field, as a "factor"
 barleyData$Field <- as.factor(barleyData$Field)
 
+## I'm also going to simplify "Planting.Harvesting.Order" to just "Order"
+names(barleyData)[which(names(barleyData) == "Planting.Harvesting.Order")] <- "Order"
 
 ```
 
@@ -193,10 +203,20 @@ From Figure \ref{fig:barleyHD} we can see that for our continuous response crop 
 
 # Fit the Models
 
-Keep in mind that all we are doing is adding new screens/terms into our model. Thus, fitting our new models is essentially just like in Unit 3. The only difference is that we place more terms after the `~` in our formula statements.
+Keep in mind that all we are doing is adding new screens/terms into our model. Thus, fitting our new models is essentially just like in Unit 3. The only difference is that we place more terms after the tilde, `~`, in our formula statements.
 
 ```{r fitModels, echo=TRUE}
 # Demo code for fitting models
+
+## Our formulas have the same basic structure:
+## response ~ term1 + term2
+## Notice the plus sign to reflect that we're making an *additive* model
+## You can use either response ~ block + factor OR response ~ factor + block
+## The order does not matter for the analysis BUT
+## will play an impact on how values get calculated and listed
+## For example, the order of rows in the ANOVA table or the listing of
+## point estimates in dummy.coef
+
 ## Estimation Errors Study
 estimationModel <- aov(
   formula = Estimate ~ Sex + Method,
@@ -250,7 +270,7 @@ For the Farming Barley study, we have two of 16 residuals beyond the envelope or
 
 We have a bigger issue for the Estimation Errors study--we have potential outlier that may be highly influential. Participant 14 gave an estimate of `r round(estimationData[14, 3], 2)` feet; this is several orders of magnitude (~15) beyond all other observations. Let's look at this model without this participant:
 
-```{r dropObs, echo=TRUE, fig.cap="Updated QQ Plot for Estimation Errors Study", fig.width=4}
+```{r dropObs, echo=TRUE, fig.cap="Updated QQ Plot for Estimation Errors Study", fig.width=4, fig.height=3.25, fig.pos="H"}
 # Demo code for dropping single observation
 ## Estimation Errors Study
 newEstModel <- aov(
@@ -258,6 +278,7 @@ newEstModel <- aov(
   data = estimationData[-14,] #drops row 14
 )
 
+par(mar = c(4, 4, 1, 1)) # Adjusting margins for aesthetics
 car::qqPlot(
   x = residuals(newEstModel), 
   distribution = "norm",
@@ -279,7 +300,7 @@ When we account for the the block in our model, we won't get the nice strips tha
 
 We don't see any patterns to the plot (Figure \ref{fig:barleyVar}), which is a good sign. While there does appear to be more variation on the high end of the fitted values, the smoothed line is fairly flat. The upticks at the ends might be the result of the small sample size. In all, we will take the homoscedasticity assumption to be satisfied.
 
-```{r barleyVar, fig.cap="Tukey-Anscombe Plot for Barley Crop Yield Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+```{r barleyVar, fig.cap="Tukey-Anscombe Plot for Barley Crop Yield Study", fig.width=5, fig.height=2.25, echo=TRUE, fig.pos="H"}
 # Demo code for making Tukey-Anscombe plot
 ## Farming Barley Study
 ggplot(
@@ -290,12 +311,12 @@ ggplot(
   mapping = aes(x = fitted, y = residuals)
 ) +
   geom_point(size = 2) +
-  geom_hline(
+  geom_hline( ## Adds reference line at zero
     yintercept = 0,
     linetype = "dashed",
     color = "grey50"
   ) +
-  geom_smooth(
+  geom_smooth( ## Adds the smoothed line
     formula = y ~ x,
     method = stats::loess,
     method.args = list(degree = 1),
@@ -310,7 +331,9 @@ ggplot(
 
 ### Estimation Errors
 
-```{r estimationVar, fig.cap="Tukey-Anscombe Plots for Estimation Errors Study", fig.subcap=c("Full Data Set", "Dropping Extreme Potential Outlier"), fig.ncol=2, out.width="50%",}
+Figure \ref{fig:estimationVar} highlights the continued impact of the one extreme potential outlier. On the left, we can see that this one point causes all other senses of variation become obscured. While the smoothed line is fairly flat, I am concerned about the megaphone pattern that appears in the right panel. I question whether we satisfy the Homoscedasticity assumption for the Estimation Errors Study.
+
+```{r estimationVar, fig.cap="Tukey-Anscombe Plots for Estimation Errors Study", fig.subcap=c("Full Data Set", "Dropping Extreme Potential Outlier"), fig.ncol=2, out.width="50%", echo=TRUE}
 # Demo code for making Tukey-Anscombe plot
 ## Estimation Errors Study--All Observations
 ggplot(
@@ -364,8 +387,6 @@ ggplot(
 
 ```
 
-Figure \ref{fig:estimationVar} highlights the continued impact of the one extreme potential outlier. On the left, we can see that this one point causes all other senses of variation become obscured. While the smoothed line is fairly flat, I am concerned about the megaphone pattern that appears in the right panel. I question whether we satisfy the Homoscedasticity assumption for the Estimation Errors Study.
-
 ## Assessing Independence of Observations
 
 Again, we can assess the Independence of Observations in the same ways as from Unit 3: making use of our knowledge of the study design, and, IF we know measurement order, index plots.
@@ -381,6 +402,7 @@ In the Farming Barley study, we do know measurement order. Thus, we can make use
 ```{r barleyIO1, fig.cap="Index Plot for Farming Barley Residuals", fig.width=4, fig.height=2, echo=TRUE}
 # Demo code for index plots
 ## Farming Barley Study
+## Using the residuals from the model which includes the block
 ggplot(
   data = data.frame(
     residuals = barleyModel$residuals,
@@ -404,7 +426,7 @@ From Figure \ref{fig:barleyIO1}, we don't necessarily see any patterns which wou
 
 We can also form Index Plots in a different way: rather than looking at the residuals, we can also plot the actual response values. However, if we go this route, we will want to incorporate our block into the Index Plot.
 
-```{r barleyIO, fig.cap="Index Plot for Barley Crop Yield Residuals", fig.width=5, fig.height=4, echo=TRUE, fig.pos="H"}
+```{r barleyIO, fig.cap="Index Plot for Barley Crop Yield Residuals", fig.width=6, fig.height=2.75, echo=TRUE, fig.pos="H"}
 # Demo code
 # Alternative Index Plot for Barley Yields
 ggplot(
@@ -545,6 +567,8 @@ Remember, for any results section for a parametric shortcut, we have several par
 
 We generate our omnibus results *almost* exactly like we would for a one-way ANOVA model. The only change is in the Modern ANOVA table for the effect size estimates. Rather than using `"raw"`, we will use `"partial"` to reflect the fact that we now have multiple terms in our model
 
+\newpage
+
 ```{r barleyTable, echo=TRUE}
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
@@ -597,13 +621,13 @@ We can interpret this relative efficiency as telling us how many times larger we
 If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can. We use the same methods as before. I recommend that you first run `dummy.coef(anovaModel)` in your console so you can see the order of terms.
 
 ```{r barleyPoint, echo=TRUE}
-# Point Estimates for Insect Sprays
+# Point Estimates for Farming Barley
 pEst <- dummy.coef(barleyModel)
 pEst <- unlist(pEst)
 names(pEst) <- c(
   "Grand Mean",
-  levels(barleyData$Field),
-  levels(barleyData$Varietal)
+  levels(barleyData$Field), # I know that this is the correct order because
+  levels(barleyData$Varietal) # I ran dummy.coef(barleyModel) in my console first
   )
 
 data.frame("Estimate" = pEst) %>%
@@ -620,7 +644,9 @@ data.frame("Estimate" = pEst) %>%
 
 ```
 
-Again, we interpret these are rates: bushels per acre per test plot or more simply, yield per plot.
+Again, we interpret these numbers as rates: "bushels per acre per test plot" or more simply, "yield per plot" (where we're using [test] plot to mean a quarter-subsection of a field).
+
+\newpage 
 
 If you don't want the estimates for the block, you can do the following:
 
@@ -629,7 +655,8 @@ pEst <- dummy.coef(barleyModel)
 pEst <- unlist(pEst[which(names(pEst) != "Field")])
 names(pEst) <- c(
   "Grand Mean",
-  levels(barleyData$Varietal)
+  levels(barleyData$Varietal) # Using levels here will help stop the accidental
+  # mislabeling of estimates
   )
 
 data.frame("Estimate" = pEst) %>%
@@ -675,6 +702,45 @@ knitr::kable(
 
 ```
 
+Notice that we added on the `which` argument to the `TukeyHSD` call. This isolates the appropriate portion of the Tukey HSD output related to our factor of interest. If you omit this, you'll get Tukey HSD reports for every term in the model. In the Farming Barley situation, one for Field and one for Varietal.
+
+We still interpret the results in the exact same way.
+
+You can make similar adjustments in the `DescTools::PostHocTest` if you are wanting to control a different Type I Error Rate and/or use a different method. Table \ref{tab:secondPairwise} provides an example using Bonferroni's method for controlling SCI.
+
+```{r secondPairwise, echo=TRUE}
+## DescTools Pairwise Method
+dtPH <- DescTools::PostHocTest(
+  x = barleyModel, # Your aov/lm object
+  which = "Varietal", # Specify which factor
+  method = "bonf", # Your chosen method
+  conf.level = 0.9 # 1 -- Your Overall Type I Error Rate
+)
+
+## Kable Code for DescTools
+knitr::kable(
+  x = dtPH$Varietal, # Notice the use of the factor name
+  digits = 3,
+  caption = paste( # Creates a nice title; copy at will
+    "Post Hoc",
+    attr(dtPH, "method"), 
+    "Comparisons"
+  ),
+  col.names = c("Difference", "Lower Bound",
+                "Upper Bound", "Adj. p-Value"),
+  align = 'lcccc',
+  booktabs = TRUE,
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+Note: Dunnett's Test does not currently allow for a block design.
+
 ### Effect Sizes
 
 To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function:
@@ -693,7 +759,7 @@ anova.PostHoc(
     digits = 3,
     caption = "Post Hoc Comparison Effect Sizes",
     col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
-                  "Prob. Superiority"),
+                  "Prob. of Superiority"),
     align = 'lccc',
     booktabs = TRUE
   ) %>%
@@ -705,7 +771,7 @@ anova.PostHoc(
 
 ```
 
-We need to make an important note here: suppose that our overall Unusualness Threshold was 0.1. From the Tukey HSD results, Variety 3 vs 2, 4 vs 2, and 4 vs 3 would NOT be statistically significant. From the effect size table, we would say that there are rather large effects. Just as effect sizes temper statistical significance, statistical significance moderates effect sizes. In these three cases, while there appears to be a large effect, there is enough variation in those groups that the effect is not statistically large enough.
+We need to make an important note here: suppose that our overall Unusualness Threshold was 0.1. From the Tukey HSD results, Variety 3 vs 2, 4 vs 2, and 4 vs 3 would NOT be statistically significant. From the effect size table, we would say that there are rather large effects as Cohen's *d* and Hedge's *g* are all quite large. Further, the probability of superiority for each pairing is far from 0.5 (no practical effect). Just as effect sizes temper statistical significance, statistical significance moderates effect sizes. In these three cases, while there appears to be a large effect, there is enough variation in those groups that the effect is not statistically large enough to escape through the noise of the group.
 
 
 ## Post Hoc--Contrasts
