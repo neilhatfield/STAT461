@@ -1,7 +1,7 @@
 ---
 title: "Factorial Models"
 author: "Neil J. Hatfield"
-date: "4/11/2022"
+date: "4/9/2021"
 output: 
   pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
@@ -21,7 +21,8 @@ knitr::opts_chunk$set(
 
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
-              "psych", "DescTools", "emmeans")
+              "psych", "DescTools", "emmeans",
+              "lme4", "lmerTest")
 lapply(packages, library, character.only = TRUE)
 
 options(knitr.kable.NA = "")
@@ -35,7 +36,7 @@ In this tutorial, we are going to explore Factorial Treatment Structures/Factori
 
 # New Package
 
-For Factorial Designs, we will need to add the `emmeans` package to our list of packages to load with the `library` call.
+For Factorial Designs, we will need to add the `emmeans` package to our list of packages to load with the `library` call. Later on in this document (mixed effects), we will also look at the `lmerTest` package.
 
 # Two-way Fixed ANOVA Context
 
@@ -562,6 +563,406 @@ car::Anova(
 ```
 
 You will want to present the results in a much more professional way than what I have just done. (I'm just trying to show how you do the coding for different types of SSQs.)
+
+# Random Effects Factorial Models
+
+Just as we can have a One-way Random Effects model, we may have a Random Effects Factorial Model. We will want to make sure that we use the `lme4` package's `lmer` function to fit our model for parameter estimation and assumption checking. For the omnibus tests, we may use the the `aov` function...with a slight modification.
+
+## Context
+
+For this example, we will turn towards industry and look at a common problem in manufacturing. During manufacturing, we often use various types of gauges to take measurements. For example, we might use a pressure gauge to ensure that there is an appropriate amount of air in a closed system or that we've applied the appropriate amount of force. To ensure that our manufacturing is consistent, we might undertake a gauge capability (repeatability & reproducibility) study. 
+
+In such a study we'll want to explore our usage of a new gauge. We will use a lottery to select three operators to work with the new gauge and 60 parts (20 for each operator selected via a second lottery). We want to know whether there is significant variance in the gauge readings due
+
+```{r gaugeHD, fig.cap="Hasse Diagram for Gauge Study", fig.height=2}
+sysLabels <- c("1 Use the Gauge 1", "3 (Operator) 2",
+               "20 (Part) 19", " 60 (Operator X Part) 38",
+               "120 (Readings) 60")
+sysMat <- matrix(data = F, nrow = 5, ncol = 5)
+sysMat[1, c(2:5)] = sysMat[c(2:3), c(4:5)] = sysMat[4, 5] = T
+hasseDiagram::hasse(sysMat, sysLabels)
+
+```
+
+Figure \ref{fig:gaugeHD} show the Hasse diagram for the Gauge study. Notice that the parts __are not__ our measurement units but the gauge readings are. The factors in this study are Operator and Part, both of which are randomly selected from larger populations, thus this is a Two-way Random Effects model.
+
+### Data
+
+The following will be our data for this example:
+
+```{r gaugeData, echo = TRUE}
+gaugeData <- data.frame(
+  partNum = as.factor(rep(c(1:20), 6)),
+  operator = as.factor(sort(rep(LETTERS[1:3], 40))),
+  measure = c(
+    21, 24, 20, 27, 19, 23, 22, 19, 24, 25, 21, 18, 23, 24, 29, 26, 20, 19, 25, 19,
+    20, 23, 21, 27, 18, 21, 21, 17, 23, 23, 20, 19, 25, 24, 30, 26, 20, 21, 26, 19,
+    20, 24, 19, 28, 19, 24, 22, 18, 25, 26, 20, 17, 25, 23, 30, 25, 19, 19, 25, 18,
+    20, 24, 21, 26, 18, 21, 24, 20, 23, 25, 20, 19, 25, 25, 28, 26, 20, 19, 24, 17,
+    19, 23, 20, 27, 18, 23, 22, 19, 24, 24, 21, 18, 25, 24, 31, 25, 20, 21, 25, 19,
+    21, 24, 22, 28, 21, 22, 20, 18, 24, 25, 20, 19, 25, 25, 30, 27, 20, 23, 25, 17
+  )
+)
+
+```
+
+## Fitting the Models
+
+As a reminder we will fit TWO models one using the `lme4` package for assumptions and estimation and one using the `aov` call for omnibus testing.
+
+```{r gaugeModels, echo=TRUE, message=TRUE}
+# Omnibus testing
+gaugeOmni <- aov(
+  formula = measure ~ operator*partNum,
+  data = gaugeData
+)
+
+# Random Effects Model
+## Note: the * operator IS NOT available with random effects
+gaugeModel <- lme4::lmer(
+  formula = measure ~ (1|operator) + (1|partNum) + (1|operator:partNum),
+  data = gaugeData,
+  REML = TRUE
+)
+
+```
+
+You'll notice that I've allowed for an important message to get printed: "boundry (singular)". When you are fitting Factorial Models with Random Effects, we will want to keep an eye out of these. This message should appear if you run the code chunk as a preview and if you set the `message` chunk option to `TRUE`. This is a good sign that there is an aspect of the model which is unnecessary. Let's check the interaction term.
+
+```{r gaugeInterPlot, fig.cap="Interaction Plot for Gauage Study", fig.width=6, fig.height=3, fig.pos="H", echo=TRUE}
+# Interaction Plot for Gauge Study
+emmeans::emmip(
+  object = gaugeOmni, #Notice our use of aov output
+  formula = operator ~ partNum) +
+  theme_bw() +
+  xlab("Part Number") +
+  ylab("Reading") +
+  labs(
+    color = "Operator"
+  )
+
+```
+
+Notice that with only a few exceptions (Parts 2-3, 6-7, 13-14, 17-18) we have fairly parallel line segments. Even those segments which we've called out aren't excessively far off from being parallel. This suggests that we might be able to fit a reduced model dropping the interaction term.
+
+## Checking Assumptions
+
+You will check assumptions just as you would for a One-way Random Effects model. The only care that you'll want to take is checking that the treatment effects *for each factor* follow a Gaussian distribution.
+
+```{r gaugeRE, fig.cap="QQ Plots for Each Factor's Treatment Effects", fig.width=5, fig.height=3, fig.pos="h", echo=TRUE}
+# Operator Effects
+car::qqPlot(
+  x = unlist( 
+    lme4::ranef(
+      object = gaugeModel,
+      whichel = c("operator")
+    )
+  ),
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Operator Effects"
+)
+
+
+# Part Number Effects
+car::qqPlot(
+  x = unlist( 
+    lme4::ranef(
+      object = gaugeModel,
+      whichel = c("partNum")
+    )
+  ),
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Part Number Effects"
+)
+
+```
+
+## Omnibus Test
+
+Remember that for factorial which are Random or Mixed Effects models, our denominator isn't always the Residual/error term. Unfortunately, R always uses the Residual term for forming *F* ratios. To help us out, I have created a function, `anovaFixer` that you can use. (You'll need to use the `source` function first just as you do for the `anova.PostHoc` function.)
+
+You'll want to use the `anovaFixer` function first before creating your ANOVA table. Note: the `anovaFixer` function will print messages to the console and will end up in your knitted document. You can suppress this with the `quietly` function from the `purrr` package (see the Post Hoc resource guide for details).
+
+__WARNING!__ The `anovaFixer` function ONLY currently works for Two-way Random Effects models.
+
+```{r gaugeTable, echo=TRUE}
+anovaFixer(
+  aov.obj = gaugeOmni,
+  fixed = NULL, # character vector of Fixed Effects
+  random = c("partNum", "operator"), # character vector of random effects
+  type = "unrestricted" # restricted or unrestricted
+) %>%
+  knitr::kable(
+  digits = 3,
+  #col.names = c("Df", "SS", "MS", "F", "p-value"),
+  caption = "ANOVA Table for a Two-way Random",
+ # align = c('l',rep('c',5)),
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+## Post Hoc Analysis
+
+Remember that for Random Effects models, we are interested in the variance components and the Grand Mean rather than the treatment effects. Thus, you'll want to make use of the same methods we used in the One-way situation.
+
+### Point Estimates
+
+```{r refacPEs, echo=TRUE}
+# Summary function for quick look
+summary(gaugeModel)
+
+```
+
+Remember, for a report you'll want to present the point estimates more professionally.
+
+### Confidence Intervals
+
+Don't forget that you'll need to pass the adjusted/individualized Type I Error Rate to the `confint` function.
+
+```{r reFacCIs, echo=TRUE}
+# Confidence intervals for our random effects parameters
+intervals <- confint(
+  object = gaugeModel,
+  level = 0.98, # Use the adjusted/individualized level here
+  oldNames = FALSE
+)
+
+row.names(intervals) <- c(
+  "Operator-Part Interaction SD",
+  "Part SD",
+  "Operator SD",
+  "Residual SD",
+  "Grand Mean"
+)
+
+knitr::kable(
+  intervals,
+  digits = 3,
+  caption = "Upper and Lower Confidence Bounds-90\\% SCI, Bonferroni Adj.",
+  align = c('l',rep('c',2)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+
+# Mixed Effects Factorial Models
+
+The last example I'm going to include here is a Three-way Mixed Effects model.
+
+## Context
+
+When working with turbines, we often want to track the drop in pressure across an expansion valve. Our client has identified three important attributes which influence pressure drop readings: the temperature (ºF) of the gas on the inlet side, the operator, and the specific pressure gauge used.
+
+Our client has communicated that there is a pool of operators from which we can select 4, a pool of gauges where we can select 3, and that we can set the inlet gas temperature to 60ºF, 75ºF, and 90ºF. We will replicate each possible combination twice.
+
+The client would like to know several things:
+
+1. How should we design the experiment?
+2. Are the three attributes actually important?
+3. Are any of the interactions of the attributes important?
+
+
+```{r pressureHD, fig.cap="Hasse Diagram for the Pressure Study", fig.height=2}
+# Hasse Diagram for Pressure Study
+pressureLab <- c("1 Grand Mean 1", "3 Gas Temp 2",
+               "4 (Operator) 3", "3 (Gauge) 2",
+               "12 (Temp X Operator) 6", "9 (Temp X Gauge) 4",
+               "12 (Operator X Gauge) 6", "36 (Temp X Operator X Gauge) 12",
+               "72 (Measurements/Error) 36")
+pressureMat <- matrix(data = F, nrow = 9, ncol = 9)
+pressureMat[1, c(2:9)] = pressureMat[2, c(5, 6, 8, 9)] = T
+pressureMat[3, c(5, 7, 8, 9)] = pressureMat[4, c(6, 7, 8, 9)] = T
+pressureMat[c(5:7), c(8:9)] = pressureMat[8, 9] = T
+hasseDiagram::hasse(pressureMat, pressureLab)
+
+```
+
+### Data
+
+```{r pressureData, echo=TRUE}
+pressure <- data.frame(
+  gasTemp = as.factor(rep(c(rep(60, 4), rep(75, 4), rep(90, 4)), 6)),
+  gauge = as.factor(sort(rep(letters[24:26], 24))),
+  operator = as.factor(rep(LETTERS[1:4], 18)),
+  coded = c(
+    -2, 0, -1, 4, 14, 6, 1, -7, -8, -2, -1, -2,
+    -3, -9, -8, 4, 14, 0, 2, 6, -8, 20, -2, 1,
+    -6, -5, -8, -3, 22, 8, 6, -5, -8, 1, -9, -8,
+    4, -1, -2, -7, 24, 6, 2, 2, 3, -7, -8, 3,
+    -1, -4, 0, -2, 20, 2, 3, -5, -2, -1, -4, 1,
+    -2, -8, -7, 4, 16, 0, 0, -1, -1, -2, -7, 3
+  )
+)
+
+```
+
+## Fitting the Model
+
+There are two approaches we can take here. The first approach is to fit two models just as we did for Random Effects (a "fixed" model for omnibus testing and a random effects model for estimation). The second approach is to use the `lmerTest` package.
+
+In either case, you'll need to use the `lmer` function. For fixed effects, you'll include those terms in the model as you would in `aov`. For the random effects, you'll need to enclose each term (main effects and interactions) in their own set of parentheses with the `1|`.
+
+### Option 1--Two Models
+
+```{r mixedModel1, echo=TRUE, message=TRUE}
+# Fitting the Omnibus Model
+pressureOmni <- aov(
+  formula = coded ~ gasTemp*operator*gauge,
+  data = pressure
+)
+
+## Random Effects for Estimation
+## Can also be used for Omnibus Test via Conf. Intervals
+pressureModel <- lme4::lmer(
+  formula = coded ~ gasTemp + (1|operator) + (1|gauge) +
+    (1|gasTemp:operator) + (1|gasTemp:gauge) +
+    (1|operator:gauge) + (1|gasTemp:operator:gauge),
+  data = pressure,
+  REML = TRUE
+)
+
+```
+
+### Option 2--`lmerTest`
+
+For this second option, you'll need to load the `lmerTest` package.
+
+```{r mixedModel2, echo=TRUE, message=TRUE}
+# Use the lmerTest package
+pressModel <- lmerTest::lmer(
+  formula = coded ~ gasTemp + (1|operator) + (1|gauge) +
+    (1|gasTemp:operator) + (1|gasTemp:gauge) +
+    (1|operator:gauge) + (1|gasTemp:operator:gauge),
+  data = pressure
+)
+
+```
+
+## Results
+
+I"m going to present the raw output from these three models so that we can talk about them.
+
+### "Fixed" Omnibus
+
+```{r pressureAnova, echo=TRUE}
+# Omnibus table for "Fixed" three-way ANOVA
+car::Anova(
+  mod = pressureOmni,
+  type = 3
+)
+
+```
+
+Notice that I used the `car` package's `Anova` function with Type III Sums of Squares. I did this so that I would be covered in the event that I have an imbalanced design. 
+
+The biggest issue in using this table is that the denominators are not necessarily correct. However, this table does contain all of the information you would need to calculate the correct denominators. Use your Hasse diagram and this table to construct your appropriate *F* ratios. You can then get the *p*-value using the following code:
+
+```{r pfCode, echo=TRUE, eval=FALSE}
+# Calculating p-values for F-ratios
+pf(
+  q = f-ratio, # This is your new/corrected f ratio
+  df1 = numDF, # Degrees of freedom for numerator
+  df2 = denomDF, # Degrees of freedom for denominator,
+  lower.tail = FALSE
+)
+
+```
+
+### Mixed Model
+
+```{r pressureRandom, echo=TRUE}
+summary(pressureModel)
+
+```
+
+The `summary` call here will produce raw output that you can then draw from to build a professional looking table. All of the tools you would use with Random Effects are still viable here.
+
+### `lmerTest` Results
+
+```{r lmerTestResults1, echo=TRUE}
+# Results from the lmerTest package
+anova(pressModel)
+```
+
+Notice that by using the `lmerTest` package, we can use the base `anova` call and we only get the ANOVA table for the fixed effects. These *F* ratios should already be appropriately adjusted using Satterthwaite's method since there are three leading, eligible random terms (see Hasse diagram; Satterthwaite's is beyond this course).
+
+To get the rest of the results (i.e., for the random effects), you'll want to use the `summary` function.
+
+```{r lmerTestResults2, echo=TRUE}
+summary(pressModel)
+
+```
+
+__My recommendation is that if you are using a mixed model of any size, use the `lmerTest` package.__
+
+## Assumptions
+
+You'll notice that I haven't said anything about assumptions for the mixed model. This is because you'll do the exact same things as for the the Fixed and Random Effects. This is really just a rinse and repeat type of situation.
+
+## Interaction Plots
+
+I do want to take a moment to mention that for interaction plots when you have more than 2 factors are a bit more complicated. You can't just look at one interaction plot; you'll need to look at several--switching around which factors are where each time. This will provide you with the best sense of what is going on with your data.
+
+```{r intPlot1, fig.cap="Interaction plot for Operator, Gas Temp, and Gauge", echo=TRUE, fig.width=6, fig.height=2.5}
+# Interaction of Operator, Gas Temp, and Gauge
+emmeans::emmip(
+  object = pressureOmni,
+  formula = gasTemp ~ operator|gauge
+) +
+  theme_bw() +
+  labs(
+    color = "Gas Temp (F)"
+  )
+
+```
+
+
+```{r intPlot2, fig.cap="Interaction Plot for Gas Temp and Operator", echo=TRUE, fig.width=6, fig.height=2.5}
+# Interaction of Gas Temp and Operator
+emmeans::emmip(
+  object = pressureOmni,
+  formula = gasTemp:operator ~ gasTemp
+) +
+  theme_bw() +
+  xlab("Gas Temperature (F)") +
+  labs(
+    color = "Operator"
+  )
+
+```
+
+
+```{r intPlot3, fig.cap="Interaction Plot for Gas Temp and Gauge", echo=TRUE, fig.width=6, fig.height=2.5}
+# Interaction of Gas Temp and Gauge
+emmeans::emmip(
+  object = pressureOmni,
+  formula = gasTemp:gauge ~ gasTemp
+) +
+  theme_bw() +
+  xlab("Gas Temperature (F)") +
+  labs(
+    color = "Gauge"
+  )
+
+```
 
 
 \newpage
