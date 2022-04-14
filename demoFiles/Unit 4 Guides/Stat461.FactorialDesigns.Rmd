@@ -150,21 +150,21 @@ His questions:
 ```{r loadBattery, echo=TRUE}
 ## Demo code for loading and cleaning data
 ## Load battery data
-battery <- read.table(
+batteryData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/batteryLife.dat",
   header = TRUE,
   sep = ","
 )
 
 ## Clean data
-battery$temperature <- dplyr::recode_factor(
-  battery$temperature,
+batteryData$temperature <- dplyr::recode_factor(
+  batteryData$temperature,
   `15` = "15ºF",
   `70` = "70ºF",
   `125` = "125ºF"
 )
-battery$material <- dplyr::recode_factor(
-  battery$material,
+batteryData$material <- dplyr::recode_factor(
+  batteryData$material,
   `1` = "Plate 1",
   `2` = "Plate 2",
   `3` = "Plate 3"
@@ -185,7 +185,7 @@ You can use the multiple factors in a variety of ways in your data visualization
 ## Battery Manufacturing
 boxplot(
   formula = life ~ temperature:material,
-  data = battery,
+  data = batteryData,
   ylab = "Life (hrs)",
   xlab = "Temp (ºF) x Material"
 )
@@ -227,9 +227,9 @@ In addition to data visualizations, we also may make use of descriptive/incisive
 # Demo code for descriptive statistics for factorial treatment structure
 ## Battery Manufacturing 
 batteryStats <- psych::describeBy(
-  x = battery$life,
+  x = batteryData$life,
   # Notice how we're getting the factorial treatments
-  group = paste(battery$temperature, battery$material, sep = " x "),
+  group = paste(batteryData$temperature, batteryData$material, sep = " x "),
   na.rm = TRUE,
   skew = TRUE,
   ranges = TRUE,
@@ -344,112 +344,126 @@ Create a similar paragraph as I did but for the Gummy Bears situation.
 
 ## Check Interactions
 
-With a [Full] Factorial Design, we no longer have a truly additive model. The interaction term in some ways is a measure of how far our model departs from additivity. We want to see whether interactions are important or unimportant: data visualizations are our key to detect this. However, unlike with One-way ANOVA with a Block, we will be okay if we see interactions.
+With a [Full] Factorial Design, we no longer have a truly additive model. The interaction term, in some ways, is a measure of how far our model departs from additivity. We want to see whether interactions are important or unimportant: data visualizations are our key to detect this. However, unlike with One-way ANOVA with a Block, we will not worry if we see interactions.
 
-There are several ways that we can look at interaction plots.
+There are several ways that we can look at interaction plots. In the guide/tutorial on Block designs, we saw a way that we can use the `ggplot2` package to create an interaction plot. However, there is also a method that uses Base `R` (i.e., no extra packages).
 
-### Base R
+### Base `R` Interaction Plot 
 
-The first method is to use the `interaction.plot` function included in base R.
+The function `interaction.plot` is part of the basic setup of `R` (included in the default `stats` package). This function allows us to explore the interaction between __TWO__ factors at a time. This does mean that if you want to try to explore a three-way interaction, this method won't work. 
 
 ```{r batteryInt1, fig.cap="Interaction Plot using base R", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Using base R to make interaction plot
+# Demo code for using base R to create an interaction plot
+## Battery Manufacturing Study
 interaction.plot(
-  x.factor = battery$temperature, # First Factor
-  trace.factor = battery$material, # Second Factor
-  response = battery$life, # Response
+  x.factor = batteryData$temperature, # First Factor
+  trace.factor = batteryData$material, # Second Factor
+  response = batteryData$life, # Response
   fun = mean,
   type = "b", # Both points and lines
   col = c("black","red","blue"), # Set colors for trace
   pch = c(19, 17, 15),  # Set symbols for trace
   fixed = TRUE,
   legend = TRUE,
-  xlab = "Temperature",
-  ylab = "Life (hours)",
-  trace.label = "Material")
+  xlab = "Operating Temperature",
+  ylab = "Life Span (hours)",
+  trace.label = "Plate Material")
 
 ```
 
-### GGplot2
+For a plot from base `R`, this is actually a pretty decent. Remember, we're looking to see if as we move through the levels of one factor (operating temperature) and through the levels of the other factor (plate material), what appears to be happening to the response (life span). If there is no interaction, then we should see consistent behaviors throughout (perfect world of no interaction would have parallel line segments). The more inconsistent the behavior (for example, complete reversal of behavior, perpendicular line segments), the more impactful the interaction is between the two factors
 
-We can also use `ggplot2` to create an interaction plot.
+#### Example Write up
 
-```{r batteryInt2, fig.cap="Interaction Plot using ggplot2", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Using ggplot to make interaction plot
+From Figure \ref{fig:batteryInt1}, we can see that there is some interaction between the operating temperature and plate material. For example, going from 15ºF to 70ºF, produced a drop in life span for materials one and two but for plate three there is a slight increase in life span. As we move from room temperature (70ºF) to the high of 125ºF, this time plate material one appears to hold steady in life span while the other two materials experience drops in life span.
+
+### Using `ggplot2` for Interaction Plots
+
+As we saw in the Block guide/tutorial, we can use `ggplot2` to create an interaction plot. Again, you want to have some care here for how many factors you want to explore at any one time. With `ggplot2` you can move beyond two factors at a time, but be careful; you don't want to overwhelm your audience.
+
+In the following example, I'm going to create an interaction plot for launch angle and launch position, but I'm also going to place the observations on the graph so we can also get a sense of variation that gets hidden by the trend lines.
+
+```{r catapultInteraction1, fig.cap="Interaction Plot for Gummy Bears Study", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
+# Demo code for using ggplot to make interaction plot w/observations showing
+## Gummy Bears Study
 ggplot(
-  data = battery,
+  data = catapultData,
   mapping = aes(
-    x = temperature,
-    y = life,
-    color = material,
-    group = material
-    )
+    x = Angle,
+    y = Distance,
+    shape = Position,
+    color = Position,
+    linetype = Position,
+    group = Position
+  )
 ) +
-  stat_summary(fun = "mean", geom = "point") +
-  stat_summary(fun = "mean", geom = "line") +
-  geom_jitter(width = 0.1, height = 0.1, shape = 5) +
+  stat_summary(fun = "mean", geom = "point", size = 3) +
+  stat_summary(fun = "mean", geom = "line", size = 1) +
+  geom_jitter(width = 0.1, height = 0.1, alpha = 0.25, size = 1) +
   ggplot2::theme_bw() +
-  xlab("Temperature") +
-  ylab("Life (hours)") +
-  labs(color = "Material")
+  xlab("Launch Angle") +
+  ylab("Distance (in)") +
+  labs(
+    color = "Launch Position",
+    shape = "Launch Position",
+    linetype = "Launch Position"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  )
 
 ```
 
-Each of these three methods have their strengths and their weaknesses. The choice is really up to you and what you want to show in the plot.
+Whether you use the interaction plot code laid out in the Block guide/tutorial, the base `R` approach, or this most recent version is entirely up to you. What you want to be sure of is that the visualization helps you and your audience gain a deeper understanding of the data and context for the SRQ. You also want to make sure that the data visualization looks good.
 
-### Interaction Write Up
+### Your Turn
 
-We will note that there does appear to be some worthwhile interactions between the operating temperature and the plate material. (If there weren't we would anticipate seeing perfectly parallel lines.)
+Write up a paragraph that goes with Figure \ref{fig:catapultInteraction1}.
 
+## Form the Model
 
-  - Form the Model
-+ Assessing Assumptions
-  - Gaussian Residuals
-  - Homoscedasticity
-  - Independence of Observations
-+ Results
-  - Omnibus
-  - Point Estimates
-  - Post Hoc--Pairwise
-  - Post Hoc--Contrasts
-  - Effect Sizes
-+ Dealing with Imbalanced Designs
+Once we've verified that a factorial ANOVA model is appropriate and made a decision about including interaction terms\footnote{There is no harm in keeping interaction terms in the model, even if you don't think there is an interaction...provided you have sufficient \textit{Degrees of Freedom}.}, we can turn our attention to forming the model in `R`.
 
+There are a couple of different ways that you can specify factorial designs in `R`: you can manually type in the main the effects and interactions in the order you wish OR you can let `R` fill in all of the terms for you. 
 
-
-
-## Fit the Model
-
-There are a couple of different ways that you can specify factorial designs in R: you can manually type in the main the effects and interactions in the order you wish OR you can let R fill in all of the terms for you. 
-
-For R, to specify a main effect, you simply type the name of the factor in the formula just as we have been doing all semester.
+For `R`, to specify a main effect, you simply type the name of the factor in the formula just as we have been doing all semester.
 
 For an interaction, you'll type the names of __all__ main effects involved in the interaction, separating each name with a colon (:). For example, if we wanted the two-way interaction of A and B, we would type `A:B`; for a three-way interaction of A, B, and C, we would type `A:B:C`.
 
-To have R automatically fill in all terms, you simply list each main effect and use `*` to separate terms. Thus, typing `y ~ A*B` is the same as `y ~ A + B + A:B`.
+To have `R` automatically fill in all terms, you simply list each main effect and use `*` to separate terms. Thus, typing `y ~ A*B` is the same as `y ~ A + B + A:B`. Notice that in the `formula` argument the `*` symbol can take on multiple meanings: multiplication as in `2*A` and factorial expansion as in `A*B` going to `A + B + A:B`. 
 
-For this example, I'm going to write out the model myself.
+I'll show both approaches here:
 
-```{r batteryModel, echo=TRUE}
-# Fitting the Two-way ANOVA model
+```{r factorialModels, echo=TRUE}
+# Demo code for forming the factorial models
+## Fitting by hand--Battery Manufacturing Study
 batteryModel <- aov(
   formula = life ~ temperature + material + temperature:material,
-  data = battery
+  data = batteryData
+)
+
+## Letting R handle the expansion--Gummy Bears Study
+catapultModel <- aov(
+  formula = Distance ~ Angle*Position,
+  data = catapultData
 )
 
 ```
 
 
-## Check Assumptions
+# Assessing Assumptions
 
-Just as with One-way ANOVA with a Block, we still have our core three assumptions to check: Residuals are consistent with following a Gaussian distribution, homoscedasticity, and independence of observations.
+For the parametric shortcut for factorial designs (the ANVOA *F* test), we have the same three assumptions as in the One-way case: Gaussian Residuals, Homoscedasticity, and Independence of Observations. We will assess them in the same ways as we have before.
 
-### Gaussian Residuals
+## Gaussian Residuals
 
 Use a QQ plot like usual:
 
-```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=5, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# QQ plot for residuals
+```{r residualQQ, fig.cap="QQ Plot for Residuals in Battery Manufacturing Study", fig.width=5, fig.height=3.5, echo=TRUE, fig.pos="H"}
+# Demo code for QQ plot
+# Battery Manufacturing
 car::qqPlot(
   x = residuals(batteryModel), 
   distribution = "norm",
@@ -463,11 +477,15 @@ car::qqPlot(
 
 There is very little to be concerned about in our QQ plot; we will go ahead and proceed as if our residuals follow a Gaussian distribution.
 
-### Homoscedasticity
+### Your Turn
+
+Build a QQ plot and write accompanying text for assessing the Gaussian Residuals assumption for the Gummy Bears Study.
+
+## Homoscedasticity
 
 Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Anscombe plot rather than a strip chart for our factorial designs.
 
-```{r batteryVar, fig.cap="Tukey-Anscombe Plot for Battery Life Span Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+```{r batteryVar, fig.cap="Tukey-Anscombe Plot for Battery Manufacturing Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
 
 ggplot(
   data = data.frame(
@@ -495,13 +513,35 @@ ggplot(
 
 ```
 
-The first thing that I notice in the Tukey-Anscombe plot is that the fourth strip from the left shows the least amount of variation while the fifth strip (from the left) shows the most. The fifth used more than twice the vertical space as the fourth, however, this is the only aspect that causes me a moment of hesitation. There are no discernible patterns to the plot and the blue reference line is perfectly horizontal indicating that we have homoscedasticity.
+The first thing that I notice in the Tukey-Anscombe plot (Figure \ref{fig:batteryVar}) is that the fourth strip from the left shows the least amount of variation while the fifth strip (from the left) shows the most. The fifth used more than twice the vertical space as the fourth, however, this is the only aspect that causes me a moment of hesitation. There are no discernible patterns to the plot and the blue reference line is perfectly horizontal indicating that we have [sufficient] homoscedasticity.
 
-### Independence of Observations
+## Independence of Observations
 
-Unfortunately, we don't know measurement order so index plots are not going to be useful here. However, we can think through the study design and reach the decision that we have independent observations.
+For Independence of Observations, keep in mind that our Go To is to think about the study design. If we happen to know measurement order, then we can make use of an index plot and the DW statistic.
 
-(I'm leaving this to each of you to practice and come up with a justification for why we can say that we have independence of observations.)
+### Battery Manufacturing Study
+
+Unfortunately, we don't know measurement order in the Battery Manufacturing study, so index plots are not going to be useful here. However, we can think through the study design and reach a decision about independent observations.
+
+In this particular case, we know that the the application of plate material was randomly assigned to instances of battery building process and that a set of batteries using each plate material were selected via a random process. Within each of those sets, the engineer assigned an operating temperature to each battery. Taken together, this information does not raise any flags that we have dependent observations based upon the design.
+
+### Gummy Bears Study
+
+
+
+
+
++ Results
+  - Omnibus
+  - Point Estimates
+  - Post Hoc--Pairwise
+  - Post Hoc--Contrasts
+  - Effect Sizes
++ Dealing with Imbalanced Designs
+
+
+
+#
 
 ## Results
 
