@@ -1,10 +1,10 @@
 ---
 title: "Factorial Models"
 author: "Neil J. Hatfield"
-date: "4/11/2022"
+date: "4/15/2022"
 output: 
   pdf_document
-geometry: left=1in,right=1in,top=1in,bottom=1in
+geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
@@ -31,13 +31,110 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-In this tutorial, we are going to explore Factorial Treatment Structures/Factorial Designs in R.
+In this tutorial, we are going to explore Factorial Treatment Structures/Factorial Designs in R. For our purposes here, we will restrict our attention to [full] factorial models with all Fixed Factor Effects. (We will allow for our measurement units to be the only random effect term.) The general structure for this guide will be:
 
-# New Package
++ Setting Up R
+  - Loading Packages, Setting Options, and Additional Tools
++ Data Contexts
+  - Load! Aim! Ready! Release! (Gummy Bear Catapult)
+  - Battery Manufacturing
++ Exploring the Factorial Treatment Structure
++ Fit the Models
+  - Appropriateness of ANOVA
+  - Check Interactions
+  - Form the Model
++ Assessing Assumptions
+  - Gaussian Residuals
+  - Homoscedasticity
+  - Independence of Observations
++ Results
+  - Omnibus
+  - Point Estimates
+  - Post Hoc--Pairwise
+  - Post Hoc--Contrasts
+  - Effect Sizes
++ Dealing with Imbalanced Designs
 
-For Factorial Designs, we will need to add the `emmeans` package to our list of packages to load with the `library` call.
+# Setting Up R
 
-# Two-way Fixed ANOVA Context
+Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
+
+I've also added in the `psych` package to demonstrate an approach you can use for getting values of descriptive statistics in accordance with the factorial treatment structure. You'll also see the `openxlsx` package in the list; this happens to be my preferred way to read in XLSX files.
+
+As a reminder, the following code does all of these things:
+
+```{r setR, echo=TRUE, eval=FALSE}
+# Demo code to set up R
+## Load packages
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "car",
+              "psych", "DescTools", "emmeans",
+              "openxlsx")
+lapply(packages, library, character.only = TRUE)
+
+## Set options and constraint
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+## Load useful tools
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+# Data Contexts
+
+For this guide/tutorial, we'll make use of two contexts: __Load! Aim! Ready! Release! (Gummy Bears)__ and __Battery Manufacturing (Batteries)__.
+
+## Load! Aim! Ready! Release! (Gummy Bears)
+
+This data comes from the design that we put together in class to explore the impacts of launch angle and launch position for our spoon-apults for launching gummy bears to see how far they will fly.
+
+```{r loadGummyBears, echo=TRUE}
+# Demo code for loading and cleaning data
+## Loading gummy bear data
+catapultData <- openxlsx::readWorkbook(
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears2022.xlsx",
+  sheet = 1,
+  colNames = TRUE,
+  rowNames = FALSE
+)
+
+## Change variables
+names(catapultData)[which(names(catapultData) == "Launch.Angle")] <- "Angle"
+names(catapultData)[which(names(catapultData) == "Launch.Position")] <- "Position"
+names(catapultData)[which(names(catapultData) == "Measurement.Order")] <- "Order"
+
+## Fix the data
+## R will treat high and High as TWO separate levels
+## Same with low & Low, back & Back, and front & Front
+catapultData <- catapultData %>%
+  dplyr::mutate(
+    Angle = dplyr::recode_factor(
+      Angle,
+      "high" = "High", # Old Value = New Value
+      "High" = "High",
+      "low" = "Low",
+      "Low" = "Low"
+    ),
+    Position = dplyr::recode_factor(
+      Position,
+      "back" = "Back",
+      "Back" = "Back",
+      "front" = "Front",
+      "Front" = "Front"
+    ),
+    ## This is optional but I'm going to standardize team names
+    Team = dplyr::case_when(
+      !grepl(pattern = "Team", Team) ~ paste("Team", Team),
+      TRUE ~ Team
+    )
+  )
+
+```
+
+Notice that I used a couple of functions from `dplyr` to help me clean and take control of the data. The `mutate` function allows you to change an entire column of a data frame in a consistent and relatively speedy way. The `recode_factor` function combines two things: alter values for consistency AND tell `R` to treat the attribute as a factor. Note: the order you list the new values will be the order `R` uses for the factor levels.
+
+## Battery Manufacturing
 
 An engineer is designing a battery for use in a device that will people will use in some extreme temperatures. Unfortunately, the engineer may only alter one design parameter: the plate material for the battery of which he has three choices.
 
@@ -50,42 +147,16 @@ His questions:
 1) What effects do material type and temperature have on life of battery?
 2) Is there a choice of material that would give uniformly long life regardless of temperature?
 
-
-## Examine the Hasse Diagram
-
-Remember to look at a Hasse diagram and to make use of the diagram to justify why a factorial design is appropriate.
-
-```{r batteriesHD, fig.cap="Hasse Diagram for Battery Design Study", fig.height=2, fig.pos="H"}
-# Hasse Diagram
-modelLabels <- c("1 Maintain Charge 1", "3 Plate 2", "3 Temperature 2",
-                 "9 Plate × Temperature 4", "36 (Batteries) 27")
-modelMatrix <- matrix(
-  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
-           FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE,
-           TRUE, TRUE, FALSE),
-  nrow = 5,
-  ncol = 5,
-  byrow = FALSE
-)
-hasseDiagram::hasse(
- data = modelMatrix,
- labels = modelLabels
-)
-
-```
-
-## Data
-
-For this example, you'll want to import the data as shown below. You'll notice that I'm using the `recode_factor` function from the `dplyr` package to translate the integers for both temperature and plate into more meaningful values (plus this tells R to treat those as factors).
-
 ```{r loadBattery, echo=TRUE}
-# Load battery data
+## Demo code for loading and cleaning data
+## Load battery data
 battery <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/batteryLife.dat",
   header = TRUE,
   sep = ","
 )
 
+## Clean data
 battery$temperature <- dplyr::recode_factor(
   battery$temperature,
   `15` = "15ºF",
@@ -101,14 +172,17 @@ battery$material <- dplyr::recode_factor(
 
 ```
 
-## Explore the data
+# Exploring the Factorial Treatment Structure
 
-Exploring the data in factorial settings becomes much more important as now you have many more ways to think about slicing up the data resulting in more ways to help people (and yourself) think about the data. Remember, data visualizations are some of your strongest and most helpful tools here.
+Exploring the data in factorial settings becomes much more important as now you have many more ways to think about slicing up the data resulting in more ways to help people (and yourself) think about the data. Remember, data visualizations are some of your strongest and most helpful tools here. 
+
+## Box Plots Revisited
 
 You can use the multiple factors in a variety of ways in your data visualizations. For example, rather than looking at a side-by-side box plots along one factor, you could do a set for each factor or by the interaction. R's base `boxplot` function allows for you explore interactions by using the formula argument.
 
-```{r interactionBoxplot, fig.cap="Box Plot of Batter Life Spans by Temperature and Plate Material", fig.width=6, fig.height=3, echo=TRUE, fig.pos="H"}
-# Boxplot Example with interaction of factors
+```{r interactionBoxplot, fig.cap="Box Plot of Battery Life Spans by Temperature and Plate Material", fig.width=7, fig.height=5, echo=TRUE, fig.pos="H"}
+# Demo code for box plots using factorial treatment structure
+## Battery Manufacturing
 boxplot(
   formula = life ~ temperature:material,
   data = battery,
@@ -120,25 +194,27 @@ boxplot(
 
 While this box plot is okay to look at, we could improve this plot greatly for professional work. The easiest method would be to use `ggplot2`.
 
-```{r boxplots2, echo=TRUE, fig.cap="Box Plot With Multiple Factors", fig.width=6, fig.height=3, fig.pos="H"}
-## Ggplot box plot with interaction of factors
+```{r boxplots2, echo=TRUE, fig.cap="Box Plot With Multiple Factors--Gummy Bears Study", fig.width=6, fig.height=3, fig.pos="H"}
+# Demo code of box plots incorporating factorial treatment structure
+## ggplot2 and Gummy Bears Study
 ggplot(
-  data = battery,
+  data = catapultData,
   mapping = aes(
-    x = temperature,
-    y = life,
-    fill = material
+    x = Angle,
+    y = Distance,
+    fill = Position
   )
 ) +
   geom_boxplot() +
   theme_bw() +
-  xlab("Operating Temperature") +
-  ylab("Life span (hours)") +
+  xlab("Launch Angle") +
+  ylab("Distance (in)") +
   labs(
-    fill = "Material"
+    fill = "Launch Position"
   ) +
   theme(
-    legend.position = "top"
+    legend.position = "right",
+    text = element_text(size = 14)
   )
 
 ```
@@ -147,10 +223,12 @@ ggplot(
 
 In addition to data visualizations, we also may make use of descriptive/incisive statistics. We've used the `describeBy` from the `psych` package in the past to break our response up into groups based upon our factor. We can do something similar in multi-factor situations as shown here:
 
-```{r descStats, echo=TRUE}
-# Descriptive statistics by interactions of factors
+```{r descStatsBattery, echo=TRUE}
+# Demo code for descriptive statistics for factorial treatment structure
+## Battery Manufacturing 
 batteryStats <- psych::describeBy(
   x = battery$life,
+  # Notice how we're getting the factorial treatments
   group = paste(battery$temperature, battery$material, sep = " x "),
   na.rm = TRUE,
   skew = TRUE,
@@ -187,6 +265,159 @@ batteryStats %>%
 
 If you are using `dplyr`'s `summarize` function, you can achieve similar results by first calling `group_by` and then listing all of your factors. In this case we would want `dplyr::group_by(temperature, material)`.
 
+```{r descStatsGummyBears, echo=TRUE}
+# Demo code for descriptive statistics for factorial treatment structure
+## Gummy Bears 
+catapultData %>%
+  dplyr::group_by(Angle, Position) %>%
+  summarize(
+    n = n(),
+    min = min(Distance),
+    Q1 = quantile(Distance, probs = c(0.25)),
+    med = median(Distance),
+    Q3 = quantile(Distance, probs = c(0.75)),
+    max = max(Distance),
+    mad = mad(Distance),
+    sam = mean(Distance),
+    sd = sd(Distance),
+    skew = psych::skew(Distance),
+    kurtosis = psych::kurtosi(Distance)
+  ) %>%
+  knitr::kable(
+    caption = "Summary Statistics for Gummy Bear Study",
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep('c', 13),
+    col.names = c("Angle", "Position", "n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew","Sample Ex. Kurtosis"),
+    booktabs = TRUE
+  )  %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  ) 
+
+```
+
+Either approach (`psych::describeBy` or `dplyr::group_by` and `dplyr::summarize`) works for getting values of descriptive statistics in accordance to the factorial treatment structure.
+
+# Fit the Models
+
+Before we write code to fit the factorial model in `R`, we should do two things: 1) double check that a factorial ANOVA approach is appropriate, and 2) check for interactions.
+
+## Appropriateness of ANOVA
+
+As we have been doing since Unit 3, checking for whether ANOVA methods are appropriate for answering our SRQ comes down to the following:
+
++ Do we have a quantitative response?
++ Do we have two or more categorical/qualitative factors? (If only one, then we're not factorial ANOVA.)
++ Do we have enough *Degrees of Freedom* to be able to estimate the Main Effects and Interactions?
++ Do we have enough *Degrees of Freedom* for estimating residuals/errors?
++ (For Main Effects Only Models: do we have an additive model?)
+
+As before, our knowledge of the study design and the Hasse diagram can help us out.
+
+Figure \ref{fig:batteriesHD} shows the Hasse diagram for the Battery Manufacturing study. We know that the response is quantitative (number of hours of life). From the Hasse diagram, we have two factors (Plate Material and Temperature) which are both categorical. We are doing a full factorial structure (we have all possible interactions). Further, since we have positive *Degrees of Freedom* for each node in the Hasse diagram, we know that we should be able to estimate all main effects, interactions, and the residuals/errors.
+
+```{r batteriesHD, fig.cap="Hasse Diagram for Battery Manufacturing Study", fig.height=2, fig.pos="H"}
+# Hasse Diagram
+modelLabels <- c("1 Maintain Charge 1", "3 Plate 2", "3 Temperature 2",
+                 "9 Plate × Temperature 4", "36 (Batteries) 27")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+           FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE,
+           TRUE, TRUE, FALSE),
+  nrow = 5,
+  ncol = 5,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+### Your Turn
+
+Create a similar paragraph as I did but for the Gummy Bears situation.
+
+## Check Interactions
+
+With a [Full] Factorial Design, we no longer have a truly additive model. The interaction term in some ways is a measure of how far our model departs from additivity. We want to see whether interactions are important or unimportant: data visualizations are our key to detect this. However, unlike with One-way ANOVA with a Block, we will be okay if we see interactions.
+
+There are several ways that we can look at interaction plots.
+
+### Base R
+
+The first method is to use the `interaction.plot` function included in base R.
+
+```{r batteryInt1, fig.cap="Interaction Plot using base R", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
+# Using base R to make interaction plot
+interaction.plot(
+  x.factor = battery$temperature, # First Factor
+  trace.factor = battery$material, # Second Factor
+  response = battery$life, # Response
+  fun = mean,
+  type = "b", # Both points and lines
+  col = c("black","red","blue"), # Set colors for trace
+  pch = c(19, 17, 15),  # Set symbols for trace
+  fixed = TRUE,
+  legend = TRUE,
+  xlab = "Temperature",
+  ylab = "Life (hours)",
+  trace.label = "Material")
+
+```
+
+### GGplot2
+
+We can also use `ggplot2` to create an interaction plot.
+
+```{r batteryInt2, fig.cap="Interaction Plot using ggplot2", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
+# Using ggplot to make interaction plot
+ggplot(
+  data = battery,
+  mapping = aes(
+    x = temperature,
+    y = life,
+    color = material,
+    group = material
+    )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  geom_jitter(width = 0.1, height = 0.1, shape = 5) +
+  ggplot2::theme_bw() +
+  xlab("Temperature") +
+  ylab("Life (hours)") +
+  labs(color = "Material")
+
+```
+
+Each of these three methods have their strengths and their weaknesses. The choice is really up to you and what you want to show in the plot.
+
+### Interaction Write Up
+
+We will note that there does appear to be some worthwhile interactions between the operating temperature and the plate material. (If there weren't we would anticipate seeing perfectly parallel lines.)
+
+
+  - Form the Model
++ Assessing Assumptions
+  - Gaussian Residuals
+  - Homoscedasticity
+  - Independence of Observations
++ Results
+  - Omnibus
+  - Point Estimates
+  - Post Hoc--Pairwise
+  - Post Hoc--Contrasts
+  - Effect Sizes
++ Dealing with Imbalanced Designs
+
+
+
+
 ## Fit the Model
 
 There are a couple of different ways that you can specify factorial designs in R: you can manually type in the main the effects and interactions in the order you wish OR you can let R fill in all of the terms for you. 
@@ -207,6 +438,7 @@ batteryModel <- aov(
 )
 
 ```
+
 
 ## Check Assumptions
 
@@ -270,87 +502,6 @@ The first thing that I notice in the Tukey-Anscombe plot is that the fourth stri
 Unfortunately, we don't know measurement order so index plots are not going to be useful here. However, we can think through the study design and reach the decision that we have independent observations.
 
 (I'm leaving this to each of you to practice and come up with a justification for why we can say that we have independence of observations.)
-
-### Interaction Plots
-
-With a [Full] Factorial Design, we no longer have a truly additive model. The interaction term in some ways is a measure of how far our model departs from additivity. We want to see whether interactions are important or unimportant: data visualizations are our key to detect this. However, unlike with One-way ANOVA with a Block, we will be okay if we see interactions.
-
-There are several ways that we can look at interactions.
-
-#### Base R
-
-The first method is to use the `interaction.plot` function included in base R.
-
-```{r batteryInt1, fig.cap="Interaction Plot using base R", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Using base R to make interaction plot
-interaction.plot(
-  x.factor = battery$temperature, # First Factor
-  trace.factor = battery$material, # Second Factor
-  response = battery$life, # Response
-  fun = mean,
-  type = "b", # Both points and lines
-  col = c("black","red","blue"), # Set colors for trace
-  pch = c(19, 17, 15),  # Set symbols for trace
-  fixed = TRUE,
-  legend = TRUE,
-  xlab = "Temperature",
-  ylab = "Life (hours)",
-  trace.label = "Material")
-
-```
-
-#### GGplot2
-
-We can also use `ggplot2` to create an interaction plot.
-
-```{r batteryInt2, fig.cap="Interaction Plot using ggplot2", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Using ggplot to make interaction plot
-ggplot(
-  data = battery,
-  mapping = aes(
-    x = temperature,
-    y = life,
-    color = material,
-    group = material
-    )
-) +
-  stat_summary(fun = "mean", geom = "point") +
-  stat_summary(fun = "mean", geom = "line") +
-  geom_jitter(width = 0.1, height = 0.1, shape = 5) +
-  ggplot2::theme_bw() +
-  xlab("Temperature") +
-  ylab("Life (hours)") +
-  labs(color = "Material")
-
-```
-
-#### Emmeans 
-
-We can also use the `emmip` function from the `emmeans` package to create an interaction plot.
-
-```{r batteryInt3, fig.cap="Interaction Plot using emmeans", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Using emmeans to make interaction plot
-
-emmeans::emmip(
-  object = batteryModel, # our ANOVA model
-  # How do we want to arrange our factors
-  # formula = color/trace factor ~ horizontal axis
-  formula = material ~ temperature
-) +
-  theme_bw() + # Notice that we can add on ggplot contols
-  xlab("Temperature") +
-  ylab("Life span (hours)") +
-  labs(
-    color = "Material"
-  )
-
-```
-
-Each of these three methods have their strengths and their weaknesses. The choice is really up to you and what you want to show in the plot.
-
-#### Interaction Write Up
-
-We will note that there does appear to be some worthwhile interactions between the operating temperature and the plate material. (If there weren't we would anticipate seeing perfectly parallel lines.)
 
 ## Results
 
