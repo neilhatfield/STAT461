@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
-              "psych", "DescTools", "emmeans")
+              "psych", "DescTools", "emmeans", "openxlsx")
 lapply(packages, library, character.only = TRUE)
 
 options(knitr.kable.NA = "")
@@ -50,16 +50,15 @@ In this tutorial, we are going to explore Factorial Treatment Structures/Factori
 + Results
   - Omnibus
   - Point Estimates
-  - Post Hoc--Pairwise
+  - Post Hoc--Pairwise and Effect Sizes
   - Post Hoc--Contrasts
-  - Effect Sizes
 + Dealing with Imbalanced Designs
 
 # Setting Up R
 
 Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
 
-I've also added in the `psych` package to demonstrate an approach you can use for getting values of descriptive statistics in accordance with the factorial treatment structure. You'll also see the `openxlsx` package in the list; this happens to be my preferred way to read in XLSX files.
+I've also added in the `psych` package to demonstrate an approach you can use for getting values of descriptive statistics in accordance with the factorial treatment structure. You'll also see the `openxlsx` package in the list; this happens to be my preferred way to read in XLSX files. Feel free to use your own method for reading in Excel files.
 
 As a reminder, the following code does all of these things:
 
@@ -68,8 +67,7 @@ As a reminder, the following code does all of these things:
 ## Load packages
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
-              "psych", "DescTools", "emmeans",
-              "openxlsx")
+              "psych", "DescTools", "emmeans", "openxlsx")
 lapply(packages, library, character.only = TRUE)
 
 ## Set options and constraint
@@ -123,16 +121,29 @@ catapultData <- catapultData %>%
       "front" = "Front",
       "Front" = "Front"
     ),
-    ## This is optional but I'm going to standardize team names
     Team = dplyr::case_when(
-      !grepl(pattern = "Team", Team) ~ paste("Team", Team),
-      TRUE ~ Team
+      Team == "Team 6" ~ Team,
+      TRUE ~ paste("Team", Team)
     )
   )
 
 ```
 
 Notice that I used a couple of functions from `dplyr` to help me clean and take control of the data. The `mutate` function allows you to change an entire column of a data frame in a consistent and relatively speedy way. The `recode_factor` function combines two things: alter values for consistency AND tell `R` to treat the attribute as a factor. Note: the order you list the new values will be the order `R` uses for the factor levels.
+
+### Omnibus SRQs and Hypotheses
+
+Unlike in One-way ANOVA or RCBD with One Factor, we have several SRQs for factorial designs:
+
++ Does the launch angle make a difference on how far a gummy bear flew?
+    - \(H_{1,0}\): There is no statistically significant impact on how far a gummy bear flies due to launch angle.
+    - \(H_{1,A}\): There is a statistically significant impact on how far a gummy bear flies due to launch angle.
++ Does the launch position make a difference on how far a gummy bear flew?
+    - \(H_{2,0}\): There is no statistically significant impact on how far a gummy bear flies due to launch position.
+    - \(H_{2,A}\): There is a statistically significant impact on how far a gummy bear flies due to launch position.
++ Does the interaction of launch angle and position make a difference on how far a gummy bear flew?
+    - \(H_{3,0}\): There is no statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
+    - \(H_{3,A}\): There is a statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
 
 ## Battery Manufacturing
 
@@ -171,6 +182,10 @@ batteryData$material <- dplyr::recode_factor(
 )
 
 ```
+
+### Your Turn
+
+Write SRQs and hypotheses for the Battery Manufacturing study.
 
 # Exploring the Factorial Treatment Structure
 
@@ -515,6 +530,10 @@ ggplot(
 
 The first thing that I notice in the Tukey-Anscombe plot (Figure \ref{fig:batteryVar}) is that the fourth strip from the left shows the least amount of variation while the fifth strip (from the left) shows the most. The fifth used more than twice the vertical space as the fourth, however, this is the only aspect that causes me a moment of hesitation. There are no discernible patterns to the plot and the blue reference line is perfectly horizontal indicating that we have [sufficient] homoscedasticity.
 
+### Your Turn
+
+Create the appropriate plot and associated text for the Gummy Bear study.
+
 ## Independence of Observations
 
 For Independence of Observations, keep in mind that our Go To is to think about the study design. If we happen to know measurement order, then we can make use of an index plot and the DW statistic.
@@ -527,43 +546,70 @@ In this particular case, we know that the the application of plate material was 
 
 ### Gummy Bears Study
 
+We do know measurement order for the Gummy Bears study...except that there is one slight wrinkle. We have 12 different "first" gummy bears launched and measured. To explore whether we have any violation of the Independence of Observations, we are going to need to think through the study design and make use of the measurement order.
 
+What do we know about how the study was designed? Quite a bit, after all, we designed the study! We will take the 300 gummy bears as constituting a random sample from the population of gummy bears created by the manufacturer. While not a rigorous random process, Neil did draw individual gummy bears from a central stock pile to separate them into 12 groups of 25. We also know that we randomly assigned the treatments to catapult teams (our experimental units) and they arbitrarily took one of the bags of gummy bears. Taken together, we might take these facts as suggesting that we have independent observations __*up to the point the catapult teams took possession of the baggies of gummy bears*__.
 
+I happen to know that at least one group did not use all 25 gummy bears; rather they used a couple of gummy bears and repeated launched and measured them. This is a threat to Independence of Observations. To explore, we will look at index plots...broken out by each experimental unit (catapult teams).
 
+```{r gummyBearsIO, fig.cap="Index Plots for Gummy Bear Study", fig.width=7, fig.height=4, echo=TRUE}
+ggplot(
+  data = catapultData,
+  mapping = aes(
+    x = Order,
+    y = Distance
+  )
+) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  theme_bw() +
+  xlab("Measurement order") +
+  ylab("Distance (in)") +
+  facet_wrap(
+    . ~ Team
+  )
 
-+ Results
-  - Omnibus
-  - Point Estimates
-  - Post Hoc--Pairwise
-  - Post Hoc--Contrasts
-  - Effect Sizes
-+ Dealing with Imbalanced Designs
+```
 
+Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams. I am going to leave to you the challenge of getting `R` to place the facets in the order Team 1, Team 2, Team 3, etc. instead of what currently appears.
 
+When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The two plots I'm most concerned about are Team 4, Team 8, and Team 9. In Team 4's plot, we have a run of increasing distances from launch 19 through launch 24. For Team 8, they reached a point where a general upward trend shows up starting launch 12; similarly for Team 9 around launch 11. I suspect that in these cases, the team got into a "groove" or rhythm. While in some circumstances this might be more problematic, given our context, we'll survive.
 
-#
+## Recapping Assumptions
 
-## Results
+We will state that all three assumptions are satisfied for both the Battery Manufacturing and Gummy Bears studies.
 
-Remember, there are essentially two parts to results: the omnibus test and the post hoc analysis.
+# Results
 
-### Omnibus Results
+For results, we want to tackle both sets: Omnibus (*F* test, effect sizes, and point estimates) and Post Hoc (pairwise, effect sizes, and/or contrasts).
 
-In this particular situation, we have a __balanced__ design, thus we do not need to worry about different types of Sums of Squares.
+## Omnibus
 
-```{r barleyTable, echo=TRUE}
+For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ designs. Thus, we do not need to worry about different types of *Sums of Squares*. However, I'm going to demonstrate how we can switch the types.
+
+```{r batteryTable, echo=TRUE}
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
     model = batteryModel,
-    omega_squared = "partial",
+    omega_squared = "partial", # Notice the use of partial
     eta_squared = "partial",
-    epsilon_squared = "partial"
+    epsilon_squared = "partial",
+    type = 1, # Use 1, 2, or 3 for the Type of SSQs you want
+    drop = "(Intercept)", # Drop an unneeded row for ANOVA
+    verbose = FALSE # Makes the function "quiet"
 ) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
   knitr::kable(
     digits = 4,
   col.names = c("Source", "SS", "df", "MS", "F", "p-value",
                 "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
-  caption = "ANOVA Table for Batter Life Span Study",
+  caption = "ANOVA Table for Battery Manufacturing Study",
   align = c('l',rep('c',8)),
   booktab = TRUE
 ) %>%
@@ -575,86 +621,178 @@ parameters::model_parameters(
 
 ```
 
-We treat this type just like we have before, except that now we're interested in __ALL__ of the rows and thus we will need to talk about each of the main effects and interactions. The partial effect sizes are still interpreted as proportion of the variation in the response by just that main effect/interaction (all others are dropped).
+Table \ref{tab:batteryTable} gives us a modern ANOVA table for our full factorial in the Battery Manufacturing Study. Unlike for RCBD, we care about all of the rows this time. We interpret the *F*-ratio just as we have done previously. Same goes for the *p*-values. Supposing that we set \(UT=0.05\), we still use the *p*-values from the table in the regular way to make decisions between the hypotheses. 
 
-### Post Hoc Analysis
+The effect sizes (partial omega/eta/epsilon-squared values) are still proportions of variation in the response explained and we can use the regular Rules of Thumb for qualitative sizing. The biggest catch is to recognize that these aren't *unique* explanations of variance.
 
-#### Point Estimates
+In the Battery Manufacturing situation, we would decide to reject the null hypothesis for each of the main effects and for the interaction term. Of these, temperature appears to explain most of the variation in battery life.
 
-I want to quickly remind you that you can get point estimates for your main effects and treatment effects using the `dummy.coef` function. If you need confidence intervals for these, you can use the `confint` function (don't forget to provide an *adjusted* confidence level).
+### Your Turn
+
+Make the modern ANOVA table for the Gummy Bears situation. Write a paragraph to go with the table.
+
+## Point Estimates
+
+You can get point estimates for your main effects and treatment effects using the `dummy.coef` function. 
 
 ```{r batteryPointEstimates, echo=TRUE}
-# Point Estimates for Battery Factorial Model
-## Don't use raw output in your reports, make a nice table
-dummy.coef(batteryModel)
+# Demo code for Point Estimates 
+## Battery Manufacturing Study
+pointEst <- dummy.coef(batteryModel)
+pointEst <- unlist(pointEst)
+names(pointEst) <- c(
+  "Grand Mean",
+  levels(batteryData$temperature),
+  levels(batteryData$material),
+  outer(
+    levels(batteryData$temperature),
+    levels(batteryData$material),
+    FUN = paste,
+    sep = " x "
+  )
+)
+
+data.frame("Estimate" = pointEst) %>%
+  knitr::kable(
+  digits = 2,
+  caption = "Point Estimates from the Song Knowledge Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
 
 ```
 
+I will make no claims that Table \ref{tab:batteryPointEstimates} is the most efficient way to present the point estimates. I'll leave how to better parse this table to you all.
 
-#### Pairwise Comparisons
+What I will highlight is that the interpretations of the *GSAM* and the main effects remain consistent with what we've worked with previously. For example, ignoring all factors, our batteries lasted 105.53 times as long as the number of batteries we tested (i.e., the common baseline performance). At 70ºF, the battery's performance was an additional 2.06 hours/battery greater than the common baseline. However, Plate 1 batteries had a reduction of 22.36 hours/battery from baseline.
+
+The interpretation of interaction terms may be thought of as the "differences in differences" for performances or as how much we have to moderate the performance of a group from just the main effects? That is to say, how much does the battery performance change due to the interaction of the two factors. For example, let's consider Plate 1 and 15ºF. The performance for the batteries in this group starts with baseline (105.53 hrs/battery) and gets a bonus for 15ºF (+39.31 hrs/battery). However, this group also has a performance penalty for Plate 1 (-22.36 hrs/battery). However, the interaction of 15ºF and Plate 1 moderates the performance penalty by giving back 12.28 hrs/battery. If we add these rates together, \(105.53+39.31-22.36+12.28\approx `r 105.53+39.31-22.36+12.28`\), which is equal (up to rounding) to the value of the *SAM* we saw for this group in Table \ref{tab:descStatsBattery} or will see in Table \ref{tab:batteryPH1}.
+
+### Your Turn
+
+Get the point estimates for the Gummy Bear Study. Give interpretations for the *GSAM*, one level of each main effect, and one interaction level.
+
+## Post Hoc--Pairwise Comparisons & Effect Sizes
 
 While you *could* use the pairwise comparison functions we've previously used, a better approach is to embrace our Factorial Design and look at the *estimated marginal means*. These will hold certain factors constant and let others vary. To do this, we will need to use the `emmeans` package.
 
 ```{r batteryPH1, echo=TRUE}
-# Pairwise Comparisons
-batteryPH <- emmeans::emmeans(
+# Demo code for Post Hoc 
+## Marginal Means with Adjusted Confidence Intervals
+## Battery Manufacturing Study
+batteryPHMeans <- emmeans::emmeans(
   object = batteryModel,
-  # The order of factors does not really matter
+  # The order of factors does not really matter for this
   specs = pairwise ~ temperature | material,
-  adjust = "tukey",
-  level = 0.9
+  adjust = "tukey", # Where you specify your chosen method
+  level = 0.9 # 1--Type I Risk
 )
 
-as.data.frame(batteryPH$emmeans) %>%
+as.data.frame(batteryPHMeans$emmeans) %>%
   knitr::kable(
     digits = 4,
     col.names = c("Temperature", "Plate Material", "Marginal Mean","SE", "DF",
                   "Lower Bound","Upper Bound"),
     caption = "Marginal Means-Tukey 90\\% Adjustment",
-    align = c("l","l", rep("c", 5)),
+    align = rep("c", 7),
     booktabs = TRUE
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+    latex_options = c("HOLD_position")
   )
 
 ```
 
-The `adjust` argument of `emmeans` allows for the following values for confidence intervals: `"bonferroni"`, `"tukey"`, `"scheffe"`, and `"sidak"`. If you do not want confidence intervals you may use values of `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`.
+```{r batteryPH2, echo=TRUE}
+# Demo code for Post Hoc 
+## Pairwise Comparisons
+## Battery Manufacturing Study
+batteryPHTemp <- emmeans::emmeans(
+  object = batteryModel,
+  # Order maters for this; comparisons | held constant
+  specs = pairwise ~ temperature | material,
+  adjust = "tukey", # Where you specify your chosen method
+  level = 0.9 # 1--Type I Risk
+)
+
+as.data.frame(batteryPHTemp$contrasts) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Comparison", "Plate Material", "Estimate","SE", "DF",
+                  "t Statistic", "p-value"),
+    caption = "Pairwise Comparisons of Temperature-Tukey 90\\% Adjustment",
+    align = rep("c", 7),
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+```{r batteryPH3, echo=TRUE}
+# Demo code for Post Hoc 
+## Pairwise Comparisons
+## Battery Manufacturing Study
+batteryPHPlate <- emmeans::emmeans(
+  object = batteryModel,
+  # Order maters for this; comparisons | held constant
+  specs = pairwise ~ material | temperature,
+  adjust = "tukey", # Where you specify your chosen method
+  level = 0.9 # 1--Type I Risk
+)
+
+as.data.frame(batteryPHPlate$contrasts) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Comparison", "Temperature", "Estimate","SE", "DF",
+                  "t Statistic", "p-value"),
+    caption = "Pairwise Comparisons of Plate Material-Tukey 90\\% Adjustment",
+    align = rep("c", 7),
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+The `adjust` argument of `emmeans` allows values as your method for controlling Type I Error rates: `"bonferroni"`, `"tukey"`, `"scheffe"`, `"sidak"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`. You will get point estimates (marginal means) and their confidence intervals when you use the `postHocObject$emmeans` and you'll get pairwise comparisons with adjusted *p*-values when you use `postHocObject$contrasts`.
 
 ### Effect Sizes
 
 Unfortunately, my `anova.PostHoc` function does not currently work with with factorial models. However, the `emmeans` package provides us with a way to get Cohen's *d*, which then allows us to my `probSup` function to get the Probability of Superiority.
 
 ```{r effectSize1, echo=TRUE}
-# We want to first narrow our focus and store the marginal means
-## You could change the specs to material
-tempEMM <- emmeans::emmeans(
-  object = batteryModel,
-  specs = "temperature"
-)
-
-# Pass the stored marginals into the effect size function
-cohenTemp <- emmeans::eff_size(
-  object = tempEMM,
-  sigma = sigma(batteryModel),
-  edf = df.residual(batteryModel)
-)
-
-# Create a data frame, add on the probability of superiority
-# Send that data frame into a nice table
-as.data.frame(cohenTemp) %>%
+# Demo Code for Effect Sizes
+## Battery Manufacturing Study
+## Pairwise Temperature Comparisons
+as.data.frame(
+  eff_size(
+    object = batteryPHTemp,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
   dplyr::mutate(
     ps = probSup(effect.size),
     .after = effect.size
   ) %>%
-  dplyr::select(contrast, effect.size, ps) %>%
+  dplyr::select(contrast, material, effect.size, ps) %>%
   knitr::kable(
     digits = 3,
-    col.names = c("Comparison", "Cohen's d", "Probability of Superiority"),
-    align = "lcc",
+    col.names = c("Comparison", "Plate Material", "Cohen's d", "Probability of Superiority"),
+    align = "lccc",
     caption = "Effect Sizes for Temperature",
     booktab = TRUE
   ) %>%
@@ -664,28 +802,29 @@ as.data.frame(cohenTemp) %>%
     latex_options = "HOLD_position"
   )
 
-## Doing the same for material
-matEMM <- emmeans::emmeans(
-  object = batteryModel,
-  specs = "material"
-)
-cohenMat <- emmeans::eff_size(
-  object = matEMM,
-  sigma = sigma(batteryModel),
-  edf = df.residual(batteryModel)
-)
+```
 
-as.data.frame(cohenMat) %>%
+```{r effectSize2, echo=TRUE}
+# Demo Code for Effect Sizes
+## Battery Manufacturing Study
+## Pairwise Plate Material Comparisons
+as.data.frame(
+  eff_size(
+    object = batteryPHPlate,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
   dplyr::mutate(
     ps = probSup(effect.size),
     .after = effect.size
   ) %>%
-  dplyr::select(contrast, effect.size, ps) %>%
+  dplyr::select(contrast, temperature, effect.size, ps) %>%
   knitr::kable(
     digits = 3,
-    col.names = c("Comparison", "Cohen's d", "Probability of Superiority"),
-    align = "lcc",
-    caption = "Effect Sizes for Material",
+    col.names = c("Comparison", "Temperature", "Cohen's d", "Probability of Superiority"),
+    align = "lccc",
+    caption = "Effect Sizes for Plate Material",
     booktab = TRUE
   ) %>%
   kableExtra::kable_styling(
@@ -696,21 +835,36 @@ as.data.frame(cohenMat) %>%
 
 ```
 
+You would interpret these effects sizes exactly as you would in a One-way ANOVA context. 
+
+You can also see a bit of the influence of the interaction terms. Look at Table \ref{tab:effectSize2} and the Plate 1 - Plate 2 values across the three temperatures. Notice that the effect changes with the operating temperature.
+
+## Post Hoc--Contrasts
+
+While not all that common, especially if you are using a model building perspective, you can still do contrasts with factorial designs. 
+
+For contrasts involving combinations of levels of a single factor, you would use the same approaches and methods as in the One-way ANOVA case. 
+
+Contrasts involving combinations of levels of interaction terms are not straightforward. My recommendation is that you think extremely carefully as to what the purpose of such a combination is and whether there are other ways to investigate.
+
 # Imbalanced Designs
 
 As mentioned in class, when you have imbalanced designs for factorial models, we have to make a decision about which type of Sums of Squares we want to use.
 
-## Type I Sums of Squares--Sequential
+## Different Types of Sums of Squares
 
-If you really want Type I SSQs in a factorial setting (which is often not consistent with most typical SRQs), then you do not need to do anything different than what you have. Just make sure that your `formula` argument of the `aov` call is in the order you want. (Note: I recommend manually entering the model rather than letting R automatically fill in the formula whenever you might have the tinest bit of hestiation over what your model is.)
+We have three types of Sums of Squares. Keep in mind that the default is Type I for the `aov` call. Most often in Factorial ANOVA settings, we are interested in Type II (model building--watch out of important interaction terms) and Type III (for testing differences amongst factor levels).
 
-## Type II and Type III Sums of Squares
+For all of these we can use the `type` argument of the `model_parameters` function that we use for our modern ANOVA tables.
 
-The vast majority of the time, SRQs for factorial designs revolve around Type II (for model building) and Type III (for testing differences in factor levels) Sums of Squares. To get these sums of squares, I recommend using the `car` package's `Anova` function.
+## Quick Example
 
 For this example, I'm going to use a data set on different training methods' (fixed, 2 levels) and engery drink's (fixed, 2 levels) impacts on the time to run around a particular track.
 
-```{r runningExample, echo=TRUE}
+Look at how the various values change across the tables.
+
+```{r runningData, echo=TRUE}
+# Demo Code of Imbalanced Designs
 # Load Running Data
 running <- read.table(
   file = "http://stat.ethz.ch/~meier/teaching/data/running.dat", 
@@ -726,33 +880,114 @@ runningModel <- aov(
   data = running
 )
 
+```
 
-# Type I Example
-## From stats (base) R
-anova(runningModel)
+```{r runningType1, echo=TRUE}
+# Demo Code
+# Type I SSQs
+parameters::model_parameters(
+    model = runningModel,
+    omega_squared = "partial", 
+    eta_squared = "partial",
+    epsilon_squared = "partial",
+    type = 1, # Type I SSQs
+    drop = "(Intercept)", 
+    verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+  caption = "ANOVA Table for Running-Type I SSQs",
+  align = c('l',rep('c',8)),
+  booktab = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
 
-## Remember, we don't want raw output in a professional report
+```
 
-# Type II Example
-car::Anova(
-  mod = runningModel,
-  type = 2
-)
+```{r runningType2, echo=TRUE}
+# Demo Code
+# Type II SSQs
+parameters::model_parameters(
+    model = runningModel,
+    omega_squared = "partial", 
+    eta_squared = "partial",
+    epsilon_squared = "partial",
+    type = 2, # Type II SSQs
+    drop = "(Intercept)", 
+    verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+    caption = "ANOVA Table for Running-Type II SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
 
-# Notice that the SSQ for Method is different in II than I
+```
 
-# Type III Example
-car::Anova(
-  mod = runningModel,
-  type = 3
-)
-
-# Notice that the SSQ for Method and drink are different for III than in II and I
+```{r runningType3, echo=TRUE}
+# Demo Code
+# Type III SSQs
+parameters::model_parameters(
+  model = runningModel,
+  omega_squared = "partial", 
+  eta_squared = "partial",
+  epsilon_squared = "partial",
+  type = 3, # Type III SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+    caption = "ANOVA Table for Running-Type III SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
 
 
 ```
 
-You will want to present the results in a much more professional way than what I have just done. (I'm just trying to show how you do the coding for different types of SSQs.)
 
 
 \newpage
