@@ -5,15 +5,13 @@ if (length(new.packages)) {install.packages(new.packages)}
 lapply(req.packages, require, character.only = TRUE, quietly = TRUE)
 
 # P Value Rounding ----
-pvalRound <- function(x, digits = 4){
-  if (is.na(x)) {
-    return(NA)
-  } else if (x < 0.0001) {
-    return("< 0.0001")
-  } else {
-    return(format(round(x, digits = digits), scientific = FALSE))
+pvalRound <- function(x){
+    ifelse(
+      test = x < 0.0001,
+      yes = "< 0.0001",
+      no = x
+    )
   }
-}
 
 # String Splitter (Helper Function) ----
 .strsplitN <- function(x, N){
