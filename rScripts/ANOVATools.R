@@ -9,7 +9,7 @@ pvalRound <- function(x){
     ifelse(
       test = x < 0.0001,
       yes = "< 0.0001",
-      no = x
+      no = round(x, digits = 4)
     )
   }
 
