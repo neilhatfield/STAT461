@@ -31,28 +31,126 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-In this tutorial, we are going to explore Analysis of Covariance (ANCOVA) in R.
+In this tutorial, we are going to explore Analysis of Covariance (ANCOVA) in R. The general structure for this guide will be:
 
-# New Package
++ Setting Up R
+  - Loading Packages, Setting Options, and Additional Tools
+  - A New Package, `rstatix`
++ Data Context
+  - Repetitive Motion Disorders (Keyboarding)
++ Fit the Model
+  - Appropriateness of ANCOVA
+  - Hasse Diagrams
+  - Form the Model
++ Assessing Assumptions
+  - Gaussian Residuals
+  - Homoscedasticity
+  - Independence of Observations
+  - Linear Relationship between Response and Covariate
+  - Checking for Potential Outliers
+  - Homogeneity of Slopes
++ Results
+  - Omnibus
+  - Point Estimates
+  - Post Hoc--Pairwise and Effect Sizes
++ Choosing Amongst the Five ANCOVA Models
+
+# Setting Up R
+
+Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
+
+The core set of packages to load in include the following:
+
++ `tidyverse`--for data cleaning/wrangling and the pipe, `%>%`
++ `knitr` & `kableExtra`--for making professional looking tables
++ `parameters`--to construct modern ANOVA tables, get omnibus effect sizes, and to switch out the type of *Sums of Squares*
++ `hasseDiagram`--to construct Hasse diagrams
++ `car` for nice QQ Plots
++ `psych`--for easy descriptive statistics by group
++ `emmeans`--for getting point estimates which attend to our models as well as doing post hoc analyses
++ `rstatix`--our new package for detecting potential multivariate outliers
 
 We are going to make use of one new package, `rstatix` for ANCOVA models. There is a function in this package, `mahalanobis_distance` that will help us with checking for any potential outliers.
 
-# ANCOVA Context
+As a reminder, the following code does all of these things:
+
+```{r setR, echo=TRUE, eval=FALSE}
+# Demo code to set up R
+## Load packages
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "car",
+              "psych", "emmeans", "rstatix")
+lapply(packages, library, character.only = TRUE)
+
+## Set options and constraint
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+## Load useful tools
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+# Data Context
 
 When people engage in repetitive motion, they can suffer from any one of a set of Repetitive Motion Disorders such as carpal tunnel syndrome, trigger finger, or tendinitis. We are wanting to understand the impact of the type of keyboard on how many hours of pain a person experiences in their hands, wrists, and forearms. We suspect that the number of hours a person spends keyboarding is related to the number of hours of pain that they feel.
 
 We have 12 volunteers who will use a specific keyboard we assign them for 2 weeks. During that time, they will record the number of hours they use the keyboard and the number of hours of repetitive motion pain during the study period.
 
-## Examine the Hasse Diagram
+## Data
 
-There are __TWO__ ways that you could make the Hasse diagram in this situation; the choice is yours on which to use.
+For this example, you'll want to import the data as shown below.
 
-### Hasse Diagram App
+```{r loadKeyboarding, echo=TRUE}
+# Demo Code for loading data
+# Keyboarding Situation
+keyboardingData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/keyboarding.dat",
+  header = TRUE,
+  sep = ""
+)
 
-The first route is what I programmed into the Hasse diagram app: this will treat the covariate(s) as being the same level as your main effect(s).
+# Column Notes
+## hrs.pain is our response; hours experiencing pain
+## kbd.type is our factor; type/style of keyboard
+## hrs.kbd is our covariate; hours spent using the keyboard
+### make sure that R is NOT thinking of hrs.kbd as factor but
+### either as num or int
 
-```{r keyboardHD1, fig.cap="Hasse Diagram for Keyboarding Study-Version 1", fig.height=2, fig.pos="H"}
-# Hasse Diagram
+keyboardingData$kbd.type <- as.factor(keyboardingData$kbd.type)
+
+```
+
+# Fit the Model
+
+Before we write code to fit the ANCOVA model in `R`, we should check that ANCOVA is even appropriate.
+
+## Appropriateness of ANCOVA
+
+To assess whether an ANCOVA model is even appropriate mimics that of any of our ANOVA models. That is,
+
+1) Do we have a quantitative (ideally, continuous) response?
+2) Do we have at least one qualitative/categorical factor of interest?
+3) Do we have enough *Degrees of Freedom* to estimate all effects of interest?
+4) Do we have enough *Degrees of Freedom* to estimate residuals/errors?
+5) Are we aiming for an additive model (up to interaction terms)?
+
+For ANCOVA, we add two more:
+
+6) Do we have a quantitative attribute (i.e., a covariate) that we believe is related to our response?
+7) Is there a linear relationship between our response and our covariate?
+
+Just as you might suspect, we check all of these base requirements just as we have been: run through the study design, looking and verifying the elements. The Hasse diagram is our friend.
+
+## Hasse Diagrams
+
+Speaking of Hasse diagrams, there is not an agreed upon convention for how to incorporate covariates into the diagram. I tend to think of the covariate as being similar to a block and thus place a new node at the second highest level of the diagram; next to our main effects and block. Since there are many (in some cases, infinitely) levels to a covariate, we don't put a number of levels out front (to the left). Rather, we'll put the label "cov" for covariate. The number of *Degrees of Freedom* will depend upon which which type of ANCOVA model you fit. However, if you are fitting the standard ANCOVA model ("parallel lines"/"separate intercepts"), then the covariate will use 1 *Degree of Freedom*.
+
+Figure \ref{fig:keyboardHD1} shows the Hasse diagram for the Keyboarding study. Notice that our covariate is labelled and uses one *Degree of Freedom*. We still have positive values for the rest of the nodes' *Degrees of Freedom* thus we should be able to estimate the effects and errors.
+
+```{r keyboardHD1, fig.cap="Hasse Diagram for Keyboarding Study", fig.height=2, fig.pos="H"}
+# Demo Code for Hasse diagram
+## Keyboarding Study
 modelLabels <- c("1 Relieve Pain 1", "cov Usage Time 1",
                  "3 Keyboard 2", "12 (Volunteers) 8")
 modelMatrix <- matrix(
@@ -70,126 +168,118 @@ hasseDiagram::hasse(
 
 ```
 
-### Nested--Customized
+## Linear Relationship
 
-The second route you can take is to nest the covariates inside another term (for example, the main effect or the highest order interaction term). This can't be done using the Hasse Diagram App, but you can manually do this by altering the code the app generates.
+The last requirement for the ANCOVA is that there is a linear relationship between the response on the covariate. This requirement is also one of our assumptions. Thus, we'll look at this issue in that section.
 
-```{r keyboardingHD2, fig.cap="Hasse Diagram for Keyboarding Study, Version 2", fig.height=2, fig.pos="H", echo=TRUE}
-modelLabels <- c("1 Relieve Pain 1", "cov Usage Time 1",
-                 "3 Keyboard 2", "12 (Volunteers) 8")
-modelMatrix <- matrix(
-  data = c(FALSE, TRUE, TRUE, TRUE, #Row order matches label order
-           FALSE, FALSE, FALSE, TRUE,
-           FALSE, TRUE, FALSE, TRUE,
-           FALSE, FALSE, FALSE, FALSE),
-  nrow = 4,
-  ncol = 4,
-  byrow = TRUE # Set this to TRUE
-)
-hasseDiagram::hasse(
- data = modelMatrix,
- labels = modelLabels
-)
+## Forming the Model
 
-```
-
-The choice of which version is entirely up to you.
-
-## Data
-
-For this example, you'll want to import the data as shown below.
-
-```{r loadKeyboarding, echo=TRUE}
-# Load Keyboarding data
-keyboarding <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/keyboarding.dat",
-  header = TRUE,
-  sep = ""
-)
-
-# Column Notes
-## hrs.pain is our response; hours experiencing pain
-## kbd.type is our factor; type/style of keyboard
-## hrs.kbd is our covariate; hours spent using the keyboard
-### make sure that R is NOT thinking of hrs.kbd as factor but
-### either as num or int
-
-keyboarding$kbd.type <- as.factor(keyboarding$kbd.type)
-
-```
-
-## Explore the data
-
-When exploring the data, you'll want to make data visualizations and look at values of descriptive statistics. For ANCOVA situations, you'll want to be sure that you look at at least a scatter plot of the response by the covariate. 
-
-## Fit the Model
-
-We are going to fit two models for ANCOVA: one will be our model that we use for checking all but two assumptions, the omnibus, and post hoc analysis. The other model we will use for checking the homogeneity of the covariate's slope parameter.
+We are going to fit *two* models for ANCOVA: one will be our model that we use for checking all but two assumptions, and getting the results (both the omnibus and post hoc analyses). The other model we will use for checking the homogeneity of the covariate's slope parameter.
 
 ```{r keyboardModels, echo=TRUE}
-# Our main model
+# Demo Code for Fitting ANCOVA
+## Keyboarding Study
+## Our core model
 keyboardModel <- aov(
   formula = hrs.pain ~ hrs.kbd + kbd.type,
-  data = keyboarding
+  data = keyboardingData
 )
 
-# Model for Checking covariate's homogeneity
+## Model for checking covariate's homogeneity
 interactionCheck <- aov(
   formula = hrs.pain ~ hrs.kbd * kbd.type,
-  data = keyboarding
+  data = keyboardingData
 )
 
 ```
 
-## Check Assumptions
+# Exploring the Data
 
-We do have more assumptions to check in an ANCOVA situation than an ANOVA situation. Keep in mind that if you introduce a Block or Random effects, then those assumptions will get imported into your situation as well. That is, block doesn't interact with factors, and each random effect factor has treatment effects which follow a Gaussian distribution. The approaches you used previously (as well as much of the code) remains the same.
+I want to leave a quick note as a reminder that just as we've discussed all course, you should explore your data as thoroughly as possible at this junction. Look at multiple data visualizations and at various values of descriptive statistics. This will not only help you build your understanding of the data (think, EDA) but will also set the stage for assessing several of our assumptions.
 
-### Linear Relationship
+# Assessing Assumptions
 
-The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. Again, the best approach here is to look at a scatter plot
+For ANCOVA models, we have six assumptions we need to check before using the parametric shortcut: our core three (Gaussian Residuals, Homoscedasticity, and Independent Observations) plus Linear Relationship between Response and Covariate, No Potential Outliers, and Homogeneity of Slopes.
+
+We will start with the ANCOVA specific assumptions before returning to the core three.
+
+## Linear Relationship between Response and Covariate
+
+The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. Again, the best approach here is to look at a scatter plot. 
 
 ```{r keyboardScatter, fig.cap="Hours of Pain vs Hours Spent Keyboarding", fig.width=5, fig.height=3, echo=TRUE}
 # Scatter plot of hours of pain and hours spent keyboarding
 # Notice we're just using the data, not the model
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
-    x = hrs.kbd,
-    shape = kbd.type, # Using shape and color is a good idea
-    color = kbd.type
+    x = hrs.kbd
   )
 ) +
   geom_point(size = 2) +
+  geom_smooth( # Adds a linear regression line
+    inherit.aes = FALSE,
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm",
+    formula = y ~ x,
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
   theme_bw() +
   xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
-  labs(
-    color = "Keyboard Type", # Using identical values will merge to one legend
-    shape = "Keyboard Type"
+  ylab("Hours of Pain")
+
+```
+
+Figure \ref{fig:keyboardScatter} shows the scatter plot of hours of pain experienced by the hours spent keyboarding. Notice that I've NOT incorporated the type of keyboard each person got assigned. I want to get as clear of a sense of the relationship between the response and the covariate as I possibly can. If I add too many other attributes to this plot (e.g., the factor), I might overlook what I need to attend to.
+
+Ultimately, we're looking to see whether there is a linear relationship between the response and the covariate. That is to say, is the a constant rate of change between them. If we are plotting in the standard Cartesian coordinate system without scale transformations (e.g., log), then we should be able to sketch a straight line. In Figure \ref{fig:keyboardScatter}, I added the plot of the estimated linear regression model of the response (hours of pain) with respect to the covariate (hours spent keyboarding). This graph appears as the dashed, black line. Does this line appear to mimic what we see in the scatter plot?
+
+If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  hrs.kbd^2 + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship.
+
+From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate.
+
+## Checking Potential Outliers
+
+While we always want to explore our data for potential outliers, ANCOVA models are less resistant to their influence than a typical balanced ANOVA model.
+
+To explore for potential outliers, you will want to work in a systematic way, moving through your quantitative attributes one at a time. I recommend using Box plots and the various univariate Rules of Thumb to check.
+
+```{r boxPlotFences, fig.cap="Box Plot of Hours of Pain", fig.pos="h", fig.height=1, fig.width=4, echo=TRUE}
+# Demo Code for box plot with how to adjust the outlier detection
+## Keyboarding Study
+ggplot(
+  data = keyboardingData,
+  mapping = aes(x = hrs.pain)
+) + 
+  geom_boxplot(
+    coef = 1.5 # Use this to adjust outlier detection; coef*IQR
+  ) +
+  theme_void() + 
+  xlab("Hours of Pain") +
+  theme(
+    axis.line.x = element_line(),
+    axis.text.x = element_text(size = 12),
+    axis.title.x = element_text(size = 12)
   )
 
 ```
 
-We're looking to see whether there is a linear relationship between the covariate and the response. If there isn't, we can use the plot to help us see what, if any, kind of relationship is present.
+Once you complete all of the univariate checks for potential outliers, we can move on to *potential multivariate outliers*. A potential multivariate outlier is a case whose values appear to be inconsistent with the underlying structure of the rest of the collection. This is different from potential univariate outliers in that univariate are case's whose values tend to be extremes. A potential multivariate outlier may not be an outlier along any univariate check. 
 
-If we were to see a nonlinear relationship (e.g. a quadratic relationship), then I would go back to the model step and change the formula to `y ~  hrs.kbd^2 + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship.
+To help us check for potential multivariate outliers, we are going to make use of the `rstatix` package's `mahalanobis_distance` function.
 
-### Checking Potential Outliers
-
-To help us check for potential outliers, we are going to make use of the `rstatix` package's `mahalanobis_distance` function. This is particularly useful whenever you have more than one numeric/continuous attribute (like a response and a covariate). Box plots and the various univariate Rules of Thumb only apply to one numeric/continuous attribute at a time.
-
-```{r keyboardOutliers, fig.cap="Potential Multivariate Outliers", fig.width=5, fig.height=3, echo=TRUE}
-# Detecting Multivariate Outliers
-
+```{r keyboardOutliers, fig.cap="Potential Multivariate Outliers", fig.width=5, fig.height=2.5, fig.pos="H", echo=TRUE}
+# Demo Code for Detecting Multivariate Outliers
 ## Step 1: send the data through the Mahalanobis function
-outlierDetection <- rstatix::mahalanobis_distance(keyboarding)
+outlierDetection <- rstatix::mahalanobis_distance(keyboardingData)
 
 ## Step 2: OPTIONAL--reattach the factor
 outlierDetection <- cbind(
   outlierDetection,
-  factor = keyboarding$kbd.type
+  factor = keyboardingData$kbd.type
 )
 
 ## Step 3: Make a scatter plot
@@ -214,13 +304,80 @@ ggplot(
 
 ```
 
-The shape of the points will reflect a `FALSE` or `TRUE` answer to the statement "This observation is a potential outlier." Thus, `TRUE` would indicate that we have a potential outlier. In our case, we have all `FALSE` points, thus we do not have an potential multivariate outliers to be concerned about.
+In Figure \ref{fig:keyboardOutliers}, the shape of the points will reflect a `FALSE` or `TRUE` answer to the statement "This observation is a potential outlier." Thus, `TRUE` would indicate that we have a potential outlier. In our case, we have all `FALSE` points, thus we do not have a potential multivariate outliers to be concerned about.
 
-### Gaussian Residuals
+If we had potential multivariate outliers, we would want to investigate why they are potential outliers. For example, is there a data entry error or some other mistake for those cases? If we can fix those errors, we should and then re-run our analyses. If we can't fix those errors, then we will want to consider removing those cases. If we do not know, then we should run the model with and without these cases and compare the results.
+
+## Homogeneity of Slopes
+
+Standard ANCOVA models assume that the model is for separate intercepts/parallel lines for the covariate. We often refer to this as homogeneity of slopes. More accurately, this is the assumption that the rate of change of the response with respect to the covariate is invariant (unchanging) regarding the factor(s) (and block). Given that we're fitting a linear model between the response and the covariate, this means that we should have identical constant rates of change for each level of our factor(s).
+
+There are two ways that we can assess this assumption: looking at how well a plot for the separate intercepts model fits our data and to do an informal test of the interaction between the covariate and our factor(s).
+
+### Plot
+
+One route we can take is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used. This is similar to what we did to check for the linear relationship between the response and the covariate. However, there are two distinct differences. First, we're going to explicitly include the factor (type of keyboard) to our plot. Second, we're going to impose three regression lines--one for each kind of keyboard--that only differ in their intercepts. If these lines appear to match up with the data reasonably well, we can be conveniced that we have homogeneity of slopes. If they do not, then we might need to re-think this assumption.
+
+```{r interactionPlot, fig.cap="Homogeneity of Slopes", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+# Demo Code for Assessing Homogeneity of Slopes
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth(
+    method = "lm", # See notes below
+    mapping = aes(y = predict(keyboardModel)),
+    formula = y ~ x,
+    se = FALSE
+  ) +
+  theme_bw() +
+  xlab("Hours Spent Keyboarding") +
+  ylab("Hours of Pain") +
+  labs(
+    color = "Keyboard Type",
+    shape = "Keyboard Type"
+  )
+
+```
+
+In the code for the plot, you'll notice that we used the `geom_smooth` geometry to add the three lines. For these lines we want to use a linear model (`method = "lm"`) and define the formula `y ~ x`. The most important aspect was that within `geom_smooth` we replaced the observed pain duration with the predicted duration from our ANCOVA model: `predict(keyboardModel)`.
+
+I recommend checking out the section at the end of this guide to learn more about the five different ANCOVA models.
+
+### Informal Test of Interaction
+
+The second approach we can take is to do an informal test of the interaction term. Recall that we formed a second ANCOVA model called `interactionCheck`. We will want to check this set of results using Type III *Sum of Squares*. 
+
+To get the information, we'll use the `car` package's `Anova` function to get the Type III *Sum of Squares*:
+
+```{r covFacInter1, echo=TRUE}
+# Remember to use the car package
+car::Anova(
+  mod = interactionCheck,
+  type = 3
+)
+
+```
+
+To do this informal check, you will want to keep your Unusualness Threshold and Type I Error Risk in mind. While we are going to look at an ANOVA table, we do not report this table. At most, you'll extract the information you need an report that in a paragraph, much like what we did for the Kruskal-Wallis *H* test.
+
+We only want to focus on the interaction term of hours spent keyboarding and the type of keyboard (i.e., `hrs.kbd:kbd.type`). The *p*-value for this term is approximately 0.35. This is well beyond any UT you're allowed to use in this course, thus, we will fail to reject the null hypothesis. That is to say, the interaction between the covariate and the factor is not statistically important. This tells us that we should not anticipate different rates of change of pain duration with respect to time spent keyboarding for different kinds of keyboards.
+
+## Quick Word of Wisdom 
+
+You'll notice that even though I listed the core three assumptions first, I didn't start with checking them. This is due to the fact that if the linear relationship, potential outliers, and homogeneity of slopes are violated we need to address those issues before we check the core three. Addressing these three will directly impact the core assumptions. Thus, by checking these first, I can save time in the long run.
+
+## Gaussian Residuals
 
 Use a QQ plot like usual:
 
-```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=5, fig.height=3.5, echo=TRUE, fig.pos="H"}
+```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=5, fig.height=3, echo=TRUE, fig.pos="H"}
 # QQ plot for residuals
 car::qqPlot(
   x = residuals(keyboardModel), 
@@ -233,11 +390,11 @@ car::qqPlot(
 
 ```
 
-There is very little to be concerned about in our QQ plot; we will go ahead and proceed as if our residuals follow a Gaussian distribution.
+There is very little to be concerned about in our QQ plot (Figure \ref{fig:residualQQ}); we will go ahead and proceed as if our residuals follow a Gaussian distribution.
 
-### Homoscedasticity
+## Homoscedasticity
 
-Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Anscombe plot rather than a strip chart for our factorial designs.
+Given that we have more than just a single factor, we need to look at a Tukey-Anscombe plot rather than just a strip chart.
 
 ```{r keyboardVar, fig.cap="Tukey-Anscombe Plot for Keyboarding Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
 
@@ -267,76 +424,33 @@ ggplot(
 
 ```
 
-I'm a bit hesitant for the homoscedasticity assumption given the curvy nature of the line. However, I don't get the sense of any pattern to the residuals. So I might say that homoscedasticity might be questionable. I would anticipate that I would go back and look at box plots and descriptive statistics by my factor to see if there might be any numeric evidence of heteroscedasticity.
+I'm a bit hesitant for the homoscedasticity assumption given the curvy nature of the line (see Figure \ref{fig:keyboardVar}). However, I don't get the sense of any pattern to the residuals. So I might say that homoscedasticity might be questionable. I would anticipate that I would go back and look at box plots and descriptive statistics by my factor to see if there might be any numeric evidence of heteroscedasticity.
 
-### Independence of Observations
+## Independence of Observations
 
 Unfortunately, we don't know measurement order so index plots are not going to be useful here. However, we can think through the study design and reach the decision that we have independent observations.
 
 (I'm leaving this to each of you to practice and come up with a justification for why we can say that we have independence of observations.)
 
-### Homogenity of the Covariate's Slope
+## Additional Checks for ANCOVA
 
-The last assumption for ANCOVA is the homogeneity of the covariate's slope parameter. Remember, this is really just asking us to make sure that there is not a statistically significant interaction between the factor(s) and the covariate(s). We assess this assumption in two ways: check the Type III Sums of Squares ANOVA table of the interaction term (as an __*informal*__ test) and look at a plot.
+We do have more assumptions to check in an ANCOVA situation than an ANOVA situation. Keep in mind that if you introduce a Block or Random effects, then those assumptions will get imported into your situation as well. That is, block doesn't interact with factors, and each random effect factor has treatment effects which follow a Gaussian distribution. The approaches you used previously (as well as much of the code) remains the same.
 
-#### Informal Test
+## Multiple Covariates
 
-Our first method is to look at the interaction term from a Type III Sums of Squares ANOVA table. Typically, we do not include this in any report, so we can use the raw output here.
+If you are planning on using multiple covariates in your model, then there is one extra assumption that you need to check. We assume that that all of our covariates are not highly correlated with one another; that is, we do not want to have multicollinearity amongst our covariates.
 
-```{r covFacInter1, echo=TRUE}
-# Remember to use the car package
-car::Anova(
-  mod = interactionCheck,
-  type = 3
-)
+There are two tools you can use to check out the possibility of multicolinearity. The first is the Generalized Variance Inflation Factor and the second is the Squared Multiple Correlation.
 
-```
+For the Generalized Variance Inflation Factor (GVIF), you can use the `car::vif` function on the ANCOVA model. While, you'll get GVIF values for all terms in the model, we can focus on the covariates. Look at the column labelled `GVIF^(1/(2*Df))` and square the values there. This will give a value that you can compare to the typical VIF Rules of Thumb for 5 and 10.
 
-We want to look at the interaction term `kbd.type:hrs.kbd` and see if this term would be statistically significant under our overall Type I Error Risk. In this situation, the interaction term is NOT statistically significant, thus we have some evidence for the homogeneity of the covariate's slope parameter.
+For the Squared Multiple Correlation (SMC), we can make use of the function `psych::smc`. For this function, you'll use all of the covariate columns from the data frame as the input. You'll get back a listing of SMC values for each covariate. The Rule of Thumb here is that values beyond 0.5 indicate that we might have redundancy (multicollinearity).
 
-#### Plot
-
-The second method is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used (i.e. Figure \ref{fig:keyboardScatter}). However, this time we're going to add in some lines.
-
-```{r interactionPlot, fig.cap="Homogeneity of Slopes", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Homogeneity of Slopes
-ggplot(
-  data = keyboarding,
-  mapping = aes(
-    y = hrs.pain,
-    x = hrs.kbd,
-    color = kbd.type,
-    shape = kbd.type
-  )
-) +
-  geom_point(size = 2) +
-  geom_smooth(
-    method = "lm", # See notes below
-    mapping = aes(y = predict(keyboardModel)),
-    formula = y ~ x,
-    se = FALSE
-  ) +
-  theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
-  labs(
-    color = "Keyboard Type",
-    shape = "Keyboard Type"
-  )
-
-```
-
-In the code for the plot, you'll notice that we used the `geom_smooth` geometry to add the three lines. For these lines we want to use a linear model (`method = "lm"`) and define the formula `y ~ x`. The most important aspect was that within `geom_smooth` we replaced the observed pain durations with the predicted durations from our ANCOVA model: `predict(keyboardModel)`.
-
-What we want to do is examine this plot to see how well the three parallel lines match up with our data. That is to say, do the lines reasonably match up with the data?
-
-I recommend checking out the section at the end of this guide to learn more about the five different ANCOVA models.
-
-## Results
+# Results
 
 Results for ANCOVA models are a bit mixed: some people will only report Omnibus Results, others will proceed to looking at Post Hoc analyses. This is to say, there's not an overriding drive to automatically conduct Post Hoc analysis like there is for a CRD/One-way layout. My suggestion is to let the research questions posed guide you.
 
-### Omnibus Results
+## Omnibus Results
 
 In this particular situation, we have a __balanced__ design, thus we do not need to worry about different types of Sums of Squares.
 
@@ -373,6 +487,17 @@ parameters::model_parameters(
 
 While we don't necessarily want to ignore the covariate's row in the table, we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before.
 
+
+
+
+  - Point Estimates
+  - Post Hoc--Pairwise and Effect Sizes
++ Choosing Amongst the Five ANCOVA Models
+
+
+
+
+
 ### Post Hoc Analysis
 
 #### Point Estimates
@@ -385,7 +510,7 @@ I want to quickly remind you that you can get point estimates for your main effe
 dummy.coef(keyboardModel)
 
 ```
-Notice that our intercept is negative! For the ANCOVA models, the `(Intercept)` is NO LONGER the *Grand Mean*. To get the estimate of the *Grand Mean* you will need to take the intercept value and add 1.819896 * the *SAM* of the covariate (which is 59): \(-48.2072 + 1.819896 * 59 = `r round(-48.2072 + 1.819896 * mean(keyboarding$hrs.kbd), digits = 2)`\) hours per person.
+Notice that our intercept is negative! For the ANCOVA models, the `(Intercept)` is NO LONGER the *Grand Mean*. To get the estimate of the *Grand Mean* you will need to take the intercept value and add 1.819896 * the *SAM* of the covariate (which is 59): \(-48.2072 + 1.819896 * 59 = `r round(-48.2072 + 1.819896 * mean(keyboardingData$hrs.kbd), digits = 2)`\) hours per person.
 
 To get the the covariate-adjusted point estimates (i.e., the marginal cell means), we will turn to the `emmeans` package.
 
@@ -487,7 +612,7 @@ This is the null model: that our factor(s) and our covariate(s) have absolutely 
 ```{r constantMean, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Constant Mean
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
@@ -497,7 +622,7 @@ ggplot(
 ) +
   geom_point(size = 2) +
   geom_hline(
-    yintercept = mean(keyboarding$hrs.pain),
+    yintercept = mean(keyboardingData$hrs.pain),
     color = "blue"
   ) +
   theme_bw() +
@@ -518,7 +643,7 @@ This ANCOVA model assumes that the covariate(s) affect the response but the fact
 ```{r singleLine, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Single Line
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
@@ -552,7 +677,7 @@ This is the standard ANCOVA model and the one that we most often want to draw up
 ```{r separateIntercepts, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Separate Intercepts
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
@@ -585,7 +710,7 @@ This version of the ANCOVA model fixes the y-intercept to the same value for all
 ```{r separateSlopes, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Separate Slopes
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
@@ -617,7 +742,7 @@ The last ANCOVA model is that of separate lines; here is where we believe that t
 ```{r separateLines, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Separate Lines
 ggplot(
-  data = keyboarding,
+  data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
