@@ -1,10 +1,10 @@
 ---
 title: "ANCOVA"
 author: "Neil J. Hatfield"
-date: "4/18/2022"
+date: "4/19/2022"
 output: 
   pdf_document
-geometry: left=1in,right=1in,top=1in,bottom=1in
+geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
@@ -53,7 +53,7 @@ In this tutorial, we are going to explore Analysis of Covariance (ANCOVA) in R. 
   - Omnibus
   - Point Estimates
   - Post Hoc--Pairwise and Effect Sizes
-+ Choosing Amongst the Five ANCOVA Models
++ Choosing Between the Five ANCOVA Models
 
 # Setting Up R
 
@@ -247,7 +247,7 @@ While we always want to explore our data for potential outliers, ANCOVA models a
 
 To explore for potential outliers, you will want to work in a systematic way, moving through your quantitative attributes one at a time. I recommend using Box plots and the various univariate Rules of Thumb to check.
 
-```{r boxPlotFences, fig.cap="Box Plot of Hours of Pain", fig.pos="h", fig.height=1, fig.width=4, echo=TRUE}
+```{r boxPlotFences, fig.cap="Box Plot of Hours of Pain", fig.pos="H", fig.height=1, fig.width=4, echo=TRUE}
 # Demo Code for box plot with how to adjust the outlier detection
 ## Keyboarding Study
 ggplot(
@@ -446,6 +446,35 @@ For the Generalized Variance Inflation Factor (GVIF), you can use the `car::vif`
 
 For the Squared Multiple Correlation (SMC), we can make use of the function `psych::smc`. For this function, you'll use all of the covariate columns from the data frame as the input. You'll get back a listing of SMC values for each covariate. The Rule of Thumb here is that values beyond 0.5 indicate that we might have redundancy (multicollinearity).
 
+### Example
+
+As a quick example, we'll draw upon the Palmer Penguins data set from the package `palmerpenguins`. Suppose that we are investigating the impact of penguin species on body mass with three covariates: bill length, bill depth, and flipper length, all measured in millimeters.
+
+We would set up the ANCOVA model in `R` as
+
+```{r penguins1, echo=TRUE}
+# Demo Code for checking multicollinearity
+## Palmer Penguins
+penguins <- palmerpenguins::penguins
+
+penguinModel <- aov(
+  formula = body_mass_g ~ species + bill_length_mm + bill_depth_mm + flipper_length_mm,
+  data = penguins
+)
+
+## Getting Generalized Variance Inflation Factors 
+gvifs <- as.data.frame(car::vif(penguinModel))
+gvifs$squared <- gvifs$"GVIF^(1/(2*Df))"^2
+gvifs
+
+
+## Getting Squared Multiple Correlations
+psych::smc(penguins[,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm")])
+
+```
+
+Notice that bill length and flipper length both exceed 5 in the squared column; this indicates that there may be some correlation between the covariates. For the SMC values, we can see that flipper length is above 0.5, indicating this covariate may be redundant given the others. I would consider fitting the model without flipper length and seeing what happens.
+
 # Results
 
 Results for ANCOVA models are a bit mixed: some people will only report Omnibus Results, others will proceed to looking at Post Hoc analyses. This is to say, there's not an overriding drive to automatically conduct Post Hoc analysis like there is for a CRD/One-way layout. My suggestion is to let the research questions posed guide you.
@@ -457,10 +486,10 @@ In this particular situation, we have a __balanced__ design, thus we do not need
 ```{r keyboardTable, echo=TRUE}
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
-    model = keyboardModel,
-    omega_squared = "partial",
-    eta_squared = "partial",
-    epsilon_squared = "partial"
+  model = keyboardModel,
+  omega_squared = "partial",
+  eta_squared = "partial",
+  epsilon_squared = "partial"
 ) %>%
   dplyr::mutate( #Fixing the Parameter (Source) Column's values
     Parameter = dplyr::case_when(
@@ -469,14 +498,21 @@ parameters::model_parameters(
       TRUE ~ Parameter
     ) 
   ) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
   knitr::kable(
     digits = 4,
-  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
-  caption = "ANOVA Table for Keyboarding Study",
-  align = c('l',rep('c',8)),
-  booktab = TRUE
-) %>%
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+    caption = "ANOVA Table for Keyboarding Study",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -485,38 +521,59 @@ parameters::model_parameters(
 
 ```
 
-While we don't necessarily want to ignore the covariate's row in the table, we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before.
+While we don't necessarily want to ignore the covariate's row in the table, we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before. For example,
 
+> The type of keyboard assigned to the patient accounts of about 11.6 times as much variation in pain duration as our residuals/what's left unexplained (\(F(2,8)=11.64\)), even when we account for how much time the patient spends keyboarding. Under the null hypothesis that keyboard has no impact on pain duration, we would only anticipate such a result less than 1% of the time (*p* = 0.0043). The type of keyboard accounts for a large poroportion of the variation in pain durations with around 64% (see Table \ref{tab:keyboardTable}).
 
+## Point Estimates
 
+The topic of point estimates in ANCOVA is a bit complicated as there are __*two*__ sets of point estimates. We can look at the straight up estimates from the model ("raw") and we can also look at co-variate adjusted estimates.
 
-  - Point Estimates
-  - Post Hoc--Pairwise and Effect Sizes
-+ Choosing Amongst the Five ANCOVA Models
+### "Raw" Estimates
 
+To get the unadjusted or "raw" point estimates, we will make use of the `dummy.coef` function as we've done in the past.
 
+```{r keyboardPointEstimates1, echo=TRUE}
+# Demo Code of getting unadjusted point estimates
+# Keyboarding Model
+rawPointEst <- dummy.coef(keyboardModel)
+rawPointEst <- unlist(rawPointEst)
+names(rawPointEst) <- c( # Be sure you know the order
+  "Grand Mean",
+  "Hours Spent Keyboarding",
+  paste("Keyboard Type", levels(keyboardingData$kbd.type))
+)
 
-
-
-### Post Hoc Analysis
-
-#### Point Estimates
-
-I want to quickly remind you that you can get point estimates for your main effects and treatment effects using the `dummy.coef` function. If you need confidence intervals for these, you can use the `confint` function (don't forget to provide an *adjusted* confidence level).
-
-```{r keyboardPointEstimates, echo=TRUE}
-# Point Estimates for Keyboarding Model
-## Don't use raw output in your reports, make a nice table
-dummy.coef(keyboardModel)
+data.frame("Estimate" = rawPointEst) %>%
+  knitr::kable(
+  digits = 2,
+  caption = "Unadjusted Point Estimates from the Keyboarding Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
 
 ```
-Notice that our intercept is negative! For the ANCOVA models, the `(Intercept)` is NO LONGER the *Grand Mean*. To get the estimate of the *Grand Mean* you will need to take the intercept value and add 1.819896 * the *SAM* of the covariate (which is 59): \(-48.2072 + 1.819896 * 59 = `r round(-48.2072 + 1.819896 * mean(keyboardingData$hrs.kbd), digits = 2)`\) hours per person.
 
-To get the the covariate-adjusted point estimates (i.e., the marginal cell means), we will turn to the `emmeans` package.
+Something that should immediately stand out to you is the point estimate for the *GSAM* is negative. However, we know from our exploration of the data that \(GSAM(\mathcal{Y})\approx `r round(mean(keyboardingData$hrs.pain), 2)`\) hrs/person. These are two very different values!
+
+So what's the deal? These "raw" or "unadjusted" point estimates are incorporating the effect of the covariate. Thus, to account for the covariate's impact on the response, we have to make some adjustments. For the *GSAM* this works through the following formula: \(GSAM(\mathcal{Y})=GSAM_{Raw}(\mathcal{Y})+\widehat{\beta}\cdot SAM(\mathcal{X})\) where \(\mathcal{Y}\) represents the collection of pain durations (hours), \(\mathcal{X}\) represents the collection of hours spent keyboarding, and \(\widehat{\beta}\) represents the estimated coefficient for the covariate. For our data, this translates to
+\[`r round(mean(keyboardingData$hrs.pain), 2)` \approx `r round(rawPointEst[1], 2)` + `r round(rawPointEst[2], 2)` \cdot `r round(mean(keyboardingData$hrs.kbd), 2)`\]
+
+### Adjusted Point Estimates
+
+We can also get covariate adjusted point estimates for our factor's levels. Now, there is an important note I need to stress here. The point estimates for the factor's levels we previously looked at are for the *treatment/factor effects*. These adjusted point estimates are for the *treatment/factor means*. That is, we will be getting \(\widehat{\mu_i}=\widehat{\mu_{\bullet\bullet}}+\widehat{\alpha_{i}}\) rather than just \(\widehat{\alpha_i}\). The best way to get the covariate adjusted point estimates for the treatment/factor means is to use the `emmeans` package.
+
+The `adjust` argument of `emmeans` allows for the following values `"bonferroni"`, `"tukey"`, `"scheffe"`,`"sidak"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`. These will produce the appropriately adjusted confidence intervals (for the `$emmeans` objects) and adjusted *p*-values (for the `$contrasts` objects).
 
 ```{r emMeans, echo=TRUE}
-## Use emmeans to get the appropriate margins AND do Pairwise
-emmOut <- emmeans::emmeans(
+# Demo code for getting adjusted treatment/group means
+## These means are also called "marginal means"
+## Keyboarding
+emmOutKey <- emmeans::emmeans(
   object = keyboardModel,
   specs = pairwise ~ kbd.type,
   adjust = "tukey",
@@ -524,7 +581,7 @@ emmOut <- emmeans::emmeans(
 )
 
 ## Point Estimates
-as.data.frame(emmOut$emmeans) %>%
+as.data.frame(emmOutKey$emmeans) %>%
   knitr::kable(
     digits = 4,
     col.names = c("Keyboard Type", "Marginal Mean","SE", "DF",
@@ -541,13 +598,19 @@ as.data.frame(emmOut$emmeans) %>%
 
 ```
 
-#### Pairwise Comparisons
+## Post Hoc Analysis
+
+For Post Hoc Analysis, we'll follow the same paths was what we've done in the past: explore which pairs of factor levels are statistically different from one another. And for those that are, what's the practical significance of those differences (i.e., what's the size of the effect)?
+
+### Pairwise Comparisons
 
 Just as with Factorial models, we will use the `emmeans` package here as well. Since I've already stored the output, I don't need to call `emmeans` a second time. I had forgotten to mention that the using `$contrasts` on the output of `emmeans` will give you when I made the Factorial Designs document.
 
 ```{r batteryPH1, echo=TRUE }
-# Pairwise Comparisons
-as.data.frame(emmOut$contrasts) %>%
+# Demo code for Pairwise Comparisons in ANCOVA
+## Keyboarding Study
+## Notice that I'm re-using the emmOutKey object I created earlier
+as.data.frame(emmOutKey$contrasts) %>%
   knitr::kable(
     digits = 4,
     col.names = c("Comparison", "Difference","SE", "DF",
@@ -564,23 +627,20 @@ as.data.frame(emmOut$contrasts) %>%
 
 ```
 
-The `adjust` argument of `emmeans` allows for the following values for confidence intervals: `"bonferroni"`, `"tukey"`, `"scheffe"`, and `"sidak"`. If you do not want confidence intervals you may use values of `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`.
-
 ### Effect Sizes
 
 You will want to use the `emmeans` package for the effect sizes as well (the `anova.PostHoc` function won't account for the covariate).
 
 ```{r effectSize1, echo=TRUE}
-# Pass the stored marginals into the effect size function
-cohenType <- emmeans::eff_size(
-  object = emmOut$emmeans,
-  sigma = sigma(keyboardModel),
-  edf = df.residual(keyboardModel)
-)
-
-# Create a data frame, add on the probability of superiority
-# Send that data frame into a nice table
-as.data.frame(cohenType) %>%
+# Demo code for post hoc (pairwise) effect sizes
+## Keyboarding Study
+as.data.frame(
+  eff_size(
+    object = emmOutKey,
+    sigma = sigma(keyboardModel),
+    edf = df.residual(keyboardModel)
+  ) 
+) %>%
   dplyr::mutate(
     ps = probSup(effect.size),
     .after = effect.size
@@ -588,8 +648,8 @@ as.data.frame(cohenType) %>%
   dplyr::select(contrast, effect.size, ps) %>%
   knitr::kable(
     digits = 3,
-    col.names = c("Comparison", "Cohen's d", "Probability of Superiority"),
-    align = "lcc",
+    col.names = c("Keyboard Comparison", "Cohen's d", "Probability of Superiority"),
+    align = "lccc",
     caption = "Effect Sizes for Keyboard Type",
     booktab = TRUE
   ) %>%
@@ -601,16 +661,18 @@ as.data.frame(cohenType) %>%
 
 ```
 
-# Five ANCOVA Models
+# Choosing Between the Five ANCOVA Models
 
-There are actually five (5) different ANCOVA models. Each one is a slight variation and is applicable in different situations. They all have impacts on the *degrees of freedom* within the model, so you'll want to be cautious.
+There are actually five (5) different ANCOVA models. Each one is a slight variation and is applicable in different situations. They all have impacts on the *degrees of freedom* within the model, so you'll want to be cautious. Note: I've provide some general notation for calculating the *Degrees of Freedom* used by each model for a One-way ANCOVA model.
 
-## No Effects--Constant [Grand] Mean 
+## Exploring the Models
 
-This is the null model: that our factor(s) and our covariate(s) have absolutely no impact on the response. If this were true, we would end up with the following plot:
+### No Effects--Constant [Grand] Mean 
 
-```{r constantMean, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Constant Mean
+This is the null model: that our factor(s) and our covariate(s) have absolutely no impact on the response. In this model, we have only used 1 *Degree of Freedom* as we only have to estimate the value of the *Grand Mean*. If this situation were true, then the blue horizontal line in Figure \ref{fig:constantMean} would accurately describe the data. 
+
+```{r constantMean, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Constant Mean ANCOVA Model", echo=TRUE}
+# Demo code for the Constant Mean ANCOVA Model
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -629,19 +691,21 @@ ggplot(
   xlab("Hours Spent Keyboarding") +
   ylab("Hours of Pain") +
   labs(
-    title = "Constant Mean ANCOVA Model",
     color = "Keyboard Type",
     shape = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right"
   )
 
 ```
 
-## Single Line
+### Single Line
 
-This ANCOVA model assumes that the covariate(s) affect the response but the factor(s) does not. Thus, there is a single line for the relationship.
+The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in Figure \ref{fig:singleLine} would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of response with respect to the covariate.
 
-```{r singleLine, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Single Line
+```{r singleLine, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Single Line ANCOVA Model", echo=TRUE}
+# Demo Code for the Single Line ANCOVA Model
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -663,26 +727,31 @@ ggplot(
   xlab("Hours Spent Keyboarding") +
   ylab("Hours of Pain") +
   labs(
-    title = "Single Line ANCOVA Model",
     color = "Keyboard Type",
     shape = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right"
   )
 
 ```
 
-## Separate Intercept/Parallel Lines
+### Separate Intercepts/Parallel Lines
 
-This is the standard ANCOVA model and the one that we most often want to draw upon. (This is the model that we are using in this course.)
+This is the standard ANCOVA model and the one that we most often want to draw upon. (This is the model that we are using in this course.) Here, we are anticipating that both the covariate and the factor(s) have an impact on the response. The way we think that they do so is that the factor level effects act as vertical shifts of the linear relationship between the response and the covariate. That is, we should have a set of parallel lines whose intercepts differ thanks to the factor. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the Rate of Change of the Response w.r.t. the Covariate, and the *g*-1 treatment effects which translate to the intercepts.
 
-```{r separateIntercepts, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Separate Intercepts
+Again, if this is the case, the *g* parallel lines we plot should accurately describe the data in Figure \ref{fig:separateIntercepts}.
+
+```{r separateIntercepts, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Intercepts/Parallel Lines ANCOVA Model", echo=TRUE}
+# Demo Code for the Separate Intercepts/Parallel Lines ANCOVA Model
 ggplot(
   data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
     color = kbd.type,
-    shape = kbd.type
+    shape = kbd.type,
+    linetype = kbd.type
   )
 ) +
   geom_point(size = 2) +
@@ -696,18 +765,23 @@ ggplot(
   xlab("Hours Spent Keyboarding") +
   ylab("Hours of Pain") +
   labs(
-    title = "Separate Intercepts ANCOVA Model",
     color = "Keyboard Type",
-    shape = "Keyboard Type"
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right"
   )
 
 ```
 
-## Separate Slopes
+### Separate Slopes
 
-This version of the ANCOVA model fixes the y-intercept to the same value for all groups but allows each group to have their own constant rate of change (slopes) for the covariate term.
+For this version of the ANCOVA model, we opt to allow the Rate of Change of the Response w.r.t. the Covariate to change from group to group while requiring all models to share a common point (e.g., a common point of intersection). The choice of common point should be guided by your understanding of the context and be somewhat sensible. For example, we could specify that all of the models should intersect at 0 hours of keyboarding. Alternatively, we could say that all of the models should intersect at the value of the *SAM* of hours spent keyboarding (~ 59 hrs). The choice is ours but will impact the estimates for the various \(\widehat{\beta_i}\) values. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the point of intersection, and the *g*-1 Rates of Change of the Response w.r.t. the Covariate by Factor Level.
 
-```{r separateSlopes, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+As before, we would look at the lines in Figure \ref{fig:separateSlopes} to see how well they describe our data.
+
+```{r separateSlopes, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Slopes ANCOVA Model", echo=TRUE}
 # Separate Slopes
 ggplot(
   data = keyboardingData,
@@ -715,7 +789,8 @@ ggplot(
     y = hrs.pain,
     x = hrs.kbd,
     color = kbd.type,
-    shape = kbd.type
+    shape = kbd.type,
+    linetype = kbd.type
   )
 ) +
   geom_point(size = 2) +
@@ -728,26 +803,32 @@ ggplot(
   xlab("Hours Spent Keyboarding") +
   ylab("Hours of Pain") +
   labs(
-    title = "Separate Slopes ANCOVA Model",
     color = "Keyboard Type",
-    shape = "Keyboard Type"
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right"
   )
 
 ```
 
-## Separate Lines
+### Separate Lines
 
-The last ANCOVA model is that of separate lines; here is where we believe that there is a theoretically important reason to have the factor(s) and covariate(s) interact. We could see this with a statistically significant interaction term. For our keyboarding data, we would see the following.
+The last ANCOVA model is that of separate lines; here is where we believe that there is a theoretically important reason to have the factor(s) and covariate(s) interact. We could see this with a statistically significant interaction term. In this model, we use \(1+1+(g-1)+(g-1)=2g\) *Degrees of Freedom*. We estimate the *Grand Mean*, the various Rates of Change of the response w.r.t. the Covariate by Factor level, and the factor effects (the intercepts). 
 
-```{r separateLines, fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Separate Lines
+Again, we're looking to see how well the lines describe the data in Figure \ref{fig:separateLines}.
+
+```{r separateLines, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Lines ANCOVA Model", echo=TRUE}
+# Demo code for the Separate Lines ANCOVA Model
 ggplot(
   data = keyboardingData,
   mapping = aes(
     y = hrs.pain,
     x = hrs.kbd,
     color = kbd.type,
-    shape = kbd.type
+    shape = kbd.type,
+    linetype = kbd.type
   )
 ) +
   geom_point(size = 2) +
@@ -760,14 +841,21 @@ ggplot(
   xlab("Hours Spent Keyboarding") +
   ylab("Hours of Pain") +
   labs(
-    title = "Separate Lines ANCOVA Model",
     color = "Keyboard Type",
-    shape = "Keyboard Type"
-  )
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+   theme(
+     legend.position = "right"
+   )
 
 ```
 
-Notice that each of these models looks different within our Keyboarding context. We can also see that some models appear to be inconsistent with our data (e.g., the Constant Mean ANCOVA model). You can learn more about these models in Section 17.3 of Oehlert.
+## Making a Choice
+
+As you look through Figures \ref{fig:constantMean}--\ref{fig:separateLines}, you'll notice that the models do better and worse jobs at describing our data. Hopefully, we will all agree that the Constant Mean ANCOVA model (Figure \ref{fig:constantMean}), that is our Null Model, does a terrible job describing our data. While an improvement on the Constant Mean ANCOVA model, the Single Line ANCOVA model, still leaves a bit to be desired for describing our data (Figure \ref{fig:singleLine}).
+
+The next three models visually do a better job in describing our data. We generally want to use the simplest model possible. We can explore whether the interaction of factor and covariate is important both theoretically and statistically. Further, we can look at whether there are any improvements to be had by looking at a more complicated model. You can learn more about these models in Section 17.3 of Oehlert.
 
 \newpage
 
