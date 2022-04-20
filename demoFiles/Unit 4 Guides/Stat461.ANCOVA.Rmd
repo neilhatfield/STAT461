@@ -598,6 +598,19 @@ as.data.frame(emmOutKey$emmeans) %>%
 
 ```
 
+### Interpreting Point Estimates
+
+Regardless of whether you're interpreting the "raw"/unadjusted point estimates or the adjusted estimates, whether factor effects, treatment means, or the coefficient for the covariate, all of these point estimates are *rates of change* and should be interpreted as such.
+
++ *GSAM* of 59.17 pain hours per person [covariate adjusted]
+  - Our participants accumulated a total number of pain hours 59.17 times as large as the sample size.
++ RoC of Pain Duration w.r.t. Hours Keyboarding, 1.82 hours per hour
+  - Across all treatments and participants, the change in the amount of time a person felt pain (in hours) is approximately 1.82 times as large as the corresponding change in how long they keyboarded (in hours).
++ Keyboard Type 1 Effect, \(\alpha_{1}=14.40\) pain hours per person
+  - After accounting for the impact of how long a person spent keyboarding, our group of people using Keyboard Type 1 accumulated an additional 14.4 pain hours per person beyond the general baseline expectations.
++ Keyboard Type 1 Mean, \(\mu_1=73.57\) pain hours per person
+  - After accounting for the impact of how long a person spent keyboarding, our Keyboard Type 1 treatment group accumulated a total number of pain hours that was 73.57 times as large as the size of that treatment group.
+
 ## Post Hoc Analysis
 
 For Post Hoc Analysis, we'll follow the same paths was what we've done in the past: explore which pairs of factor levels are statistically different from one another. And for those that are, what's the practical significance of those differences (i.e., what's the size of the effect)?
