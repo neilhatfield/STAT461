@@ -1,10 +1,10 @@
 ---
 title: "Repeated Measures"
 author: "Neil J. Hatfield"
-date: "4/23/2021"
+date: "4/22/2022"
 output: 
   pdf_document
-geometry: left=1in,right=1in,top=1in,bottom=1in
+geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
-              "psych", "lme4", "emmeans", "rstatix")
+              "psych", "lme4", "nlme", "emmeans", "rstatix")
 lapply(packages, library, character.only = TRUE)
 
 options(knitr.kable.NA = "")
@@ -33,17 +33,161 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 In this tutorial we will take a look at Repeated Measures ANOVA models. Keep in mind that there are __TWO__ different types of Repeated Measures models: applying every treatment to each subject/measurement unit (a.k.a. "Within Subjects") and measuring each subject/measurement unit multiple times but each only gets one treatment (a.k.a "Nested Repeated Measures"). 
 
-Make sure that you carefully examine the study design so that you correctly identify which type of Repeated Measures design you have.
+Make sure that you carefully examine the study design so that you correctly identify which type of Repeated Measures design you have. Here is the general structure of this guide/tutorial:
 
-# Imporant Convention
++ Important Starting Considerations
+  - Convention
+  - Approaches
+  - Identify Type of Repeated Measures
+  - Wide and Long Formats of Data Frames
++ Setting Up R
+  - Loading Packages, Setting Options, and Additional Tools
+  - Key Packages, `rstatix`, `lme4`, `nlme`
++ Within Subjects Repeated Measures Design
+  - Example Context
+  - Fit the Model
+    - Appropriateness and Hasse Diagram
+    - Form the Models
+  - Assessing Assumptions
+    - Gaussian Residuals
+    - Gaussian Subject Effects
+    - Homoscedasticity
+    - Independence of Observations up to Subject
+    - No Interaction between Subjects and Factor
+    - Sphericity
+  - Results
+    - Omnibus
+      - Relative Efficiency
+      - Adjusting for Violation of Sphericity
+    - Point Estimates
+    - Post Hoc-Pairwise Comparisons
+    - Post Hoc Effect Sizes
++ Nested Repeated Measures
+  - Example Context
+  - Fit the Model
+    - Appropriateness and Hasse Diagram
+    - Form the Models
+  - Assessing Assumptions
+    - Gaussian Residuals
+    - Gaussian Treatment Effects
+    - Homoscedasticity
+    - Independence of Subjects
+    - Interaction of Subject and Factor
+    - Sphericity
+  - Results
+    - Omnibus
+    - Point Estimates
+    - Post Hoc-Pairwise Comparisons
+    - Effect Sizes
 
-In Repeated Measure designs, we will almost always presume that our subjects are randomly sampled from a broader population. Thus, they will be need to be marked as random effects in our Hasse diagrams.
+# Important Starting Considerations
 
-# Important Note of Contention
+There are a few important considerations you need to think through before you get too far into the process of analyzing Repeated Measures designs.
+
+## Conventions
+
+In Repeated Measure designs, our measurement units are not as straightforward as in our other designs. To help signal this, we often use the term *subjects* to denote the living being (or object) who produces the multiple observations. This has two important consequences.
+
+First, our last node in the Hasse diagram will no longer be the measurement units (i.e., objects/living beings) but rather the observations. Second, our subjects are almost always presumed to be randomly sampled from a broader population. Thus, they are *random effects* and need to be marked as such in our Hasse diagram.
+
+## Approaches
 
 What I present here is __*ONE*__ approach to using R to conduct analysis of Repeated Measures designs. This is one particular of analysis where there are dozens of different approaches which have their own champions. In working on putting together this resource for you, I easily came across dozens of different guides all using different formulations and different packages. This is my attempt to provide *one* set of approaches that is mostly consistent with all of our other approaches.
 
-# Within Subjects Context
+## Identify Type of Repeated Measures
+
+Repeated Measures Designs are almost exclusively used in experimental settings. To decide on which type of Repeated Measures Design you're facing, ask yourself the following questions:
+
++ Who are the subjects?
++ What are the treatments?
++ How many different treatments does each subject get?
+  - Answer: All of them \(\rightarrow\) __Within Subjects Repeated Measures__
+  - Answer: Only one \(\rightarrow\) __Nested Repeated Measures__
+  
+## Wide and Long Formats of Data Frames
+
+In both types of Repeated Measures Designs, we will need the data to be arranged in two formats: "wide" and "long". These terms refer to the construction of the data frame. 
+
+A "long data frame" is what we're must used to working with. Here, each row represents a unique combination of Subject & Treatment or Subject & Time Point. If we have *n* subjects, and *g* treatments (or *t* time points of measurement), we should have a total of \(n\cdot g\) rows (alternatively, \(n\cdot t\) rows). Our response is a single column. Visually, imagine your data frame as a rectangle that is taller than it is wide.
+
+A "wide data frame" is a re-arrangement. Here, each subject gets one and only one row. Instead of a single response column, we have multiple response columns. In fact, we'll have a separate response column for each of the *g* treatments (or *t* time points of measurement). Now imagine your data frame as a rectangle that is wider than it is tall.
+
+One of the first challenges you must tackle in analyzing Repeated Measures data is identifying which of these formats your data is currently in. Then creating a new data frame that is in the other format. In these situations, I tend to not include `Data` on the end of my object name; rather, I use either `Long` or `Wide` so that I have a reminder of which format I'm calling.
+
+### Transforming Data Frame Formats
+
+Thankfully, we have some useful functions to help us. As part of the `tidyverse`, the package `tidyr` gives us the functions `pivot_wider` and `pivot_longer`. Given the imagery of the rectangles, you can imagine turning (pivoting) the long rectangle into the wide rectangle and vice versa. This imagery can help you keep in mind that `pivot_wider` takes a long data frame and makes a wide data frame. The `pivot_longer` function starts with a wide data frame and returns a long data frame.
+
+```{r pivotWide, echo=TRUE, eval=FALSE}
+# Generic Demo Code for creating a wide data frame
+# Note: this code assumes you already read in a long format data frame
+
+#IMPORTANT: you will need to the code to match the names in your actual situation
+
+dataWide <- pivot_wider(
+  data = dataLong, # "dataLong" is the name of the long format data frame
+  names_from = group, #"group" is the name of the column that contains your treatments
+  values_from = response #"response" is the name of the column with the response values
+)
+
+```
+
+```{r pivotLong, echo=TRUE, eval=FALSE}
+# Generic Demo Code for creating a long data frame
+# Note: this code assumes you already read in a wide format data frame
+
+#IMPORTANT: you will need to the code to match the names in your actual situation
+
+dataLong <- pivot_longer(
+  data = dataWide, # "dataWide" is the name of the wide format data frame
+  cols = !subject, # Says to not use the "subject" column
+  names_to = "group", # This is the new column you want the treatments to go to
+  names_transform = list(group = as.factor), # Makes the treatment column a factor
+  values_to = "response" # A new column that will contain all of the response values
+)
+
+```
+
+You'll be able to see the above code examples in action in the examples below.
+
+# Setting Up R
+
+Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
+
+The core set of packages to load in include the following:
+
++ `tidyverse`--for data cleaning/wrangling and the pipe, `%>%`
++ `knitr` & `kableExtra`--for making professional looking tables
++ `parameters`--to construct modern ANOVA tables, get omnibus effect sizes, and to switch out the type of *Sums of Squares*
++ `hasseDiagram`--to construct Hasse diagrams
++ `car` for nice QQ Plots
++ `psych`--for easy descriptive statistics by group
++ `emmeans`--for getting point estimates which attend to our models as well as doing post hoc analyses
++ `rstatix`--to help with assessing sphericity
++ `lme4` and `nlme`--to help assess random effects
+
+As a reminder, the following code does all of these things:
+
+```{r setR, echo=TRUE, eval=FALSE}
+# Demo code to set up R
+## Load packages
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "car",
+              "psych", "emmeans", "rstatix", "lme4", "nlme")
+lapply(packages, library, character.only = TRUE)
+
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+# Within Subjects Repeated Measures Design
+
+The Within Subjects Repeated Measures Design has the hallmark that each subject will be given each and every treatment. To prevent an order effect, we should randomize the order in which each subject gets the treatments.
+
+## Example Context--Taste Testing Beer
 
 Beer is big business; the craft brewing industry contributed \$79.1 billion to the US Economy in 2018 and 550,000+ jobs (PA: \$6.335 billion).
 
@@ -56,7 +200,48 @@ We have decided to put several State College beers to the test:
 + Red Mo (Red, Otto’s)
 + King Richard Red (Amber, Robin Hood)
 
-For this study, we have used a lottery to select six individuals to act as judges. Each judge will be presented with samples of the four beers and they will score each beer.
+For this study, we have used a lottery to select six individuals to act as judges. Each judge will be presented with samples of the four beers and they will score each beer. The order in which each judge samples/scores the beers will be determined by the research team drawing labeled tokens without replacement.
+
+## Fit the Model
+
+
+
+  - Example Context
+  - Fit the Model
+    - Appropriateness and Hasse Diagram
+    - Form the Models
+  - Assessing Assumptions
+    - Gaussian Residuals
+    - Gaussian Subject Effects
+    - Homoscedasticity
+    - Independence of Observations up to Subject
+    - No Interaction between Subjects and Factor
+    - Sphericity
+  - Results
+    - Omnibus
+      - Relative Efficiency
+      - Adjusting for Violation of Sphericity
+    - Point Estimates
+    - Post Hoc-Pairwise Comparisons
+    - Post Hoc Effect Sizes
++ Nested Repeated Measures
+  - Example Context
+  - Fit the Model
+    - Appropriateness and Hasse Diagram
+    - Form the Models
+  - Assessing Assumptions
+    - Gaussian Residuals
+    - Gaussian Treatment Effects
+    - Homoscedasticity
+    - Independence of Subjects
+    - Interaction of Subject and Factor
+    - Sphericity
+  - Results
+    - Omnibus
+    - Point Estimates
+    - Post Hoc-Pairwise Comparisons
+    - Effect Sizes
+
 
 For this particular study, we can express the Repeated Measures-Within Subjects design with the following Hasse diagram (Figure \ref{fig:beerHD}).
 
