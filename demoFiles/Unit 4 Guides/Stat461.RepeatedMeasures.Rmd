@@ -1,7 +1,7 @@
 ---
 title: "Repeated Measures"
 author: "Neil J. Hatfield"
-date: "4/22/2022"
+date: "4/25/2022"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -52,7 +52,7 @@ Make sure that you carefully examine the study design so that you correctly iden
     - Gaussian Residuals
     - Gaussian Subject Effects
     - Homoscedasticity
-    - Independence of Observations up to Subject
+    - Independence of Subjects
     - No Interaction between Subjects and Factor
     - Sphericity
   - Results
@@ -204,49 +204,14 @@ For this study, we have used a lottery to select six individuals to act as judge
 
 ## Fit the Model
 
+To assess the appropriateness of ANOVA methods, we will want to turn towards our knowledge of the study design as well as the Hasse diagram.
 
-
-  - Example Context
-  - Fit the Model
-    - Appropriateness and Hasse Diagram
-    - Form the Models
-  - Assessing Assumptions
-    - Gaussian Residuals
-    - Gaussian Subject Effects
-    - Homoscedasticity
-    - Independence of Observations up to Subject
-    - No Interaction between Subjects and Factor
-    - Sphericity
-  - Results
-    - Omnibus
-      - Relative Efficiency
-      - Adjusting for Violation of Sphericity
-    - Point Estimates
-    - Post Hoc-Pairwise Comparisons
-    - Post Hoc Effect Sizes
-+ Nested Repeated Measures
-  - Example Context
-  - Fit the Model
-    - Appropriateness and Hasse Diagram
-    - Form the Models
-  - Assessing Assumptions
-    - Gaussian Residuals
-    - Gaussian Treatment Effects
-    - Homoscedasticity
-    - Independence of Subjects
-    - Interaction of Subject and Factor
-    - Sphericity
-  - Results
-    - Omnibus
-    - Point Estimates
-    - Post Hoc-Pairwise Comparisons
-    - Effect Sizes
-
+### Is ANOVA Appropriate?
 
 For this particular study, we can express the Repeated Measures-Within Subjects design with the following Hasse diagram (Figure \ref{fig:beerHD}).
 
 ```{r beerHD, fig.cap="Hasse Diagram for Beer Judging", fig.height=2}
-# Hasse Diagram for Beer Judging
+# Demo Code for Hasse Diagram for Beer Judging
 modelLabels <- c("1 Judge Beer 1", "4 Beer 3", "6 (Judge) 5", "24 (Ratings) 15")
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
@@ -264,13 +229,16 @@ hasseDiagram::hasse(
 
 Notice that this layout looks a lot like a Randomized Complete Block Design (RCBD). For a one-way (single factor) experiment with repeated measures on all treatments, we end up with an essentially identical approach.
 
-## Data and Format of the Data Table
+In looking at the Hasse diagram (Figure \ref{fig:beerHD}), we can see that we have sufficient *degrees of freedom* to estimate all effects and residuals/errors. From the design we know that we have a continuous response (beer rating) as well as a categorical factor (the beer). We are also using the same judges for each beer (i.e., our "subjects"), thus we are in a Within Subjects Repeated Measures design. (We also have an additive model.)
 
-The following are the data for this situation:
+### Get Data Ready
+
+To form the models, we will first read in our data and then form both types of data frames. The following are the data for this situation:
 
 ```{r beerData, echo=TRUE}
-# Beer Data
-beer <- data.frame(
+# Demo Code for loading in Beer Data
+# This will be in the long format
+beerLong <- data.frame(
   judge = as.factor(rep(x = LETTERS[1:6], each = 4)),
   beer = as.factor(rep(
     x = c("Barnstormer", "King Richard Red", "Craftsman", "Red Mo"), 
@@ -285,80 +253,50 @@ beer <- data.frame(
   )
 )
 
-```
-
-For the methods we're going to look at, we need our data in the long format: each row is unique observation. Fortunately, our data are already in this format.
-
-If our data were in the wide format (i.e., each row refers to a single subject and *all* of their observations), we would see something like the following for a data table:
-
-### Long to Wide Format Transformation
-
-For assessing Compound Symmetry/Sphericity, we will need our data in the wide format. We will use the `pivot_wider` function from the `tidyr` package to transform our data into a wide format.
-
-```{r beerWide, echo=TRUE}
+# Make the Wide Format
 beerWide <- pivot_wider(
-  data = beer,
+  data = beerLong,
   names_from = beer,
   values_from = score
 )
 
-beerWide
-
 ```
 
-### Wide to Long Format Transformation
+For assessing compound symmetry (sphericity), we will need the wide format. For fitting the actual model, we'll need the long format.
 
-If your data happen to be in the wide format, we can switch to the long format via the `pivot_longer` function from the `tidyr` package (part of the `tidyverse`).
 
-```{r beerLong, echo=TRUE}
-beerLong <- pivot_longer(
-  data = beerWide,
-  cols = !judge, # This says to use all except the judge column
-  names_to = "beer", # what column to place the beer names in
-  names_transform = list(beer = as.factor), # turn beer to a factor
-  values_to = "score" # what column to put the values in
-)
-
-head(beerLong, n = 5) # Display the first 5 rows.
-
-```
-
-## Explore the Data
-
-Just as with all of our other models, you should explore the data through data visualizations and descriptive statistics.
-
-## Fit the Models
+### Form the Models
 
 We are going to need to fit three (3) models for Within Subjects designs:
 
 1) We will fit a One-way ANOVA + Block (RCBD) model for our ANOVA table.
-2) We will fit a Mixed Effects model for estimating judge effects and assess assumptions about the judge factor.
+2) We will fit a Mixed Effects model for estimating judge effects and assess assumptions about the judge factor (uses the `lme4` package).
 3) We will use a Nested Approach via the `rstatix` package for assessing Compound Symmetry/Sphericity assumption.
 
 ```{r beerModels, echo=TRUE}
-# Omnibus Model (for our ANOVA table)
+# Demo Code for Within Subject Repeated Measures ANOVA
+## Omnibus Model (for our ANOVA table)
 beerOmni <- aov(
   formula = score ~ judge + beer,
   data = beerLong
 )
 
-# Random Effect Model (Assumption Check and Point Estimation)
+## Random Effect Model (Assumption Checking and Point Estimation)
 beerMixed <- lme4::lmer(
   formula = score ~ (1|judge) + beer,
   data = beerLong
 )
 
-# Compound Symmetry/Sphericity Assessment
+## Compound Symmetry/Sphericity Assessment
 beerSphere <- rstatix::anova_test(
   data = beerLong,
   formula = score ~ beer + Error(judge %in% beer)
 )
-
 ## The %in% tells R that judge should be treated as nested in beer
 
 ```
 
-## Assess the Assumptions
+## Assessing Assumptions
 
 For Within Subjects Repeated Measures designs, we have the following assumptions:
 
@@ -372,10 +310,11 @@ For Within Subjects Repeated Measures designs, we have the following assumptions
 ### Gaussian Residuals
 
 Use a QQ plot:
-```{r beerQQRes, fig.cap="QQ Plot of Beer Judging Residuals", fig.width=5, fig.height=3.5, echo=TRUE}
-# QQ plot for residuals
+
+```{r beerQQRes, fig.cap="QQ Plot of Beer Judging Residuals", fig.width=5, fig.height=3.5, fig.pos ="H", echo=TRUE}
+# Demo Code for QQ plot for residuals
 car::qqPlot(
-  x = residuals(beerMixed), 
+  x = residuals(beerMixed), # Notice which model gets used here
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
@@ -385,15 +324,18 @@ car::qqPlot(
 
 ```
 
-### Gaussian Treatment Effects
+While there are roughly three points outside of the envelope (see Figure \ref{fig:beerQQRes}), this is only about 12% of the observations. I would supplement this plot with the values of the *Sample Skewness* and *Sample Excess Kurtosis* to help make my final decision. However, I would lean towards treating this assumption as satisfied.
 
-Again, use a QQ plot.
-```{r beerTrtQQ, fig.cap="QQ Plot for Judge Effects", fig.width=5, fig.height=3.5, echo=TRUE}
-# Judge Effects
+### Gaussian Subject Effects
+
+We will want to make us of a QQ plot for assessing our assumption of a Gaussian subject effect. However, rather than looking at the residuals, we need to get the effects of our subjects. To do this we'll need to use the `ranef` function ("random effects") from the `lme4` package.
+
+```{r beerTrtQQ, fig.cap="QQ Plot for Judge Effects", fig.width=5, fig.height=3.5, fig.pos="H", echo=TRUE}
+# #Demo Code for Judge Effects
 car::qqPlot(
   x = unlist( 
     lme4::ranef(
-      object = beerMixed,
+      object = beerMixed, ## Notice which model is getting used
       whichel = c("judge")
     )
   ),
@@ -406,15 +348,18 @@ car::qqPlot(
 
 ```
 
+From Figure \ref{fig:beerTrtQQ}, we can be satisfied with this assumption.
+
 ### Homoscedasticity
 
-Use a Tukey-Anscombe Plot
+For assessing homoschedasticity, we can use the Tukey-Anscombe plot. Again, notice which model we're using in the code.
 
-```{r beerTA, fig.cap="Tukey-Anscombe Plot for Beer Judging Study", fig.width=5, fig.height=3, echo=TRUE}
-# Tukey-Anscombe Plot
+```{r beerTA, fig.cap="Tukey-Anscombe Plot for Beer Judging Study", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+# Demo Code for the Tukey-Anscombe Plot
+## Beer Judging Study
 ggplot(
   data = data.frame(
-    residuals = residuals(beerMixed),
+    residuals = residuals(beerMixed), # Notice which model
     fitted = fitted.values(beerMixed)
   ),
   mapping = aes(x = fitted, y = residuals)
@@ -438,18 +383,23 @@ ggplot(
 
 ```
 
+From Figure \ref{fig:beerTA}, I'm a little concerned about heteroscedasticity but not overly much. I would proceed with caution.
+
 ### Independence of Subjects
 
 If you happen to know measurement order, you can look at an Index plot. However, be sure that you incorporate the subject attribute into the plot (in this situation, the judge). This can help highlight that whether any patterns are due to our subjects (and therefore anticipated) or if we have any additional patterns threats. Treat this situation just like checking for independence of subjects in a RCBD.
+
+The index plot, if measurement order is known, can also help you look for any order effects.
 
 ### Interaction of Subject and Factor
 
 We will want to make an interaction plot to look for consistency between the judges and the beers; again, think about what we would do with a RCBD.
 
 ```{r beerInteraction, fig.cap="Interaction Plot for Beer and Judge", fig.width=5, fig.height=3, echo=TRUE}
-# Interaction Plot
+# Demo Code for an Interaction Plot
+## Beer Judging Study
 ggplot(
-  data = beer,
+  data = beerLong,
   mapping = aes(
     x = beer,
     y = score,
@@ -468,12 +418,15 @@ ggplot(
 
 ```
 
+In Figure \ref{fig:beerInteraction}, we can see that as we move from beer to beer, the same general trend holds true for all judges. This indicates that there is not an interaction between judge (subject; our block) and beer (our factor).
+
 ### Sphericity
 
 The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. Thus, this is one assumption where we will supplement with a formal test: Mauchly's Test of Sphericity.
 
 ```{r beerSpherePlot, echo=TRUE, fig.cap="Sphericity Plot for Beer Judging", fig.width=6, fig.height=3}
-# Sphericity Plot
+# Demo Code for Sphericity Plot
+## Beer Judging Study
 sphericityPlot(
   dataWide = beerWide, # Data needs to be in wide format
   subjectID = "judge" # character name of the subject column
@@ -482,10 +435,13 @@ sphericityPlot(
 
 ```
 
-The null hypothesis for Mauchly's Test is that there is __*no*__ violation of Sphericity (Compound Symmetry); under this hypothesis, Mauchly's Test Statistic, *W* follow a \(\chi^2\) with 2 *degrees of freedom*. To see the results of Mauchly's test, we will use the following code:
+The `sphericityPlot` function comes from my `ANOVATools.R` script and requires __*wide format*__ data. The call returns a plot like you see in Figure \ref{fig:beerSpherePlot}. The horizontal placement of the points does not mean much as there is some horizontal jitter in place so that the points don't all lie on top of one another. The vertical placements are insightful. These related to the differences in treatments. Much like a strip chart, we're looking to see if any comparison uses up a different amount of vertical space. As I look through Figure \ref{fig:beerSpherePlot}, I see that King Richard Red vs. Craftsman uses the least amount of vertical space, but not excessively so given the others. My initial thought would be that sphericity is satisfied.
+
+To supplement the plot, we'll turn to Mauchly's test. The null hypothesis for Mauchly's Test is that there is __*no*__ violation of Sphericity (Compound Symmetry); under this hypothesis, Mauchly's Test Statistic, *W*, follows a \(\chi^2\) with 2 *degrees of freedom*. To see the results of Mauchly's test, we will use the following code:
 
 ```{r beerSphere, echo=TRUE}
-# Mauchly's Test
+# Demo Code for Mauchly's Test
+## Beer Judging Study
 beerSphere$`Mauchly's Test for Sphericity` %>%
   dplyr::select(Effect, W, p) %>%
   knitr::kable(
@@ -505,33 +461,40 @@ beerSphere$`Mauchly's Test for Sphericity` %>%
 
 Thus, we have \(W = 0.365\) with a *p*-value of 0.597 (use your overall Type I Error Risk to set the Unusualness Threshold here). This is one of those strange cases where we *want to fail to reject* the null hypothesis.
 
+Taken together, we will say that the sphericity is satisfied.
+
 ## Results
+
+As we have been doing all semester, we can divide our results into an Omnibus portion, a Point Estimates portion, and Post Hoc portion.
 
 ### Omnibus Test
 
-For our omnibus test, we will use our RCBD equivalent design:
+For our omnibus test, we will use the same approach as we did for the RCBDs.
 
 ```{r beerTable, echo=TRUE}
-beerTable1 <- parameters::model_parameters(
-    model = beerOmni, # the RCBD with all fixed effects
-    omega_squared = "partial",
-    eta_squared = "partial",
-    epsilon_squared = "partial"
-) 
-beerTable1$p <- lapply(
-  X = beerTable1$p,
-  FUN = pvalRound
-)
-
-knitr::kable(
-  x = beerTable1,
-  digits = 4,
-  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
-  caption = "ANOVA Table for Beer Judging Study",
-  align = c('l',rep('c',8)),
-  booktab = TRUE
+# Demo code of omnibus test
+## Beer Judging Study
+parameters::model_parameters(
+  model = beerOmni, # Notice which model we're using here
+  omega_squared = "partial",
+  eta_squared = "partial",
+  epsilon_squared = "partial"
 ) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+    caption = "ANOVA Table for Beer Judging Study",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -542,9 +505,9 @@ knitr::kable(
 
 Notice that I slipped the `pvalRound` function in to take care of the fact that the *p*-values are excessively small and were coming out as 0 after rounding. We interpret the terms in this table exactly as we have been all semester.
 
-### Efficiency of Repeated Measures
+#### Efficiency of Repeated Measures
 
-Since the One-way Within Subjects subjects is like a RCBD, we can get a measure of the efficiency of such a design versus a CRD.
+Since the One-way Within Subjects subjects is like a RCBD, we can get a measure of the efficiency of such a design versus a completely randomized (one-way) design (CRD).
 
 ```{r beerRelEff, echo=TRUE}
 # Use the block relative efficiency function
@@ -557,6 +520,10 @@ block.RelEff(
 ```
 
 Thus, we would need 8 times as many ratings for each beer as what we used in order to get the same level of information. That would mean that we would need around 48 scores for each beer.
+
+#### Example Write Up
+
+> For our Within Subjects Repeated Measures design, we can see that there is a statistically significant difference in the scores that the judges gave due to the type of beer (\(F(3,15)\approx 60.2\), *p* < 0.0001). The beer type accounted for just over 60 times as much variation as left unexplained, even after accounting for judge effects. Under the null hypothesis of no effect due to beer, we would only anticipate seeing such an extreme *F* ratio, less than 1/100th of a percent of the time. Further, we can see from the rather large effect sizes, that beer type accounts for around 90% of the variation in the judges' final scores (see Table \ref{tab:beerTable}). The relative efficiency of our Within Subjects design is approximately 7.7; thus, we would need 8 times as many scores for each beer as what we currently have to get the same level of information. 
 
 ### What if Sphericity is Violated?
 
@@ -589,14 +556,16 @@ knitr::kable(
 
 ```
 
-For the Corrections, the *p*-values are the adjusted *p*-values for the __omnibus__ test. Thus, we would say that there is an effect due to our repeated measures model (i.e., there is a difference in the scores of the beer).
+For the Corrections, the *p*-values are the adjusted *p*-values for the __omnibus__ test. Thus, we would say that there is an effect due to our repeated measures model (i.e., there is a difference in the scores of the beer). If sphericity is violated, use these *p*-values instead of the ones from the `beerOmni` model.
 
-### Post Hoc Analysis
+## Point Estimates
 
-For Post Hoc Analysis, we will want to make use of the `emmeans` package and make sure that we're looking at the correct aspect of our model. We already assume that there's some difference in the judges, thus we are really just after the marginals of our other factor(s). In this situation, the type of beer.
+Due to the mixed effects model (i.e., the random effect of our subjects (judges)), we cannot use the `dummy.coef` call to get point estimates. We need to use the `emmeans` package.
 
-```{r beerPH, echo=TRUE}
-# Using emmeans
+```{r beerPHPE, echo=TRUE}
+# Demo Code for Point Estimates
+## Beer Judging Study
+## Using emmeans
 beerPH <- emmeans::emmeans(
   object = beerMixed, # Notice the use of the mixed model here
   specs = pairwise ~ beer,
@@ -604,13 +573,6 @@ beerPH <- emmeans::emmeans(
   level = 0.92
 )
 
-```
-
-#### Point Estimates
-
-You can get point estimates for the Beer effects:
-
-```{r beerPHPE, echo=TRUE}
 ## Point Estimates
 as.data.frame(beerPH$emmeans) %>%
   knitr::kable(
@@ -629,12 +591,21 @@ as.data.frame(beerPH$emmeans) %>%
 
 ```
 
-#### Pairwise Comparisons
+*Example statements*:
+
++ The Craftsman beer accumulated points at a rate of 66.83 points per judge.
++ Red Mo's total score was 65.16 times as large as the number of judges who scored the beer.
+
+### Post Hoc Analysis--Pairwise Comparisons
+
+For Post Hoc Analysis, we will want to make use of the `emmeans` package and make sure that we're looking at the correct aspect of our model. We already assume that there's some difference in the judges, thus we are really just after the marginals of our other factor(s). In this situation, the type of beer.
 
 You can also do the standard pairwise comparisons of the beer types.
 
 ```{r beerPHPairs, echo=TRUE}
-# Pairwise Comparisons
+# Demo Code for Post Hoc Pairwise Comparisons
+## Beer Judging Study
+## Notice we're using the beerPH object from the point estimates code
 as.data.frame(beerPH$contrasts) %>%
   knitr::kable(
     digits = 4,
@@ -651,6 +622,10 @@ as.data.frame(beerPH$contrasts) %>%
   )
 
 ```
+
+*Example Statements* (see effect size section too)
+
+> Amongst the four beers, there appear to be significant differences in how the judges scored them with one notable exception: Craftsman and Red Mo. The judges did not seem to coalesce around one of these beers being higher or lower rated than the other (*p*-value of 0.67).
 
 ### Effect Sizes
 
@@ -692,22 +667,33 @@ as.data.frame(cohenTemp) %>%
 
 ```
 
-# Nested Repeated Measures Context
+*Example Statements* 
+
+> There appears to be a clear difference between Craftsman and King Richard Red: almost 100% of the time we give a judge a sample of both of these beers to score, they will give the higher score to the Craftsman.
+
+# Nested Repeated Measures Design
 
 The second kind of Repeated Measures ANOVA design deals with taking multiple measurements from our measurement units on the same attribute over time. Unlike the Within Subjects design, each measurement unit here only gets __ONE__ treatment. A some what handy way to help you decide if you're in a Nested Repeated Measures design is to see if you can think about the situation as being like a Pre-/Post-Testing situation. This classic situation involves testing/measuring everyone before we apply treatments, then apply the treatments (each person only gets one), and then testing/measuring everyone again afterwards. If you can fit the situation in to the pre/post design, you're a Nested Repeated Measures design.
 
+
+## Example Context--Shoe Advertizing and Sales
+
 For this example, we are going to look at the impact of two advertising campaigns on the volume of sales of athletic shoes over time. Ten similar test markets were selected at random to participate in this study. The two advertising campaigns were similar in all respects except that a different national sports personality was used in each. Sales data were collected for three two-week periods (before-t1, during-t2, and after-t3)
 
-## Hasse Diagram
+## Fit the Model
 
-If you use the Hasse Diagram app, you'll need to watch out for a couple of things:
+To assess the appropriateness of ANOVA methods, we will want to turn towards our knowledge of the study design as well as the Hasse diagram.
+
+### Is ANOVA Appropriate?
+
+Checking the appropriateness of ANOVA methods, including the Nested Repeated Measures designs, follows all of the same patterns as before. However, if you use the Hasse Diagram app, you'll need to watch out for a couple of things:
 
 1) You'll need to remove the interaction of Time Point X Market Nested Campaign. (Use Markets X Time as your measurement unit.)
 2) The *degrees of freedom* will be off for the Markets. The app isn't subtracting the *degrees of freedom* for Campaign. Thus, you'll have to manually adjust the code until I can get a fix in place.
 3) Remember to carry your *degrees of freedom* fix through to the final node.
 
 ```{r shoesHD, fig.cap="Hasse Diagram for Shoe Advertisement Study", fig.height=2}
-# Hasse Diagram for Shoe Advertisement Study
+# Demo Code for Hasse Diagram for Shoe Advertisement Study
 modelLabels <- c("1 Sell Shoes 1", "2 Campaign 1", "10 (Market) 8", "3 Time Point 2",
                  "6 Campaign × Time Point 2", "30 (Markets X Time) 16")
 modelMatrix <- matrix(
@@ -726,11 +712,13 @@ hasseDiagram::hasse(
 
 ```
 
-## Data
+### Get the Data Ready
 
 The shoe sales data comes to use in the wide format. We will want to make a long format version as well.
 
 ```{r shoesData, echo=TRUE}
+# Demo Code for Reading in Data
+## Shoes Ad Study
 shoesWide <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/shoes.csv",
   header = TRUE,
@@ -760,11 +748,7 @@ shoesLong$time <- dplyr::recode_factor(
 
 ```
 
-## Explore the Data
-
-As usual, you'll want to explore the data. With Repeated Measures data, remember that can the explore the data by looking across subjects at a particular time point or across time points (following a particular subject) or both. 
-
-## Fit the Models
+### Fit the Models
 
 We will fit two models: one that we'll use for the omnibus test and one we'll use for sphericity checking.
 
@@ -772,8 +756,9 @@ Let's begin with our omnibus testing model. Unfortunately, there is not a nice, 
 
 The key here is that you will want to make sure that you listen/watch for a particular warning message: `Error() model is singular`. This is because our final interaction term (subject x time) uses up all remaining *degrees of freedom* so we will not have a traditional Residuals/Error term. That is the crux of this particular message.
 
-```{r shoeModels, echo=TRUE}
-# Omnibus Model
+```{r shoeModels, echo=TRUE, warning=TRUE}
+# Demo Code for Omnibus Model
+## Shoes Ad Study
 shoesModel <- aov(
   formula = sales ~ campaign * time + Error(market %in% campaign),
   data = shoesLong
@@ -781,10 +766,14 @@ shoesModel <- aov(
 
 ```
 
+While we want to see this error message, you don't want the message to show up in your final report. 
+
 Due to the lack of a typical Residuals/Error term, we will need to use an alternative route for getting things like residuals or fitted values for our assumption checking. For our second model, we will turn to the `nlme` package.
 
 ```{r shoesnlme, echo=TRUE}
-# Use the nlme package to fit a model that we can use for assumption checking 
+# Demo code for nlme package
+## Shoe Ad Study
+## Use the nlme package to fit a model that we can use for assumption checking 
 shoesAssumptions <- nlme::lme(
   data = shoesLong,
   fixed = sales ~ campaign * time,
@@ -800,10 +789,11 @@ The methods here are the same as for the Within Subjects Repeated Measures desig
 ### Gaussian Residuals
 
 Use a QQ plot:
-```{r shoesQQRes, fig.cap="QQ Plot of Shoe Sales Study", fig.width=5, fig.height=3.5, echo=TRUE}
-# QQ plot for residuals
+```{r shoesQQRes, fig.cap="QQ Plot of Shoe Sales Study", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+# Demo Code for QQ plot for residuals
+## Shoe Ad Study
 car::qqPlot(
-  x = residuals(shoesAssumptions), 
+  x = residuals(shoesAssumptions), # Notice which model is getting used
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
@@ -815,13 +805,14 @@ car::qqPlot(
 
 ### Gaussian Treatment Effects
 
-Again, use a QQ plot.
-```{r shoesTrtQQ, fig.cap="QQ Plot for Market Effects", fig.width=5, fig.height=3.5, echo=TRUE}
-# Market Effects
+Again, use a QQ plot:
+```{r shoesTrtQQ, fig.cap="QQ Plot for Market Effects", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+# Demo Code for Market Effects
+## Shoe Ad Study
 car::qqPlot(
   x = unlist( 
-    lme4::ranef(
-      object = shoesAssumptions,
+    lme4::ranef( # Notice the use of the lme4 package
+      object = shoesAssumptions, # Notice which model is getting used
       whichel = c("market")
     )
   ),
@@ -836,13 +827,14 @@ car::qqPlot(
 
 ### Homoscedasticity
 
-Use a Tukey-Anscombe Plot
+Use a Tukey-Anscombe Plot:
 
-```{r shoesTA, fig.cap="Tukey-Anscombe Plot for Shoe Sales Study", fig.width=5, fig.height=3, echo=TRUE}
-# Tukey-Anscombe Plot
+```{r shoesTA, fig.cap="Tukey-Anscombe Plot for Shoe Sales Study", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
+# Demo Code for Tukey-Anscombe Plot
+## Shoe Ad Study
 ggplot(
   data = data.frame(
-    residuals = residuals(shoesAssumptions),
+    residuals = residuals(shoesAssumptions), # Notice which model gets used
     fitted = fitted.values(shoesAssumptions)
   ),
   mapping = aes(x = fitted, y = residuals)
@@ -868,9 +860,11 @@ ggplot(
 
 ### Independence of Subjects
 
-One of the interesting things about Nested Repeated Measures is that we inherently know at least *some* of the the measurement order. We might not know which store got measured before which other store, but we know the sequence of measurements for each store. Thus, we can make the following plot:
+One of the interesting things about Nested Repeated Measures is that we inherently know at least *some* of the measurement order. We might not know which store got measured before which other store, but we know the sequence of measurements for each store. Thus, we can make the following plot:
 
 ```{r shoesTimeSeries, echo=TRUE, fig.cap="Shoe Sales by Time and Store", fig.width=5, fig.height=3}
+# Demo Code Independence of Subjects
+## Shoe Ad Study
 ggplot(
   data = shoesLong,
   mapping = aes(
@@ -891,7 +885,7 @@ ggplot(
 
 ```
 
-Now, this plot is great for letting us compare the effects over time. This is not necessarily the greatest for letting us see if our subjects are independent of one another. The consistency of the effects over time do indicate that the inherent dependency of each subject's measurements *is* consistent across time. If a particular market had a huge increase in sales after the campaign, that would suggest something strange happened.
+Now, this plot (Figure \ref{fig:shoesTimeSeries}) is great for letting us compare the effects over time. This is not necessarily the greatest for letting us see if our subjects are independent of one another. The consistency of the effects over time do indicate that the inherent dependency of each subject's measurements *is* consistent across time. If a particular market had a huge increase in sales after the campaign, that would suggest something strange happened.
 
 For Nested Repeated Measures we will ultimately want to fall back on our study design to make a solid justification. This is why I've been pressing you all course long on including details/being specific.
 
@@ -900,7 +894,8 @@ For Nested Repeated Measures we will ultimately want to fall back on our study d
 A similar plot to the previous Time Series plot is to construct a plot known as "Growth Curves". In essence, we want to see how the response changes for each subject over time...but we're going to separate the data a bit more cleanly so we can see if and how the factor might interact with our subjects.
 
 ```{r shoesGrowthCurves, fig.cap="Growth Curves for Shoe Sales Study", fig.width=5, fig.height=3, echo=TRUE}
-# Growth Curves
+# Demo Code for Growth Curves
+## Shoe Ad Study
 ggplot(
   data = shoesLong,
   mapping = aes(
@@ -922,16 +917,17 @@ ggplot(
 
 ```
 
-Notice that we used the `facet_wrap` on campaign to split the time series plot into separate panels/facets for each campaign. If we see the same behaviors in both facets, then there is no worrisome interaction between subjects and our factor.
+Notice that we used the `facet_wrap` on campaign to split the time series plot into separate panels/facets for each campaign. If we see the same behaviors in both facets, then there is no worrisome interaction between subjects and our factor (Figure \ref{fig:shoesGrowthCurves}).
 
 Keep in mind that Market 3 in Campaign 1 is __*not*__ the same market as Market 3 in Campaign 2. They just happen to be the *third* market inside each campaign.
 
 ### Sphericity
 
-The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. Thus, this is one assumption where we will supplement with a formal test: Mauchly's Test of Sphericity.
+The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. 
 
 ```{r shoesSpherePlot, echo=TRUE, fig.cap="Sphericity Plot for Shoe Sales Study", fig.width=6, fig.height=3}
-# Sphericity Plot
+# Demo Code for Sphericity Plot
+## Shoe Ad Study
 sphericityPlot(
   dataWide = shoesWide,
   subjectID = c("market", "campaign"), 
@@ -941,15 +937,20 @@ sphericityPlot(
 
 ```
 
-The `nlme` package does not support Mauchly's Test for Sphericity.
+The `nlme` package does not support Mauchly's Test for Sphericity. Thus, we will have to rely on the plot in Figure \ref{fig:shoesSpherePlot}.
 
 ## Results
+
+As we have been doing all semester, we can divide our results into an Omnibus portion, a Point Estimates portion, and Post Hoc portion.
 
 ### Omnibus Test
 
 As mentioned, getting a nice looking table is not as straightforward with the Nested Repeated Measures ANOVA problems.
 
 ```{r shoesTable, echo=TRUE}
+# Demo Code for Omnibus ANOVA Table
+## Shoe Ad Study
+## We have to custom build the ANOVA table
 shoesTemp <- summary(shoesModel)
 shoesOmni <- rbind(
   shoesTemp$`Error: market:campaign`[[1]],
@@ -971,6 +972,16 @@ shoesOmni %>%
   tibble::rownames_to_column(
     var = "Source"
   ) %>%
+  dplyr::mutate(
+    `Pr(>F)` = ifelse(
+      test = is.na(`Pr(>F)`),
+      yes = NA,
+      no = pvalRound(`Pr(>F)`)
+    )
+  ) %>%
+  dplyr::mutate(
+    across(.cols = where(is.numeric), prettyNum, big.mark = ",")
+  ) %>%
   knitr::kable(
     digits = 4,
     col.names = c("Source", "df", "SS", "MS", "F", "p-value"),
@@ -986,13 +997,15 @@ shoesOmni %>%
 
 ```
 
+We will not worry about effect sizes here.
 
-### Post Hoc
+### Point Estimates
 
-Here you might want to look at both Campaign and Time Effects:
+For point estimates, you might want to look at both Campaign and Time Effects:
 
 ```{r shoesPH, echo=TRUE}
-# Using emmeans
+# Demo Code for Using emmeans
+## Shoe Ad Study
 shoesCampaignPH <- emmeans::emmeans(
   object = shoesModel,
   specs = pairwise ~ campaign,
@@ -1009,12 +1022,12 @@ shoesTimePH <- emmeans::emmeans(
 
 ```
 
-#### Point Estimates
-
 You can get point estimates for both effects:
 
-```{r shoesPHPE, echo=TRUE}
-## Point Estimates
+```{r shoesPHPE1, echo=TRUE}
+# Demo Code Point Estimates
+## Shoe Ad Study
+## Campaign Effects
 as.data.frame(shoesCampaignPH$emmeans) %>%
   knitr::kable(
     digits = 4,
@@ -1030,6 +1043,12 @@ as.data.frame(shoesCampaignPH$emmeans) %>%
     latex_options = c("HOLD_position")
   )
 
+```
+
+```{r shoesPHPE2, echo=TRUE}
+# Demo Code Point Estimates
+## Shoe Ad Study
+## Time Point Effects
 as.data.frame(shoesTimePH$emmeans) %>%
   knitr::kable(
     digits = 4,
@@ -1047,12 +1066,14 @@ as.data.frame(shoesTimePH$emmeans) %>%
 
 ```
 
-#### Pairwise Comparisons
+### Post Hoc-Pairwise Comparisons
 
-You can also do the standard pairwise comparisons 
+You can also do the standard pairwise comparisons:
 
-```{r shoesPHPairs, echo=TRUE}
-# Pairwise Comparisons
+```{r shoesPHPairs1, echo=TRUE}
+# Demo Code Point Estimates
+## Shoe Ad Study
+## Pairwise on Campaign
 as.data.frame(shoesCampaignPH$contrasts) %>%
   knitr::kable(
     digits = 4,
@@ -1068,6 +1089,12 @@ as.data.frame(shoesCampaignPH$contrasts) %>%
     latex_options = c("HOLD_position")
   )
 
+```
+
+```{r shoesPHPairs2, echo=TRUE}
+# Demo Code Point Estimates
+## Shoe Ad Study
+## Pairwise on Time Point
 as.data.frame(shoesTimePH$contrasts) %>%
   knitr::kable(
     digits = 4,
