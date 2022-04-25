@@ -316,8 +316,8 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
     theme_bw() +
     xlab("Comparison") +
     ylab("Difference") +
-    guides(
-      color = FALSE
+    theme(
+      legend.position = "none"
     ) +
     scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
 
