@@ -40,7 +40,7 @@ This sub-directory contains R files which define multiple helpful functions for 
 
 ### Check Setup
 
-The `checkSetup` function will check your R setup for three things: 1) do you have a current version of R (i.e., 4.1.1+) do you have the necessary packages installed (if not, it will install them), 3) will ask you if you want to install TinyTeX (and install it if you do).
+The `checkSetup` function will check your R setup for three things: 1) do you have a current version of R (i.e., 4.2.1+) do you have the necessary packages installed (if not, it will install them), 3) will ask you if you want to install TinyTeX (and install it if you do).
 
 To use this function copy and paste the following code in your Console and hit Return:
 ```
