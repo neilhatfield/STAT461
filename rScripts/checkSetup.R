@@ -30,7 +30,7 @@ checkSetup <- function(){
     pkgList <- NA
   }
 
-  if (!is.na(pkgList)) {
+  if (pkgInstall == 1 || pkgInstall == 2) {
     ## Check installed packages ----
     print("Checking for installed packages...")
     newPackages <- pkgList[!(pkgList %in% installed.packages()[,"Package"])]
@@ -52,7 +52,7 @@ checkSetup <- function(){
     print("Finished installing packages")
   }
 
-  if (pkgInstall > 0) {
+  if (pkgInstall >= 0) {
     ## Tex Installation
     texInstall <- menu(
       choices = c("Yes", "No"),
