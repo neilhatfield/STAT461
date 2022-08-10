@@ -26,7 +26,7 @@ checkSetup <- function(){
     pkgList <- c(corePackages, optionalPackages)
   } else if (pkgInstall == 2) {
     pkgList <- corePackages
-  } else if {
+  } else {
     pkgList <- NA
   }
 
