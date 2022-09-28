@@ -1,7 +1,7 @@
 ---
 title: "Sample Size Calculations (Power Analysis)"
 author: "Neil J. Hatfield"
-date: "2/17/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
@@ -48,7 +48,7 @@ Later on in the course, we'll come back to the topic of Type I risk and speak mo
 
 A Type II error occurs when we fail to reject a null hypothesis that is actually False. This is to say that the simpler model (i.e., the null model) does not do as good of a job as the alternative model to describe our data...but we decide to not discount the null model. We can think of this as a "False Negative".
 
-The risk of making a Type II error is typically represented by \(\mathcal{E}_{II}\) or \(\beta\). Many times, researchers talk about __statistical power__, which is the complement of Type II risk, \(1-\mathcal{E}_{II}\). 
+The risk of making a Type II error is typically represented by \(\mathcal{E}_{II}\) or \(\beta\). Many times, researchers talk about __statistical power__, which is the complement of Type II risk, \(1-\mathcal{E}_{II}\). We can think of power as measuring our ability to detect how our data differ from the null model in the presence of variation.
 
 This is another value that we get to pick. Generally, researchers aim for a power in the interval \([0.7,1)\). Ideally, we would like power to be 1 (i.e., \(\mathcal{E}_{II}=0\)), but we know that is unrealistic.
 
@@ -83,7 +83,7 @@ In this formula, we need to know the number of groups/treatments, _g_, and we ne
 
 ### When All Else Fails
 
-Typically, we draw upon past studies or a particular desire/hunch for selecting the effect size. However, if we have no idea what to use, we can look at multiple effect sizes and make use of Cohen's suggested rules of thumb. Keep in mind that these rules of thumb are devoid of all context and effect sizes are context dependent.
+Typically, we draw upon past studies or a particular desire/hunch for selecting the effect size. However, if we have no idea what to use, we can look at multiple effect sizes and make use of Cohen's suggested rules of thumb. Keep in mind that these rules of thumb are devoid of all context and __effect sizes are context dependent__.
 
 + Small Effect: \(f=0.1\)
 + Medium Effect: \(f=0.25\)
@@ -226,7 +226,7 @@ Figure \ref{fig:plotEffectSize} shows us the plotting inputs ("Parameter") and t
 
 In the Parameters section, I placed total sample size on the vertical (y) axis and placed effect size on the horizontal (x) axis. I went ahead and checked the options for markers (draw points along the curve) and to label those points with values to 1 digit (no need to go further than that). For the horizontal axis, you can specify a lower and upper bound along with a step size. Here I used 0.1 as my smallest effect size and 0.5 as my largest effect size. I had G\*Power step by 0.05 for placing the points/markers. In the second (lower) portion of Parameters, you'll find power and Type I risk. These are the fixed at the values we had originally set for power and Type I risk.
 
-The graph shows us the interplay of effect size and total sample size. The smaller the effect size we're hoping to detect, the more measurement units we need. The larger th effect size, the fewer measurement units needed. Notice that there is not a linear relationship between these two aspects. 
+The graph shows us the interplay of effect size and total sample size. The smaller the effect size we're hoping to detect, the more measurement units we need. The larger the effect size, the fewer measurement units needed. Notice that there is not a linear relationship between these two aspects. 
 
 In the case of our fertilizer study, we might decide to increase our minimum difference of interest so that we can have a more reasonable sample size. For example, moving up to \(f=0.2\) would yield a minimum difference of approximately 3.2 bushels per acre (\(\sqrt[2]{0.2^2\left(2\cdot 4\cdot 32.4\right)}\approx 3.2199\)). This would shift our total sample size from 648 to 252 (the next closest sample size divisible by four for a balanced design). 
 
@@ -246,7 +246,7 @@ This section is really only for individuals who wish to explore doing sample siz
 
 ## The `stats` Package Method
 
-One of the base packages of `R` is the `stats` package which is automatically loaded each time you start `R`. The function that you call is `power.anova.test`. To use this function to get _sample in each group_, 
+One of the base packages of `R` is the `stats` package which is automatically loaded each time you start `R`. The function that you call is `power.anova.test`. To use this function to get _sample sizes for each group_, 
 
 ```{r statsMethodDetails, eval=FALSE, echo=TRUE}
 # Details for power.anova.test function

@@ -1,7 +1,7 @@
 ---
 title: "Beginning with R/RStudio 1"
 author: "Neil J. Hatfield"
-date: "1/11/2021"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output:  
   html_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -200,7 +200,7 @@ I recommend making an R Project for this class and then work in there. This will
 The structure function, `str` allows you to see the structure of any object in your R session. This is useful when you want to see how R is thinking about an object rather than viewing all of the things inside of the object. Here's an example of `str` in action:
 
 ```{r strExample, echo=TRUE, eval=TRUE}
-load(file = "../dataFiles/onewayExplorations.Rdata")
+load(file = "../../dataFiles/onewayExplorations.Rdata")
 str(fabric)
 
 ```

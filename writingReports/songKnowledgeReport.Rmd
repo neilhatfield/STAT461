@@ -32,9 +32,7 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R")
 
-
 ```
-
 
 ```{r loadData}
 songData <- read.table(

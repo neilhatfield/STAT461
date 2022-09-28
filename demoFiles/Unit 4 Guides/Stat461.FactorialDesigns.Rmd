@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
               "psych", "DescTools", "emmeans", "openxlsx")
-lapply(packages, library, character.only = TRUE)
+lapply(packages, library, character.only = TRUE, quietly = TRUE)
 
 options(knitr.kable.NA = "")
 options(contrasts = c("contr.sum", "contr.poly"))
