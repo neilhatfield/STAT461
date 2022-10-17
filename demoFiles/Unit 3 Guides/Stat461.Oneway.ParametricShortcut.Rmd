@@ -1,7 +1,7 @@
 ---
 title: "Parametric Shortcut: One-way ANOVA"
 author: "Neil J. Hatfield"
-date: "3/16/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -102,7 +102,7 @@ options(contrasts = c("contr.sum", "contr.poly"))
 
 ```
 
-Again, I place this just after I set my table options. NOTE: you have to specify this option BEFORE you build any models in `R`.
+Again, I place this just after I set my table options. NOTE: you have to specify this option BEFORE you build any models in `R`. (If you forget, you can run the command, but you should then re-fit your models and re-ask R to provide you with your estimates.)
 
 ## Some Additonal Handy Tools
 
@@ -124,14 +124,14 @@ The following code demonstrates how we can read in the three data sets:
 ```{r loadData, echo=TRUE}
 # Song Data
 songData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fall2022.csv",
   header = TRUE,
   sep = ","
 )
 # Set year to an ordered factor
-songData$year <- factor(
-  x = songData$year,
-  levels = c("sophomore", "junior", "senior")
+songData$Year.in.School <- factor(
+  x = songData$Year.in.School,
+  levels = c("Sophomore", "Junior", "Senior+")
 )
 
 # Honey Data--Manual Entry
@@ -224,7 +224,7 @@ To fit our ANOVA model, we will primarily use the `aov` function that is part of
 # Demo code for building ANOVA models
 ## Song Knowledge study
 songModel <- aov(
-  formula = score ~ year,
+  formula = Score ~ Year.in.School,
   data = songData,
   na.action = "na.omit"
 )
@@ -264,7 +264,7 @@ For the parametric shortcut (a.k.a. "the ANOVA *F* test"), there are three assum
 
 For the first two assumptions, we will need to access the residuals from our model. We can do this in two different ways: `songModel$residuals` or `residuals(honeyModel)`. Either method will give the same set of things.
 
-Remember, we want to *__assess not test__* our assumptions. Thus, we will be relying on specific data visualizations (and some descriptive statistics) to help us. All of which can go into your reports.
+Remember, we want to *__assess, not test__* our assumptions. Thus, we will be relying on specific data visualizations (and some descriptive statistics) to help us. All of which can go into your reports.
 
 ## Assessing the Gaussian Assumption
 
@@ -373,9 +373,9 @@ Let's first focus on the Song Knowledge portion of Figure \ref{fig:stripCharts}.
 
 A bigger issue for homoscedasticity is that of patterns in a strip chart. The most common pattern to look out for is a megaphone or funnel shape. We have a (right-opening) megaphone if the length of the strips get larger as you move from the left to the right along the horizontal axis. We have a funnel (left-opening megaphone) if the length of the strips gets smaller as you move from left to right. Keep an eye out for other patterns or shapes. These indicate deeper issues that result in violating the homoscedasticity assumption.
 
-Turning back to Figure \ref{fig:stripCharts}, we need to keep in mind that having only three strips makes judging patterns challenging. When I look at the Song Knowledge strip chart, I see a bit of a megaphone shape; but the last strip narrows instead of expands. When I look at the Honey strip chart, I see a bow tie (wide on the outsides, narrow in the middle). 
+Turning back to Figure \ref{fig:stripCharts}, we need to keep in mind that having only three strips makes judging patterns challenging. When I look at the Song Knowledge strip chart, I see a funnel shape. When I look at the Honey strip chart, I see a bow tie (wide on the outsides, narrow in the middle). 
 
-Taking the two pieces together, I'm mildly cautious for the Song Knowledge data satisfying the homoscedasticity assumption. For the Honey study, I'm closer to saying we've violated the homoscedasticity assumption. (In practice, I would recommend looking at performing some kind of transformation on the data and refitting the model.)
+Taking the two pieces together, I'm would say that for the Song Knowledge data, we do not satisfy homoscedasticity assumption. For the Honey study, we've violated the homoscedasticity assumption. (In practice, I would recommend looking at performing some kind of transformation on the data and refitting the model.)
 
 ### Your Turn
 
@@ -389,7 +389,7 @@ The last assumption is not only the most important but the hardest to check. I w
 
 The first method we have available to us is not graphical or statistical in nature. Rather, we focus on what we know about the study design, how the data were collected, and the make up of the sample (i.e., the measurement units). For example, did we take precautions to draw a random sample for our measurement units? Did we take a convenience sample? Did we end up getting a chunk of closely related family members? Think through all possible ways that we could end up with measurement units directly impacting each other and then check the study to see if any of those methods could have/did slip through our guards.
 
-For the Song Knowledge study, while all students present that day took part, the 15 students in our sample were selected via `R`'s `sample` function in a stratified manner. Given this set up, we can proceed with some confidence that we have satisfied the assumption of Independent Observations.
+For the Song Knowledge study, while all students who were present that day took part, not everyone agreed to participate for our data, resulting in the 24 students in our sample. Given how we designed our study, we might cautious argue that we have satisfied the assumption of Independent Observations.
 
 ### Graphical and Statistical Methods
 
@@ -452,9 +452,9 @@ For this tutorial, I'm going to use \(\mathcal{E}_{I}=0.05\) and \(UT=0.03\).
 
 ## Assessment of Assumptions
 
-We will proceed cautiously with the Song Knowledge data. We will NOT proceed with the parametric shortcut for the Honey data. Remember, the parametric shortcut is robust to moderate and minor violations of assumptions. In the case of the Honey study, I have stronger concerns about two of the three assumptions, so I would not want to use this shortcut without taking additional steps (beyond this tutorial).
+Due to the violations of assumptions for both the Fall 2022 Song Knowledge data as well as the violations for the Honey data, we will NOT proceed with the parametric shortcut for either one. Remember, the parametric shortcut is robust to moderate and minor violations of assumptions...provided you have a balanced design. For the Song Knowledge study, we have severe imbalance. In the case of the Honey study, I have stronger concerns about two of the three assumptions, so I would not want to use this shortcut without taking additional steps (beyond this tutorial).
 
-I also feel that we can proceed (cautiously) with the Resin Lifetimes data.
+If you have been following along with the Resin data, I feel that we can proceed (cautiously) with the Resin Lifetimes data.
 
 ## Quick Look Method
 
@@ -463,6 +463,7 @@ Technically, you've already done the parametric shortcut (ANOVA *F* test). When 
 ```{r quickLook, echo=TRUE}
 # Demo code
 # Summary example with Song Knowledge
+## Example only--invalid shortcut
 summary(songModel)
 
 # Anova example with Resin Lifetime
@@ -481,18 +482,25 @@ To make these modern tables, we will need the `parameters` package along with `k
 ```{r songANOVATable, echo=TRUE}
 # Demo Code
 # Create professional looking, modern ANOVA table for Song Knowledge
+# Example Only--parametric shortcut is invalid
 parameters::model_parameters(
   model = songModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  effectsize_type = c("eta", "omega", "epsilon") # Effect sizes
 ) %>%
+  mutate(
+    Parameter = gsub(  # Removes the . from the variable name
+      pattern = ".",
+      replacement = " ",
+      x = Parameter,
+      fixed = TRUE
+    )
+  ) %>%
   knitr::kable(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
-  caption = "ANOVA Table for Song Knowledge Study",
+    "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
+  caption = "ANOVA Table for Fall 2022 Song Knowledge Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) %>%
@@ -505,22 +513,22 @@ parameters::model_parameters(
 
 #### Interpretation of Table \ref{tab:songANOVATable}
 
-We can see that a STAT461 undergradute's year in school accounts for 6.14 times as much variation as the residuals in Table \ref{tab:songANOVATable}. Since our *p*-value is less than *UT* (0.0145 < 0.03), we will reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does impact their song knowledge score. In particular, their year in school accounts for around 40% of the variation in their score.
+We can see that a STAT461 undergraduate's year in school accounts for about 1.94 times as much variation as the residuals in Table \ref{tab:songANOVATable}. Given the violations of the assumptions for the parametric ANOVA *F* test, our *p*-value is meaningless for making some type of decision between the hypotheses.
+
+Supposing that our assumptions were satisfied, then since the *p*-value is greater than our Unusualness Threshold (*UT*), we would have an event that is "usual" given the null hypothesis and we would fail to reject the null hypothesis.
 
 ```{r resinANOVATable, echo=TRUE}
 # Demo Code
 # Create professional looking modern ANOVA table for Resin Lifetimes
 parameters::model_parameters(
   model = resinModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   knitr::kable(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
+    "Omega Sq.", "Eta Sq.", "Epsilon Sq."), 
   caption = "ANOVA Table for Resin Lifetimes Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -547,6 +555,8 @@ There is a downside in this approach: the *p*-value in Table \ref{tab:resinANOVA
 
 ```{r pvalueRounding, echo=TRUE}
 # Set up the p-value rounding function.
+## This is part of Neil's ANOVA tools so you don't have define
+## this function yourself if you load the tools
 pvalRound <- function(x){
   ifelse(
     test = x < 0.0001,
@@ -563,9 +573,7 @@ pvalRound <- function(x){
 # Professional looking modern ANOVA table with fixed p-value
 parameters::model_parameters(
   model = resinModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -578,7 +586,7 @@ parameters::model_parameters(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."),
+    "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
   caption = "ANOVA Table for Resin Lifetimes Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -608,7 +616,7 @@ To get these point estimates, we will use the `dummy.coef` function. To make the
 pointEst <- dummy.coef(songModel)
 pointEst <- unlist(pointEst)
 names(pointEst) <- c("Grand Mean", "Sophomores", "Juniors",
-                     "Seniors")
+                     "Seniors+")
 
 data.frame("Estimate" = pointEst) %>%
   knitr::kable(
@@ -628,7 +636,7 @@ If you just call `dummy.coef(songModel)` in the console, you'll see a value labe
 
 Keep in mind that the estimates in Table \ref{tab:coefficientsSong} are *rates*. Thus, for the Song Knowledge study, we would interpret this value as `r round(dummy.coef(songModel)$'(Intercept)', 2)` points per student; our entire sample accumulated `r round(dummy.coef(songModel)$'(Intercept)', 2)` times as many points as sampled students.
 
-We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Juniors, they accumulated an additional `r round(dummy.coef(songModel)$year[2], 2)` points per student where as the Sophomores only accumulated `r round(dummy.coef(songModel)$year[1], 2)` points per student and the Seniors accumulated `r round(dummy.coef(songModel)$year[3], 2)` points per student. This suggests that Seniors performing worse that baseline (*GSAM*).
+We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Juniors, they accumulated an additional `r round(dummy.coef(songModel)$Year.in.School[2], 2)` points per student where as the Sophomore accumulated `r round(dummy.coef(songModel)$Year.in.School[1], 2)` points per student and the Seniors accumulated `r round(dummy.coef(songModel)$Year.in.School[3], 2)` points per student. This suggests that Juniors and Seniors perform worse than baseline (*GSAM*).
 
 ### Your Turn
 
@@ -762,9 +770,7 @@ dw <- car::durbinWatsonTest(resinModel)$dw
 # Insect Sprays ANOVA Table
 parameters::model_parameters(
   model = isModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -777,7 +783,7 @@ parameters::model_parameters(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."
+    "Omega Sq.", "Eta Sq.", "Epsilon Sq."
     ),
   caption = "ANOVA Table for Insect Spray Study",
   booktabs = TRUE,
