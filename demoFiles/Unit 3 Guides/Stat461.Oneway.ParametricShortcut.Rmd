@@ -499,7 +499,7 @@ parameters::model_parameters(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
+    "Eta Sq.", "Omega Sq.", "Epsilon Sq."),
   caption = "ANOVA Table for Fall 2022 Song Knowledge Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -528,7 +528,7 @@ parameters::model_parameters(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epsilon Sq."), 
+    "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
   caption = "ANOVA Table for Resin Lifetimes Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -583,13 +583,13 @@ parameters::model_parameters(
     )
   ) %>%
   knitr::kable(
-  digits = 4,
-  col.names = c(
-    "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epsilon Sq."),
-  caption = "ANOVA Table for Resin Lifetimes Study",
-  booktabs = TRUE,
-  align = c("l", rep("c", 8))
+    digits = 4,
+    col.names = c(
+      "Source", "SS", "df", "MS", "F", "p-value",
+      "Eta Sq.", "Omega Sq.", "Epsilon Sq."),
+    caption = "ANOVA Table for Resin Lifetimes Study",
+    booktabs = TRUE,
+    align = c("l", rep("c", 8))
   ) %>%
   kableExtra::kable_styling(
     font_size = 10,
@@ -780,14 +780,13 @@ parameters::model_parameters(
     )
   ) %>%
   knitr::kable(
-  digits = 4,
-  col.names = c(
-    "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epsilon Sq."
-    ),
-  caption = "ANOVA Table for Insect Spray Study",
-  booktabs = TRUE,
-  align = c("l", rep("c", 8))
+    digits = 4,
+    col.names = c(
+      "Source", "SS", "df", "MS", "F", "p-value",
+      "Eta Sq.", "Omega Sq.", "Epsilon Sq."),
+    caption = "ANOVA Table for Insect Spray Study",
+    booktabs = TRUE,
+    align = c("l", rep("c", 8))
   ) %>%
   kableExtra::kable_styling(
     font_size = 12,
