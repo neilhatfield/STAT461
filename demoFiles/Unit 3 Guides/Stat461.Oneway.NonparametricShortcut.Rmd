@@ -1,7 +1,7 @@
 ---
 title: "Nonparametric Shortcut: One-way ANOVA"
 author: "Neil J. Hatfield"
-date: "3/17/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -87,7 +87,7 @@ To do the Kruskal-Wallis *H* test does not require you to use any special packag
 
 ## Load Data
 
-For this exploration we're going to use two data sets: our Honey Study and the Song Knowledge Study. The Honey Study highlights the instance where we opted to NOT use the parametric shortcut. We're looking at the Song Knowledge study so that we have an example where we've used both the Parametric and Nonparametric shortcuts. This will allow us to make comparisons.
+For this exploration we're going to use tye our Honey Study.
 
 ```{r loadData, echo=TRUE}
 # Demo code
@@ -100,19 +100,21 @@ honey <- data.frame(
 ## Set Varietal to factor
 honey$Varietal <- as.factor(honey$Varietal)
 
-# Song Data
+```
+
+<!-- # Song Data
 songData <- read.csv(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fall2022.csv",
   header = TRUE,
   sep = ","
 )
 # Set year to an ordered factor
-songData$year <- factor(
-  x = songData$year,
-  levels = c("sophomore", "junior", "senior")
+songData$Year.in.School <- factor(
+  x = songData$Year.in.School,
+  levels = c("Sophomore", "Junior", "Senior+")
 )
 
-```
+```-->
 
 # Explore Your Data
 
@@ -209,9 +211,9 @@ ggplot(
 
 Figure \ref{fig:honeyIO} shows the index plot using the response of the Honey study (i.e., amount of honey produced in pounds). Just as before, we are still looking to see if there are any patterns to this plot. The presence of patterns indicates a threat to the assumption of Independent Observations. Even though there are only nine measurement units in the Honey study, I don't see any patterns in Figure \ref{fig:honeyIO}. Additionally, I can't think of any threats to independence from the study design (each hive was placed sufficiently far apart to minimize competition and cross-contamination).
 
-## Your Turn
+<!--## Your Turn
 
-For the Song Knowledge study, decide whether or not the two assumptions for the Kruskal-Wallis *H* test are satisfied. Why or why not?
+For the Song Knowledge study, decide whether or not the two assumptions for the Kruskal-Wallis *H* test are satisfied. Why or why not?-->
 
 # Fitting the Model
 
@@ -366,9 +368,9 @@ Given that a one-way ANOVA model is appropriate to investigate whether the varie
 
 Note: the \` is the "back tick" from the key just to the left of the 1 key on a standard (American) keyboard. This symbol immediately followed by `r` will start an in-line code chunk.
 
-## Your Turn
+<!--## Your Turn
 
-Using the Honey study as an example, build your own paragraph for the Song Knowledge study using the Kruskal-Wallis *H* test.
+Using the Honey study as an example, build your own paragraph for the Song Knowledge study using the Kruskal-Wallis *H* test.-->
 
 # Putting Everything Together--Your Turn
 

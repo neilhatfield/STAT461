@@ -1,7 +1,7 @@
 ---
 title: "Post Hoc Analysis for One-way ANOVA"
 author: "Neil J. Hatfield"
-date: "3/19/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -46,11 +46,13 @@ In this tutorial, we are going to explore doing Post Hoc analysis in the context
   - `DescTools` Methods
   - Special Comparisons
   - Effect Sizes
-+ Post Hoc for the Nonparametic Shortcut
++ Visualizing Pairwise Differences
+  - Connecting Letter Reports
+  - Box Plots
++ Extra--Post Hoc for the Nonparametic Shortcut
   - Dunn's Test
   - DSCF Test
   - Effect Sizes
-+ Visualizing Pairwise Differences
 
 As a quick vocabulary note, we often use the term "omnibus" to refer to the hypothesis testing using the ANOVA *F* test or the Kruskal-Wallis *H* test. These tests are "omnibus" tests in that the alternative hypothesis is a family that contains several distinct hypotheses. Post Hoc analysis focuses on finding which of these hypotheses actually appears to fit our data.
 
@@ -73,8 +75,7 @@ Here is a reminder for how to write this code in `R`:
 # Demo code for setting up R
 # Load packages
 packages <- c("tidyverse", "knitr", "kableExtra",
-              "parameters", "DescTools", "dunn.test",
-              "PMCMRplus", "multcompView")
+              "parameters", "DescTools", "dunn.test", "multcompView")
 lapply(packages, library, character.only = TRUE)
 
 # Set options
@@ -88,7 +89,7 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ## Loading Data
 
-For this guide/tutorial, we are going to make use of two data sets: our Song Knowledge study and a new data set, __Free Amino Acids in Cheese__ (or the Cheese study). For information on the Cheese study, look at Table 5.2 and Example 5.5 from page 91 of Oehlert.
+For this guide/tutorial, we are going to make use of the __Free Amino Acids in Cheese__ (or the Cheese study). For information on the Cheese study, look at Table 5.2 and Example 5.5 from page 91 of Oehlert. You can also make use of the Spring 2022 Song Knowledge Study for the Your Turn examples.
 
 Take a moment to think about how you would read in the data then compare your code with the following:
 
@@ -96,7 +97,7 @@ Take a moment to think about how you would read in the data then compare your co
 # Demo code for loading data
 # Song Knowledge study
 songData <- read.csv(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Spring2022.csv",
   header = TRUE,
   sep = ","
 )
@@ -111,7 +112,7 @@ songData$year <- factor(
 cheeseData <- data.frame(
   strain = as.factor(
     c("None", "None", "A", "A",
-      "B", "B", "(A & B)", "(A & B)")
+      "B", "B", "AB", "AB")
   ),
   acids = c(
     4.195, 4.175, 4.125, 4.735,
@@ -195,16 +196,14 @@ cheeseModel <- aov(
 )
 
 parameters::model_parameters(
-  model = cheeseModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  model = cheeseModel,,
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   knitr::kable(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
+    "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
   caption = "ANOVA Table for Free Amino Acids in Cheese Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -406,8 +405,81 @@ Cohen's *d* and Hedge's *g* are both measures of the distance between the *Sampl
 
 The Probability of Superiority measure the percent of the time a randomly selected member of the first group will have the higher numeric value of the response than a randomly selected member of the second group. Thus, we can say that only 12% of the time we randomly select a cheese given just the A strain will that cheese have more free amino acids than a randomly selected cheese given just the B strain.
 
+# Visualizing Pairwise Comparisons
 
-# Post Hoc for the Nonparametic Shortcut
+When using the parametric shortcuts, you can visualize your pairwise comparisons in a couple of different ways by using the `multcompView` package.
+
+## Connecting Letter Report
+
+The Connecting Letters Report is similar to the Oehlert's Underline diagrams (p. 88). Rather than using lines, we use lowercase letters. If different treatments share the same letter, they are statistically indistinguishable from one other. If they have different letters, then there is a statistical difference between those treatments.
+
+```{r connectLetters, echo=TRUE}
+# Connecting Letters Report
+multcompView::multcompLetters4(
+  object = cheeseModel, # Your aov/lm object
+  comp = hsdPH, # Your stored comparisons
+  threshold = 0.1 # Your Overall Type I Error Rate
+)
+
+```
+
+As you can see from the above raw output, the Connecting Letters report in raw does not look very nice. However, we can improve upon this by joining the Connecting Letters Report with box plots.
+
+\newpage
+## Box Plot + Connecting Letters
+
+```{r boxplotCL, echo=TRUE, fig.cap="Box Plot and Connecting Letters Report for Free Amino Acids in Cheese Study", fig.width=6, fig.height=4}
+# Box plot with connecting letters
+## NOTE: Does not allow you to set a threshold
+multcompView::multcompBoxplot(
+  formula = acids ~ strain,
+  data = cheeseData,
+  compFn = "TukeyHSD",
+  plotList = list(
+    boxplot = list(fig = c(0, 0.85, 0, 1)),
+    multcompLetters = list(
+      fig = c(0.8, 0.9, 0.1, 0.9),
+      fontsize = 12,
+      fontface = "bold"
+    )
+  )
+)
+
+```
+
+Play with the values of `fig = c(x1, x2, y1, y2)` to get the best arrangement for your case.
+
++ `x1` is the start proportion of the horizontal (left edge is 0)
++ `x2` is then end proportion of the horizontal (right edge is 1)
++ `y1` is the start proportion of the vertical (bottom edge is 0)
++ `y2` is the end proportion of the vertical (top edge is 1)
+
+\newpage
+# Putting Things Together--Your Turn
+
+Use the above examples to explore the Song Knowledge study in terms of Post Hoc Analysis. Generate not only which years in school are significantly different from each other, but what are effect sizes and see if you can re-create the following plot.
+
+```{r songBoxLetters, fig.cap="Box Plot and Connecting Letters Report for the Song Knowledge Study", fig.width=6, fig.height=4.5}
+# Your Turn Code------------------------------------
+multcompView::multcompBoxplot(
+  formula = score ~ year,
+  data = songData,
+  compFn = "TukeyHSD",
+  plotList = list(
+    boxplot = list(fig = c(0, 0.85, 0, 1)),
+    multcompLetters = list(
+      fig = c(0.8, 0.9, 0.1, 0.9),
+      fontsize = 12,
+      fontface = "bold"
+    )
+  )
+)
+
+
+```
+
+\newpage
+# EXTRA--Post Hoc for the Nonparametic Shortcut
 
 While there are several routes you can take for Nonparametric Post Hoc analysis, there are not as many as for parametric shortcuts. Further, I'm only going to detail two approaches: Dunn's Test and the DSCF Test.
 
@@ -521,77 +593,6 @@ knitr::kable(
 The Probability of Superiority has the same kind of interpretation as in the parametric shortcut: approximately 74% of the time we randomly select a cheese which got both the A & B strains, this cheese will have more free amino acids than a randomly selected cheese which only got the B strain.
 
 The Hodges-Lehmann Estimate, \(\widehat{\Delta}\), measures the middle difference of all possible pairings between two groups. If we imagine taking all of the cheeses which got both strains (A & B) and all of the cheeses that got just the A strain, we can imagine all of the pairings of one cheese from each group. For each pairing, we can find the difference in free amino acid levels. For these two groups/treatments, half of all the pairings show that the (A & B) group has at least ~1.8 units more free amino acids.
-
-# Visualizing Pairwise Comparisons
-
-When using the parametric shortcuts, you can visualize your pairwise comparisons in a couple of different ways by using the `multcompView` package.
-
-## Connecting Letter Report
-
-The Connecting Letters Report is similar to the Oehlert's Underline diagrams (p. 88). Rather than using lines, we use lowercase letters. If different treatments share the same letter, they are statistically indistinguishable from one other. If they have different letters, then there is a statistical difference between those treatments.
-
-```{r connectLetters, echo=TRUE}
-# Connecting Letters Report
-multcompView::multcompLetters4(
-  object = cheeseModel, # Your aov/lm object
-  comp = hsdPH, # Your stored comparisons
-  threshold = 0.1 # Your Overall Type I Error Rate
-)
-
-```
-
-As you can see from the above raw output, the Connecting Letters report in raw does not look very nice. However, we can improve upon this by joining the Connecting Letters Report with box plots.
-
-## Box Plot + Connecting Letters
-
-```{r boxplotCL, echo=TRUE, fig.cap="Box Plot and Connecting Letters Report for Free Amino Acids in Cheese Study", fig.width=6, fig.height=4}
-# Box plot with connecting letters
-## NOTE: Does not allow you to set a threshold
-multcompView::multcompBoxplot(
-  formula = acids ~ strain,
-  data = cheeseData,
-  compFn = "TukeyHSD",
-  plotList = list(
-    boxplot = list(fig = c(0, 0.85, 0, 1)),
-    multcompLetters = list(
-      fig = c(0.8, 0.9, 0.1, 0.9),
-      fontsize = 12,
-      fontface = "bold"
-    )
-  )
-)
-
-```
-
-Play with the values of `fig = c(x1, x2, y1, y2)` to get the best arrangement for your case.
-
-+ `x1` is the start proportion of the horizontal (left edge is 0)
-+ `x2` is then end proportion of the horizontal (right edge is 1)
-+ `y1` is the start proportion of the vertical (bottom edge is 0)
-+ `y2` is the end proportion of the vertical (top edge is 1)
-
-# Putting Things Together--Your Turn
-
-Use the above examples to explore the Song Knowledge study in terms of Post Hoc Analysis. Generate not only which years in school are significantly different from each other, but what are effect sizes and see if you can re-create the following plot.
-
-```{r songBoxLetters, fig.cap="Box Plot and Connecting Letters Report for the Song Knowledge Study", fig.width=6, fig.height=4.5}
-# Your Turn Code------------------------------------
-multcompView::multcompBoxplot(
-  formula = score ~ year,
-  data = songData,
-  compFn = "TukeyHSD",
-  plotList = list(
-    boxplot = list(fig = c(0, 0.85, 0, 1)),
-    multcompLetters = list(
-      fig = c(0.8, 0.9, 0.1, 0.9),
-      fontsize = 12,
-      fontface = "bold"
-    )
-  )
-)
-
-
-```
 
 
 \newpage
