@@ -1,7 +1,7 @@
 ---
 title: "Contrasts and ANOVA"
 author: "Neil J. Hatfield"
-date: "3/22/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -73,7 +73,7 @@ We will make use of the __Free Amino Acids in Cheese__ (i.e., the Cheese Study; 
 cheeseData <- data.frame(
   strain = as.factor(
     c("None", "None", "A", "A",
-      "B", "B", "(A & B)", "(A & B)")
+      "B", "B", "AB", "AB")
   ),
   acids = c(
     4.195, 4.175, 4.125, 4.735,
@@ -83,7 +83,7 @@ cheeseData <- data.frame(
 
 # Song Knowledge study
 songData <- read.csv(
-file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge2022.csv",
+file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Spring2022.csv",
 header = TRUE,
 sep = ","
 )
@@ -105,13 +105,13 @@ Our first steps for contrasts is to make sure that contrasts are actually warran
 
 > In addition to investigating whether the strain of starting bacteria has an impact on the amount of free amino acids in the cheese, we have two additional research questions. First, we want to know whether having any of the two starter strains leads to a difference in free amino acids as compared to not having either starter strains. Second, we want to also investigate if getting both strains is statistically different from getting one of the two strains.
 
-The above paragraph lays out the statistical research "questions" (in statement form) for two contrasts. The first contrast proposes combining three of the levels of our factor (i.e., A, B, and (A & B)) together and comparing them to the fourth level (i.e., none). The second question has us compare the level of both strains (i.e., (A & B)) against the combination of individual strains (i.e., A and B). (Yes, the wording for this second question is rather close to what we might anticipate for pairwise comparisons.)
+The above paragraph lays out the statistical research "questions" (in statement form) for two contrasts. The first contrast proposes combining three of the levels of our factor (i.e., A, B, and both--AB) together and comparing them to the fourth level (i.e., none). The second question has us compare the level of both strains (i.e., AB) against the combination of individual strains (i.e., A and B). (Yes, the wording for this second question is rather close to what we might anticipate for pairwise comparisons.)
 
 As an example for an algebraic form of the hypotheses for contrasts, consider the following for the first Cheese study contrasts:
 
 \begin{align*}
-H_0:\;\;\frac{\mu_A+\mu_B+\mu_{(A\text{\&} B)}}{3} &=\mu_{N}\\
-H_1:\;\;\frac{\mu_A+\mu_B+\mu_{(A\text{\&} B)}}{3} &\neq\mu_{N}
+H_0:\;\;\frac{\mu_A+\mu_B+\mu_{AB}}{3} &=\mu_{N}\\
+H_1:\;\;\frac{\mu_A+\mu_B+\mu_{AB}}{3} &\neq\mu_{N}
 \end{align*}
 
 
@@ -149,15 +149,13 @@ cheeseModel <- aov(
 
 parameters::model_parameters(
   model = cheeseModel,
-  omega_squared = "raw",
-  eta_squared = "raw",
-  epsilon_squared = "raw"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   knitr::kable(
   digits = 4,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
-    "Omega Sq.", "Eta Sq.", "Epslion Sq."), 
+    "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
   caption = "ANOVA Table for Free Amino Acids in Cheese Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
@@ -183,9 +181,9 @@ levels(cheeseData$strain)
 
 ```
 
-The output tells us that our contrasts will need to be in the order ((A & B), A, B, None). 
+The output tells us that our contrasts will need to be in the order (A, AB, B, None). 
 
-You must always check the ordering that the software is using. Suppose that we didn't use parentheses around "A & B". The ordering would then be (A, A & B, B, None). Any changes you make to the names of the levels will impact the ordering.
+You must always check the ordering that the software is using. Suppose that we used "(A & B)" instead of "AB" for both strains together. The ordering would then be ((A & B), A, B, None). Any changes you make to the names of the levels will impact the ordering.
 
 ## Save the Weights
 
@@ -194,7 +192,7 @@ Now that we know the order of the factor levels, we can create contrasts by savi
 ```{r exContrasts, echo=TRUE}
 # Demo code to save the contrasts weights as vectors
 c1 <- c(1/3, 1/3, 1/3, -1)
-c2 <- c(1, -1/2, -1/2, 0)
+c2 <- c(-1/2, 1, -1/2, 0)
 
 ```
 
@@ -296,8 +294,8 @@ contrastOut <- summary(
   object = cheeseContrasts,
   split = list( # Apply meaningful labels to your contrasts here
     strain = list(
-      "(A&B), A, and B vs. None" = 1,
-      "(A&B) vs. A or B" = 2
+      "AB, A, and B vs. None" = 1,
+      "AB vs. A or B" = 2
     )
   )
 )
