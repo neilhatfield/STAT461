@@ -1,7 +1,7 @@
 ---
 title: "ANOVA Models with a Block"
 author: "Neil J. Hatfield"
-date: "4/5/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
@@ -90,7 +90,7 @@ In this context, we were using sex (dichotomous; Female, Not Female) as a block 
 # Demo code for loading data
 ## Estimation Errors data
 estimationData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/estimationErrors2022.csv",
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/estimationErrors_Fall2022.csv",
   header = TRUE,
   sep = ","
 )
@@ -99,7 +99,7 @@ estimationData <- read.table(
 ### I'm choosing to impose a particular order
 estimationData$Method <- factor(
   x = estimationData$Method,
-  levels = c("Visual", "Tool", "Training")
+  levels = c("Visual", "Tool Only", "Tool and Training")
 )
 
 ## Set the block as a "factor"
@@ -125,7 +125,7 @@ Just as in Unit 3, we can use a Hasse diagram to help us out.
 
 ```{r hasseErrors, fig.cap="Hasse Diagram for Estimation Errors Study", fig.height=2}
 # Demo Code for Hasse diagram for Estimation Errors
-modelLabels <- c("1 Estimate Height 1", "2 Sex 1", "3 Method 2", "24 (Participants) 20")
+modelLabels <- c("1 Estimate Height 1", "2 Sex 1", "3 Method 2", "16 (Participants) 12")
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
            FALSE, TRUE, TRUE, TRUE, FALSE),
@@ -239,20 +239,10 @@ In terms of assumptions, we still have our core three: Gaussian Residuals, Homos
 
 Just as before we will make use of QQ Plots.
 
-```{r gaussian, fig.cap="QQ Plots", fig.subcap=c("Estimation Errors Study", "Farming Barley Study"), fig.ncol=2, out.width="50%", echo=TRUE}
+```{r gaussian, fig.cap="QQ Plots", fig.subcap=c("Farming Barley Study", "Estimation Errors Study"), fig.ncol=2, out.width="50%", echo=TRUE}
 # Chunk options for side-by-side
-### fig.subcap=c("Estimation Errors Study", "Farming Barley Study"), fig.ncol=2,
+### fig.subcap=c("Farming Barley Study", "Estimation Errors Study"), fig.ncol=2,
 ### out.width="50%"
-
-# QQ Plot for Estimation Model Residuals
-car::qqPlot(
-  x = residuals(estimationModel), 
-  distribution = "norm",
-  envelope = 0.90,
-  id = FALSE,
-  pch = 20,
-  ylab = "Residuals (ft)"
-)
 
 # QQ Plot for Barley Model Residuals
 car::qqPlot(
@@ -264,23 +254,9 @@ car::qqPlot(
   ylab = "Residuals (BPA)"
 )
 
-```
-
-For the Farming Barley study, we have two of 16 residuals beyond the envelope or 12.5%. Given the balanced design, we will proceed with saying that this assumption has been satisfied for the Farming Barley study. 
-
-We have a bigger issue for the Estimation Errors study--we have potential outlier that may be highly influential. Participant 14 gave an estimate of `r round(estimationData[14, 3], 2)` feet; this is several orders of magnitude (~15) beyond all other observations. Let's look at this model without this participant:
-
-```{r dropObs, echo=TRUE, fig.cap="Updated QQ Plot for Estimation Errors Study", fig.width=4, fig.height=3.25, fig.pos="H"}
-# Demo code for dropping single observation
-## Estimation Errors Study
-newEstModel <- aov(
-  formula = Estimate ~ Sex + Method,
-  data = estimationData[-14,] #drops row 14
-)
-
-par(mar = c(4, 4, 1, 1)) # Adjusting margins for aesthetics
+# QQ Plot for Estimation Model Residuals
 car::qqPlot(
-  x = residuals(newEstModel), 
+  x = residuals(estimationModel), 
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
@@ -290,7 +266,9 @@ car::qqPlot(
 
 ```
 
-In Figure \ref{fig:dropObs}, we can see that we now have about four observations outside the envelope of 23 total. This is approximately 17%. We will want to cautiously proceed with the Gaussian assumption given our near balanced design.
+For the Farming Barley study, we have two of 16 residuals beyond the envelope or 12.5%. Given the balanced design, we will proceed with saying that this assumption has been satisfied for the Farming Barley study. 
+
+For the Estimation Errors study our residuals appear to follow a Gaussian distribution.
 
 ## Assessing Homoscedasticity
 
@@ -331,9 +309,9 @@ ggplot(
 
 ### Estimation Errors
 
-Figure \ref{fig:estimationVar} highlights the continued impact of the one extreme potential outlier. On the left, we can see that this one point causes all other senses of variation become obscured. While the smoothed line is fairly flat, I am concerned about the megaphone pattern that appears in the right panel. I question whether we satisfy the Homoscedasticity assumption for the Estimation Errors Study.
+Figure \ref{fig:estimationVar} is the Tukey-Anscombe plot for our Estimation Errors study. While the smoother line (solid blue) is flat, I do see an increase in the variation towards the right-hand side (fitted values at or above 110 ft). This might be the result of a potential outlier. We will want to thoroughly explore our data to better understand what might be happening.
 
-```{r estimationVar, fig.cap="Tukey-Anscombe Plots for Estimation Errors Study", fig.subcap=c("Full Data Set", "Dropping Extreme Potential Outlier"), fig.ncol=2, out.width="50%", echo=TRUE}
+```{r estimationVar, fig.cap="Tukey-Anscombe Plots for Estimation Errors Study", fig.height=3, echo=TRUE}
 # Demo code for making Tukey-Anscombe plot
 ## Estimation Errors Study--All Observations
 ggplot(
@@ -360,30 +338,6 @@ ggplot(
   xlab("Fitted values (ft)") +
   ylab("Residuals (ft)")
 
-## Estimation Errors Study--Drop Extreme Potential Outlier
-ggplot(
-  data = data.frame(
-    residuals = residuals(newEstModel),
-    fitted = fitted.values(newEstModel)
-  ),
-  mapping = aes(x = fitted, y = residuals)
-) +
-  geom_point(size = 2) +
-  geom_hline(
-    yintercept = 0,
-    linetype = "dashed",
-    color = "grey50"
-  ) +
-  geom_smooth(
-    formula = y ~ x,
-    method = stats::loess,
-    method.args = list(degree = 1),
-    se = FALSE,
-    size = 0.5
-  ) +
-  theme_bw() +
-  xlab("Fitted values (ft)") +
-  ylab("Residuals (ft)")
 
 ```
 
@@ -453,7 +407,7 @@ While at first glance, there appears to be a pattern to the response (Figure \re
 
 ## Assessing Interaction
 
-The last aspect we need to check is whether there is an interaction between our block and our factor. If there is an interaction, then our model (response = factor + block) is not valid. We will make an interaction plot to assess this issue.
+The last aspect we need to check is whether there is a worrisome interaction between our block and our factor. If there is such an interaction, then our model (response = factor + block) is not valid. We will make an interaction plot to assess this issue.
 
 For an interaction plot, we will plot the values of the *Sample Arithmetic Mean* across all combinations of blocks and factors look for consistency in performance. If there is no interaction, then we should see consistent behaviors (essentially parallel lines). If there is interaction, then we should switches in behavior such as non-parallel lines moving in opposite directions.
 
@@ -489,9 +443,9 @@ In the interaction plot (Figure \ref{fig:barleyInteraction}), we see essentially
 
 ### Estimation Errors Study
 
-For the Estimation Errors study, we're going to look at two interaction plots: one involving the full data set (Figure \ref{fig:fullEstInteraction}) and one dropping the extreme potential outlier (Figure \ref{fig:estimationInt}).
+For the Estimation Errors study, we can examine Figure \ref{fig:EstInteraction}.
 
-```{r fullEstInteraction, fig.cap="Interaction Plot for Full Estimation Errors Study", fig.height=3, fig.width=5, echo=TRUE, fig.pos="H"}
+```{r EstInteraction, fig.cap="Interaction Plot for Estimation Errors Study", fig.height=3, fig.width=5, echo=TRUE, fig.pos="H"}
 # Demo code for an interaction plot
 # Interaction Plot for Sex and Method
 ggplot2::ggplot(
@@ -517,49 +471,21 @@ ggplot2::ggplot(
 
 ```
 
-Again, we can see the impact of our extreme potential outlier. Visually, the outlier suggests in Figure \ref{fig:fullEstInteraction} that we have an interaction between Sex and Method: for the female group we have a huge spike as we move through the methods while for the not female group we're fairly level. 
-
-If we remove this extreme potential outlier, we can see a different story altogether. Figure \ref{fig:estimationInt} shows that there does not appear to be any interaction between our block (sex) and our factor (estimation method).
-
-```{r estimationInt, fig.cap="Interaction Plot for Reduced Estimation Errors Study", fig.height=3, fig.width=5, echo=TRUE, fig.pos="H"}
-# Demo code for an interaction plot
-# Interaction Plot for Sex and Method
-ggplot2::ggplot(
-  data = estimationData[-14,],
-  mapping = aes(
-    x = Method,
-    y = Estimate,
-    color = Sex,
-    shape = Sex,
-    linetype = Sex,
-    group = Sex
-  )
-) +
-  stat_summary(fun = "mean", geom = "point") +
-  stat_summary(fun = "mean", geom = "line") +
-  ggplot2::theme_bw() +
-  xlab("Estimation Method") +
-  ylab("Estimate (ft)") +
-  labs(color = "Sex") +
-  theme(
-    legend.position = "right"
-  )
-
-```
+We can see in Figure \ref{fig:EstInteraction} that we have similar patterns of behavior as we look across levels of both our block and our factor.
 
 ## Assumption Decisions
 
 For the Farming Barley study, I'm going to say that all four of the assumptions are satisfied.
 
-For the Estimation Errors study, our assumptions are NOT satisfied. We have an extreme potential outlier as well as concerns to both the Gaussian and Homoscedasticity Assumptions. I'm going to propose that we fit a new model where we drop the extreme outlier and transform the data. 
+For the most part, our data appear to satisfy the assumptions. However, before we make our final determination, we might want to explore whether we have any potential outliers that might be driving the concern we saw in the Tukey-Anscombe plot for assessing homoscedasticity.
 
-### Your Turn--Transform the Estimation Data
+### Your Turn--Explore the Estimation Error Data
 
-Decide for yourself how best to transform the Estimation Errors data. Then re-check the assumptions.
+Decide whether there are any potential outliers that we might need to handle and then how to handle them. If you opt to remove or change any observations, re-check all of the assumptions.
 
 # Results
 
-For the Results portion of this guide/tutorial, I'm going to focus on the Farming Barley study. I'll leave the transformed version of the Estimation Errors study to you as an exercise.
+For the Results portion of this guide/tutorial, I'm going to focus on the Farming Barley study. I'll leave the Estimation Errors study to you as an exercise.
 
 Remember, for any results section for a parametric shortcut, we have several parts: the omnibus tests and effect sizes, point estimates, and Post Hoc (pairwise and/or contrasts).
 
@@ -573,21 +499,19 @@ We generate our omnibus results *almost* exactly like we would for a one-way ANO
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
     model = barleyModel,
-    omega_squared = "partial",
-    eta_squared = "partial",
-    epsilon_squared = "partial"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   knitr::kable(
     digits = 4,
   col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
   caption = "ANOVA Table for Barley Crop Yield Study",
   align = c('l',rep('c',8)),
   booktab = TRUE
 ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    font_size = 10,
+    font_size = 12,
     latex_options = c("scale_down", "HOLD_position")
   )
 
