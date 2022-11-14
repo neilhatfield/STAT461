@@ -1,7 +1,7 @@
 ---
 title: "Factorial Models"
 author: "Neil J. Hatfield"
-date: "4/15/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -91,45 +91,23 @@ This data comes from the design that we put together in class to explore the imp
 # Demo code for loading and cleaning data
 ## Loading gummy bear data
 catapultData <- openxlsx::readWorkbook(
-  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears2022.xlsx",
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Fall2022.xlsx",
   sheet = 1,
   colNames = TRUE,
   rowNames = FALSE
 )
 
-## Change variables
-names(catapultData)[which(names(catapultData) == "Launch.Angle")] <- "Angle"
-names(catapultData)[which(names(catapultData) == "Launch.Position")] <- "Position"
-names(catapultData)[which(names(catapultData) == "Measurement.Order")] <- "Order"
+# Set the Factors 
+catapultData$angle <- factor(
+  x = catapultData$angle,
+  levels = c("flat", "low", "high") # Setting a specific order to levels
+)
 
-## Fix the data
-## R will treat high and High as TWO separate levels
-## Same with low & Low, back & Back, and front & Front
-catapultData <- catapultData %>%
-  dplyr::mutate(
-    Angle = dplyr::recode_factor(
-      Angle,
-      "high" = "High", # Old Value = New Value
-      "High" = "High",
-      "low" = "Low",
-      "Low" = "Low"
-    ),
-    Position = dplyr::recode_factor(
-      Position,
-      "back" = "Back",
-      "Back" = "Back",
-      "front" = "Front",
-      "Front" = "Front"
-    ),
-    Team = dplyr::case_when(
-      Team == "Team 6" ~ Team,
-      TRUE ~ paste("Team", Team)
-    )
-  )
+catapultData$position <- as.factor(catapultData$position) # Order doesn't matter
 
 ```
 
-Notice that I used a couple of functions from `dplyr` to help me clean and take control of the data. The `mutate` function allows you to change an entire column of a data frame in a consistent and relatively speedy way. The `recode_factor` function combines two things: alter values for consistency AND tell `R` to treat the attribute as a factor. Note: the order you list the new values will be the order `R` uses for the factor levels.
+Notice that I used both `factor` and `as.factor`. The `as.factor` function makes use of the values that exist in the column and organizes the levels alphabetically. This works well for the launch position. For the launch angle factor, I wanted the levels to reflect the increasing magnitude of the angle, thus, I used the `factor` function's `levels` argument to specify the order. The risk here is if your entries to `levels` don't exactly match what is in your data, you'll have observations get dropped.
 
 ### Omnibus SRQs and Hypotheses
 
@@ -183,6 +161,8 @@ batteryData$material <- dplyr::recode_factor(
 
 ```
 
+For the Battery Manufacturing data I made use of the `recode_factor` function from the `dplyr` package. This allowed me not only transform/clean the reported values but also simultaneously tell R to treat the attribute as a factor.
+
 ### Your Turn
 
 Write SRQs and hypotheses for the Battery Manufacturing study.
@@ -209,21 +189,26 @@ boxplot(
 
 While this box plot is okay to look at, we could improve this plot greatly for professional work. The easiest method would be to use `ggplot2`.
 
-```{r boxplots2, echo=TRUE, fig.cap="Box Plot With Multiple Factors--Gummy Bears Study", fig.width=6, fig.height=3, fig.pos="H"}
+```{r boxplots2, echo=TRUE}
+#| fig.cap="Box Plot With Multiple Factors--Gummy Bears Study",
+#| fig.width=6,
+#| fig.height=3,
+#| fig.pos="H"
+#| 
 # Demo code of box plots incorporating factorial treatment structure
 ## ggplot2 and Gummy Bears Study
 ggplot(
   data = catapultData,
   mapping = aes(
-    x = Angle,
-    y = Distance,
-    fill = Position
+    x = angle,
+    y = distance,
+    fill = position
   )
 ) +
   geom_boxplot() +
   theme_bw() +
   xlab("Launch Angle") +
-  ylab("Distance (in)") +
+  ylab("Distance (cm)") +
   labs(
     fill = "Launch Position"
   ) +
@@ -242,9 +227,8 @@ In addition to data visualizations, we also may make use of descriptive/incisive
 # Demo code for descriptive statistics for factorial treatment structure
 ## Battery Manufacturing 
 batteryStats <- psych::describeBy(
-  x = batteryData$life,
-  # Notice how we're getting the factorial treatments
-  group = paste(batteryData$temperature, batteryData$material, sep = " x "),
+  life ~ temperature + material, # Notice that we use the + as an "AND"
+  data = batteryData,
   na.rm = TRUE,
   skew = TRUE,
   ranges = TRUE,
@@ -256,19 +240,17 @@ batteryStats <- psych::describeBy(
 
 batteryStats %>%
   tibble::remove_rownames() %>%
-  tibble::column_to_rownames(
-    var = "group1"
-  ) %>%
   dplyr::select(
-    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+    group1, group2, n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
   ) %>%
   knitr::kable(
     caption = "Summary Statistics for Battery Life Spans",
     digits = 3,
     format.args = list(big.mark = ","),
-    align = rep('c', 11),
-    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD",
-                  "Sample Skew","Sample Ex. Kurtosis"),
+    align = rep(c("l", "c"), times = c(2, 11)),
+    col.names = c("Temperature", "Material", "n", "Min", "Q1", "Median",
+                  "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
+                  "Sample Ex. Kurtosis"),
     booktabs = TRUE
   )  %>%
   kableExtra::kable_styling(
@@ -278,33 +260,35 @@ batteryStats %>%
 
 ```
 
-If you are using `dplyr`'s `summarize` function, you can achieve similar results by first calling `group_by` and then listing all of your factors. In this case we would want `dplyr::group_by(temperature, material)`.
+If you are using `dplyr`'s `summarize` function, you can achieve similar results by first calling `group_by` and then listing all of your factors. In this case we would want `dplyr::group_by(temperature, material)`. The following example is for the gummy bears data.
 
 ```{r descStatsGummyBears, echo=TRUE}
 # Demo code for descriptive statistics for factorial treatment structure
 ## Gummy Bears 
 catapultData %>%
-  dplyr::group_by(Angle, Position) %>%
+  dplyr::group_by(angle, position) %>%
   summarize(
     n = n(),
-    min = min(Distance),
-    Q1 = quantile(Distance, probs = c(0.25)),
-    med = median(Distance),
-    Q3 = quantile(Distance, probs = c(0.75)),
-    max = max(Distance),
-    mad = mad(Distance),
-    sam = mean(Distance),
-    sd = sd(Distance),
-    skew = psych::skew(Distance),
-    kurtosis = psych::kurtosi(Distance)
+    min = min(distance),
+    Q1 = quantile(distance, probs = c(0.25)),
+    med = median(distance),
+    Q3 = quantile(distance, probs = c(0.75)),
+    max = max(distance),
+    mad = mad(distance),
+    sam = mean(distance),
+    sd = sd(distance),
+    skew = psych::skew(distance),
+    kurtosis = psych::kurtosi(distance),
+    .groups = "drop"
   ) %>%
   knitr::kable(
     caption = "Summary Statistics for Gummy Bear Study",
     digits = 3,
     format.args = list(big.mark = ","),
     align = rep('c', 13),
-    col.names = c("Angle", "Position", "n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
-                  "SAM", "SASD", "Sample Skew","Sample Ex. Kurtosis"),
+    col.names = c("Angle", "Position", "n", "Min", "Q1", "Median", "Q3",
+                  "Max", "MAD", "SAM", "SASD", "Sample Skew",
+                  "Sample Ex. Kurtosis"),
     booktabs = TRUE
   )  %>%
   kableExtra::kable_styling(
@@ -367,7 +351,12 @@ There are several ways that we can look at interaction plots. In the guide/tutor
 
 The function `interaction.plot` is part of the basic setup of `R` (included in the default `stats` package). This function allows us to explore the interaction between __TWO__ factors at a time. This does mean that if you want to try to explore a three-way interaction, this method won't work. 
 
-```{r batteryInt1, fig.cap="Interaction Plot using base R", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
+```{r batteryInt1, echo=TRUE}
+#| fig.cap = "Interaction Plot using base R",
+#| fig.width = 6.5, 
+#| fig.height = 3.25,
+#| fig.pos="H"
+#| 
 # Demo code for using base R to create an interaction plot
 ## Battery Manufacturing Study
 interaction.plot(
@@ -404,20 +393,20 @@ In the following example, I'm going to create an interaction plot for launch ang
 ggplot(
   data = catapultData,
   mapping = aes(
-    x = Angle,
-    y = Distance,
-    shape = Position,
-    color = Position,
-    linetype = Position,
-    group = Position
+    x = angle,
+    y = distance,
+    shape = position,
+    color = position,
+    linetype = position,
+    group = position
   )
 ) +
   stat_summary(fun = "mean", geom = "point", size = 3) +
-  stat_summary(fun = "mean", geom = "line", size = 1) +
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) +
   geom_jitter(width = 0.1, height = 0.1, alpha = 0.25, size = 1) +
   ggplot2::theme_bw() +
   xlab("Launch Angle") +
-  ylab("Distance (in)") +
+  ylab("Distance (cm)") +
   labs(
     color = "Launch Position",
     shape = "Launch Position",
@@ -461,7 +450,7 @@ batteryModel <- aov(
 
 ## Letting R handle the expansion--Gummy Bears Study
 catapultModel <- aov(
-  formula = Distance ~ Angle*Position,
+  formula = distance ~ angle*position,
   data = catapultData
 )
 
@@ -476,7 +465,11 @@ For the parametric shortcut for factorial designs (the ANVOA *F* test), we have 
 
 Use a QQ plot like usual:
 
-```{r residualQQ, fig.cap="QQ Plot for Residuals in Battery Manufacturing Study", fig.width=5, fig.height=3.5, echo=TRUE, fig.pos="H"}
+```{r residualQQ, echo=TRUE}
+#| fig.cap="QQ Plot for Residuals in Battery Manufacturing Study",
+#| fig.width=5,
+#| fig.height=3.5,
+#| fig.pos="H"
 # Demo code for QQ plot
 # Battery Manufacturing
 car::qqPlot(
@@ -500,8 +493,13 @@ Build a QQ plot and write accompanying text for assessing the Gaussian Residuals
 
 Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Anscombe plot rather than a strip chart for our factorial designs.
 
-```{r batteryVar, fig.cap="Tukey-Anscombe Plot for Battery Manufacturing Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+```{r batteryVar, echo=TRUE}
+#| fig.cap="Tukey-Anscombe Plot for Battery Manufacturing Study",
+#| fig.width=4,
+#| fig.height=3,
+#| fig.pos="H"
 
+## Tukey-Anscombe Plot for Battery Study
 ggplot(
   data = data.frame(
     residuals = residuals(batteryModel),
@@ -520,7 +518,7 @@ ggplot(
     method = stats::loess,
     method.args = list(degree = 1),
     se = FALSE,
-    size = 0.5
+    linewidth = 0.5
   ) +
   theme_bw() +
   xlab("Fitted values (hours)") +
@@ -548,32 +546,31 @@ In this particular case, we know that the the application of plate material was 
 
 We do know measurement order for the Gummy Bears study...except that there is one slight wrinkle. We have 12 different "first" gummy bears launched and measured. To explore whether we have any violation of the Independence of Observations, we are going to need to think through the study design and make use of the measurement order.
 
-What do we know about how the study was designed? Quite a bit, after all, we designed the study! We will take the 300 gummy bears as constituting a random sample from the population of gummy bears created by the manufacturer. While not a rigorous random process, Neil did draw individual gummy bears from a central stock pile to separate them into 12 groups of 25. We also know that we randomly assigned the treatments to catapult teams (our experimental units) and they arbitrarily took one of the bags of gummy bears. Taken together, we might take these facts as suggesting that we have independent observations __*up to the point the catapult teams took possession of the baggies of gummy bears*__.
-
-I happen to know that at least one group did not use all 25 gummy bears; rather they used a couple of gummy bears and repeated launched and measured them. This is a threat to Independence of Observations. To explore, we will look at index plots...broken out by each experimental unit (catapult teams).
+What do we know about how the study was designed? Quite a bit, after all, we designed the study! We will take the 240 gummy bears as constituting a random sample from the population of gummy bears created by the manufacturer. While not a rigorous random process, Neil did draw individual gummy bears from a central stock pile to separate them into 12 groups of 20. We also know that we randomly assigned the treatments to catapult teams (our experimental units) and they arbitrarily took one of the bags of gummy bears. Taken together, we might take these facts as suggesting that we have independent observations __*up to the point the catapult teams took possession of the baggies of gummy bears*__.
 
 ```{r gummyBearsIO, fig.cap="Index Plots for Gummy Bear Study", fig.width=7, fig.height=4, echo=TRUE}
 ggplot(
   data = catapultData,
   mapping = aes(
-    x = Order,
-    y = Distance
+    x = order,
+    y = distance
   )
 ) +
   geom_point(size = 0.5) +
   geom_line() +
   theme_bw() +
   xlab("Measurement order") +
-  ylab("Distance (in)") +
+  ylab("Distance (cm)") +
   facet_wrap(
-    . ~ Team
+    facets = vars(experimentalUnit),
+    scales = "fixed"
   )
 
 ```
 
-Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams. I am going to leave to you the challenge of getting `R` to place the facets in the order Team 1, Team 2, Team 3, etc. instead of what currently appears.
+Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams. I am going to leave to you the challenge of getting `R` to place the facets in the order Group 1, Group 2, Group 3, etc. instead of what currently appears.
 
-When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The two plots I'm most concerned about are Team 4, Team 8, and Team 9. In Team 4's plot, we have a run of increasing distances from launch 19 through launch 24. For Team 8, they reached a point where a general upward trend shows up starting launch 12; similarly for Team 9 around launch 11. I suspect that in these cases, the team got into a "groove" or rhythm. While in some circumstances this might be more problematic, given our context, we'll survive.
+When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The plots I'm most concerned about are from Groups 4 and 8. For both of these groups there appears to be a decreasing trend in how far the gummy bears flew as they carried out their trials. 
 
 ## Recapping Assumptions
 
@@ -590,13 +587,11 @@ For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ desi
 ```{r batteryTable, echo=TRUE}
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
-    model = batteryModel,
-    omega_squared = "partial", # Notice the use of partial
-    eta_squared = "partial",
-    epsilon_squared = "partial",
-    type = 1, # Use 1, 2, or 3 for the Type of SSQs you want
-    drop = "(Intercept)", # Drop an unneeded row for ANOVA
-    verbose = FALSE # Makes the function "quiet"
+  model = batteryModel,
+  effectsize_type = c("eta", "omega", "epsilon"),
+  type = 1, # Use 1, 2, or 3 for the Type of SSQs you want
+  drop = "(Intercept)", # Drop an unneeded row for ANOVA
+  verbose = FALSE # Makes the function "quiet"
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -655,7 +650,7 @@ names(pointEst) <- c(
 data.frame("Estimate" = pointEst) %>%
   knitr::kable(
   digits = 2,
-  caption = "Point Estimates from the Song Knowledge Study",
+  caption = "Point Estimates from the Battery Manufacturing Study",
   booktabs = TRUE,
   align = "c"
   ) %>%
@@ -859,7 +854,7 @@ For all of these we can use the `type` argument of the `model_parameters` functi
 
 ## Quick Example
 
-For this example, I'm going to use a data set on different training methods' (fixed, 2 levels) and engery drink's (fixed, 2 levels) impacts on the time to run around a particular track.
+For this example, I'm going to use a data set collected for the purpose of exploring the effects of different training methods (fixed, 2 levels) and energy drinks (fixed, 2 levels) on the time to run around a particular track.
 
 Look at how the various values change across the tables.
 
@@ -886,13 +881,11 @@ runningModel <- aov(
 # Demo Code
 # Type I SSQs
 parameters::model_parameters(
-    model = runningModel,
-    omega_squared = "partial", 
-    eta_squared = "partial",
-    epsilon_squared = "partial",
-    type = 1, # Type I SSQs
-    drop = "(Intercept)", 
-    verbose = FALSE 
+  model = runningModel,
+  effectsize_type = c("eta", "omega", "epsilon"),
+  type = 1, # Type I SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -903,12 +896,13 @@ parameters::model_parameters(
   ) %>%
   knitr::kable(
     digits = 4,
-  col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
-  caption = "ANOVA Table for Running-Type I SSQs",
-  align = c('l',rep('c',8)),
-  booktab = TRUE
-) %>%
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
+    caption = "ANOVA Table for Running-Type I SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -921,13 +915,11 @@ parameters::model_parameters(
 # Demo Code
 # Type II SSQs
 parameters::model_parameters(
-    model = runningModel,
-    omega_squared = "partial", 
-    eta_squared = "partial",
-    epsilon_squared = "partial",
-    type = 2, # Type II SSQs
-    drop = "(Intercept)", 
-    verbose = FALSE 
+  model = runningModel,
+  effectsize_type = c("eta", "omega", "epsilon"),
+  type = 2, # Type II SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -939,7 +931,8 @@ parameters::model_parameters(
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
     caption = "ANOVA Table for Running-Type II SSQs",
     align = c('l',rep('c',8)),
     booktab = TRUE
@@ -957,9 +950,7 @@ parameters::model_parameters(
 # Type III SSQs
 parameters::model_parameters(
   model = runningModel,
-  omega_squared = "partial", 
-  eta_squared = "partial",
-  epsilon_squared = "partial",
+  effectsize_type = c("eta", "omega", "epsilon"),
   type = 3, # Type III SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
@@ -974,7 +965,8 @@ parameters::model_parameters(
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
     caption = "ANOVA Table for Running-Type III SSQs",
     align = c('l',rep('c',8)),
     booktab = TRUE
@@ -988,7 +980,7 @@ parameters::model_parameters(
 
 ```
 
-
+Notice how the various corresponding values in Tables \ref{tab:runningType1}, \ref{tab:runningType2}, and \ref{tab:runningType3} change for our main effects (training method and drink type). While in this example we would be hard pressed to make different decisions about statistical significance, this will not always be the case. There are situations out there where you'll end up making different decisions based upon which type of Sums of Squares you use. Thus, you want to think carefully about what is most appropriate in your current context.
 
 \newpage
 
