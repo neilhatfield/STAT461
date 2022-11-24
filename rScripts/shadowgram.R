@@ -44,7 +44,7 @@ shadowgram <- function(dataVec, label = NULL, layers = 50,
   for (i in 1:layers) {
     basePlot <- basePlot +
       geom_density(
-        size = 0,
+        linewidth = 0,
         adjust = adj$adjustments[i],
         fill = color,
         alpha = adj$alpha[i],
