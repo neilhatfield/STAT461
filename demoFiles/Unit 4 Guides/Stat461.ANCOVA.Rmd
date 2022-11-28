@@ -1,7 +1,7 @@
 ---
 title: "ANCOVA"
 author: "Neil J. Hatfield"
-date: "4/19/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
@@ -316,7 +316,7 @@ There are two ways that we can assess this assumption: looking at how well a plo
 
 ### Plot
 
-One route we can take is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used. This is similar to what we did to check for the linear relationship between the response and the covariate. However, there are two distinct differences. First, we're going to explicitly include the factor (type of keyboard) to our plot. Second, we're going to impose three regression lines--one for each kind of keyboard--that only differ in their intercepts. If these lines appear to match up with the data reasonably well, we can be conveniced that we have homogeneity of slopes. If they do not, then we might need to re-think this assumption.
+One route we can take is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used. This is similar to what we did to check for the linear relationship between the response and the covariate. However, there are two distinct differences. First, we're going to explicitly include the factor (type of keyboard) to our plot. Second, we're going to impose three regression lines--one for each kind of keyboard--that only differ in their intercepts. If these lines appear to match up with the data reasonably well, we can be convinced that we have homogeneity of slopes. If they do not, then we might need to re-think this assumption and potentially fit a different ANCOVA model (see the final section of this guide).
 
 ```{r interactionPlot, fig.cap="Homogeneity of Slopes", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
 # Demo Code for Assessing Homogeneity of Slopes
@@ -416,7 +416,7 @@ ggplot(
     method = stats::loess,
     method.args = list(degree = 1),
     se = FALSE,
-    size = 0.5
+    linewidth = 0.5
   ) +
   theme_bw() +
   xlab("Fitted values (hours)") +
@@ -487,9 +487,7 @@ In this particular situation, we have a __balanced__ design, thus we do not need
 # Omnibus Test/Modern ANOVA Table
 parameters::model_parameters(
   model = keyboardModel,
-  omega_squared = "partial",
-  eta_squared = "partial",
-  epsilon_squared = "partial"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   dplyr::mutate( #Fixing the Parameter (Source) Column's values
     Parameter = dplyr::case_when(
@@ -508,7 +506,7 @@ parameters::model_parameters(
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
     caption = "ANOVA Table for Keyboarding Study",
     align = c('l',rep('c',8)),
     booktab = TRUE
