@@ -11,6 +11,11 @@ header-includes:
 bibliography: references.bib
 csl: american-statistical-association.csl
 ---
+<!--IMPORTANT NOTE: 
+To ensure that you can knit this RMD file on your local machine, you'll need to ensure that you have all additional files saved to the same directory/folder as this RMD. The additional files are spoonapult.jpg, finalSetup.jpg, references.bib, and american-statistical-association.csl
+
+These file may be found on GitHub for download at https://github.com/neilhatfield/STAT461/tree/master/writingReports
+--->
 
 ```{r setup, include=FALSE}
 # Setting Document Options ----
@@ -75,7 +80,7 @@ To answer these research questions, we designed an experiment to explore the imp
 
 ```{r spoonapult}
 #| fig.cap = "A Spoonapult",
-#| out.width = "25%",
+#| out.width = "35%",
 #| fig.pos = "H"
 
 # Import picture of the spoonapult ----
@@ -121,7 +126,7 @@ knitr::include_graphics("finalSetup.jpg")
 
 ```
 
-The class decided that each group should use five gummy bears as practice runs to get down their process. The class voted to measure from directly below the bowl of each spoon to where the gummy bear came to rest in centimeters. Once they had completed their practice shots, they then measured the distances of twenty gummy bears. (The gummy bears were selected via cluster sampling from a randomly selected bag of gummy bears.) Each group recorded their own data and submitted their data files to Dr. Hatfield. Dr. Hatfield then merged the data files into one. Data are freely available on Dr. Hatfield's [GitHub repository](https://github.com/neilhatfield/STAT461/blob/master/dataFiles/gummyBears_Fall2022.xlsx) for Stat 461 [@hatfield2022].
+The class decided that each group should use five gummy bears as practice runs to get down their process. The class voted to measure from directly below the bowl of each spoon to where the gummy bear came to rest in centimeters. Once they had completed their practice shots, they then measured the distances of twenty gummy bears. (The gummy bears were selected via cluster sampling from a randomly selected bag of gummy bears.) Each group recorded their own data and submitted their data files to Dr. Hatfield. Dr. Hatfield then merged the data files into one [@hatfield2022]. Data are freely available on Dr. Hatfield's [GitHub repository](https://github.com/neilhatfield/STAT461/blob/master/dataFiles/gummyBears_Fall2022.xlsx) for Stat 461.
 
 We will note here that we've used individual gummy bears as measurement units while the twelve groups as experimental units. Dr. Hatfield chose this set up to minimize the risk that each team might introduce confounding by having to switch (or not) their catapult setups for each individual gummy bear.
 
@@ -526,7 +531,8 @@ as.data.frame(
   dplyr::select(contrast, position, effect.size, ps) %>%
   knitr::kable(
     digits = 3,
-    col.names = c("Comparison", "Launch Position", "Cohen's d", "Probability of Superiority"),
+    col.names = c("Comparison", "Launch Position",
+                  "Cohen's d", "Probability of Superiority"),
     align = "lccc",
     caption = "Effect Sizes for Launch Angle Given Launch Position",
     booktab = TRUE
@@ -655,8 +661,6 @@ Several of these limitations can be addressed in future work. For instance, we c
 
 ::: {#refs}
 :::
-
-\newpage
 
 # Author Contributions
 
