@@ -260,8 +260,9 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
 
 # Sphericity Plot ----
 ## Make a plot of pairwise comparisons of treatments for each subject
-sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
+sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "default"){
   require(tidyverse)
+  require(boastUtils)
 
   if (!is.null(colsIgnore)) {
     dataWide <- dataWide %>%
@@ -320,6 +321,14 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL){
       legend.position = "none"
     ) +
     scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
+  
+  if (colors = "boast") {
+    plot <- plot +
+      scale_color_manual(values = boastUtils::boastPalette)
+  } else if (colors = "psu") {
+    plot <- plot +
+      scale_color_manual(values = boastUtils::psuPalette)
+  }
 
   return(plot)
 }
