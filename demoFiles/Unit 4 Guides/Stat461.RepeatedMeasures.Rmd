@@ -414,7 +414,8 @@ ggplot(
   ylab("Score") +
   labs(
     color = "Judge"
-  )
+  ) +
+  scale_color_manual(values = boastUtils::boastPalette)
 
 ```
 
@@ -429,7 +430,8 @@ The idea behind sphericity is that we have essentially the same levels of variat
 ## Beer Judging Study
 sphericityPlot(
   dataWide = beerWide, # Data needs to be in wide format
-  subjectID = "judge" # character name of the subject column
+  subjectID = "judge", # character name of the subject column
+  colors = "boast", # Optional; "default", "boast", "psu"
 )
 ## Look for any groups that have very different amounts of variation
 
