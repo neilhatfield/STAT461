@@ -850,7 +850,7 @@ ggplot(
     method = stats::loess,
     method.args = list(degree = 1),
     se = FALSE,
-    size = 0.5
+    linewidth = 0.5
   ) +
   theme_bw() +
   xlab("Fitted values (sales)") +
