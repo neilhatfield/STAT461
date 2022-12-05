@@ -322,10 +322,10 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "def
     ) +
     scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
   
-  if (colors = "boast") {
+  if (colors == "boast") {
     plot <- plot +
       scale_color_manual(values = boastUtils::boastPalette)
-  } else if (colors = "psu") {
+  } else if (colors == "psu") {
     plot <- plot +
       scale_color_manual(values = boastUtils::psuPalette)
   }
