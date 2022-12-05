@@ -1,7 +1,7 @@
 ---
 title: "Repeated Measures"
 author: "Neil J. Hatfield"
-date: "4/25/2022"
+date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
@@ -375,7 +375,7 @@ ggplot(
     method = stats::loess,
     method.args = list(degree = 1),
     se = FALSE,
-    size = 0.5
+    linewidth = 0.5
   ) +
   theme_bw() +
   xlab("Fitted values (score)") +
@@ -476,9 +476,7 @@ For our omnibus test, we will use the same approach as we did for the RCBDs.
 ## Beer Judging Study
 parameters::model_parameters(
   model = beerOmni, # Notice which model we're using here
-  omega_squared = "partial",
-  eta_squared = "partial",
-  epsilon_squared = "partial"
+  effectsize_type = c("eta", "omega", "epsilon")
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -490,7 +488,7 @@ parameters::model_parameters(
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                  "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
     caption = "ANOVA Table for Beer Judging Study",
     align = c('l',rep('c',8)),
     booktab = TRUE
@@ -957,7 +955,7 @@ shoesOmni <- rbind(
   shoesTemp$`Error: Within`[[1]]
 )
 
-row.names(shoesOmni) <- c("campaign","market","time","campaign:time","market:time")
+row.names(shoesOmni) <- c("campaign", "market", "time","campaign:time", "market:time")
 
 shoesOmni["market", "F value"] <- shoesOmni["market", "Mean Sq"] / 
   shoesOmni["market:time", "Mean Sq"]
