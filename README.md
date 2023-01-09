@@ -92,7 +92,7 @@ The `probSup` function takes a Cohen's *d* value as the input and returns the Pr
 
 ##### pvalRound
 
-The `pvalRound` function looks at a value (particularly *p*-values) and if the value is less than 0.0001 will return the character string "< 0.0001", otherwise will return the value rounded to four decimal places. This is to help limit instances were rounding make *p*-values look like zero.
+The `pvalRound` function looks at a value (particularly *p*-values) and if the value is less than a given values (0.0001 be default) will return the character string "< 0.0001", otherwise will return the value rounded to four decimal places. This is to help limit instances were rounding make *p*-values look like zero. The argument `digits`, which defaults to 4, controls the comparison value, i.e., 1\*10^(-1\*digits) and the rounnding.
 
 ##### sphericityPlot (under development)
 
