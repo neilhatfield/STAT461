@@ -1,9 +1,9 @@
 ---
-title: "Beginning with R/RStudio 1"
+title: "Beginning with R/RStudio"
 author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output:  
-  html_document
+  pdf_document
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: \usepackage{subfig}
@@ -38,8 +38,8 @@ Welcome! Whether this is your first time using R/RStudio or not, I hope that thi
 
 If you have not already done so, you will need to install both R and RStudio from the following links:
 
--   [Download R](https://cran.r-project.org/)--Use version 4.1.0+ (current is 4.1.2)
--   [Download RStudio](https://rstudio.com/products/rstudio/download/)--Use version 1.4+
+-   [Download R](https://cran.r-project.org/)--Use version 4.2.0+ (current is 4.2.2)
+-   [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)--Use version 2022.12.0+
 
 While you can use R without RStudio, you won't have as nice of an environment as you could if you use RStudio. RStudio is an Integrated Development Environment (IDE) that help you keep track of R code, output, and documents all in one place. You can't really use RStudio without R.
 

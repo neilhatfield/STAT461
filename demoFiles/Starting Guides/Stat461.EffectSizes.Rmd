@@ -25,6 +25,13 @@ Welcome to the latest installment of using R and RStudio. This guide will be loo
 
 # Getting Started
 
+```
+`` `{r setup}
+#Comment
+str(obj)
+`` `
+```
+
 To get started we need to do two major tasks: load the necessary packages and load our data.
 
 ## Load Packages and Helper Functions
