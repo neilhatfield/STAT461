@@ -1,9 +1,9 @@
 ---
 title: 'HW #1.1: Exploring Oreo Data (Baseline)'
-author: "Available: Aug. 24, 2022; Due: Friday, Sept. 2, 2022"
+author: "Available: 1/13/23; Due: 1/20/23"
 date: '`r paste("Last Updated:", Sys.Date())`'
 output: pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 ---
 
@@ -12,23 +12,32 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 ```
 
-There are __TWO (2)__ parts to this assignment: value checking via MyOpenMath and a Written Report.
+The intent/goal for this assignment is to act as a baseline for you to demonstrate what you know how to do at the start of the course. This assignment will *not* impact your grade in the course. However, at the end of the semester, you will have an assignment where you must reflect upon your growth over the course of the semester. This assignment (HW #1.1) provides you with a clear point from which to see your growth.
 
-For this homework assignment you will need to use the Oreo Data Set that has been assigned to you from inside the HW 1.1: Oreo Comparison-Value Check (MyOpenMath Assignment linked in Canvas). The first question will have which data file you've been assigned (Oreo 1, Oreo 2, or Oreo 3) and will display the link to the data.
+There are three assignment links in Canvas for you to be aware of:
+
++ HW #1.1--Oreo Comparison Value Check
+  - This is where you'll get access to your assigned data set and where you'll be able to enter various values you're asked to calculate.
++ HW #1.1--Oreo Comparison Write Up
+  - This is the grading rubric that goes with the report portion of HW #1.1. There is actually nothing that you need to do in this area.
++ HW #1.1--Oreo Comparison Submission Portal
+  - This is where you'll actually upload your written report (DOC, DOCX, or PDF).
+
+Please be aware that there are multiple data sets--you must use the one that is assigned to you in HW #1.1--Oreo Comparison Value Check
 
 # Background
 
 Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their "foot-long" sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being "double" another version is accurate. Thus was born an investigation.
 
-In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. we separaated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
+In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
 
-In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo in class. 
+In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. __See the Getting Started Guides on the R/RStudio Resources and Example Code page in Canvas; these were built with this assignment in mind.__
 
 *Caution:* don't assume that the data is error free.
 
 # Task Summary
 
-For this assignment, you'll need to complete the following tasks. [MOM] indicates that there is something you need to do in the MOM portion of the assignment; [Report] indicates that there is something you need to in your final report; [MOM/Report] indicates that you need to do something in both the MOM and Report portions of the assignment.
+For this assignment, you'll need to complete the following tasks. [MOM] indicates that there is something you need to do in the MyOpenMath; [Report] indicates that there is something you need to in your final report; [MOM/Report] indicates that you need to do something in both the MyOpenMath and Report portions of the assignment.
 
 1. Get and Read in the Appropriate Data using the software of your choice [MOM]
 2. Explore the Data and Write a Data Narrative 
@@ -46,19 +55,15 @@ For this assignment, you'll need to complete the following tasks. [MOM] indicate
 
 What follows are some notes (and hints) for approaching each of the tasks.
 
-\newpage
-
 # Task 1-Read in the Data.
 
-Your first task to get the data. Again, you'll need to check out the first question of the MOM component to see which data set you've been assigned. Be sure that you click the appropriate choice in the question to ensure that the rest of the questions are graded appropriately.
+Your first task is to get the data. Again, you'll need to check out the first question of the MOM component to see which data set you've been assigned. Be sure that you click the appropriate choice in the question to ensure that the rest of the questions are graded appropriately.
 
 Once you have the data (you've downloaded the data or you've copied the URL to the file), you'll need to open it up in your chosen software. 
 
-Your first task will be to read the data into your chosen software program. If you are using something other than R, I might suggest that you copy/paste the appropriate URL into your browser and download the data file. Then open that in your selected program. Several software packages will import the data for you from the URL.
+Once you have the data saved, you'll need to read the data into your chosen software program. If you are using something other than R, I suggest that you copy/paste the appropriate URL into your browser and download the data file. Then open that in your selected program. Several software packages will import the data for you from the URL (e.g., R, JMP).
 
 ## Hint 1--Use the URL to Read in Data.
-
-If you are using __JMP__, select Internet Open... from the File menu and then paste the URL into the box and then click OK.
 
 If you are using __R__, then you can read the data with the following:
 ```{r readData, echo=TRUE}
@@ -73,10 +78,9 @@ Note: you'll need to replace the example URL with yours.
 
 # Task 2-Explore your data and write a data narrative.
 
-Explore the data using your selected software package. Your answer here should come in form of a data story, complete with data visualizations, interpretations of various statistics, and plenty of discussion of both. 
+Explore your assigned data using your selected software package. Your answer here should come in form of a data story, complete with data visualizations, interpretations of various statistics, and plenty of discussion of both. 
 
 ## Hint 2
-
 Be sure that you have checked your data for any cleaning that should be done. Look at data visualizations. Are there any cookies that seem to not make sense with the rest of their type? Anything looked switched? Be sure you describe any such issues and the remedy you implemented in your narrative.
 
 ## Hint 3
@@ -99,7 +103,7 @@ That is, `{r chunkName, option1=, option2=, etc.}`
 You can reference plots in your narrative in a couple of easy steps. 
 
 ### R Markdown
-1. Build your code chunk to make a plot and give the chunk a name.
+1. Build your code chunk to make a plot and give the chunk a name (no spaces in the chunk name).
 2. In the chunk options, you'll need to define a caption: `fig.caption="caption text goes here"` (If you do this, you can omit the graph title.)
 2. In your text type `\ref{fig:chunkName}` to call the reference to your plot.
 
@@ -123,9 +127,9 @@ ggplot(demoOreo, aes(x=Type, y=Filling.Mass)) +
 
 *Note: Word will update the numbering when you call up the Print menu (even if you don't print). You'll need to do this if you change the order of your figures, add/remove some, etc.
 
-## Requested statistics.
+## Requested statistics
 
-You must include the following statistics in your narrative. You may include additional statistics as you wish. However, __you must provide an interpretation of one value from each statistic__. Please include the appropriate units where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.
+You must include values of the following statistics in your narrative (and in MOM). You may include additional statistics as you wish. However, __you must provide an interpretation of one value from each statistic__. Please include the appropriate units of measurement where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.
 
 | statistic | Regular Oreos | Double Stuf |
 |:----------|:-------------:|:-----------:|
