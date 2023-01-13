@@ -29,7 +29,7 @@ Please be aware that there are multiple data sets--you must use the one that is 
 
 Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their "foot-long" sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being "double" another version is accurate. Thus was born an investigation.
 
-In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
+In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see end of document for more details) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
 
 In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. __See the Getting Started Guides on the R/RStudio Resources and Example Code page in Canvas; these were built with this assignment in mind.__
 
@@ -178,3 +178,19 @@ Include the actual code you used, being sure to comment and organize your code.
 ### Hint 9
 
 Use the [Homework Template RMD file](https://www.dropbox.com/s/cd70l4szvqu9k1x/hwtemplate.rmd?dl=0) (Also on [GitHub](https://github.com/neilhatfield/STAT461/blob/master/hwTemplate.Rmd).) to automatically create a code appendix for you.
+
+# Further Details on the Stochastic Process
+
+The class designed the following stochastic process to generate the date for this study:
+
+1) We complied a list of grocery stores located in Tempe, AZ through a Google search.
+2) After giving each listed store a unique identifier, we placed those identifiers into a vector in an R session.
+3) Using the `sample` function of [base] R, we selected one element from this vector.
+4) Upon looking up the selected identifier, we traced back to the store and then made plans to go to the store.
+5) Prior to going to the store, we used R to generated two lists (one for each type of Oreo) of sampled integers for package selection.
+6) Upon getting to the store, we went to the main shelving area for Oreo cookies and assigned the packages an integer sequentially from the front-left-bottom package to the back-right-upper package. Assignment moved up through a stack, then back through the shelf, before moving right across the shelf. This was done separately for each kind of Oreo.
+7) After packages where numbered, we used the max number as the limit and looked at the first pre-generated list of sampled integers. Integers higher than the max number were skipped, and we continued through the list until 9 packages were selected.
+8) Cookies were purchased.
+9) Each team arbitrarily selected one package of each kind of cookie to collect data from.
+10) To get the mass of créme filling, the teams weighed each cookie as a whole (in grams), and then carefully split the cookies apart. The créme filling was removed (with some scrapping of the cookies) and the wafers of the cookies were then re-weighed. The difference in the two weights was then attributed to the créme filling.
+11) Step 10 was repeated with each cookie in the package and for both types of Oreos.
