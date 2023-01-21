@@ -9,17 +9,17 @@ checkSetup <- function(){
   } else {
     print("R Version is current.")
   }
-  
+
   ## Define package lists ----
   corePackages <- c("tidyverse", "knitr", "kableExtra", "car", "psych",
                    "parameters", "rcompanion", "DescTools", "dunn.test",
-                    "multcompView", "emmeans", "rstatix", "lme4", 
-                    "nlme", "tinytex", "rmarkdown")
+                    "multcompView", "emmeans", "rstatix", "lme4",
+                    "nlme", "tinytex", "rmarkdown", "sjstats")
   optionalPackages <- c("lattice", "perm", "boot", "coin", "pwr", "WebPower", "openxlsx")
 
   ## Package installation ----
   pkgInstall <- menu(
-    choices = c("Install Everything", "Install Only Required", "Skip Package Install"),
+    choices = c("Install Everything (Recommended)", "Install Only Required", "Skip Package Install"),
     title = "What packages do you want installed?"
   )
   if (pkgInstall == 1) {
@@ -35,7 +35,7 @@ checkSetup <- function(){
     print("Checking for installed packages...")
     newPackages <- pkgList[!(pkgList %in% installed.packages()[,"Package"])]
     if (length(newPackages)) {install.packages(newPackages)}
-  
+
     ### Check for Bioconductor ----
     if (!requireNamespace("BiocManager", quietly = TRUE)) {
       install.packages("BiocManager")
@@ -56,7 +56,7 @@ checkSetup <- function(){
     ## Tex Installation
     texInstall <- menu(
       choices = c("Yes", "No"),
-      title = "Do you want to install Tex/LaTeX ?"
+      title = "Do you want to install Tex/LaTeX? (Useful for making nice PDFs)"
     )
 
     if (texInstall == 1) {
