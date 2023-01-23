@@ -1,7 +1,7 @@
 ---
 title: "Homework #1.1-Example B"
 author: "B. Student"
-date: "9/2/2022"
+date: "1/20/2023"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
@@ -35,6 +35,7 @@ oreoData <- read.table(
 ```
 
 <!-- This will be a Proficient Example -->
+*Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.*
 
 If companies are going to market things as being "double", then consumers should be confident that they are getting twice as much. This brings us to the question of whether Double Stuf Oreos have double the creme filling of regular oreos. We've been given some actual data to explore this question with.
 
@@ -105,7 +106,7 @@ Sample skewness tells us whether we are positively, negatively skewed or symmetr
 > Alternative: Double stuf oreos don't have twice the filling of Regular oreos  
 > \(H_1: D \neq 2R\)
 
-We can transform these hypotheses into the form D - 2R = 0, which would be like that for a two sample t test. This would match with our claim that we have a two sample location problem. The assumptions for a two sample t test include independence of observations, and normality. If we use Welch's test, we don't have to worry about the variances being equal, so let's do that. We have independent samples and since we're essentially 30 cookies or more in each group, we can proceed. 
+We can transform these hypotheses into the form \(D - 2R = 0\), which would be like that for a two sample *t*-test. This would match with our claim that we have a two sample location problem. The assumptions for a two sample t test include independence of observations, and normality. If we use Welch's test, we don't have to worry about the variances being equal, so let's do that. We have independent samples and since we're essentially 30 cookies or more in each group, we can proceed. 
 
 Since we have 2R, we need to double the creme filling masses for the regular oreos before we run the test. We will use a threshold of 0.03 to declare an unusual event given the null hypothesis.
 
@@ -127,7 +128,7 @@ t.test(
 
 ```
 
-From our null hypothesis test we find that \(t(48.98)=-8.72\) with a p-value of 1.575 x 10^-11. This indicates that under the null hypothesis, we would only expect the t statistic to take a value at least as extreme as -8.72 essentially 0 percent of the time. Since is value is less than our threshold of 0.03, we have an unusual event and will take this as evidence against the null hypothesis. The 97% confidence interval for the difference is (-1.42, -0.84). Thus, if we were to repeat the entire experiment a large number of times, we will make an interval that contains the true difference 97% of the time. Since 0 isn't in the interval, we can again take this as evidence against the null hypothesis. Thus, we will reject the null hypothesis and decide that double stuf oreos do not have twice the creme filling of regular oreos. Given that the point estimate is `r 5.226 - 6.353` (double is 2*regular) and the interval consists of all negative values for the same order of subtraction, this would suggest that double stuff oreos might have less than twice the amount of creme filling of regular oreos.
+From our null hypothesis test we find that \(t(48.98)=-8.72\) with a p-value of \(1.575 \times 10^{-11}\). This indicates that under the null hypothesis, we would only expect the *t* statistic to take a value at least as extreme as -8.72 essentially 0 percent of the time. Since is value is less than our threshold of 0.03, we have an unusual event and will take this as evidence against the null hypothesis. The 97% confidence interval for the difference is (-1.42, -0.84). Thus, if we were to repeat the entire experiment a large number of times, we will make an interval that contains the true difference 97% of the time. Since 0 isn't in the interval, we can again take this as evidence against the null hypothesis. Thus, we will reject the null hypothesis and decide that double stuf oreos do not have twice the creme filling of regular oreos. Given that the point estimate is `r 5.226 - 6.353` (double minus 2*regular) and the interval consists of all negative values for the same order of subtraction, this would suggest that double stuff oreos might have less than twice the amount of creme filling of regular oreos.
 
 From our sample, we've decided that double stuf oreos don't have twice the creme filling of regular oreos. There is some evidence that they have less creme filling. However, we should collect a larger sample to test this new hypothesis.
 
