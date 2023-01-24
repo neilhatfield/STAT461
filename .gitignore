@@ -40,7 +40,6 @@ vignettes/*.pdf
 *.Rproj
 
 # Ignore these folders
-/CourseProject/
 /Assignments/
 .DS_Store
 /StudentWork/
