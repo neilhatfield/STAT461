@@ -1,7 +1,7 @@
 ---
 title: "Course Project Specifications"
 author: "Neil J. Hatfield"
-date: ""
+date: "`r paste('Last Updated:', format(Sys.Date(), '%B %d, %Y'))`"
 output: pdf_document
 geometry: left=0.75in,right=0.75in,top=0.5in,bottom=0.5in
 urlcolor: blue
@@ -24,19 +24,19 @@ Since this is a project for our ANOVA class, your central analysis __must__ come
 
 ## Details 
 
-Let's take a look at the details a bit more closely:
+Let's take a look at the details a bit more closely. Short assignment names appear in parentheses.
 
 1) Begin thinking about ideas and teams (GP #1)
 
 2) Teams get formed
     A) Neil will help people to form teams of roughly 2-4 people. Final team formation will be joint enterprise between the class and Neil.
     B) At the end of the semester, each member of a team will be responsible for anonymously grading each team member as well as themselves.
-3) Develop a Statistical Research Question
+3) Develop a Statistical Research Question (GP #2)
     A) As a team, develop a statistical research question.
-    B) You will have to get approval from Neil (GP #2)
+    B) You will have to get approval from Neil.
 4) Develop your Study/Experiment
     A) As a team, develop your experiment or observational study (as the case might be)
-    B) You will have to get your plan approved by Neil (GP #3) 
+    B) You will have to get your plan approved by Neil 
     C) Special Note--Involvement of Human and Animal Subjects
         i) In the event you need to use either Humans or Animals subjects, you will need to have your study scrutinized carefully in coordination with Neil.
         ii) If you need to go down this route, your timetable is now ASAP.
@@ -49,22 +49,29 @@ Let's take a look at the details a bit more closely:
     A) Clean your Data
     B) Write your Data Narrative
     C) Carry out the appropriate method(s) of analysis from the __ANOVA toolkit__. (Note: you can't use a regression model for this project)
-6) Write your report
-    A) Structure
+6) Write your report.
+    A) Structure (You're structure should look similar to this)
         1) Executive Summary (2 page max)
         2) Introduction
-        3) Literature Review
-        4) Methods
+            a) Literature Review & Background, as appropriate
+            b) Statement of Research Questions and Hypotheses
+        3) Methods
             a) Describe the experiment/study
-            b) Describe the statistical methods you used
-            c) Describe the sample (if applicable)
+            b) Describe the analytical/statistical methods you used
+            c) Describe the sample (if applicable; Exploratory Data Analysis)
         5) Results
+            a) Assumption Checking
+            b) Omnibus Results
+            c) Post Hoc Results (as applicable)
         6) Discussion
-        7) References
-        8) Code Appendix
+            a) Limitations 
+            b) Future Work
+        7) References (include where others can get access to your data)
+        8) Author Contributions
+        9) Code Appendix
     B) Make sure that you answer your SRQ.
-7) Complete Peer Evaluations (GP #4)
-8) Submit your Project Report (GP #5).
+7) Submit your Project Report (GP #3).
+8) Complete Peer Evaluations (GP #4)
 
 ## Potential Topics
 

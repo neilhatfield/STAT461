@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 )
 
 # Add additional packages by name to the following list
-packages <- c("tidyverse", "knitr", "kableExtra", "psych", "car")
+packages <- c("tidyverse", "knitr", "kableExtra", "psych", "car", "effectsize")
 lapply(
   X = packages,
   FUN = library,
@@ -320,7 +320,7 @@ I found that \(t(`r round(tOut$parameter, digits = 2)`)\approx `r round(tOut$sta
 
 I found an interval estimate for the ratio using a method which will capture the true ratio of créme filling masses 97% of the time. For my samples, I found a transformed 97% confidence interval of (`r round(tOut$conf.int, digits = 2)`) log grams/gram. The un-transformed confidence interval is (`r round(exp(tOut$conf.int), digits = 2)`). The value under the null hypothesis (\(\log(2)\approx `r round(log(2),3)`\) or 2) does not appear in either interval, suggesting that the null hypothesis does not accurately reflect our data.
 
-I will decide to reject the null hypothesis and act as if the Double Stuf Oreos to Regular Oreo créme filling ratio is something other than 2. 
+I will decide to reject the null hypothesis and act as if the Double Stuf Oreos to Regular Oreo créme filling ratio is something other than 2. The value of Cohen's *d* is approximately `r round(t_to_d(t = tOut$statistic, df_error = tOut$parameter)$d, 2)` pooled standard deviations beyond our hypothesized difference (i.e., \(\log (2)\)). This is suggestive of a large observed effect for these data.
 
 ## Bootstrapping
 
@@ -401,7 +401,7 @@ ggplot(
   theme_bw() 
 ```
 
-The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in Figure \ref{fig:bootPlot} as the solid red lines. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work would need to be done.
+The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in Figure \ref{fig:bootPlot} as the solid red lines. Worth noting here is that the minimum observed value of our test statistic in the bootstrapping simulation is approximately `r round(min(bootOut$t), 2)` grams/gram; which is just slightly above the null hypothesis value. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work would need to be done.
 
 # Final Thoughts
 
