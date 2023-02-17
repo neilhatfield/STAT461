@@ -1,0 +1,58 @@
+---
+title: "Unit 2 Questions & Answers"
+author: "Neil J. Hatfield"
+date: "`r paste('Last Updated:', Sys.Date())`"
+format: pdf
+geometry: left=1in,right=1in,top=1in,bottom=1in
+urlcolor: blue
+---
+
+# Types of Studies
+
+1)  Do quasi-experiments involve a categorical factor?
+
+    A. Yes.
+
+2)  How do we differentiate an experiment from a quasi-experiment?
+
+    A.  This comes down the assignment. If we are using a random process to assign a treatment to our units, then we are doing an experiment. In essence, after we have randomly sampled our units from the population, we actively form groups based on randomized treatment assignment.
+
+        For a quasi-experiment, we either 1) make groups using a non-randomized assignment method, or 2) the groups naturally form based upon our units. An example of the first would be if we let our participants choose which treatment they get. In the later, our factor is typically something like race/ethnicity where our units automatically have a value that we use for groupings.
+
+3)  
+
+# Attributes
+
+1.  How do we choose additional attributes?
+
+    A.  This comes down to experience. As you continue to work with studies, you'll find yourself better able to think through what additional attributes might be lurking in the background that we need to make a decision about.
+
+    B.  There is a tendency to jump to trying to put EVERYTHING into your models. Hasse diagrams are a good way to slow down your thinking here as the diagrams explode when you put everything into them. The problem with putting too many things into your model is that your model and therefore your study become unwieldy and too complicated to run.
+
+2.  
+
+# Units
+
+1)  When might we not need to worry about find a difference between measurement and experimental units?
+
+    A.  (Easy Case) Any time you aren't doing an experiment, there won't be an experimental unit. Thus, you don't have to worry about finding a difference.
+
+    B.  (No Difference) There are some experiments where the measurement unit and the experimental unit will in fact be the same. Medical experiments are good examples as the treatments typically have to be applied to each patient separately and we're looking at the response of each patient.
+
+    C.  (Difference) The most challenging piece is to recognize when a measurement unit was *assigned* the treatment versus when a measurement unit *inherited* the treatment. Measurement units inherit a treatment when they are part of an experimental unit. Educational experiments are good examples for this. Suppose that we want to explore the impact of 3 different teaching methods on how well students learn their times tables (multiplication facts). We assign one of the teaching methods to a **classroom**; for example, Classroom A gets the "Mad Minute" method. Notice that we gave the treatment ("Mad Minute") to the classroom, not to an individual student. The students who are in Classroom A *inherit* the "Mad Minute" treatment only by the fact that they are in Classroom A, not because we assigned "Mad Minute" to a specific student.
+
+2)  Can a study have no experimental unit but a measurement unit? What about no measurement unit but an experimental unit?
+
+    A.  Quasi-experiments and observational studies do not have experimental units but will have measurement units.
+
+    B.  Given that the response is an aspect of our measurement units, you simply can't have a study that is devoid of a measurement unit.
+
+# Sample Size, Effect Sizes, G\*Power
+
+1.  Are there any ways to predict *f* (effect sizes) before finding a sample size?
+    A.  When we are working on figuring out sample size, we either estimate the effect size from past work, or our intuition about the phenomenon. While in some sense, this is a "prediction" it is not a formal type of prediction that we would make using \[robust\] statistical methods.
+
+        Once we collect data and go to analyze the data, we'll calculate the observed effect size. (We'll do this in Unit 3.)
+2.  How do we know what test to use in G\*Power?
+    A.  Recognizing what type of study you're creating/working with is a large part of the process. For our course, we will restrict ourselves to the *F* test family. Generally, we will work with the ANOVA: Fixed Effects type listings.
+3.  
