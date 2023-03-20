@@ -361,24 +361,21 @@ dscfTest <- function(response, factor){
 ## adjustment to the omnibus test.
 adjustPValues <- function(contrastObject, method = "bonferroni"){
   temp1 <- contrastObject[[1]] # Grab the appropriate output
-  temp1$method <- method
   temp1$contrastIndicator <- stringr::str_detect(row.names(temp1), pattern = ":")
   colnames(temp1)[which(colnames(temp1) == "Pr(>F)")] <- "rawP"
-  m <- sum(temp1$contrastIndicator)
-  temp1$m <- m
+  psNeedingAdj <- temp1$rawP[which(temp1$contrastIndicator == TRUE)]
+  adjPs <- p.adjust(p = psNeedingAdj, method = method)
   temp1$adjP <- sapply(
     X = 1:nrow(temp1),
     FUN = function(x){
-      if (temp1$contrastIndicator[x] == TRUE) {
-        return(
-          p.adjust(
-            p = temp1$rawP[x],
-            method = temp1$method[x],
-            n = temp1$m[x]
-          )
-        )
-      } else {
-        return(NA)
+      i <- 1
+      while (i <= length(adjPs)) {
+        if (temp1$contrastIndicator[x] == TRUE) {
+          return(adjPs[i])
+        } else {
+          return(NA)
+        }
+        i <- i + 1
       }
     }
   )
