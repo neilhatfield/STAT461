@@ -104,7 +104,7 @@ The `dscfTest` is a function of two vectors, both required: `response` containin
 
 ### anovaScreens
 
-The `anovaScreens` function takes a data frame (via `dataFrame`) and two strings (via `response` and `factor`) to apply the screens idea. Error checking is done on the two string arguments to ensure that they 1) are just a single character string, and 2) are found in the names of the supplied data frame. Currently, `anovaScreens` only works for Oneway ANOVA models.
+The `anovaScreens` function takes a data frame (via `dataFrame`) and two strings (via `response` and `factor`) to apply the screens idea and returns a data frame with the new screen columns. Error checking is done on the two string arguments to ensure that they 1) are just a single character string, and 2) are found in the names of the supplied data frame. Currently, `anovaScreens` only works for Oneway ANOVA models.
 
 #### Private Functions
 
