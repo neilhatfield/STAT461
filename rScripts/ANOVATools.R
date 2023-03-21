@@ -423,7 +423,7 @@ anovaScreens <- function(dataFrame, response, factor) {
   screens <- screens %>%
     left_join(
       y = groupMeans,
-      by = join_by(!!sym(factor))
+      by = dplyr::join_by(!!sym(factor))
     ) %>%
     mutate(
       Screen2.Factor = factorMean - Screen1.Action,
