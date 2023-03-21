@@ -384,3 +384,52 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 
   return(temp1)
 }
+
+# Anova Screens Function ----
+## A function that takes a data frame, and two strings to return the
+## Oneway ANOVA screens
+anovaScreens <- function(dataFrame, response, factor) {
+  require(dplyr)
+  require(rlang)
+  errorMessages <- c()
+  if (length(factor) <= 0 | is.na(factor) | is.null(factor)) {
+    stop("You need to specify the name of your factor")
+  } else if (length(factor) > 1) {
+    stop("This function is currently only built for Oneway ANOVA")
+  }
+  
+  if (length(response) <= 0 | is.na(response) | is.null(response)) {
+    stop("You need to specify the name of your response")
+  }
+  
+  if (!(response %in% names(dataFrame))) {
+    stop(paste("The response you gave,", response, "was not found in the data frame supplied."))
+  } else if (!(factor %in% names(dataFrame))) {
+    stop(paste("The factor you gave,", factor, "was not found in the data frame supplied."))
+  }
+  
+  screens <- dataFrame %>%
+    dplyr::select(!!sym(response), !!sym(factor)) %>%
+    mutate(
+      Screen1.Action = mean(!!sym(response), na.rm = TRUE)
+    )
+  
+  groupMeans <- screens %>%
+    group_by(!!sym(factor)) %>%
+    summarize(
+      factorMean = mean(!!sym(response), na.rm = TRUE)
+    )
+  
+  screens <- screens %>%
+    left_join(
+      y = groupMeans,
+      by = join_by(!!sym(factor))
+    ) %>%
+    mutate(
+      Screen2.Factor = factorMean - Screen1.Action,
+      Screen3.Residuals = !!sym(response) - Screen1.Action - Screen2.Factor
+    ) %>%
+    dplyr::select(-factorMean)
+  
+  return(screens)
+}

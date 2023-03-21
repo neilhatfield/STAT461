@@ -100,7 +100,11 @@ The `sphericityPlot` provides a scatter plot of the pairwise differences of the 
 
 ##### dscfTest
 
-The `dscfTest` a function of two vectors, both required: `response` containing the response values and `factor` containing the levels of the factor. The two vectors should be in the same order. This function is a wrapper for `NSM3::pSDCFlig` function for doing the Steel-Dwass-Critchlow-Fligner post hoc test in a One-way nonparametric setting. This will return a data frame ready for `kable` consisting of the comparisons and their (adjusted) *p*-values.
+The `dscfTest` is a function of two vectors, both required: `response` containing the response values and `factor` containing the levels of the factor. The two vectors should be in the same order. This function is a wrapper for `NSM3::pSDCFlig` function for doing the Steel-Dwass-Critchlow-Fligner post hoc test in a One-way nonparametric setting. This will return a data frame ready for `kable` consisting of the comparisons and their (adjusted) *p*-values.
+
+### anovaScreens
+
+The `anovaScreens` function takes a data frame (via `dataFrame`) and two strings (via `response` and `factor`) to apply the screens idea. Error checking is done on the two string arguments to ensure that they 1) are just a single character string, and 2) are found in the names of the supplied data frame. Currently, `anovaScreens` only works for Oneway ANOVA models.
 
 #### Private Functions
 
