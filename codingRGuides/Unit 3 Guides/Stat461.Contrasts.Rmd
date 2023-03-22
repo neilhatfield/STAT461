@@ -7,7 +7,7 @@ output:
     toc: false
     toc_depth: 4
     number_sections: true
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
@@ -217,11 +217,11 @@ When we have multiple contrasts, we often like to have "orthogonal contrasts". W
 
 Two contrasts, \(w_i\) and \(w_i^{\star}\), are said to be orthogonal if the weighted sum of their *i*-th components add to zero (the weighted dot product of the two contrast vectors). That is, \[\sum_{i=1}^g\frac{w_i\cdot w_i^{\star}}{n_i}\]
 
-In this formula, the weighting of the weights comes from the sample size for each component, \(n_i\). For our two Cheese study contrasts, we would have the following:
+In this formula, the weighting of the weights comes from the sample size for each component, \(n_i\). For our two Cheese study contrasts, we have \(w_i= \langle 1/3, 1/3, 1/3, -1\rangle\), \(w_i^{\star}=\langle -1/2, 1, -1/2, 0\rangle\) and \(n_i=\langle 2, 2, 2, 2\rangle\), yielding
 
 \begin{align*}
-\sum_{i=1}^4\frac{w_i\cdot w_i^{\star}}{n_i}&\Rightarrow\frac{1/3*1}{2}+\frac{1/3 *-1/2}{2}+\frac{1/3*-1/2}{2}+\frac{-1*0}{2}\\
-&=\frac{1}{6}+\frac{-1}{12}+\frac{-1}{12}+0\\
+\sum_{i=1}^4\frac{w_i\cdot w_i^{\star}}{n_i}&\Rightarrow\frac{1/3*-1/2}{2}+\frac{1/3*1}{2}+\frac{1/3*-1/2}{2}+\frac{-1*0}{2}\\
+&=\frac{-1}{12}+\frac{1}{6}+\frac{-1}{12}+0\\
 &=0
 \end{align*}
 
@@ -289,10 +289,12 @@ as.data.frame(cheeseContrasts1) %>%
   kable(
     digits = 3,
     caption = "Cheese Study Contrasts Using emmeans Package",
-    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic", "p-value*",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  paste0("p-value", footnote_marker_symbol(1)),
                   "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
-    booktabs = TRUE
+    booktabs = TRUE,
+    escape = FALSE # Needed for footnote_marker
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
@@ -300,8 +302,7 @@ as.data.frame(cheeseContrasts1) %>%
     latex_options = c("HOLD_position", "scale_down")
   ) %>%
   kableExtra::footnote(
-    general = "Adjusted via Benjamini-Hochberg method for controlling the False Discovery Rate.",
-    general_title = "* ",
+    symbol = "Adjusted via Benjamini-Hochberg method for controlling the False Discovery Rate.",
     footnote_as_chunk = TRUE
   )
 ```
