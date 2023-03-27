@@ -10,7 +10,7 @@ pvalRound <- function(x, digits = 4){
     ifelse(
       test = x < checkVal,
       yes = paste("<", format(checkVal, scientific = FALSE)),
-      no = round(x, digits = digits)
+      no = format(round(x, digits = digits), scientific = FALSE)
     )
   }
 
