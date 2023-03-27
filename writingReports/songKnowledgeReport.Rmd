@@ -60,7 +60,10 @@ Trivia contests are a popular type of event in American bars/pubs that came from
 
 Dr. Hatfield (a big fan of pub trivia) noticed an apparent relationship between what age group a person belonged to and how well they people did at identifying songs. This noticing served as the basis for a set of in-class activities for his inquiry-based ANOVA (STAT461) course. The first activity had students design a study to investigate this noticing. The second, to implement a version of that designed study. The final activity sequence involved using the collected data to develop the One-way ANOVA toolkit and practice writing up a report. 
 
-To this end, we want to explore whether a STAT461 undergraduate student's year in school (junior, senior, or other) impacts how well they can identify song title and artist (i.e., their song knowledge)?
+To this end, we want to explore whether a STAT461 undergraduate student's year in school (junior, senior, or other) impacts how well they can identify song title and artist (i.e., their song knowledge)? If we find that a student's year in school does statistically impact their performance on a music trivia round, our post hoc questions include the following.
+
++ Which years in school are statistically different from the others?
++ Are graduating students (i.e., seniors) statistically different from non-graduating students (i.e., juniors and others)?
 
 # Study Design and Methods
 <!-- In this portion you'll write the narrative format of the study design-that is everything we've discussed in Unit 2. You'll want to incorporate the Hasse diagram, your hypotheses for any SRQs, any sample size considerations, as well as how you are going to handle the multiple comparison problem.-->
@@ -203,7 +206,7 @@ ggplot(
 # Results
 <!-- This is the section of the report where you'll carry out an inferential methods.-->
 
-To answer our research question, we will seek to use the parametric shortcut known as the ANOVA *F* test. There are three assumptions that our data must satisfy to use this approach: residuals follow a Gaussian distribution, homoscedasticity, and independence of observations.
+To answer our main research question, we will seek to use the parametric shortcut known as the ANOVA *F* test. There are three assumptions that our data must satisfy to use this approach: residuals follow a Gaussian distribution, homoscedasticity, and independence of observations.
 
 ```{r songModel}
 # Fit the model and parametric shortcut ----
