@@ -1,9 +1,12 @@
 ---
 title: "Factorial Models"
 author: "Neil J. Hatfield"
-date: "`r paste('Last Updated:', Sys.Date())`"
+date: "`r paste('Last Updated:', format(Sys.Date(), '%B %d, %Y'))`"
 output: 
-  pdf_document
+  pdf_document:
+    toc: false
+    toc_depth: 4
+    number_sections: true
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: 
@@ -31,30 +34,9 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-In this tutorial, we are going to explore Factorial Treatment Structures/Factorial Designs in R. For our purposes here, we will restrict our attention to [full] factorial models with all Fixed Factor Effects. (We will allow for our measurement units to be the only random effect term.) The general structure for this guide will be:
+In this tutorial, we are going to explore Factorial Treatment Structures/Factorial Designs in R. For our purposes here, we will restrict our attention to [full] factorial models with all Fixed Factor Effects. (We will allow for our measurement units to be the only random effect term.) I will also cover Post Hoc analysis in the factorial setting. I'll end with a section highlighting the issues with imbalanced factorial designs. 
 
-+ Setting Up R
-  - Loading Packages, Setting Options, and Additional Tools
-+ Data Contexts
-  - Load! Aim! Ready! Release! (Gummy Bear Catapult)
-  - Battery Manufacturing
-+ Exploring the Factorial Treatment Structure
-+ Fit the Models
-  - Appropriateness of ANOVA
-  - Check Interactions
-  - Form the Model
-+ Assessing Assumptions
-  - Gaussian Residuals
-  - Homoscedasticity
-  - Independence of Observations
-+ Results
-  - Omnibus
-  - Point Estimates
-  - Post Hoc--Pairwise and Effect Sizes
-  - Post Hoc--Contrasts
-+ Dealing with Imbalanced Designs
-
-# Setting Up R
+# Setting Up `R`
 
 Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
 
@@ -81,32 +63,49 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 # Data Contexts
 
-For this guide/tutorial, we'll make use of two contexts: __Load! Aim! Ready! Release! (Gummy Bears)__ and __Battery Manufacturing (Batteries)__.
+For this guide/tutorial, we'll make use of two contexts: __Gummy Bears__ and __Battery Manufacturing__.
 
-## Load! Aim! Ready! Release! (Gummy Bears)
+## Gummy Bears
 
 This data comes from the design that we put together in class to explore the impacts of launch angle and launch position for our spoon-apults for launching gummy bears to see how far they will fly.
 
 ```{r loadGummyBears, echo=TRUE}
-# Demo code for loading and cleaning data
-## Loading gummy bear data
-catapultData <- openxlsx::readWorkbook(
-  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Fall2022.xlsx",
+# Demo code for loading and cleaning data ----
+## Loading Gummy Bear Data
+gummyData <- openxlsx::readWorkbook(
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Spring2023.xlsx",
   sheet = 1,
   colNames = TRUE,
   rowNames = FALSE
 )
 
-# Set the Factors 
-catapultData$angle <- factor(
-  x = catapultData$angle,
-  levels = c("flat", "low", "high") # Setting a specific order to levels
+## Clean Gummy Bear Data 
+### Remove any extra white space in the two factor columns, put into title case
+### Tell R to treat them as factors
+gummyData <- gummyData %>%
+  mutate(
+    Launch.Angle = str_to_title(str_trim(Launch.Angle)),
+    Launch.Position = str_to_title(str_trim(Launch.Position)),
+    across(.cols = where(is.character), ~as.factor(.x))
+  )
+
+### Rename columns for ease and to minimize errors (i.e., distance column)
+gummyData <- rename(
+  gummyData,
+  angle = Launch.Angle,
+  position = Launch.Position,
+  distance = `Distance.(cm)`
 )
 
-catapultData$position <- as.factor(catapultData$position) # Order doesn't matter
+### Impose a logical ordering on the angle factor
+gummyData$angle <- factor(
+  x = gummyData$angle,
+  levels = c("Flat", "Low", "High")
+)
 
 ```
 
+<!--UPDATE THIS -->
 Notice that I used both `factor` and `as.factor`. The `as.factor` function makes use of the values that exist in the column and organizes the levels alphabetically. This works well for the launch position. For the launch angle factor, I wanted the levels to reflect the increasing magnitude of the angle, thus, I used the `factor` function's `levels` argument to specify the order. The risk here is if your entries to `levels` don't exactly match what is in your data, you'll have observations get dropped.
 
 ### Omnibus SRQs and Hypotheses
@@ -137,7 +136,7 @@ His questions:
 2) Is there a choice of material that would give uniformly long life regardless of temperature?
 
 ```{r loadBattery, echo=TRUE}
-## Demo code for loading and cleaning data
+## Demo code for loading and cleaning data ----
 ## Load battery data
 batteryData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/batteryLife.dat",
@@ -146,22 +145,40 @@ batteryData <- read.table(
 )
 
 ## Clean data
-batteryData$temperature <- dplyr::recode_factor(
-  batteryData$temperature,
-  `15` = "15ºF",
-  `70` = "70ºF",
-  `125` = "125ºF"
+### If you are using dplyr version 1.1.0+
+batteryData$temperature <- dplyr::case_match(
+  .x = batteryData$temperature,
+  15 ~ "15ºF",
+  70 ~ "70ºF",
+  125 ~ "125ºF",
+  .ptype = factor(levels = c("15ºF", "70ºF", "125ºF"))
 )
-batteryData$material <- dplyr::recode_factor(
-  batteryData$material,
-  `1` = "Plate 1",
-  `2` = "Plate 2",
-  `3` = "Plate 3"
+
+batteryData$material <- dplyr::case_match(
+  .x = batteryData$material,
+  1 ~ "Plate 1",
+  2 ~ "Plate 2",
+  3 ~ "Plate 3",
+  .ptype = factor(levels = c("Plate 1", "Plate 2", "Plate 3"))
 )
+
+### If you are using dplyr version < 1.1.0
+# batteryData$temperature <- dplyr::recode_factor(
+#   batteryData$temperature,
+#   `15` = "15ºF",
+#   `70` = "70ºF",
+#   `125` = "125ºF"
+# )
+# batteryData$material <- dplyr::recode_factor(
+#   batteryData$material,
+#   `1` = "Plate 1",
+#   `2` = "Plate 2",
+#   `3` = "Plate 3"
+# )
 
 ```
 
-For the Battery Manufacturing data I made use of the `recode_factor` function from the `dplyr` package. This allowed me not only transform/clean the reported values but also simultaneously tell R to treat the attribute as a factor.
+For the Battery Manufacturing data I made use of the `case_match` function from the `dplyr` package (if using an older version of `dplyr`, use the `recode_factor` function). This allowed me not only transform/clean the reported values but also simultaneously tell R to treat the attributes as factors.
 
 ### Your Turn
 
@@ -175,8 +192,13 @@ Exploring the data in factorial settings becomes much more important as now you 
 
 You can use the multiple factors in a variety of ways in your data visualizations. For example, rather than looking at a side-by-side box plots along one factor, you could do a set for each factor or by the interaction. R's base `boxplot` function allows for you explore interactions by using the formula argument.
 
-```{r interactionBoxplot, fig.cap="Box Plot of Battery Life Spans by Temperature and Plate Material", fig.width=7, fig.height=5, echo=TRUE, fig.pos="H"}
-# Demo code for box plots using factorial treatment structure
+```{r interactionBoxplot, echo=TRUE}
+#| fig.cap = "Box Plot of Battery Life Spans by Temperature and Plate Material",
+#| fig.width = 7,
+#| fig.height = 5,
+#| fig.pos = "H"
+
+# Demo code for box plots using factorial treatment structure ----
 ## Battery Manufacturing
 boxplot(
   formula = life ~ temperature:material,
@@ -194,11 +216,11 @@ While this box plot is okay to look at, we could improve this plot greatly for p
 #| fig.width=6,
 #| fig.height=3,
 #| fig.pos="H"
-#| 
-# Demo code of box plots incorporating factorial treatment structure
+
+# Demo code of box plots incorporating factorial treatment structure ----
 ## ggplot2 and Gummy Bears Study
 ggplot(
-  data = catapultData,
+  data = gummyData,
   mapping = aes(
     x = angle,
     y = distance,
@@ -213,7 +235,7 @@ ggplot(
     fill = "Launch Position"
   ) +
   theme(
-    legend.position = "right",
+    legend.position = "bottom",
     text = element_text(size = 14)
   )
 
@@ -224,7 +246,8 @@ ggplot(
 In addition to data visualizations, we also may make use of descriptive/incisive statistics. We've used the `describeBy` from the `psych` package in the past to break our response up into groups based upon our factor. We can do something similar in multi-factor situations as shown here:
 
 ```{r descStatsBattery, echo=TRUE}
-# Demo code for descriptive statistics for factorial treatment structure
+# Demo code for descriptive statistics for factorial treatment structure ----
+## Using the psych package's describeBy function
 ## Battery Manufacturing 
 batteryStats <- psych::describeBy(
   life ~ temperature + material, # Notice that we use the + as an "AND"
@@ -263,9 +286,10 @@ batteryStats %>%
 If you are using `dplyr`'s `summarize` function, you can achieve similar results by first calling `group_by` and then listing all of your factors. In this case we would want `dplyr::group_by(temperature, material)`. The following example is for the gummy bears data.
 
 ```{r descStatsGummyBears, echo=TRUE}
-# Demo code for descriptive statistics for factorial treatment structure
+# Demo code for descriptive statistics for factorial treatment structure ----
+## Using dplyr's summarize function with custom choices of statistics
 ## Gummy Bears 
-catapultData %>%
+gummyData %>%
   dplyr::group_by(angle, position) %>%
   summarize(
     n = n(),
@@ -318,8 +342,12 @@ As before, our knowledge of the study design and the Hasse diagram can help us o
 
 Figure \ref{fig:batteriesHD} shows the Hasse diagram for the Battery Manufacturing study. We know that the response is quantitative (number of hours of life). From the Hasse diagram, we have two factors (Plate Material and Temperature) which are both categorical. We are doing a full factorial structure (we have all possible interactions). Further, since we have positive *Degrees of Freedom* for each node in the Hasse diagram, we know that we should be able to estimate all main effects, interactions, and the residuals/errors.
 
-```{r batteriesHD, fig.cap="Hasse Diagram for Battery Manufacturing Study", fig.height=2, fig.pos="H"}
-# Hasse Diagram
+```{r batteriesHD}
+#| fig.cap = "Hasse Diagram for Battery Manufacturing Study",
+#| fig.height = 2,
+#| fig.pos = "H"
+
+## Hasse Diagram For Battery Study ----
 modelLabels <- c("1 Maintain Charge 1", "3 Plate 2", "3 Temperature 2",
                  "9 Plate × Temperature 4", "36 (Batteries) 27")
 modelMatrix <- matrix(
@@ -355,9 +383,8 @@ The function `interaction.plot` is part of the basic setup of `R` (included in t
 #| fig.cap = "Interaction Plot using base R",
 #| fig.width = 6.5, 
 #| fig.height = 3.25,
-#| fig.pos="H"
-#| 
-# Demo code for using base R to create an interaction plot
+#| fig.pos = "H"
+# Demo code for using base R to create an interaction plot ----
 ## Battery Manufacturing Study
 interaction.plot(
   x.factor = batteryData$temperature, # First Factor
@@ -387,11 +414,15 @@ As we saw in the Block guide/tutorial, we can use `ggplot2` to create an interac
 
 In the following example, I'm going to create an interaction plot for launch angle and launch position, but I'm also going to place the observations on the graph so we can also get a sense of variation that gets hidden by the trend lines.
 
-```{r catapultInteraction1, fig.cap="Interaction Plot for Gummy Bears Study", fig.width=6, fig.height=3.5, echo=TRUE, fig.pos="H"}
-# Demo code for using ggplot to make interaction plot w/observations showing
+```{r catapultInteraction1, echo=TRUE}
+#| fig.cap = "Interaction Plot for Gummy Bears Study",
+#| fig.width = 6,
+#| fig.height = 3.5,
+#| fig.pos = "H"
+# Demo code for using ggplot to make interaction plot w/observations showing ----
 ## Gummy Bears Study
 ggplot(
-  data = catapultData,
+  data = gummyData,
   mapping = aes(
     x = angle,
     y = distance,
@@ -441,7 +472,7 @@ To have `R` automatically fill in all terms, you simply list each main effect an
 I'll show both approaches here:
 
 ```{r factorialModels, echo=TRUE}
-# Demo code for forming the factorial models
+# Demo code for forming the factorial models ----
 ## Fitting by hand--Battery Manufacturing Study
 batteryModel <- aov(
   formula = life ~ temperature + material + temperature:material,
@@ -449,13 +480,12 @@ batteryModel <- aov(
 )
 
 ## Letting R handle the expansion--Gummy Bears Study
-catapultModel <- aov(
+gummyModel <- aov(
   formula = distance ~ angle*position,
-  data = catapultData
+  data = gummyData
 )
 
 ```
-
 
 # Assessing Assumptions
 
@@ -466,12 +496,12 @@ For the parametric shortcut for factorial designs (the ANVOA *F* test), we have 
 Use a QQ plot like usual:
 
 ```{r residualQQ, echo=TRUE}
-#| fig.cap="QQ Plot for Residuals in Battery Manufacturing Study",
-#| fig.width=5,
-#| fig.height=3.5,
-#| fig.pos="H"
-# Demo code for QQ plot
-# Battery Manufacturing
+#| fig.cap = "QQ Plot for Residuals in Battery Manufacturing Study",
+#| fig.width = 5,
+#| fig.height = 3.5,
+#| fig.pos = "H"
+# Demo code for QQ plot ----
+## Battery Manufacturing
 car::qqPlot(
   x = residuals(batteryModel), 
   distribution = "norm",
@@ -491,6 +521,7 @@ Build a QQ plot and write accompanying text for assessing the Gaussian Residuals
 
 ## Homoscedasticity
 
+<!--UPDATE THIS-->
 Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Anscombe plot rather than a strip chart for our factorial designs.
 
 ```{r batteryVar, echo=TRUE}
@@ -499,7 +530,7 @@ Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Ansco
 #| fig.height=3,
 #| fig.pos="H"
 
-## Tukey-Anscombe Plot for Battery Study
+## Tukey-Anscombe Plot for Battery Study ----
 ggplot(
   data = data.frame(
     residuals = residuals(batteryModel),
@@ -548,11 +579,15 @@ We do know measurement order for the Gummy Bears study...except that there is on
 
 What do we know about how the study was designed? Quite a bit, after all, we designed the study! We will take the 240 gummy bears as constituting a random sample from the population of gummy bears created by the manufacturer. While not a rigorous random process, Neil did draw individual gummy bears from a central stock pile to separate them into 12 groups of 20. We also know that we randomly assigned the treatments to catapult teams (our experimental units) and they arbitrarily took one of the bags of gummy bears. Taken together, we might take these facts as suggesting that we have independent observations __*up to the point the catapult teams took possession of the baggies of gummy bears*__.
 
-```{r gummyBearsIO, fig.cap="Index Plots for Gummy Bear Study", fig.width=7, fig.height=4, echo=TRUE}
+```{r gummyBearsIO, echo=TRUE}
+#| fig.cap = "Index Plots for Gummy Bear Study",
+#| fig.width = 7,
+#| fig.height = 4
+# Index Plots for Gummy Bear Study ----
 ggplot(
-  data = catapultData,
+  data = gummyData,
   mapping = aes(
-    x = order,
+    x = Measurement.Order,
     y = distance
   )
 ) +
@@ -562,12 +597,13 @@ ggplot(
   xlab("Measurement order") +
   ylab("Distance (cm)") +
   facet_wrap(
-    facets = vars(experimentalUnit),
+    facets = vars(Team),
     scales = "fixed"
   )
 
 ```
 
+<!--UPDATE THIS-->
 Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams. I am going to leave to you the challenge of getting `R` to place the facets in the order Group 1, Group 2, Group 3, etc. instead of what currently appears.
 
 When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The plots I'm most concerned about are from Groups 4 and 8. For both of these groups there appears to be a decreasing trend in how far the gummy bears flew as they carried out their trials. 
@@ -585,7 +621,8 @@ For results, we want to tackle both sets: Omnibus (*F* test, effect sizes, and p
 For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ designs. Thus, we do not need to worry about different types of *Sums of Squares*. However, I'm going to demonstrate how we can switch the types.
 
 ```{r batteryTable, echo=TRUE}
-# Omnibus Test/Modern ANOVA Table
+# Omnibus Test/Modern ANOVA Table ---
+## Battery Model
 parameters::model_parameters(
   model = batteryModel,
   effectsize_type = c("eta", "omega", "epsilon"),
@@ -631,7 +668,7 @@ Make the modern ANOVA table for the Gummy Bears situation. Write a paragraph to 
 You can get point estimates for your main effects and treatment effects using the `dummy.coef` function. 
 
 ```{r batteryPointEstimates, echo=TRUE}
-# Demo code for Point Estimates 
+# Demo code for Point Estimates ----
 ## Battery Manufacturing Study
 pointEst <- dummy.coef(batteryModel)
 pointEst <- unlist(pointEst)
@@ -673,10 +710,12 @@ Get the point estimates for the Gummy Bear Study. Give interpretations for the *
 
 ## Post Hoc--Pairwise Comparisons & Effect Sizes
 
+<!--REVISE THIS FOR ALL POSSIBLE-->
+
 While you *could* use the pairwise comparison functions we've previously used, a better approach is to embrace our Factorial Design and look at the *estimated marginal means*. These will hold certain factors constant and let others vary. To do this, we will need to use the `emmeans` package.
 
 ```{r batteryPH1, echo=TRUE}
-# Demo code for Post Hoc 
+# Demo code for Post Hoc Pairwise Comparisons ----
 ## Marginal Means with Adjusted Confidence Intervals
 ## Battery Manufacturing Study
 batteryPHMeans <- emmeans::emmeans(
