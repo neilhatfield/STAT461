@@ -1,7 +1,7 @@
 ---
 title: "Formula Sheet for Minitab"
 author: "Neil J. Hatfield"
-date: "3/24/2021"
+date: "`r paste('Last Updated:', format(Sys.Date(), '%B %d, %Y'))`"
 output: 
   pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
@@ -44,52 +44,48 @@ In the following formulas, *F* will refer to the *F* ratio for the particular te
 
 # Post Hoc Effect Sizes
 
-For these you will need to use either the column "Difference of Means" from the Minitab output or calculate the outputs yourself. Further, you will need to get the values of the *Sample Arithmetic Variance* for each individual group. These values are not part of the ANOVA/Post Hoc Output. 
+To calculate these values you will need to get the following information:
+
++ Descriptive Statistics
+  1) Stat Menu -> Basic Statistics -> Display Descriptive Statistics...
+  2) Place the response in the Variables box and your factor in the By variables box
+  3) Click on the Statistics... button
+  4) Select just Variance and N nonmissing and click OK
+  5) Click OK
++ Pairwise Differences
+  1) Stat Menu -> ANOVA -> One-way...
+  2) Place the response in the Response box and the factor in the factor box
+  3) Click on the Comparisons... button
+  4) Select Tukey and check the Tests box under Results; click OK.
+  5) Click OK
+
+You'll use values from these two outputs to calculate values.
 
 ## Cohen's *d*
 
 To calculate Cohen's *d* you will need the following:
 
-+ The difference in means for the two groups
-+ The *Sample Arithmetic Variance* for both groups
++ From the Descriptive Statistics output
+  - The *Sample Arithmetic Variance* for both groups
+  - The sample size for both groups
++ From the Tukey Tests for Differences of Means Output (ANOVA)
+  - Difference of Means
 
-The first step is to calculate the *Pooled Standard Deviation*:
-\[SD_{\text{pd}}=\sqrt[2]{\frac{SAV(\text{group 1})+SAV(\text{group 2})}{2}}\]
+To match what is going on via the `DescTools::CohenD` function as of 3/30/23, you will need to first calculate the *[Weighted] Pooled Standard Deviation* with the following formula:
+\[SD_{\text{wpd}}=\sqrt[2]{\frac{(n_1-1)SAV(\text{group 1})+(n_2-1)SAV(\text{group 2})}{n_1+n_2-2}}\]
 
 Once you have calculated this value, you get Cohen's *d* via
-\[d=\frac{\text{diff in means}}{SD_{\text{pd}}}\]
+\[d=\frac{\text{diff in means}}{SD_{\text{wpd}}}\]
 
 ## Hedge's *g*
 
 For Hedge's *g*, you will need:
 
-+ The difference in the means for the two groups
-+ The *Sample Arithmetic Variance* values for both groups
-+ The sample sizes for both groups. 
++ Cohen's *d*
++ The value of the scale correction:
+\[c=1-\frac{3}{4\left(n_1+n_2\right)-9}\]
 
-The first step is to calculate the *Weighted Pooled Standard Deviation*:
-\[SD_{\text{wpd}}=\sqrt[2]{\frac{(n_1-1)SAV(\text{group 1})+(n_2-1)SAV(\text{group 2})}{n_1+n_2-2}}\]
-
-Then Hedge's *g* is found 
-\[g=\frac{\text{difference in means}}{SD_{\text{wpd}}}\]
-
-## Small Sample Size 
-
-In the event that the answers aren't accepted and you are in a situation with small sample sizes (say total sample size is under 50), try multiplying both Hedge's *g* and Cohen's *d* by 
-\[\left(\frac{N-3}{N-2.25}\right)\cdot\sqrt[2]{\frac{N-2}{N}}\] (I'm unsure if R is doing this adjustment automatically.)
-
-## Hodges-Lehmann Estimator
-
-For the non-parametric setting, you replace both Cohen's *d* and Hedges *g* with the Hodges-Lehman Estimator, \(\widehat{\Delta}\). The ANOVA/Post Hoc output can't help you here. I do not know if Minitab can calculate this for you. 
-
-Let's imagine that we have two groups we want to compare: \(\mathcal{A}=(1,2,10,11)\) and \(\mathcal{B}=(4,5,6)\). To find the Hodges-Lehmann Estimate we would need to:
-
-1) Form all pairwise comparisons of members of A to members of B
-    + 1-4, 1-5, 1-6, 2-4, 2-5, 2-6, 10-4, 10-5, 10-6, 11-4, 11-5, 11-6
-2) Calculate the differences and treat as a new collection
-    + \(\mathcal{D}=(-3,-4,-5,-2,-3,-6,6,5,4,7,6,5)\)
-3) Find the value of the *Sample Median* for this new collection, this will be the estimate
-    + \(\widehat{\Delta}=`r median(c(-3,-4,-5,-2,-3,-6,6,5,4,7,6,5))`\)
+Then Hedge's *g* is then calculated as \(g=d*c\).
 
 ## Probability of Superiority
 
@@ -101,9 +97,7 @@ Minitab limits which post hoc methods you can do. I'm not going to re-invent the
 
 ## Bonferroni Style
 
-In these methods, you are not adjusting any *p*-values, rather you are going to adjust your Unusualness Thesholds.
-
-See Discussion 22 (3/10/21) and Section 5.2 of Oehlert.
+In these methods, you are not adjusting any *p*-values, rather you are going to adjust your Unusualness Thesholds. See Section 5.2 of Oehlert.
 
 ## Adjusting Methods
 

@@ -105,7 +105,6 @@ gummyData$angle <- factor(
 
 ```
 
-<!--UPDATE THIS -->
 Notice that I used both `factor` and `as.factor`. The `as.factor` function makes use of the values that exist in the column and organizes the levels alphabetically. This works well for the launch position. For the launch angle factor, I wanted the levels to reflect the increasing magnitude of the angle, thus, I used the `factor` function's `levels` argument to specify the order. The risk here is if your entries to `levels` don't exactly match what is in your data, you'll have observations get dropped.
 
 ### Omnibus SRQs and Hypotheses
@@ -521,8 +520,7 @@ Build a QQ plot and write accompanying text for assessing the Gaussian Residuals
 
 ## Homoscedasticity
 
-<!--UPDATE THIS-->
-Just as in the One-way ANOVA with a Block, we will want to look at a Tukey-Anscombe plot rather than a strip chart for our factorial designs.
+With Factorial Designs, we will want to look at a Tukey-Anscombe plot rather than a strip chart. This allows us to better incorporate our full model.
 
 ```{r batteryVar, echo=TRUE}
 #| fig.cap="Tukey-Anscombe Plot for Battery Manufacturing Study",
@@ -603,20 +601,19 @@ ggplot(
 
 ```
 
-<!--UPDATE THIS-->
-Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams. I am going to leave to you the challenge of getting `R` to place the facets in the order Group 1, Group 2, Group 3, etc. instead of what currently appears.
+Figure \ref{fig:gummyBearsIO} shows the index plots for the twelve catapult teams.
 
-When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The plots I'm most concerned about are from Groups 4 and 8. For both of these groups there appears to be a decreasing trend in how far the gummy bears flew as they carried out their trials. 
+When I look at Figure \ref{fig:gummyBearsIO}, I don't see twelve perfect carbon copies. This supports the idea that the twelve experimental units are independent. The plot I'm most concerned about is from Group/Team 3D. We'll need to investigate further. 
 
 ## Recapping Assumptions
 
-We will state that all three assumptions are satisfied for both the Battery Manufacturing and Gummy Bears studies.
+We will state that all three assumptions are satisfied in the Battery Manufacturing study. For the Gummy Bears study, we have issues we need to resolve first.
 
-# Results
+# Omnibus Results
 
 For results, we want to tackle both sets: Omnibus (*F* test, effect sizes, and point estimates) and Post Hoc (pairwise, effect sizes, and/or contrasts).
 
-## Omnibus
+## ANOVA Table
 
 For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ designs. Thus, we do not need to worry about different types of *Sums of Squares*. However, I'm going to demonstrate how we can switch the types.
 
@@ -661,7 +658,7 @@ In the Battery Manufacturing situation, we would decide to reject the null hypot
 
 ### Your Turn
 
-Make the modern ANOVA table for the Gummy Bears situation. Write a paragraph to go with the table.
+Make the modern ANOVA table for the Gummy Bears situation (pretending that we *don't* have the issues that we do). Write a paragraph to go with the table.
 
 ## Point Estimates
 
@@ -693,7 +690,8 @@ data.frame("Estimate" = pointEst) %>%
   ) %>%
   kableExtra::kable_styling(
     font_size = 12,
-    latex_options = c("HOLD_position")
+    # latex_options = c("HOLD_position")
+    # I commented out the above so the computer would find "best" placement
   ) 
 
 ```
@@ -708,178 +706,333 @@ The interpretation of interaction terms may be thought of as the "differences in
 
 Get the point estimates for the Gummy Bear Study. Give interpretations for the *GSAM*, one level of each main effect, and one interaction level.
 
-## Post Hoc--Pairwise Comparisons & Effect Sizes
+# Pairwise Comparisons for Post Hoc Analysis
 
-<!--REVISE THIS FOR ALL POSSIBLE-->
+Post Hoc analysis in [full] factorial designs is a much richer ground. This is due to the fact that we simply have more going on to explore. In fact, we can conceptualize the following kinds of pairwise explorations:
 
-While you *could* use the pairwise comparison functions we've previously used, a better approach is to embrace our Factorial Design and look at the *estimated marginal means*. These will hold certain factors constant and let others vary. To do this, we will need to use the `emmeans` package.
++ Pairwise Comparisons of Individual Main Effects
++ Pairwise Comparisons of Conditioned Main Effects
++ Pairwise Comparisons of Interactions
 
-```{r batteryPH1, echo=TRUE}
-# Demo code for Post Hoc Pairwise Comparisons ----
-## Marginal Means with Adjusted Confidence Intervals
-## Battery Manufacturing Study
-batteryPHMeans <- emmeans::emmeans(
+Each of these types of pairwise comparisons allow you to look at different aspects. __However,__ you should specify what you are wanting to explore *prior* to doing your analysis so that you don't accidentally shift perspectives (EDA vs. CDA) and claim your work is for the other.
+
+For all of these approaches, we will make use of the `emmeans` package for ease of coding and so that we can be sure to get effect sizes (practical significance).
+
+## Individual Main Effects Pairwise Comparisons
+
+In this type of pairwise comparison, we are focusing on comparing the levels of a single factor (i.e., a main effect), ignoring all other factors in the model. This is equivalent to doing pairwise analysis in One-way ANOVA.
+
+Given that the plate material came up as being an important contributor to how long the battery lasted, we might want to see which plate materials are statistically different from one another. We'll control SCI at 10% via Tukey's HSD.
+
+```{r platePostHoc1, echo=TRUE}
+# Demo code for main effects pairwise comparisons ----
+## Battery Life Example, Plate Material
+platePostHoc <- emmeans::emmeans(
   object = batteryModel,
-  # The order of factors does not really matter for this
-  specs = pairwise ~ temperature | material,
-  adjust = "tukey", # Where you specify your chosen method
-  level = 0.9 # 1--Type I Risk
+  specs = pairwise ~ material,
+  adjust = "tukey",
+  level = 0.9
 )
 
-as.data.frame(batteryPHMeans$emmeans) %>%
-  knitr::kable(
-    digits = 4,
-    col.names = c("Temperature", "Plate Material", "Marginal Mean","SE", "DF",
-                  "Lower Bound","Upper Bound"),
-    caption = "Marginal Means-Tukey 90\\% Adjustment",
-    align = rep("c", 7),
-    booktabs = TRUE
-  ) %>%
+knitr::kable(
+  x = platePostHoc$contrasts,
+  digits = 3,
+  caption = "Post Hoc Comparisons for Main Effect Plate Material",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value"),
+  align = "lccccc",
+  booktabs = TRUE
+) %>%
   kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
+    bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
     latex_options = c("HOLD_position")
   )
 
 ```
 
-```{r batteryPH2, echo=TRUE}
-# Demo code for Post Hoc 
-## Pairwise Comparisons
-## Battery Manufacturing Study
-batteryPHTemp <- emmeans::emmeans(
-  object = batteryModel,
-  # Order maters for this; comparisons | held constant
-  specs = pairwise ~ temperature | material,
-  adjust = "tukey", # Where you specify your chosen method
-  level = 0.9 # 1--Type I Risk
-)
+From Table \ref{tab:platePostHoc1}, we can see that plate material 1 is statistically different from both plate materials 2 and 3, but plate materials 2 and 3 are not statistically different from each other. Given the order of comparison (the Pair column) and the values of the differences, the data suggest that plate material 1 leads to shorter battery life.
 
-as.data.frame(batteryPHTemp$contrasts) %>%
-  knitr::kable(
-    digits = 4,
-    col.names = c("Comparison", "Plate Material", "Estimate","SE", "DF",
-                  "t Statistic", "p-value"),
-    caption = "Pairwise Comparisons of Temperature-Tukey 90\\% Adjustment",
-    align = rep("c", 7),
-    booktabs = TRUE
-  ) %>%
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  )
+We can add measures of effect size to Table \ref{tab:platePostHoc1}. In the following example, I'll show how we can get the effect size table, and then join that two the results table.
 
-```
-
-```{r batteryPH3, echo=TRUE}
-# Demo code for Post Hoc 
-## Pairwise Comparisons
-## Battery Manufacturing Study
-batteryPHPlate <- emmeans::emmeans(
-  object = batteryModel,
-  # Order maters for this; comparisons | held constant
-  specs = pairwise ~ material | temperature,
-  adjust = "tukey", # Where you specify your chosen method
-  level = 0.9 # 1--Type I Risk
-)
-
-as.data.frame(batteryPHPlate$contrasts) %>%
-  knitr::kable(
-    digits = 4,
-    col.names = c("Comparison", "Temperature", "Estimate","SE", "DF",
-                  "t Statistic", "p-value"),
-    caption = "Pairwise Comparisons of Plate Material-Tukey 90\\% Adjustment",
-    align = rep("c", 7),
-    booktabs = TRUE
-  ) %>%
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  )
-
-```
-
-The `adjust` argument of `emmeans` allows values as your method for controlling Type I Error rates: `"bonferroni"`, `"tukey"`, `"scheffe"`, `"sidak"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`. You will get point estimates (marginal means) and their confidence intervals when you use the `postHocObject$emmeans` and you'll get pairwise comparisons with adjusted *p*-values when you use `postHocObject$contrasts`.
-
-### Effect Sizes
-
-Unfortunately, my `anova.PostHoc` function does not currently work with with factorial models. However, the `emmeans` package provides us with a way to get Cohen's *d*, which then allows us to my `probSup` function to get the Probability of Superiority.
-
-```{r effectSize1, echo=TRUE}
-# Demo Code for Effect Sizes
-## Battery Manufacturing Study
-## Pairwise Temperature Comparisons
-as.data.frame(
+```{r platePostHoc2, echo=TRUE}
+# Demo code for main effects pairwise with effect sizes ----
+## Battery Life Study, Plate Material
+### Create effect size table
+plateEffects <- as.data.frame(
   eff_size(
-    object = batteryPHTemp,
+    object = platePostHoc,
     sigma = sigma(batteryModel),
     edf = df.residual(batteryModel)
   ) 
 ) %>%
-  dplyr::mutate(
+  dplyr::mutate( # The eff_size command places the pairs inside parentheses
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
   ) %>%
-  dplyr::select(contrast, material, effect.size, ps) %>%
-  knitr::kable(
-    digits = 3,
-    col.names = c("Comparison", "Plate Material", "Cohen's d", "Probability of Superiority"),
-    align = "lccc",
-    caption = "Effect Sizes for Temperature",
-    booktab = TRUE
+  dplyr::select(contrast, effect.size, ps)
+
+### Build table
+as.data.frame(platePostHoc$contrasts) %>%
+  left_join(
+    y = plateEffects,
+    by = join_by(contrast == contrast)
   ) %>%
+  knitr::kable(
+  digits = 3,
+  caption = "Post Hoc Comparisons for Main Effect Plate Material",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
+                "Prob. of Superiority"),
+  align = "lccccccc",
+  booktabs = TRUE
+) %>%
   kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
+    bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
-    latex_options = "HOLD_position"
+    latex_options = c("HOLD_position")
+  )
+
+
+```
+
+We still interpret Cohen's *d* and the Probability of Superiority in the same was we did for pairwise comparisons in the One-way case.
+
+## Conditional Main Effects Pairwise Comparisons
+
+In this type of pairwise comparison, we are still wanting to compare the levels of particular factor, but this time we want to incorporate information from another term in the model. That is, we want to make our pairwise comparisons of Factor A's levels when controlling/accounting for the levels of Factor B. These type of pairwise comparison isn't as common as the other two.
+
+For this kind of pairwise comparison, we might pose the question of which plate materials are statistically different from one another when we account for the operating temperature. The `specs` argument to `emmeans` has a crucial change for this type of analysis. After we specify `pairwise ~ material` to indicate that we want to do pairwise comparisons between the levels of the plate material factor, we type `| temperature`. We read the vertical bar (|, a.k.a. "pipe") as "given" and then we list what we want to condition our results by. In this case, the operating temperature factor. For this testing family, we'll arbitrarily choose to control the False Discovery Rate via the Benjamini-Hochberg method at 8%.
+
+```{r plateGivenTempPostHoc1, echo=TRUE}
+# Demo code for conditional pairwise comparisons ----
+## Battery Life Example, Plate Material Conditioned on Temp
+plateTempPostHoc <- emmeans::emmeans(
+  object = batteryModel,
+  specs = pairwise ~ material | temperature, # Notice the use of the | 
+  adjust = "BH",
+  level = 0.92
+)
+
+knitr::kable(
+  x = plateTempPostHoc$contrasts,
+  digits = 3,
+  caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
+  col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value"),
+  align = "llccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
   )
 
 ```
 
-```{r effectSize2, echo=TRUE}
-# Demo Code for Effect Sizes
-## Battery Manufacturing Study
-## Pairwise Plate Material Comparisons
-as.data.frame(
+Just as before, we can add on effect size estimates to Table \ref{tab:plateGivenTempPostHoc1} as shown in Table \ref{tab:plateGivenTempPostHoc2} and the following code.
+
+```{r plateGivenTempPostHoc2, echo=TRUE}
+# Demo code for conditional pairwise comparisons with effect sizes ----
+## Battery Life Study, Plate Material Conditioned on Temp
+### Create effect size table
+plateTempEffects <- as.data.frame(
   eff_size(
-    object = batteryPHPlate,
+    object = plateTempPostHoc,
     sigma = sigma(batteryModel),
     edf = df.residual(batteryModel)
   ) 
 ) %>%
-  dplyr::mutate(
+  dplyr::mutate( # The eff_size command places the pairs inside parentheses
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
   ) %>%
-  dplyr::select(contrast, temperature, effect.size, ps) %>%
+  dplyr::select(contrast, temperature, effect.size, ps)
+
+### Build table
+as.data.frame(plateTempPostHoc$contrasts) %>%
+  left_join(
+    y = plateTempEffects,
+    by = join_by(contrast == contrast, temperature == temperature)
+  ) %>%
   knitr::kable(
+  digits = 3,
+  caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
+  col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value",
+                "Cohen's d", "Prob. of Superiority"),
+  align = "llccccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  )
+
+
+```
+
+The biggest thing to keep in mind when you work with this table is that when you talk about the difference between plate material 1 and plate material 2, you need to specify at what operating temperature you're look at. From Table \ref{tab:plateGivenTempPostHoc2}, plate material 1 is only statistically different from plate materials 2 and 3 at the 70ºF operating temperature. Notice how this is a more nuanced result than what we saw with just the [unconditional] main effect post hoc analysis.
+
+## Interaction Term Pairwise Comparisons
+
+This last type of pairwise comparison focuses on interaction terms. Generally speaking, when we use this approach we jump straight to the treatment or grouping interaction term. That is, the highest order interaction term in the model that represents are experiment's treatments or what made the groups in a quasi-experiment.
+
+In the Battery Life study, our treatments consisted of a pairing of a plate material and an operating temperature; e.g., plate material 1 and operating temperature of 15ºF. This means that there are nine different treatments which we could compare. From the omnibus results (Table \ref{tab:batteryTable}), we saw that there is a statistically significant interaction term. Thus, we might want to see which of the treatments are statistically different from each other, beyond what we've already done.
+
+For this example testing family, we'll control SCI at 10% using Tukey's adjustment. For this approach we need to place the interaction term that represents the treatment, i.e., `material:temperature` in the `specs` argument after `pairwise ~`.
+
+```{r batteryTrtPostHoc1, echo=TRUE}
+# Demo code for Pairwise Comparison of Interaction Term ----
+## Battery Study, Treatments
+
+## Generate pairwise comparisons
+treatmentPostHoc <- emmeans::emmeans(
+  object = batteryModel,
+  specs = pairwise ~ material:temperature, # notice the interaction
+  ajust = "tukey",
+  level = 0.9
+)
+
+## Generate effect sizes
+treatmentEffects <- as.data.frame(
+  eff_size(
+    object = treatmentPostHoc,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
+  dplyr::mutate( # The eff_size command places the pairs inside parentheses
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps)
+
+## Build table
+as.data.frame(treatmentPostHoc$contrasts) %>%
+  left_join(
+    y = treatmentEffects,
+    by = join_by(contrast == contrast)
+  ) %>%
+  kable(
     digits = 3,
-    col.names = c("Comparison", "Temperature", "Cohen's d", "Probability of Superiority"),
-    align = "lccc",
-    caption = "Effect Sizes for Plate Material",
-    booktab = TRUE
+    caption = "Post Hoc Comparisons of Battery Study Treatments",
+    col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value",
+                  "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("scale_down") # let computer place table where it fits
+  )
+```
+
+Notice that Table \ref{tab:batteryTrtPostHoc1} is a rather large table. When working with factorial models, you will want to have care about what you do for Post Hoc analysis. In factorial settings our testing families can grow quite quickly thus we will want to think critically about what we actually want to do for Post Hoc analyses.
+
+\newpage
+
+# Running Contrasts in Factorial Settings
+
+One way to help limit the size of a testing family for post hoc analysis is to only include those comparisons that you want to test. (The `emmeans` package generates a warning message to this effect when you run the above commands for the treatment pairwise comparisons.)
+
+The method for doing contrasts in factorial settings is the same as in the One-way setting. However, I strongly recommend that you use the `emmeans` package as opposed to other methods so that you can make full use of the factorial model.
+
+## Contrasts on Main Effect
+
+Let's do a contrast on plate materials where we compare plate material 1 to the set of plate materials 2 and 3.
+
+```{r batteryContrast1, echo=TRUE}
+# Demo Code for main effects contrasts ----
+## Get the appropriate means from the model
+plateMeans <- emmeans::emmeans(
+  object = batteryModel,
+  specs = ~ material # Nothing goes on the left of ~; list what term you want
+)
+
+# plateMeans # Look at the output object to double check the order of levels
+
+## Apply the contrasts
+plateContrasts1 <- emmeans::contrast(
+  object = plateMeans, # Notice that this is the means object
+  method = list(
+    "Plate 1 vs. Plates 2 & 3" = c(1, -1/2, -1/2)
+  ),
+  adjust = "none" # No MC/SI adjustment
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(plateContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # Effect Sizes
+    ps = probSup(cohen) # Effect sizes; this comes from Neil's ANOVA toolkit
+  ) %>%
+  kable(
+    digits = 3,
+    caption = "Battery Life Main Effects Contrast on Plate Material",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
-    latex_options = "HOLD_position"
+    latex_options = c("HOLD_position")
+  ) 
+```
+
+All of our interpretations are the same as before.
+
+## Contrasts on Treatments
+
+We can also run contrasts on our treatments. This include pairwise comparisons, thus we can do a subset instead of doing all of the \({9\choose2} = 36\). The following code shows how we might apply this approach.
+
+```{r batteryContrast2, echo=TRUE}
+# Demo Code for main effects contrasts ----
+## Get the appropriate means from the model
+treatmentMeans <- emmeans::emmeans(
+  object = batteryModel,
+  specs = ~ material:temperature
+)
+
+# treatmentMeans #Be sure to look at the output so you can build your vectors
+## Apply the contrasts
+treatmentContrasts1 <- emmeans::contrast(
+  object = treatmentMeans, # Notice that this is the means object
+  method = list(
+    "Plate 1 at 15ºF vs. Plate 2 at 70ºF" = c(1,0,0,0,-1,0,0,0,0),
+    "Plate 1 vs Plates 2 & 3, all at 70ºF" = c(0,0,0,1,-1/2,-1/2,0,0,0),
+    "Plate 1-all temps vs. Plate 2-all temps" = c(1/3,-1/3,0,1/3,-1/3,0,1/3,-1/3,0)
+  ),
+  adjust = "bonferroni"
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(treatmentContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d,
+    ps = probSup(cohen)
+  ) %>%
+  kable(
+    digits = 3,
+    caption = "Treatment Contrasts for Battery Study--Bonferroni Adjusted",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
   )
 
 ```
 
-You would interpret these effects sizes exactly as you would in a One-way ANOVA context. 
-
-You can also see a bit of the influence of the interaction terms. Look at Table \ref{tab:effectSize2} and the Plate 1 - Plate 2 values across the three temperatures. Notice that the effect changes with the operating temperature.
-
-## Post Hoc--Contrasts
-
-While not all that common, especially if you are using a model building perspective, you can still do contrasts with factorial designs. 
-
-For contrasts involving combinations of levels of a single factor, you would use the same approaches and methods as in the One-way ANOVA case. 
-
-Contrasts involving combinations of levels of interaction terms are not straightforward. My recommendation is that you think extremely carefully as to what the purpose of such a combination is and whether there are other ways to investigate.
+\newpage
 
 # Imbalanced Designs
 
@@ -887,7 +1040,7 @@ As mentioned in class, when you have imbalanced designs for factorial models, we
 
 ## Different Types of Sums of Squares
 
-We have three types of Sums of Squares. Keep in mind that the default is Type I for the `aov` call. Most often in Factorial ANOVA settings, we are interested in Type II (model building--watch out of important interaction terms) and Type III (for testing differences amongst factor levels).
+We have three types of Sums of Squares. Keep in mind that the default is Type I for the `aov` call. Most often in Factorial ANOVA settings, we are interested in Type II (model building--watch out of important interaction terms) and Type III (for testing differences among factor levels).
 
 For all of these we can use the `type` argument of the `model_parameters` function that we use for our modern ANOVA tables.
 
