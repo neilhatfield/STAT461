@@ -1,6 +1,6 @@
 ---
 title: 'The Impacts of Launch Angle and Position: Gummy Bears in Space'
-author: "Neil J. Hatfield and the Fall 2022 STAT 461 Class"
+author: "Neil J. Hatfield and the Spring 2023 STAT 461 Class"
 date: "Nov. 2022"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
@@ -11,12 +11,14 @@ header-includes:
 bibliography: references.bib
 csl: american-statistical-association.csl
 ---
+
+```{=html}
 <!--IMPORTANT NOTE: 
 To ensure that you can knit this RMD file on your local machine, you'll need to ensure that you have all additional files saved to the same directory/folder as this RMD. The additional files are spoonapult.jpg, finalSetup.jpg, references.bib, and american-statistical-association.csl
 
 These file may be found on GitHub for download at https://github.com/neilhatfield/STAT461/tree/master/writingReports
 --->
-
+```
 ```{r setup, include=FALSE}
 # Setting Document Options ----
 knitr::opts_chunk$set(
@@ -56,20 +58,20 @@ For this particular sequence of activities, Dr. Hatfield drew upon the "Gummy Be
 
 For this particular study, we have several research questions:
 
-1) Does the launch angle make a difference on how far a gummy bear flew?
-    - \(H_{1,0}\): There is no statistically significant impact on how far a gummy bear flies due to launch angle.
-    - \(H_{1,A}\): There is a statistically significant impact on how far a gummy bear flies due to launch angle.
-2) Does the launch position make a difference on how far a gummy bear flew?
-    - \(H_{2,0}\): There is no statistically significant impact on how far a gummy bear flies due to launch position.
-    - \(H_{2,A}\): There is a statistically significant impact on how far a gummy bear flies due to launch position.
-3) Does the interaction of launch angle and position make a difference on how far a gummy bear flew?
-    - \(H_{3,0}\): There is no statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
-    - \(H_{3,A}\): There is a statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
+1)  Does the launch angle make a difference on how far a gummy bear flew?
+    -   $H_{1,0}$: There is no statistically significant impact on how far a gummy bear flies due to launch angle.
+    -   $H_{1,A}$: There is a statistically significant impact on how far a gummy bear flies due to launch angle.
+2)  Does the launch position make a difference on how far a gummy bear flew?
+    -   $H_{2,0}$: There is no statistically significant impact on how far a gummy bear flies due to launch position.
+    -   $H_{2,A}$: There is a statistically significant impact on how far a gummy bear flies due to launch position.
+3)  Does the interaction of launch angle and position make a difference on how far a gummy bear flew?
+    -   $H_{3,0}$: There is no statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
+    -   $H_{3,A}$: There is a statistically significant interaction effect on how far a gummy bear flies between launch angle and position.
 
 Should we find significant impacts, we will also explore the following research questions:
 
-+ Given launch position, what launch angle appears to send the gummy bear the furthest?
-- Is there a significant difference between the two treatment extremes? That is, are flat-front and high-back significantly different? And the reverse (flat-back vs. high-front)?
+-   Given launch position, what launch angle appears to send the gummy bear the furthest?
+-   Is there a significant difference between the two treatment extremes? That is, are flat-front and high-back significantly different? And the reverse (flat-back vs. high-front)?
 
 # Methods
 
@@ -167,7 +169,7 @@ Figure \ref{fig:hasseDiagram} shows the Hasse diagram for our study. We can see 
 Y_{ijk}=\mu_{\cdot\cdot\cdot}+\alpha_{i} + \beta_{j} + \alpha\beta_{ij} + \epsilon_{ijk}
 \end{equation}
 ```
-Equation \ref{eq:model} and Figure \ref{fig:hasseDiagram} both represent the underlying fixed-effects, two-way ANOVA model for our study. In particular, the \(\mu_{\cdot\cdot\cdot}\) represents the baseline effect of using a spoonapult to launch a gummy bear, \(\alpha_i\) represents the main effect of launch position, \(\beta_j\) represents the main effect of launch angle, and \(\alpha\beta_{ij}\) the interaction of position and angle. Our residual/error term (\(\epsilon_{ijk}\)) represents the inherent variability present within the individual gummy bears as well as any other sources not accounted for in our model.
+Equation \ref{eq:model} and Figure \ref{fig:hasseDiagram} both represent the underlying fixed-effects, two-way ANOVA model for our study. In particular, the $\mu_{\cdot\cdot\cdot}$ represents the baseline effect of using a spoonapult to launch a gummy bear, $\alpha_i$ represents the main effect of launch position, $\beta_j$ represents the main effect of launch angle, and $\alpha\beta_{ij}$ the interaction of position and angle. Our residual/error term ($\epsilon_{ijk}$) represents the inherent variability present within the individual gummy bears as well as any other sources not accounted for in our model.
 
 ### Addressing the Multiple Comparisons Problem
 
@@ -213,7 +215,7 @@ descpStats %>%
 
 Table \ref{tab:descpStats} shows the values for various statistics broken out by the six treatments. We can see that we have a balanced design (via the "n" column), which will provide us with benefits in terms of assumptions and *sums of squares* partitioning later on. There are a few aspects that jump out at us. Fist, The flat-back and high-back conditions have two values for the *Sample Minimum* which are an order of magnitude less than the other treatments. Their other values along Tukey's five-number summary appear to be inline with the other treatment groups. This might suggest that at least two groups might have had issues with launching gummy bears. The low-back condition also stands out in that this group quickly exceeds the other groups' distances starting with the value of the first quartile.
 
-If we wanted to explore the amount of variation within the treatment groups, we can turn towards two statistics: the *Median Absolute Deviation* (*MAD*) and the *Sample Arithmetic Standard Deviation* (*SASD*). The value of the *MAD* is the distance that half of all of the observations are from the value of the *Sample Median* and is a fairly robust and resistant estimator of the population standard deviation (\(\sigma\)). The *SASD* provides a unit-adjusted measure of amount of distance between pairs of observations within a collection, providing slightly biased, non-resistant estimator of the population standard deviation. Looking across the values of the *MAD*, we see relatively comparable values for the six treatments. When we do the same for the values of the *SASD*, we see two groupings that appear dependent upon launch position.
+If we wanted to explore the amount of variation within the treatment groups, we can turn towards two statistics: the *Median Absolute Deviation* (*MAD*) and the *Sample Arithmetic Standard Deviation* (*SASD*). The value of the *MAD* is the distance that half of all of the observations are from the value of the *Sample Median* and is a fairly robust and resistant estimator of the population standard deviation ($\sigma$). The *SASD* provides a unit-adjusted measure of amount of distance between pairs of observations within a collection, providing slightly biased, non-resistant estimator of the population standard deviation. Looking across the values of the *MAD*, we see relatively comparable values for the six treatments. When we do the same for the values of the *SASD*, we see two groupings that appear dependent upon launch position.
 
 ```{r boxplots}
 #| fig.cap = "Box Plots of Gummy Bear Distances",
@@ -337,7 +339,7 @@ car::qqPlot(
 
 ```
 
-The first assumption we'll discuss is that of our model residuals (i.e., \(\epsilon_{ijk}\)) following a Gaussian ("normal") distribution. Figure \ref{fig:qqPlot} shows the quantile-quantile (QQ) plot of our residuals against a Gaussian distribution. We've included a 90% confidence envelope to help identify points which might stray too far from the reference line of perfect fit. None of our points lie outside of this envelope. Additionally, from Table \ref{tab:descpStats}, we can see that our values of *Sample Skewness* and *Sample Excess Kurtosis* are not overly far from what we would anticipate for a Gaussian distribution (zero for both). The slightly negative values for *Sample Excess Kurtosis* indicate that we've observed fewer potential outliers than we would anticipate a true Gaussian distribution to produce. The values for *Sample Skewness* raise a slight caution for us. While all of the them are close to zero, two treatment groups have positive values (flat-back and low-front) while the others have negative values. While we generally want all groups to skew in the same direction (if they are going to be skewed), the relatively small magnitudes here help to ameliorate our concern.
+The first assumption we'll discuss is that of our model residuals (i.e., $\epsilon_{ijk}$) following a Gaussian ("normal") distribution. Figure \ref{fig:qqPlot} shows the quantile-quantile (QQ) plot of our residuals against a Gaussian distribution. We've included a 90% confidence envelope to help identify points which might stray too far from the reference line of perfect fit. None of our points lie outside of this envelope. Additionally, from Table \ref{tab:descpStats}, we can see that our values of *Sample Skewness* and *Sample Excess Kurtosis* are not overly far from what we would anticipate for a Gaussian distribution (zero for both). The slightly negative values for *Sample Excess Kurtosis* indicate that we've observed fewer potential outliers than we would anticipate a true Gaussian distribution to produce. The values for *Sample Skewness* raise a slight caution for us. While all of the them are close to zero, two treatment groups have positive values (flat-back and low-front) while the others have negative values. While we generally want all groups to skew in the same direction (if they are going to be skewed), the relatively small magnitudes here help to ameliorate our concern.
 
 ```{r tukeyAnscombe}
 #| fig.cap = "Tukey-Anscombe Plot for Gummy Bears Study",
@@ -428,7 +430,7 @@ ggplot(
 
 Taking our three assessments together, we will decide to proceed cautiously with the parametric shortcut. While our experimental units were independent of one another, we might have some issues with the independence of measurement units within certain groups.
 
-## Omnibus 
+## Omnibus
 
 Table \ref{tab:anovaTable} shows the ANOVA table for our two-way ANOVA model, using the parametric shortcut. For our three omnibus research questions, we will focus on the first three rows. The main effect of launch angle accounts for approximately `r round(anova(catapultModel)$"F value"[1], digits = 1)` times as much variation as our residuals. In a similar vein, the main effect of launch position accounts for `r round(anova(catapultModel)$"F value"[2], digits = 1)` times as much variation. The interaction of angle and position accounts for nearly `r round(anova(catapultModel)$"F value"[3], digits = 1)` times as much variation as what is left unexplained by our model. Under their respective null hypotheses, we would only anticipate observing such extreme values for the *F* ratio less than 1 ten-thousandths of the time for the main effect of angle and the interaction. For launch position, we would anticipate observing a *F*-ratio at least as large as `r round(anova(catapultModel)$"F value"[2], digits = 1)` around `r paste0(round(anova(catapultModel)$"Pr(>F)"[2], digits = 2) * 100, "%")` of the time. Of these, launch angle and the interaction term appear to have statistical significance (*p*-values less than our Unusualness Threshold of 0.06), both which appear to have a large effect size in explaining around 13% and 12% of the variation in the distance the gummy bears traveled, respectively.
 
@@ -470,8 +472,8 @@ parameters::model_parameters(
 
 Given that we have statistically significant impacts of the main effect of launch angle and the interaction of launch angle and position, we will use the full hierarchical model to explore our post hoc analysis questions. As a reminder, we have the following questions:
 
-+ Given launch position, what launch angle appears to send the gummy bear the furthest?
-+ Is there a significant difference between the two treatment extremes? That is, are flat-front and high-back significantly different? And the reverse (flat-back vs. high-front)?
+-   Given launch position, what launch angle appears to send the gummy bear the furthest?
+-   Is there a significant difference between the two treatment extremes? That is, are flat-front and high-back significantly different? And the reverse (flat-back vs. high-front)?
 
 We will break these into two testing families, still controlling FDR at 0.06. The first will focus on the conditional comparisons of launch angle. The second will focus on comparing treatment extremes.
 
@@ -663,8 +665,8 @@ Several of these limitations can be addressed in future work. For instance, we c
 
 The authors of this report would like to acknowledge their individual contributions to the report.
 
-  - Dr. Hatfield designed the class activities associated this project, oversaw the synthesis of the class's final study design, supplied materials, coordinated the implementation of the study, and the combining of the groups' data. He is responsible for the above analysis and the writing of the report.
-  - The students in the Fall 2022 STAT 461 class are responsible for participating in the class activities which lead to the design of the study and carrying out the study.
+-   Dr. Hatfield designed the class activities associated this project, oversaw the synthesis of the class's final study design, supplied materials, coordinated the implementation of the study, and the combining of the groups' data. He is responsible for the above analysis and the writing of the report.
+-   The students in the Fall 2022 STAT 461 class are responsible for participating in the class activities which lead to the design of the study and carrying out the study.
 
 \newpage
 
