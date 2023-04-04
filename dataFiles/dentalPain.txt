@@ -1,6 +1,6 @@
 # From Kutner, M. H., Nachtsheim, C. J., Neter, J., & Li, W. (2005). Applied linear statistical models. McGraw-Hill Irwin.
 
-relief	tolerance	drug	acupuncture	
+relief	tolerance	acupuncture	drug	
     0.0      1      1      1
     0.6      1      1      2
     0.5      1      2      1
