@@ -623,7 +623,7 @@ For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ desi
 parameters::model_parameters(
   model = batteryModel,
   effectsize_type = c("eta", "omega", "epsilon"),
-  type = 1, # Use 1, 2, or 3 for the Type of SSQs you want
+  type = 3, # Use 1, 2, or 3 for the Type of SSQs you want
   drop = "(Intercept)", # Drop an unneeded row for ANOVA
   verbose = FALSE # Makes the function "quiet"
 ) %>%
@@ -637,7 +637,7 @@ parameters::model_parameters(
   knitr::kable(
     digits = 4,
   col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                "Partial Omega Sq.", "Partial Eta Sq.", "Partial Epsilon Sq."),
+                "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
   caption = "ANOVA Table for Battery Manufacturing Study",
   align = c('l',rep('c',8)),
   booktab = TRUE

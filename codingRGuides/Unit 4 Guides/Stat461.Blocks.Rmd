@@ -406,7 +406,7 @@ While at first glance, there appears to be a pattern to the response (Figure \re
 
 ## Assessing Interaction
 
-The last aspect we need to check is whether there is a worrisome interaction between our block and our factor. If there is such an interaction, then our model (response = factor + block) is not valid. We will make an interaction plot to assess this issue.
+The last aspect we need to check is whether there is a worrisome interaction between our block and our factor. If there is such an interaction, then our model (response ~ block + factor) is not valid. We will make an interaction plot to assess this issue.
 
 For an interaction plot, we will plot the values of the *Sample Arithmetic Mean* across all combinations of blocks and factors look for consistency in performance. If there is no interaction, then we should see consistent behaviors (essentially parallel lines). If there is interaction, then we should switches in behavior such as non-parallel lines moving in opposite directions.
 
@@ -537,7 +537,9 @@ ggplot2::ggplot(
 
 ```
 
-We might have some issue involving the assumption about no interaction between our block and our main effects/interactions.
+Notice that there are three separate plots in Figure \ref{fig:dentalInteraction}; this is a reflection of the fact that we are fitting a Two-way Factorial + a Block ANOVA model. Thus, we will want to explore whether our block is interacting with *any* of our main effects and interaction terms.
+
+When we look at Figure \ref{fig:dentalInteraction}a, we can have a point of concern between levels 3 and 4 of pain tolerance when looking at the impact of Drug. The general pattern of behavior appears to change at these levels. Similarly, the 3-4 and 6-7 sections of Figure \ref{fig:dentalInteraction}b are also somewhat concerning when we explore the impact of Acupuncture. When we look at the interaction term by pain tolerance (Figure \ref{fig:dentalInteraction}c), sections 3-4 echo what we've previously seen, as well as for section 6-7. There is a new potential issue in section 7-8. 
 
 ## Assumption Decisions
 
@@ -603,9 +605,9 @@ block.RelEff(
 
 ```
 
-You can also run this code inline to have the resulting sentence appear as part of your narrative. For example, `r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")`
+You can also run this code inline to have the resulting sentence appear as part of your narrative. For example, "`r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")`"
 
-We can interpret this relative efficiency as telling us how many times larger we would need the per group sample size to be if we didn't use the block.
+We can interpret this relative efficiency as telling us how many times larger we would need the per group sample size to be if we didn't use the block. Sometimes using a block will yield a decent efficiency, sometimes not so much. My general recommendation is that if your block's relative efficiency is at least 1, that's good enough.
 
 __NOTE:__ The `block.RelEff` function currently only works for One-way ANOVA + Block models.
 
@@ -639,8 +641,6 @@ data.frame("Estimate" = pEst) %>%
 
 Again, we interpret these numbers as rates: "bushels per acre per test plot" or more simply, "yield per plot" (where we're using [test] plot to mean a quarter-subsection of a field).
 
-\newpage 
-
 If you don't want the estimates for the block, you can do the following:
 
 ```{r noBlockEstimates, echo=TRUE}
@@ -668,13 +668,69 @@ data.frame("Estimate" = pEst) %>%
 
 ## Post Hoc--Pairwise
 
-We might want to look at the pairwise comparisons of our factor. If we were going to control the SCI at 0.1 by using Tukey's HSD, we could make use of the `TukeyHSD` function. 
+Just as with One-way and Factorial Designs, we can do Post Hoc analyses in several ways. Generally speaking, we will __only__ do pairwise comparisons on main effects and/or interaction terms. Remember, our goal for the block is to use up/explain variation, *we are not interested in inferences about the block*.
+
+### `emmeans` Approach
+
+We can use the `emmeans` package with out block models. This package gives some some pretty decent flexibility. Let's look at a testing family for the pairwise comparisons of varietal, controlling SCI at 0.1 via Tukey's HSD.
+
+```{r barleyEMMeans, echo=TRUE}
+# Demo code for post hoc pairwise via emmeans ----
+## Barley Study
+barleyPostHoc1 <- emmeans::emmeans(
+  object = barleyModel,
+  specs = pairwise ~ Varietal,
+  adjust = "tukey",
+  level = 0.9
+)
+
+barleyEffects1 <- as.data.frame(
+  eff_size(
+    object = barleyPostHoc1,
+    sigma = sigma(barleyModel),
+    edf = df.residual(barleyModel)
+  ) 
+) %>%
+  dplyr::mutate( # The eff_size command places the pairs inside parentheses
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps)
+
+### Build table
+as.data.frame(barleyPostHoc1$contrasts) %>%
+  left_join(
+    y = barleyEffects1,
+    by = join_by(contrast == contrast)
+  ) %>%
+  knitr::kable(
+  digits = 3,
+  caption = "Post Hoc Comparisons for Barley Varietal",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
+                "Prob. of Superiority"),
+  align = "lccccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+Table \ref{tab:barleyEMMeans} provides the pairwise comparisons for the different varietals in our Barley Study along with estimates of effect sizes. Even though we used a One-way ANOVA + Block model, we still interpret all of these values in the same ways that we have been.
+
+### `tukeyHSD` Approach
+
+One catch with the `emmeans` approach is that you don't necessarily get confidence intervals. If you want intervals (and don't want to write the code to construct them yourself), you can turn to the `tukeyHSD` function instead. Since we are using a model beyond a classic One-way ANOVA, we need to add an additional argument to our call, `which`.
 
 ```{r barleyTukey, echo=TRUE}
-# Post Hoc Analysis--Pairwise comparisons
+# Demo Code for Post Hoc Pairwise Comparisons via tukeyHSD ----
 barleyPH <- TukeyHSD(
   x = barleyModel,
-  which = "Varietal", #We need to specify which model term we want
+  which = "Varietal", # We need to specify which model term we want
   conf.level = 0.9
 )
 
@@ -698,6 +754,8 @@ knitr::kable(
 Notice that we added on the `which` argument to the `TukeyHSD` call. This isolates the appropriate portion of the Tukey HSD output related to our factor of interest. If you omit this, you'll get Tukey HSD reports for every term in the model. In the Farming Barley situation, one for Field and one for Varietal.
 
 We still interpret the results in the exact same way.
+
+### `DescTools` Approach
 
 You can make similar adjustments in the `DescTools::PostHocTest` if you are wanting to control a different Type I Error Rate and/or use a different method. Table \ref{tab:secondPairwise} provides an example using Bonferroni's method for controlling SCI.
 
@@ -736,7 +794,7 @@ Note: Dunnett's Test does not currently allow for a block design.
 
 ### Effect Sizes
 
-To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function:
+Regardless of which method you use for pairwise comparisons (`emmeans`, `tukeyHSD`, or `DescTools`), you can opt to give your pairwise effect sizes as a separate table. To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function:
 
 + The `aov.obj` is the primary argument and is where we pass the `aov` (or `lm`) output to.
 + The `response` argument takes a character string as the name of the response attribute.
@@ -771,21 +829,71 @@ We need to make an important note here: suppose that our overall Unusualness Thr
 
 Even with a block, we can still use make use of the idea of contrasts. For example, let's say that barley varieties 1 and 2 are from one company while 3 and 4 are from a second company. We can test the contrast of companies, even in this blocking design.
 
-```{r barleyBlock, echo=TRUE}
-# Define the contrast
+### `emmeans` Approach
+
+The `emmeans` approach will let us incorporate effect sizes into our results (Table \ref{tab:barleyContrast1}).
+
+```{r barleyContrast1, echo=TRUE}
+# Demo Code for Contrasts using emmeans ----
+## Get the means
+barleyMeans <- emmeans::emmeans(
+  object = barleyModel,
+  specs = ~ Varietal # Nothing goes on the left of ~; list what term you want
+)
+
+# barleyMeans # Look at the output object to double check the order of levels
+
+## Apply the contrasts
+barleyContrasts1 <- emmeans::contrast(
+  object = barleyMeans, # Notice that this is the means object
+  method = list(
+    "Company A vs. Company B" = c(1/2, 1/2, -1/2, -1/2)
+  ),
+  adjust = "none" # No MC/SI adjustment
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(barleyContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # Effect Sizes
+    ps = probSup(cohen) # Effect sizes; this comes from Neil's ANOVA toolkit
+  ) %>%
+  kable(
+    digits = 3,
+    caption = "Barley Study Main Effects Contrast on Varietal Company",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  )
+
+```
+
+### Base `R` Approach
+
+We can also use the base `R` approach will let us incorporate our contrast directly into a classical ANOVA table (Table \ref{tab:barleyContrast2}).
+
+```{r barleyContrast2, echo=TRUE}
+# Demo Code for Contrasts via base R ----
+## Define the contrast
 company <- c(1/2, 1/2, -1/2, -1/2)
 
-# Bind the contrast to our factor
+## Bind the contrast to our factor
 contrasts(barleyData$Varietal) <- company
 
-# Refit our model so that our contrast gets tested
+## Refit our model so that our contrast gets tested
 barleyContrast <- aov(
   formula = Yield ~ Varietal + Field,
   data = barleyData
 )
 
-# Get the updated ANOVA Table
-## Remember, you could also use the DescTools package for Scheffé here
+## Get the updated ANOVA Table
+### Remember, you could also use the DescTools package for Scheffé here
 conOut <- summary.aov(
   object = barleyContrast,
   split = list( 
@@ -795,7 +903,7 @@ conOut <- summary.aov(
   )
 )
 
-# Make a nice table
+## Make a nice table
 knitr::kable(
   x = conOut[[1]], 
   digits = 4,
