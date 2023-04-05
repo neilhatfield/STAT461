@@ -1,7 +1,7 @@
 ---
 title: 'The Impacts of Launch Angle and Position: Gummy Bears in Space'
 author: "Neil J. Hatfield and the Spring 2023 STAT 461 Class"
-date: "Nov. 2022"
+date: "April 2023"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
@@ -46,11 +46,11 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R
 
 # Executive Summary
 
-To explore the impacts of launch angle and position on how far a simple catapult could fling a gummy bear, the Fall 2022 STAT 461 course under the guidance of Dr. Hatfield, designed and conducted an experiment. Using two different levels for position (front/back of the platform/ramp) and three different levels for launch angle (flat, low, or high), the class found that the main effect of launch angle as well as the interaction of angle and position had statistical significant impacts on how far the gummy bear flew. Additional post hoc analysis revealed that when launching from the front of the platform/ramp there was little difference due to launch angle. However, when launching from the back, the low launch angle performed better than flat and high. Among the treatment extremes, the high angle-front position out performed the flat angle-back position in terms of how far the gummy bear flew. We discuss several limitations and offer suggestions for addressing them.
+To explore the impacts of launch angle and position on how far a simple catapult could fling a gummy bear, the Spring 2023 STAT 461 classes, under the guidance of Dr. Hatfield, designed and conducted an experiment. Using two different levels for position (front/back of the platform/ramp) and three different levels for launch angle (flat, low, or high), the class found that the main effect of launch angle as well as the interaction of angle and position had statistical significant impacts on how far the gummy bear flew. Additional post hoc analysis revealed that when launching from the front of the platform/ramp there was little difference due to launch angle. However, when launching from the back, the low launch angle performed better than flat and high. Among the treatment extremes, the high angle-front position out performed the flat angle-back position in terms of how far the gummy bear flew. We discuss several limitations and offer suggestions for addressing them.
 
 # Introduction and Background
 
-Requiring students to put into practice the lessons they have been learning is a powerful way to help them internalize otherwise abstract concepts. Additionally, getting students to wrestle with how to come up with an approach to answer a research question provides an opportunity for students to authentically engage in the scientific process [@artigue2020; @artigue2013; @prodromou2019; @metz2008; @laursen2014]. These ideas are what underpin Dr. Hatfield's approach in the Fall 2022 STAT 461 course.
+Requiring students to put into practice the lessons they have been learning is a powerful way to help them internalize otherwise abstract concepts. Additionally, getting students to wrestle with how to come up with an approach to answer a research question provides an opportunity for students to authentically engage in the scientific process [@artigue2020; @artigue2013; @prodromou2019; @metz2008; @laursen2014]. These ideas are what underpin Dr. Hatfield's approach in the Spring 2023 STAT 461 course.
 
 For this particular sequence of activities, Dr. Hatfield drew upon the "Gummy Bears in Space" activity [@cobb1996a]. The sequence of activities involved students creating initial study designs, refining and synthesizing a single study design, and carrying out the experiment. Additional class activities included looking at data visualizations to decide whether the assumptions of the parametric shortcut were satisfied. This report provides a template that student may draw upon for their own report.
 
@@ -113,9 +113,43 @@ catapultData$experimentalUnit <- factor(
              "Grp 9", "Grp 10", "Grp 11", "Grp 12")
 )
 
+# Demo code for loading and cleaning data ----
+## Loading Gummy Bear Data
+gummyData <- openxlsx::readWorkbook(
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Spring2023.xlsx",
+  sheet = 1,
+  colNames = TRUE,
+  rowNames = FALSE
+)
+
+## Clean Gummy Bear Data 
+### Remove any extra white space in the two factor columns, put into title case
+### Tell R to treat them as factors
+gummyData <- gummyData %>%
+  mutate(
+    Launch.Angle = str_to_title(str_trim(Launch.Angle)),
+    Launch.Position = str_to_title(str_trim(Launch.Position)),
+    across(.cols = where(is.character), ~as.factor(.x))
+  )
+
+### Rename columns for ease and to minimize errors (i.e., distance column)
+gummyData <- rename(
+  gummyData,
+  angle = Launch.Angle,
+  position = Launch.Position,
+  distance = `Distance.(cm)`
+)
+
+### Impose a logical ordering on the angle factor
+gummyData$angle <- factor(
+  x = gummyData$angle,
+  levels = c("Flat", "Low", "High")
+)
+
+
 ```
 
-To carry out our study, we made use of a simple catapult made out of craft sticks, rubber bands, and plastic spoon--otherwise known as a "spoonapult" (see Figure \ref{fig:spoonapult}). While each team created their own spoonapult, they constructed them in the same way with Dr. Hatfield monitoring their construction. Dr. Hatfield used R's sample function to randomly assign each team one of the six treatments (establishing two replicates). The treatments consisted of a launch position and a launch angle. For position, groups were either at the front (3-inch mark) or back (33-inch mark) of a meter stick. For launch angle, groups were either flat (meter stick laying on flat the floor), low with the meter stick propped up on one end by one book, or "high" with the meter stick propped up by a stack of five books. All low groups used copies of the same book; all high groups used stacks of the same five books. When groups used any books, the 33-inch mark of the meter stick was placed inline with the spines of the books. Figure \ref{fig:catapultSetup} shows an approximation of a Front-High set up with the caveat that the stack of books shown contains an extra book.
+To carry out our study, we made use of a simple catapult made out of craft sticks, rubber bands, and a plastic spoon--otherwise known as a *spoonapult* (see Figure \ref{fig:spoonapult}). While each team created their own spoonapult, they constructed them in the same way with Dr. Hatfield monitoring their construction. Dr. Hatfield used R's sample function to randomly assign each team (6 teams in each of two sections) one of the six treatments (establishing two replicates). The treatments consisted of a launch position and a launch angle. For position, groups were either at the front (3-inch mark) or back (33-inch mark) of a meter stick. For launch angle, groups were either flat (meter stick laying on flat the floor), low with the meter stick propped up on one end by one book, or "high" with the meter stick propped up by a stack of five books. All low groups used copies of the same book; all high groups used stacks of the same five books. When groups used any books, the 33-inch mark of the meter stick was placed inline with the spines of the books. Figure \ref{fig:catapultSetup} shows an approximation of a Front-High set up with the caveat that the stack of books shown contains an extra book.
 
 ```{r catapultSetup}
 #| fig.cap = "Example Setup for a Front-High",
@@ -127,17 +161,17 @@ knitr::include_graphics("finalSetup.jpg")
 
 ```
 
-The class decided that each group should use five gummy bears as practice runs to get down their process. The class voted to measure from directly below the bowl of each spoon to where the gummy bear came to rest in centimeters. Once they had completed their practice shots, they then measured the distances of twenty gummy bears. (The gummy bears were selected via cluster sampling from a randomly selected bag of gummy bears.) Each group recorded their own data and submitted their data files to Dr. Hatfield. Dr. Hatfield then merged the data files into one [@hatfield2022]. Data are freely available on Dr. Hatfield's [GitHub repository](https://github.com/neilhatfield/STAT461/blob/master/dataFiles/gummyBears_Fall2022.xlsx) for STAT 461.
+Each group had five gummy bears with which to practice. The distance that a gummy bear flew was the straight-line distance from the front edge of the meter stick (0 inch mark) to the point where the gummy bear came to rest; this distance was measured in centimeters. Each group had 40 gummy bears for their actual data collection; each of which they used only once. (The gummy bears were selected via cluster sampling from a randomly selected bag of gummy bears.) Each group recorded their own data and submitted their data files to Dr. Hatfield. Dr. Hatfield then merged the data files into one file [@hatfield2023]. Data are freely available on Dr. Hatfield's [GitHub repository](https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Spring2023.xlsx) for STAT 461.
 
-We will note here that we've used individual gummy bears as measurement units while the twelve groups as experimental units. Dr. Hatfield chose this set up to minimize the risk that each team might introduce confounding by having to switch (or not) their catapult setups for each individual gummy bear.
+We will note here that we've used individual gummy bears as measurement units while the twelve groups as experimental units. Dr. Hatfield chose this set up to minimize the risk that each team might introduce confounding by having to switch their catapult setups for each individual gummy bear.
 
 ## Analytical Methods
 
-To analyze our data and answer our research questions we will use R (version 4.2.1) and make use of ANOVA methods, in particular a full factorial (two-way) ANOVA model.
+To analyze our data and answer our research questions we will use R (version 4.2.3) and make use of ANOVA methods, in particular a full factorial (two-way) ANOVA model.
 
 ### Appropriateness of ANOVA
 
-Given that our response of interest is how far a gummy bear traveled when flung by a spoonapult (in centimeters), we have a continuous response. Additionally, we have two factors of interest: the launch position and launch angle--flat, low, or high. Launch position is categorical with two levels (front or back). While launch angle could be quantified, we used stacks of books to induce angle and thus, we will treat this factor categorically as well with three levels (flat, low, or high).
+Given that our response of interest is how far a gummy bear traveled when flung by a spoonapult (in centimeters), we have a continuous response. Additionally, we have two factors of interest: the launch position and launch angle. Launch position is categorical with two levels (front or back). While launch angle could be quantified, we used stacks of books to induce angle and thus, we will treat this factor categorically as well with three levels (flat, low, or high). Both factors are fixed effects with these levels pre-specified by Dr. Hatfield.
 
 ```{r hasseDiagram}
 #| fig.cap = "Hasse Diagram for the Gummy Bear Study",
@@ -181,7 +215,7 @@ To account for the fact that we are conducting multiple tests of statistical sig
 # Produce values of descriptive statistics ----
 descpStats <- psych::describeBy(
   distance ~ angle + position, 
-  data = catapultData,
+  data = gummyData,
   na.rm = TRUE,
   skew = TRUE,
   ranges = TRUE,
@@ -213,9 +247,9 @@ descpStats %>%
 
 ```
 
-Table \ref{tab:descpStats} shows the values for various statistics broken out by the six treatments. We can see that we have a balanced design (via the "n" column), which will provide us with benefits in terms of assumptions and *sums of squares* partitioning later on. There are a few aspects that jump out at us. Fist, The flat-back and high-back conditions have two values for the *Sample Minimum* which are an order of magnitude less than the other treatments. Their other values along Tukey's five-number summary appear to be inline with the other treatment groups. This might suggest that at least two groups might have had issues with launching gummy bears. The low-back condition also stands out in that this group quickly exceeds the other groups' distances starting with the value of the first quartile.
+Table \ref{tab:descpStats} shows the values for various statistics broken out by the six treatments. We can see that we have a balanced design (via the "n" column), which will provide us with benefits in terms of assumptions and *sums of squares* partitioning later on. There are a few aspects that jump out at us. First, the values for the *Sample Minimum* vary by several orders of magnitude; from 0 cm to 140 cm. Looking through the rest of the values comprising Tukey's Five-Number Summary for each treatment, the Flat-Back and Flat-Front conditions stand out as signs of potential issues.
 
-If we wanted to explore the amount of variation within the treatment groups, we can turn towards two statistics: the *Median Absolute Deviation* (*MAD*) and the *Sample Arithmetic Standard Deviation* (*SASD*). The value of the *MAD* is the distance that half of all of the observations are from the value of the *Sample Median* and is a fairly robust and resistant estimator of the population standard deviation ($\sigma$). The *SASD* provides a unit-adjusted measure of amount of distance between pairs of observations within a collection, providing slightly biased, non-resistant estimator of the population standard deviation. Looking across the values of the *MAD*, we see relatively comparable values for the six treatments. When we do the same for the values of the *SASD*, we see two groupings that appear dependent upon launch position.
+If we wanted to explore the amount of variation within the treatment groups, we can turn towards two statistics: the *Median Absolute Deviation* (*MAD*) and the *Sample Arithmetic Standard Deviation* (*SASD*). The value of the *MAD* is the distance that half of all of the observations are from the value of the *Sample Median* and is a fairly robust and resistant estimator of the population standard deviation ($\sigma$). The *SASD* provides a unit-adjusted measure of amount of distance between pairs of observations within a collection, acting as a slightly biased, non-resistant estimator of the population standard deviation. Looking across the values of the *MAD*, we see some comparable values but we also see that the Low-Back treatment's and the Flat-Back treatment's value are under half the High-Front treatment's value. However, when we look along the values of the *SASD*, the values are more consistent with each other.
 
 ```{r boxplots}
 #| fig.cap = "Box Plots of Gummy Bear Distances",
@@ -224,7 +258,7 @@ If we wanted to explore the amount of variation within the treatment groups, we 
 
 # Create side-by-side box plots of the distances ----
 ggplot(
-  data = catapultData,
+  data = gummyData,
   mapping = aes(
     x = angle,
     y = distance,
@@ -252,19 +286,32 @@ Figure \ref{fig:boxplots} shows the box plots of the six treatment groups. The t
 
 If there were strong impacts due to the treatment groups, then we would expect to see six distinct modal clumps in a shadowgram of our response. Figure \ref{fig:shadowgram} provides a shadowgram of our data. As a reminder, we're looking not at the peaks but at dark portions formed by overlapping shadows. In essence, we do not see six modal clumps, but rather one. This suggests that if there are effects due to position and/or angle, they might be weak and/or there is enough noise in our data to obscure the effects.
 
-```{r shadowgram}
-#| fig.cap = "Shadowgram of Distances",
+```{r histogram}
+#| fig.cap = "Histogram of Distances",
 #| fig.pos = "H",
 #| fig.height = 2.75
 
-# Create a shadowgram of the distances ----
-shadowgram(
-  dataVec = catapultData$distance,
-  label = "Distance (cm)",
-  layers = 70,
-  aStep = 7,
-  color = "blue"
-)
+# Establish Freedman-Diaconis Binwidth Rule ----
+freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}
+
+# Create a histogram of the distances ----
+ggplot(
+  data = gummyData,
+  mapping = aes(x = distance)
+) +
+  geom_histogram(
+    fill = "blue",
+    color = "black",
+    closed = "left",
+    binwidth = freedmanDiaconis,
+    boundary = 0
+  ) +
+  theme_bw() +
+  xlab("Distance (cm)") +
+  ylab("Freq.") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  scale_x_continuous(expand = expansion(mult = 0.01))
+
 
 ```
 
@@ -319,6 +366,11 @@ Ideally, we would like to make use of the parametric shortcut for our hypothesis
 catapultModel <- aov(
   formula = distance ~ angle*position,
   data = catapultData
+)
+
+gummyModelFull <- aov(
+  formula = distance ~ angle*position,
+  data = gummyData
 )
 
 ```
@@ -667,6 +719,111 @@ The authors of this report would like to acknowledge their individual contributi
 
 -   Dr. Hatfield designed the class activities associated this project, oversaw the synthesis of the class's final study design, supplied materials, coordinated the implementation of the study, and the combining of the groups' data. He is responsible for the above analysis and the writing of the report.
 -   The students in the Fall 2022 STAT 461 class are responsible for participating in the class activities which lead to the design of the study and carrying out the study.
+
+\newpage
+
+# Appendix
+
+In the course of assessing assumptions for the parametric shortcut, we ran into some concerns. In particular,...
+
+```{r qqPlotNew}
+#| fig.cap = "QQ Plot for Gummy Bear Study",
+#| fig.pos = "H"
+
+# Generate the qq plot ----
+car::qqPlot(
+  x = residuals(gummyModelFull), #
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (cm)"
+)
+
+```
+
+```{r tukeyAnscombeNew}
+#| fig.cap = "Tukey-Anscombe Plot for Gummy Bears Study",
+#| fig.pos = "H",
+#| fig.height = 3
+
+# Generate the Tukey-Anscombe plot ----
+ggplot(
+  data = data.frame(
+    residuals = residuals(gummyModelFull), #
+    fitted = fitted.values(gummyModelFull) #
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  xlab("Fitted values (cm)") +
+  ylab("Residuals (cm)")
+
+```
+
+```{r indexPlotsNew}
+#| fig.cap = "Index Plots Within Groups",
+#| fig.pos = "H"
+
+# Create new data frame ---
+means <- gummyData %>% #
+  group_by(Team) %>%
+  summarize(
+    sam = mean(distance, na.rm = TRUE)
+  )
+
+gummyData2 <- left_join(
+  x = gummyData,
+  y = means,
+  by = join_by("Team" == "Team")
+)
+
+# Create the Index Plot by Group/Team ----
+ggplot(
+  data = gummyData2,
+  mapping = aes(
+    x = Measurement.Order,
+    y = distance
+  )
+) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  geom_smooth(
+    formula = y ~ x,
+    method = "lm",
+    se = TRUE,
+    level = 0.9,
+    linetype = 1
+  ) +
+  geom_line(
+    data = gummyData2,
+    mapping = aes(y = sam, x = Measurement.Order),
+    linetype = 2,
+    color = "red"
+  ) +
+  theme_bw() +
+  xlab("Measurement order") +
+  ylab("Distance (cm)") +
+  facet_wrap(
+    facets = vars(Team),
+    scales = "fixed"
+  ) 
+```
+
+
 
 \newpage
 
