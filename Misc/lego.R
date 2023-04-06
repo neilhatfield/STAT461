@@ -1,19 +1,21 @@
 library(dplyr)
 library(openxlsx)
+library(ggplot2)
+options(contrasts = c("contr.sum", "contr.poly"))
 
 legoPrices <- read.xlsx(
-  xlsxFile = "~/Desktop/sets.xlsx",
+  xlsxFile = "Misc/sets.xlsx",
   sheet = "price"
 )
 
 legoSets <- read.xlsx(
-  xlsxFile = "~/Desktop/sets.xlsx",
+  xlsxFile = "Misc/sets.xlsx",
   sheet = "sets"
 )
 
 subthemes <- c("Botanical Collection", "Modular Buildings", "Modular Buildings Collection",
             "Winter Village")
-themes <- c("Star Wars", "Harry Potter")
+themes <- c("Star Wars", "Harry Potter", "Architecture")
 
 legoData0 <- legoPrices %>%
   filter(Subtheme %in% subthemes | Theme %in% themes) %>%
@@ -46,10 +48,11 @@ legoData0 <- legoPrices %>%
 
 
 legoData <- legoData0 %>%
+  filter(collection != "Winter Village") %>%
   group_by(collection) %>%
   slice_sample(n = 10)
 
-legoData$collection <- as.factor(legoData$collection)\
+legoData$collection <- as.factor(legoData$collection)
 
 legoModel <- aov(
   formula = price ~ numParts + collection,
@@ -61,18 +64,36 @@ legoModel2 <- aov(
   data = legoData
 )
 
-plot(legoModel)
+car::qqPlot(residuals(legoModel))
 
-library(ggplot2)
+
+legoData %>%
 ggplot(
-  data = legoData,
   mapping = aes(x = numParts, y = price)
 ) +
   geom_point(mapping = aes(color = collection, shape = collection)) +
   geom_smooth(
+    mapping = aes(color = collection),
     method = "lm",
     formula = y ~ x,
     se = FALSE,
-    color = "black"
+  ) +
+  theme_bw()
+
+anova(legoModel2)
+
+write.csv(legoData, "Misc/lego3.csv", row.names = FALSE)
+
+library(ggimage)
+legoData$x <- rep(1:10, times = 5)
+legoData$y <- 100*rep(1:5, each = 10)
+
+legoData %>%
+ggplot(
+  mapping = aes(x = x, y = y)
+) +
+  geom_image(
+    mapping = aes(image = imgURL),
+    size = 0.1
   ) +
   theme_bw()
