@@ -1,9 +1,12 @@
 ---
 title: "ANCOVA"
 author: "Neil J. Hatfield"
-date: "`r paste('Last Updated:', Sys.Date())`"
+date: "`r paste('Last Updated:', format(Sys.Date(), '%B %d, %Y'))`"
 output: 
-  pdf_document
+  pdf_document:
+    toc: false
+    toc_depth: 4
+    number_sections: true
 geometry: left=0.75in,right=0.75in,top=0.75in,bottom=0.75in
 urlcolor: blue
 header-includes: 
@@ -11,7 +14,7 @@ header-includes:
 ---
 
 ```{r setupFiles, echo=FALSE, include = FALSE}
-# Setting Document Options
+# Setting Document Options ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -31,29 +34,9 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-In this tutorial, we are going to explore Analysis of Covariance (ANCOVA) in R. The general structure for this guide will be:
+In this tutorial, we are going to explore Analysis of Covariance (ANCOVA) in R. For our purposes, we will be primarily focusing on *Parallel Lines/Separate Intercept* ANCOVA models with fixed effects (except for measurement units). Keep in mind that we can include a covariate (or several) in all of our prior models (One-way, [full] factorial, with/without a block).
 
-+ Setting Up R
-  - Loading Packages, Setting Options, and Additional Tools
-  - A New Package, `rstatix`
-+ Data Context
-  - Repetitive Motion Disorders (Keyboarding)
-+ Fit the Model
-  - Appropriateness of ANCOVA
-  - Hasse Diagrams
-  - Form the Model
-+ Assessing Assumptions
-  - Gaussian Residuals
-  - Homoscedasticity
-  - Independence of Observations
-  - Linear Relationship between Response and Covariate
-  - Checking for Potential Outliers
-  - Homogeneity of Slopes
-+ Results
-  - Omnibus
-  - Point Estimates
-  - Post Hoc--Pairwise and Effect Sizes
-+ Choosing Between the Five ANCOVA Models
+At the end of this guide, I'll go over the various kinds of ANCOVA models.
 
 # Setting Up R
 
@@ -75,7 +58,7 @@ We are going to make use of one new package, `rstatix` for ANCOVA models. There 
 As a reminder, the following code does all of these things:
 
 ```{r setR, echo=TRUE, eval=FALSE}
-# Demo code to set up R
+# Demo code to set up R ----
 ## Load packages
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
@@ -91,19 +74,20 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-# Data Context
+# Data Contexts
 
-When people engage in repetitive motion, they can suffer from any one of a set of Repetitive Motion Disorders such as carpal tunnel syndrome, trigger finger, or tendinitis. We are wanting to understand the impact of the type of keyboard on how many hours of pain a person experiences in their hands, wrists, and forearms. We suspect that the number of hours a person spends keyboarding is related to the number of hours of pain that they feel.
+We will draw upon two contexts for our primary explorations: __Keyboarding Pain__ and __Lego Set Prices__.
 
-We have 12 volunteers who will use a specific keyboard we assign them for 2 weeks. During that time, they will record the number of hours they use the keyboard and the number of hours of repetitive motion pain during the study period.
+## Keyboarding Pain
 
-## Data
+When people engage in repetitive motion, they can suffer from any one of a set of Repetitive Motion Disorders such as carpal tunnel syndrome, trigger finger, or tendinitis. We are wanting to understand the impact of the type of keyboard on how many hours of pain a person experiences in their hands, wrists, and forearms. We suspect that the number of hours a person spends keyboarding is related to the number of hours of pain that they feel. We have 12 volunteers who will use a specific keyboard we assign them for 2 weeks. During that time, they will record the number of hours they use the keyboard and the number of hours of repetitive motion pain during the study period.
+
+### Data
 
 For this example, you'll want to import the data as shown below.
 
 ```{r loadKeyboarding, echo=TRUE}
-# Demo Code for loading data
-# Keyboarding Situation
+# Demo Code for loading Keyboarding Data ----
 keyboardingData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/keyboarding.dat",
   header = TRUE,
@@ -114,42 +98,68 @@ keyboardingData <- read.table(
 ## hrs.pain is our response; hours experiencing pain
 ## kbd.type is our factor; type/style of keyboard
 ## hrs.kbd is our covariate; hours spent using the keyboard
-### make sure that R is NOT thinking of hrs.kbd as factor but
-### either as num or int
+### make sure that R is thinking of hrs.kbd as either as num or int
 
 keyboardingData$kbd.type <- as.factor(keyboardingData$kbd.type)
 
 ```
 
-# Fit the Model
+## Lego Set Prices
+
+This study stems from Context 6 in the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and as friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
+
+One of Neil's friends scrapped two online databases to build master data file covering nearly the entire Lego catalog. Neil wrangled this master data file and used the `slice_sample` function from the `dplyr` package to conduct a stratified random sample of sets based upon the theme/collection used in the study. The total sample size in our balanced study is 50.
+
+### Data
+
+Here is how we can explore the Lego Data.
+
+```{r legoData, echo=TRUE}
+# Demo code for loading the Lego data ----
+legoData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/legoData.csv",
+  header = TRUE,
+  sep = ","
+)
+
+legoData$collection <- as.factor(legoData$collection)
+
+```
+
+# Exploring the Data
+
+I want to leave a quick note as a reminder that just as we've discussed all course, you should explore your data as thoroughly as possible at this junction. Look at multiple data visualizations and at various values of descriptive statistics. This will not only help you build your understanding of the data (think, EDA) but will also set the stage for assessing several of our assumptions.
+
+# Is ANCOVA Appropriate?
 
 Before we write code to fit the ANCOVA model in `R`, we should check that ANCOVA is even appropriate.
 
 ## Appropriateness of ANCOVA
 
-To assess whether an ANCOVA model is even appropriate mimics that of any of our ANOVA models. That is,
+To assess whether an ANCOVA model is even appropriate, we need to ensure that a general ANOVA model is appropriate plus the two extra conditions for ANCOVA. That is,
 
 1) Do we have a quantitative (ideally, continuous) response?
 2) Do we have at least one qualitative/categorical factor of interest?
 3) Do we have enough *Degrees of Freedom* to estimate all effects of interest?
 4) Do we have enough *Degrees of Freedom* to estimate residuals/errors?
 5) Are we aiming for an additive model (up to interaction terms)?
-
-For ANCOVA, we add two more:
-
 6) Do we have a quantitative attribute (i.e., a covariate) that we believe is related to our response?
 7) Is there a linear relationship between our response and our covariate?
 
-Just as you might suspect, we check all of these base requirements just as we have been: run through the study design, looking and verifying the elements. The Hasse diagram is our friend.
+Just as you might suspect, we check all of these base requirements just as we have been: run through the study design, looking for and verifying the elements. The Hasse diagram is our friend.
 
 ## Hasse Diagrams
 
-Speaking of Hasse diagrams, there is not an agreed upon convention for how to incorporate covariates into the diagram. I tend to think of the covariate as being similar to a block and thus place a new node at the second highest level of the diagram; next to our main effects and block. Since there are many (in some cases, infinitely) levels to a covariate, we don't put a number of levels out front (to the left). Rather, we'll put the label "cov" for covariate. The number of *Degrees of Freedom* will depend upon which which type of ANCOVA model you fit. However, if you are fitting the standard ANCOVA model ("parallel lines"/"separate intercepts"), then the covariate will use 1 *Degree of Freedom*.
+Speaking of Hasse diagrams, there is not an agreed upon convention for how to incorporate covariates into the diagram. I think of the covariate as being similar to a block and thus place a new node at the second highest level of the diagram; next to our main effects and block. Since there are many (in some cases, infinitely) levels to a covariate, we don't put a number of levels out front (to the left). Rather, we'll put the label "cov" for covariate. The number of *Degrees of Freedom* will depend upon which which type of ANCOVA model you fit. However, if you are fitting the standard ANCOVA model ("parallel lines"/"separate intercepts"), then the covariate will use 1 *Degree of Freedom*.
 
 Figure \ref{fig:keyboardHD1} shows the Hasse diagram for the Keyboarding study. Notice that our covariate is labelled and uses one *Degree of Freedom*. We still have positive values for the rest of the nodes' *Degrees of Freedom* thus we should be able to estimate the effects and errors.
 
-```{r keyboardHD1, fig.cap="Hasse Diagram for Keyboarding Study", fig.height=2, fig.pos="H"}
-# Demo Code for Hasse diagram
+```{r keyboardHD1}
+#| fig.cap = "Hasse Diagram for Keyboarding Study",
+#| fig.height = 1.5,
+#| fig.pos = "H"
+
+# Demo Code for Hasse diagram ----
 ## Keyboarding Study
 modelLabels <- c("1 Relieve Pain 1", "cov Usage Time 1",
                  "3 Keyboard 2", "12 (Volunteers) 8")
@@ -168,47 +178,65 @@ hasseDiagram::hasse(
 
 ```
 
+### Your Turn
+
+Use the information provided to create the Hasse diagram for the Lego Set Prices Study.
+
 ## Linear Relationship
 
 The last requirement for the ANCOVA is that there is a linear relationship between the response on the covariate. This requirement is also one of our assumptions. Thus, we'll look at this issue in that section.
 
 ## Forming the Model
 
-We are going to fit *two* models for ANCOVA: one will be our model that we use for checking all but two assumptions, and getting the results (both the omnibus and post hoc analyses). The other model we will use for checking the homogeneity of the covariate's slope parameter.
+We are going to fit *two* models for ANCOVA: one will be our *actual* model that we use for checking all but two assumptions, and getting the results (both the omnibus and post hoc analyses). The *other* model we will use for checking the homogeneity of the covariate's slope parameter.
 
-```{r keyboardModels, echo=TRUE}
-# Demo Code for Fitting ANCOVA
+```{r ancovaModels, echo=TRUE}
+# Demo Code for Fitting ANCOVA Models ----
 ## Keyboarding Study
-## Our core model
+### Our core model
 keyboardModel <- aov(
   formula = hrs.pain ~ hrs.kbd + kbd.type,
   data = keyboardingData
 )
 
-## Model for checking covariate's homogeneity
+### Model for checking covariate's homogeneity
 interactionCheck <- aov(
   formula = hrs.pain ~ hrs.kbd * kbd.type,
   data = keyboardingData
 )
 
+## Lego Set Price Study
+### Core model
+legoModel <- aov(
+  formula = price ~ numParts + collection,
+  data = legoData
+)
+
+### Interacting check
+legoCheck <- aov(
+  formula = price ~ numParts + collection + numParts:collection,
+  data = legoData
+)
+
 ```
 
-# Exploring the Data
-
-I want to leave a quick note as a reminder that just as we've discussed all course, you should explore your data as thoroughly as possible at this junction. Look at multiple data visualizations and at various values of descriptive statistics. This will not only help you build your understanding of the data (think, EDA) but will also set the stage for assessing several of our assumptions.
 
 # Assessing Assumptions
 
 For ANCOVA models, we have six assumptions we need to check before using the parametric shortcut: our core three (Gaussian Residuals, Homoscedasticity, and Independent Observations) plus Linear Relationship between Response and Covariate, No Potential Outliers, and Homogeneity of Slopes.
 
-We will start with the ANCOVA specific assumptions before returning to the core three.
+For ANCOVA models, a good practice would be to start with the three ANCOVA-specific assumptions. These assumptions, if violated, are more easily fixed BUT fixing them will change the model and therefore the residuals, impacting the assumptions dealing with the residuals. Thus, by checking the ANCOVA specific assumptions first, we can save time in the long run.
 
 ## Linear Relationship between Response and Covariate
 
 The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. Again, the best approach here is to look at a scatter plot. 
 
-```{r keyboardScatter, fig.cap="Hours of Pain vs Hours Spent Keyboarding", fig.width=5, fig.height=3, echo=TRUE}
-# Scatter plot of hours of pain and hours spent keyboarding
+```{r keyboardScatter, echo=TRUE}
+#| fig.cap = "Hours of Pain vs Hours Spent Keyboarding",
+#| fig.width = 5,
+#| fig.height = 3
+
+# Scatter plot of hours of pain and hours spent keyboarding ----
 # Notice we're just using the data, not the model
 ggplot(
   data = keyboardingData,
@@ -241,6 +269,10 @@ If we were to see a nonlinear relationship (e.g., a quadratic relationship), the
 
 From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate.
 
+### Your Turn
+
+Create a scatter plot for the Lego Set Price study between the resposne and the covariate. Do we have a linear relationship between these quantities?
+
 ## Checking Potential Outliers
 
 While we always want to explore our data for potential outliers, ANCOVA models are less resistant to their influence than a typical balanced ANOVA model.
@@ -271,8 +303,13 @@ Once you complete all of the univariate checks for potential outliers, we can mo
 
 To help us check for potential multivariate outliers, we are going to make use of the `rstatix` package's `mahalanobis_distance` function.
 
-```{r keyboardOutliers, fig.cap="Potential Multivariate Outliers", fig.width=5, fig.height=2.5, fig.pos="H", echo=TRUE}
-# Demo Code for Detecting Multivariate Outliers
+```{r keyboardOutliers, echo=TRUE}
+#| fig.cap = "Potential Multivariate Outliers in Keyboarding Pain Study",
+#| fig.width = 5,
+#| fig.height = 2.5,
+#| fig.pos = "H"
+
+# Demo Code for Detecting Multivariate Outliers ----
 ## Step 1: send the data through the Mahalanobis function
 outlierDetection <- rstatix::mahalanobis_distance(keyboardingData)
 
@@ -301,25 +338,76 @@ ggplot(
     shape = "Potential Outlier"
   )
 
-
 ```
 
 In Figure \ref{fig:keyboardOutliers}, the shape of the points will reflect a `FALSE` or `TRUE` answer to the statement "This observation is a potential outlier." Thus, `TRUE` would indicate that we have a potential outlier. In our case, we have all `FALSE` points, thus we do not have a potential multivariate outliers to be concerned about.
 
+Let's explore the issue of potential multivariate outliers in the Lego Set Prices study. Figure \ref{fig:legoMVOutliers} shows the scatter plot showing the results of the calculating the Mahalanobis distances for each point. Notice that unlike Figure \ref{fig:keyboardOutliers}, we have two different shapes for the Potential Outlier.
+
+```{r legoMVOutliers, echo=TRUE}
+#| fig.cap = "Potential Multivariate Outliers in the Lego Set Price Study",
+#| fig.width = 5,
+#| fig.height = 2.5,
+#| fig.pos = "H"
+
+# Demo Code for Detecting Multivariate Outliers ----
+## Step 1: send the data through the Mahalanobis function
+outlierDetection <- rstatix::mahalanobis_distance(legoData)
+
+## Step 2: OPTIONAL--reattach the factor
+outlierDetection <- cbind(
+  outlierDetection,
+  factor = legoData$collection
+)
+
+## Step 3: Make a scatter plot
+ggplot(
+  data = outlierDetection,
+  mapping = aes(
+    y = price,
+    x = numParts,
+    shape = is.outlier,
+    color = factor
+  )
+) +
+  geom_point(size = 1) +
+  theme_bw() +
+  xlab("Number of Pieces") +
+  ylab("Price ($US)") +
+  labs(
+    color = "Collection",
+    shape = "Potential Outlier"
+  )
+
+```
+
+### Dealing with Potential [Multivariate] Outliers
+
 If we had potential multivariate outliers, we would want to investigate why they are potential outliers. For example, is there a data entry error or some other mistake for those cases? If we can fix those errors, we should and then re-run our analyses. If we can't fix those errors, then we will want to consider removing those cases. If we do not know, then we should run the model with and without these cases and compare the results.
+
+In the Lego Set Price study, our potential univariate and multivariate outliers are *not* the result of data entry errors; they are legitimate values. Thus, we might want to run a second set of ANCOVA models omitting the one set that was flagged as a potential multivariate outlier to see what, if any, changes to our model occur. 
+
+### Your Turn
+
+Which Lego sets show up as potential univariate outliers? Which Lego set was flagged as the potential multivariate outlier?
 
 ## Homogeneity of Slopes
 
-Standard ANCOVA models assume that the model is for separate intercepts/parallel lines for the covariate. We often refer to this as homogeneity of slopes. More accurately, this is the assumption that the rate of change of the response with respect to the covariate is invariant (unchanging) regarding the factor(s) (and block). Given that we're fitting a linear model between the response and the covariate, this means that we should have identical constant rates of change for each level of our factor(s).
+Standard ANCOVA models assume that the model is for separate intercepts/parallel lines for the covariate. We often refer to this as homogeneity of slopes. More accurately, this is the assumption that the rate of change of the response with respect to the covariate is invariant (unchanging) regarding the factor(s) (and block). Given that we're fitting a linear model between the response and the covariate, this means that we should have identical constant rates of change for each level of our factor(s). In other words, there is no interaction between our covariate and our factor(s).
 
 There are two ways that we can assess this assumption: looking at how well a plot for the separate intercepts model fits our data and to do an informal test of the interaction between the covariate and our factor(s).
 
-### Plot
+### Using a Plot
 
 One route we can take is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used. This is similar to what we did to check for the linear relationship between the response and the covariate. However, there are two distinct differences. First, we're going to explicitly include the factor (type of keyboard) to our plot. Second, we're going to impose three regression lines--one for each kind of keyboard--that only differ in their intercepts. If these lines appear to match up with the data reasonably well, we can be convinced that we have homogeneity of slopes. If they do not, then we might need to re-think this assumption and potentially fit a different ANCOVA model (see the final section of this guide).
 
-```{r interactionPlot, fig.cap="Homogeneity of Slopes", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Demo Code for Assessing Homogeneity of Slopes
+```{r interactionPlot, echo=TRUE}
+#| fig.cap = "Homogeneity of Slopes for Keyboarding Pain Study",
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H"
+
+# Demo Code for Assessing Homogeneity of Slopes in Keyboarding Pain Study ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -348,6 +436,8 @@ ggplot(
 
 In the code for the plot, you'll notice that we used the `geom_smooth` geometry to add the three lines. For these lines we want to use a linear model (`method = "lm"`) and define the formula `y ~ x`. The most important aspect was that within `geom_smooth` we replaced the observed pain duration with the predicted duration from our ANCOVA model: `predict(keyboardModel)`.
 
+We treat Figure \ref{fig:interactionPlot} just as we would an interaction plot from our exploration of Factorial designs or Block designs. We are wanting to see that all of the regression lines have essentially the same slope as each other. Remember, we don't have to be perfectly parallel to account for the reality of dealing with real data.
+
 I recommend checking out the section at the end of this guide to learn more about the five different ANCOVA models.
 
 ### Informal Test of Interaction
@@ -357,7 +447,8 @@ The second approach we can take is to do an informal test of the interaction ter
 To get the information, we'll use the `car` package's `Anova` function to get the Type III *Sum of Squares*:
 
 ```{r covFacInter1, echo=TRUE}
-# Remember to use the car package
+# Demo Code for INFORMAL Interaction Check ----
+## Use the car package
 car::Anova(
   mod = interactionCheck,
   type = 3
@@ -365,20 +456,25 @@ car::Anova(
 
 ```
 
-To do this informal check, you will want to keep your Unusualness Threshold and Type I Error Risk in mind. While we are going to look at an ANOVA table, we do not report this table. At most, you'll extract the information you need an report that in a paragraph, much like what we did for the Kruskal-Wallis *H* test.
+To do this informal check, you will want to keep your Unusualness Threshold and Type I Error Risk in mind. While we are going to look at an ANOVA table, we do not report this table. At most, you'll extract the information you need an report that in a sentence or two.
 
 We only want to focus on the interaction term of hours spent keyboarding and the type of keyboard (i.e., `hrs.kbd:kbd.type`). The *p*-value for this term is approximately 0.35. This is well beyond any UT you're allowed to use in this course, thus, we will fail to reject the null hypothesis. That is to say, the interaction between the covariate and the factor is not statistically important. This tells us that we should not anticipate different rates of change of pain duration with respect to time spent keyboarding for different kinds of keyboards.
 
-## Quick Word of Wisdom 
+### Your Turn
 
-You'll notice that even though I listed the core three assumptions first, I didn't start with checking them. This is due to the fact that if the linear relationship, potential outliers, and homogeneity of slopes are violated we need to address those issues before we check the core three. Addressing these three will directly impact the core assumptions. Thus, by checking these first, I can save time in the long run.
+Create an interaction plot for the Lego Set Price study. What would you decide about the homogeneity of slopes there? How do your plot and your decision there coincide (or not) with an informal test of the interaction of the covariate and factor?
 
 ## Gaussian Residuals
 
 Use a QQ plot like usual:
 
-```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=5, fig.height=3, echo=TRUE, fig.pos="H"}
-# QQ plot for residuals
+```{r residualQQ, echo=TRUE}
+#| fig.cap = "QQ Plot for Residuals in Keyboarding Pain Study",
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H"
+
+# Demo Code for QQ plot in Keyboarding Pain Study ----
 car::qqPlot(
   x = residuals(keyboardModel), 
   distribution = "norm",
@@ -392,12 +488,21 @@ car::qqPlot(
 
 There is very little to be concerned about in our QQ plot (Figure \ref{fig:residualQQ}); we will go ahead and proceed as if our residuals follow a Gaussian distribution.
 
+### Your Turn
+
+Create the QQ Plot for the residuals from the Lego Set Price study.
+
 ## Homoscedasticity
 
 Given that we have more than just a single factor, we need to look at a Tukey-Anscombe plot rather than just a strip chart.
 
-```{r keyboardVar, fig.cap="Tukey-Anscombe Plot for Keyboarding Study", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
+```{r keyboardVar, echo=TRUE}
+#| fig.cap = "Tukey-Anscombe Plot for Keyboarding Pain Study",
+#| fig.width = 4,
+#| fig.height = 3,
+#| fig.pos = "H"
 
+# Demo Code for Tukey-Anscombe Plot for the Keyboarding Pain Study ----
 ggplot(
   data = data.frame(
     residuals = residuals(keyboardModel),
@@ -426,15 +531,21 @@ ggplot(
 
 I'm a bit hesitant for the homoscedasticity assumption given the curvy nature of the line (see Figure \ref{fig:keyboardVar}). However, I don't get the sense of any pattern to the residuals. So I might say that homoscedasticity might be questionable. I would anticipate that I would go back and look at box plots and descriptive statistics by my factor to see if there might be any numeric evidence of heteroscedasticity.
 
+### Your Turn
+
+Construct the Tukey-Anscombe plot for the Lego Set Price study. What is your assessment of the homoscedasticity assumption in that data?
+
 ## Independence of Observations
 
 Unfortunately, we don't know measurement order so index plots are not going to be useful here. However, we can think through the study design and reach the decision that we have independent observations.
 
-(I'm leaving this to each of you to practice and come up with a justification for why we can say that we have independence of observations.)
+### Your Turn
+
+For both the Keyboarding Pain and Lego Set Price studies, what would you be looking for to assess Independence of Observations? What assessments would you make in each study?
 
 ## Additional Checks for ANCOVA
 
-We do have more assumptions to check in an ANCOVA situation than an ANOVA situation. Keep in mind that if you introduce a Block or Random effects, then those assumptions will get imported into your situation as well. That is, block doesn't interact with factors, and each random effect factor has treatment effects which follow a Gaussian distribution. The approaches you used previously (as well as much of the code) remains the same.
+We have more assumptions to check in an ANCOVA situation than an ANOVA situation. Keep in mind that if you introduce a Block, then the assumptions associated with those models will get imported into your situation as well. That is, the block doesn't interact with factors. The approaches you used previously (as well as much of the code) remains the same.
 
 ## Multiple Covariates
 
@@ -453,7 +564,7 @@ As a quick example, we'll draw upon the Palmer Penguins data set from the packag
 We would set up the ANCOVA model in `R` as
 
 ```{r penguins1, echo=TRUE}
-# Demo Code for checking multicollinearity
+# Demo Code for checking multicollinearity between multiple covariates ----
 ## Palmer Penguins
 penguins <- palmerpenguins::penguins
 
@@ -473,18 +584,19 @@ psych::smc(penguins[,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm")])
 
 ```
 
-Notice that bill length and flipper length both exceed 5 in the squared column; this indicates that there may be some correlation between the covariates. For the SMC values, we can see that flipper length is above 0.5, indicating this covariate may be redundant given the others. I would consider fitting the model without flipper length and seeing what happens.
+Notice that bill length and flipper length both exceed 5 in the squared column (ignore the factor--species); this indicates that there may be some correlation between the covariates. For the SMC values, we can see that flipper length is above 0.5, indicating this covariate may be redundant given the others. I would consider fitting the model without flipper length and seeing what happens.
 
-# Results
+# Reporting Results
 
-Results for ANCOVA models are a bit mixed: some people will only report Omnibus Results, others will proceed to looking at Post Hoc analyses. This is to say, there's not an overriding drive to automatically conduct Post Hoc analysis like there is for a CRD/One-way layout. My suggestion is to let the research questions posed guide you.
+Results for ANCOVA models are a bit mixed: some people will only report Omnibus Results, others will proceed to looking at Post Hoc analyses. This is to say, there's not an overriding drive to automatically conduct Post Hoc analysis like there is for a CRD/One-way layout or even Factorial designs. My suggestion is to let your research questions guide you.
 
 ## Omnibus Results
 
 In this particular situation, we have a __balanced__ design, thus we do not need to worry about different types of Sums of Squares.
 
 ```{r keyboardTable, echo=TRUE}
-# Omnibus Test/Modern ANOVA Table
+# Demo Code for Omnibus Test/Modern ANCOVA Table ----
+## Note: Type I Sums of Squares is default
 parameters::model_parameters(
   model = keyboardModel,
   effectsize_type = c("eta", "omega", "epsilon")
@@ -519,20 +631,24 @@ parameters::model_parameters(
 
 ```
 
-While we don't necessarily want to ignore the covariate's row in the table, we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before. For example,
+While we don't necessarily want to ignore the covariate's row in the table (like we do for a block), we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before. For example,
 
 > The type of keyboard assigned to the patient accounts of about 11.6 times as much variation in pain duration as our residuals/what's left unexplained (\(F(2,8)=11.64\)), even when we account for how much time the patient spends keyboarding. Under the null hypothesis that keyboard has no impact on pain duration, we would only anticipate such a result less than 1% of the time (*p* = 0.0043). The type of keyboard accounts for a large poroportion of the variation in pain durations with around 64% (see Table \ref{tab:keyboardTable}).
 
+### Your Turn
+
+Create two (2) omnibus results tables for the Lego Set Price study: one using the full data set and one dropping the potential multivariate outlier. What would you come up with as a paragraph describing the results for both tables? Compare the results; what was the impact of the potential multivariate outlier (if any) on your decisions? 
+
 ## Point Estimates
 
-The topic of point estimates in ANCOVA is a bit complicated as there are __*two*__ sets of point estimates. We can look at the straight up estimates from the model ("raw") and we can also look at co-variate adjusted estimates.
+The topic of point estimates in ANCOVA is a bit complicated as there are __*two*__ sets of point estimates. We can look at the straight up estimates from the model ("raw") and we can also look at covariate adjusted estimates.
 
 ### "Raw" Estimates
 
-To get the unadjusted or "raw" point estimates, we will make use of the `dummy.coef` function as we've done in the past.
+To get the un-adjusted or "raw" point estimates, we will make use of the `dummy.coef` function as we've done in the past.
 
 ```{r keyboardPointEstimates1, echo=TRUE}
-# Demo Code of getting unadjusted point estimates
+# Demo Code of getting un-adjusted point estimates ----
 # Keyboarding Model
 rawPointEst <- dummy.coef(keyboardModel)
 rawPointEst <- unlist(rawPointEst)
@@ -558,17 +674,17 @@ data.frame("Estimate" = rawPointEst) %>%
 
 Something that should immediately stand out to you is the point estimate for the *GSAM* is negative. However, we know from our exploration of the data that \(GSAM(\mathcal{Y})\approx `r round(mean(keyboardingData$hrs.pain), 2)`\) hrs/person. These are two very different values!
 
-So what's the deal? These "raw" or "unadjusted" point estimates are incorporating the effect of the covariate. Thus, to account for the covariate's impact on the response, we have to make some adjustments. For the *GSAM* this works through the following formula: \(GSAM(\mathcal{Y})=GSAM_{Raw}(\mathcal{Y})+\widehat{\beta}\cdot SAM(\mathcal{X})\) where \(\mathcal{Y}\) represents the collection of pain durations (hours), \(\mathcal{X}\) represents the collection of hours spent keyboarding, and \(\widehat{\beta}\) represents the estimated coefficient for the covariate. For our data, this translates to
+What's the deal? These "raw" or "un-adjusted" point estimates are incorporating the effect of the covariate. Thus, to account for the covariate's impact on the response, we have to make some adjustments. For the *GSAM* this works through the following formula: \(GSAM(\mathcal{Y})=GSAM_{Raw}(\mathcal{Y})+\widehat{\beta}\cdot SAM(\mathcal{X})\) where \(\mathcal{Y}\) represents the collection pain duration (hours), \(\mathcal{X}\) represents the collection of hours spent keyboarding, and with \(\widehat{\beta}\) representing the estimated coefficient for the covariate. For our data, this translates to
 \[`r round(mean(keyboardingData$hrs.pain), 2)` \approx `r round(rawPointEst[1], 2)` + `r round(rawPointEst[2], 2)` \cdot `r round(mean(keyboardingData$hrs.kbd), 2)`\]
 
 ### Adjusted Point Estimates
 
-We can also get covariate adjusted point estimates for our factor's levels. Now, there is an important note I need to stress here. The point estimates for the factor's levels we previously looked at are for the *treatment/factor effects*. These adjusted point estimates are for the *treatment/factor means*. That is, we will be getting \(\widehat{\mu_i}=\widehat{\mu_{\bullet\bullet}}+\widehat{\alpha_{i}}\) rather than just \(\widehat{\alpha_i}\). The best way to get the covariate adjusted point estimates for the treatment/factor means is to use the `emmeans` package.
+We can also get covariate adjusted point estimates for our factor's levels. Now, there is an important note I need to stress here. The point estimates for the factor's levels we previously looked at are for the *factor effects* but the adjusted point estimates are for the *factor means*. That is, we will be getting \(\widehat{\mu_i}=\widehat{\mu_{\bullet\bullet}}+\widehat{\alpha_{i}}\) rather than just \(\widehat{\alpha_i}\). The best way to get the covariate adjusted point estimates for the factor means is to use the `emmeans` package.
 
 The `adjust` argument of `emmeans` allows for the following values `"bonferroni"`, `"tukey"`, `"scheffe"`,`"sidak"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`. These will produce the appropriately adjusted confidence intervals (for the `$emmeans` objects) and adjusted *p*-values (for the `$contrasts` objects).
 
 ```{r emMeans, echo=TRUE}
-# Demo code for getting adjusted treatment/group means
+# Demo code for getting adjusted factor means ----
 ## These means are also called "marginal means"
 ## Keyboarding
 emmOutKey <- emmeans::emmeans(
@@ -598,16 +714,20 @@ as.data.frame(emmOutKey$emmeans) %>%
 
 ### Interpreting Point Estimates
 
-Regardless of whether you're interpreting the "raw"/unadjusted point estimates or the adjusted estimates, whether factor effects, treatment means, or the coefficient for the covariate, all of these point estimates are *rates of change* and should be interpreted as such.
+Regardless of whether you're interpreting the "raw"/un-adjusted point estimates or the adjusted estimates; whether factor effects, factor means, or the coefficient for the covariate, all of these point estimates are *rates of change* and should be interpreted as such.
 
-+ *GSAM* of 59.17 pain hours per person [covariate adjusted]
++ *GSAM* of \(\widehat{\mu_{\bullet\bullet}}=59.17\) pain hours per person [covariate adjusted]
   - Our participants accumulated a total number of pain hours 59.17 times as large as the sample size.
-+ RoC of Pain Duration w.r.t. Hours Keyboarding, 1.82 hours per hour
++ RoC of Pain Duration w.r.t. Hours Keyboarding, \(\widehat{\beta}=1.82\) hours per hour
   - Across all treatments and participants, the change in the amount of time a person felt pain (in hours) is approximately 1.82 times as large as the corresponding change in how long they keyboarded (in hours).
-+ Keyboard Type 1 Effect, \(\alpha_{1}=14.40\) pain hours per person
++ Keyboard Type 1 Effect, \(\widehat{\alpha_{1}}=14.40\) pain hours per person
   - After accounting for the impact of how long a person spent keyboarding, our group of people using Keyboard Type 1 accumulated an additional 14.4 pain hours per person beyond the general baseline expectations.
-+ Keyboard Type 1 Mean, \(\mu_1=73.57\) pain hours per person
++ Keyboard Type 1 Mean, \(\widehat{\mu_1}=73.57\) pain hours per person
   - After accounting for the impact of how long a person spent keyboarding, our Keyboard Type 1 treatment group accumulated a total number of pain hours that was 73.57 times as large as the size of that treatment group.
+
+### Your Turn
+
+Get and interpret the *adjusted* point estimates for the Lego Set Price study.
 
 ## Post Hoc Analysis
 
@@ -615,10 +735,10 @@ For Post Hoc Analysis, we'll follow the same paths was what we've done in the pa
 
 ### Pairwise Comparisons
 
-Just as with Factorial models, we will use the `emmeans` package here as well. Since I've already stored the output, I don't need to call `emmeans` a second time. I had forgotten to mention that the using `$contrasts` on the output of `emmeans` will give you when I made the Factorial Designs document.
+Just as with Factorial models, we will use the `emmeans` package here as well. Since I've already stored the output, I don't need to call `emmeans` a second time. Remember that we ask for the `constrasts` subobject from our previously stored `emmOutKey` object to get pairwise comparisons.
 
 ```{r batteryPH1, echo=TRUE }
-# Demo code for Pairwise Comparisons in ANCOVA
+# Demo code for Pairwise Comparisons in ANCOVA ----
 ## Keyboarding Study
 ## Notice that I'm re-using the emmOutKey object I created earlier
 as.data.frame(emmOutKey$contrasts) %>%
@@ -638,12 +758,14 @@ as.data.frame(emmOutKey$contrasts) %>%
 
 ```
 
+For more complicated ANCOVA models (e.g., multiple factors), we can use the techniques previously mentioned (including for contrasts). I want to note here that these pairwise comparisons are all made using the value of the *Sample Arithmetic Mean* of the covariate. In the Keyboarding Pain study, that value is 59 hrs/person. Thus, all of these pairwise comparison estimates used 59 hrs/person. If you use `specs = pairwise ~ kbd.type | hrs.kbd`, you'll get an extra line that says `hrs.kbd = 59:` at the top of your raw output; the rest of the table is identical to what we've already seen.
+
 ### Effect Sizes
 
 You will want to use the `emmeans` package for the effect sizes as well (the `anova.PostHoc` function won't account for the covariate).
 
 ```{r effectSize1, echo=TRUE}
-# Demo code for post hoc (pairwise) effect sizes
+# Demo code for post hoc (pairwise) effect sizes ----
 ## Keyboarding Study
 as.data.frame(
   eff_size(
@@ -672,18 +794,27 @@ as.data.frame(
 
 ```
 
+### Your Turn
+
+Get creative and come up with not only the pairwise comparisons but also two contrasts for the Lego Set Price study.
+
+\newpage
+
 # Choosing Between the Five ANCOVA Models
 
-There are actually five (5) different ANCOVA models. Each one is a slight variation and is applicable in different situations. They all have impacts on the *degrees of freedom* within the model, so you'll want to be cautious. Note: I've provide some general notation for calculating the *Degrees of Freedom* used by each model for a One-way ANCOVA model.
+There are actually five (5) different ANCOVA models. Each one is a slight variation and is applicable in different situations. The choice between them comes down to what you're trying to study. The choice that you make has impacts on your designs including on the *degrees of freedom* within your model. I've provide some general notation for calculating the *Degrees of Freedom* used by each model for a One-way ANCOVA model.
 
-## Exploring the Models
+## Model 1: No Effects--Constant [Grand] Mean 
 
-### No Effects--Constant [Grand] Mean 
+This is the null model for ANCOVA: our factor(s) and our covariate(s) have absolutely no impact on the response. In this model, we have only used 1 *Degree of Freedom* as we only have to estimate the value of the *Grand Mean*. If this situation were true, then the blue horizontal line in Figure \ref{fig:constantMean} would accurately describe the data. 
 
-This is the null model: that our factor(s) and our covariate(s) have absolutely no impact on the response. In this model, we have only used 1 *Degree of Freedom* as we only have to estimate the value of the *Grand Mean*. If this situation were true, then the blue horizontal line in Figure \ref{fig:constantMean} would accurately describe the data. 
+```{r constantMean, echo=TRUE}
+#| fig.width = 5,
+#| fig.height = 2.5,
+#| fig.pos = "H",
+#| fig.cap = "Graph of the Constant Mean ANCOVA Model", 
 
-```{r constantMean, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Constant Mean ANCOVA Model", echo=TRUE}
-# Demo code for the Constant Mean ANCOVA Model
+# Demo code for the Constant Mean ANCOVA Model ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -711,12 +842,17 @@ ggplot(
 
 ```
 
-### Single Line
+## Model 2: Single Line
 
 The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in Figure \ref{fig:singleLine} would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of response with respect to the covariate.
 
-```{r singleLine, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Single Line ANCOVA Model", echo=TRUE}
-# Demo Code for the Single Line ANCOVA Model
+```{r singleLine,  echo=TRUE}
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H",
+#| fig.cap = "Graph of the Single Line ANCOVA Model",
+
+# Demo Code for the Single Line ANCOVA Model ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -747,14 +883,19 @@ ggplot(
 
 ```
 
-### Separate Intercepts/Parallel Lines
+## Model 3: Separate Intercepts/Parallel Lines ("Standard ANCOVA")
 
-This is the standard ANCOVA model and the one that we most often want to draw upon. (This is the model that we are using in this course.) Here, we are anticipating that both the covariate and the factor(s) have an impact on the response. The way we think that they do so is that the factor level effects act as vertical shifts of the linear relationship between the response and the covariate. That is, we should have a set of parallel lines whose intercepts differ thanks to the factor. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the Rate of Change of the Response w.r.t. the Covariate, and the *g*-1 treatment effects which translate to the intercepts.
+This is the standard ANCOVA model and the one that we most often want to draw upon. (This is the model that we are using in this course.) Here, we are anticipating that both the covariate and the factor(s) have an impact on the response. The way we think that they do so is that the factor level effects act as vertical shifts of the linear relationship between the response and the covariate. That is, we should have a set of parallel lines whose intercepts differ thanks to the factor. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the Rate of Change of the Response w.r.t. the Covariate, and the *g*-1 factor level effects which translate to the intercepts.
 
 Again, if this is the case, the *g* parallel lines we plot should accurately describe the data in Figure \ref{fig:separateIntercepts}.
 
-```{r separateIntercepts, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Intercepts/Parallel Lines ANCOVA Model", echo=TRUE}
-# Demo Code for the Separate Intercepts/Parallel Lines ANCOVA Model
+```{r separateIntercepts, echo=TRUE}
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H",
+#| fig.cap = "Graph of the Separate Intercepts/Parallel Lines ANCOVA Model",
+
+# Demo Code for the Separate Intercepts/Parallel Lines ANCOVA Model ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -786,14 +927,19 @@ ggplot(
 
 ```
 
-### Separate Slopes
+## Model 4: Separate Slopes
 
-For this version of the ANCOVA model, we opt to allow the Rate of Change of the Response w.r.t. the Covariate to change from group to group while requiring all models to share a common point (e.g., a common point of intersection). The choice of common point should be guided by your understanding of the context and be somewhat sensible. For example, we could specify that all of the models should intersect at 0 hours of keyboarding. Alternatively, we could say that all of the models should intersect at the value of the *SAM* of hours spent keyboarding (~ 59 hrs). The choice is ours but will impact the estimates for the various \(\widehat{\beta_i}\) values. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the point of intersection, and the *g*-1 Rates of Change of the Response w.r.t. the Covariate by Factor Level.
+For this version of the ANCOVA model, we opt to allow the Rate of Change of the Response w.r.t. the Covariate to change from group to group while requiring all models to share a common point (e.g., a common point of intersection). The choice of common point should be guided by your understanding of the context and be somewhat sensible. For example, we could specify that all of the models should intersect at 0 hours of keyboarding. Alternatively, we could say that all of the models should intersect at the value of the *SAM* of hours spent keyboarding (~59 hrs/person). The choice is ours but will impact the estimates for the various \(\widehat{\beta_i}\) values. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the point of intersection, and the *g*-1 Rates of Change of the Response w.r.t. the Covariate by Factor Level.
 
 As before, we would look at the lines in Figure \ref{fig:separateSlopes} to see how well they describe our data.
 
-```{r separateSlopes, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Slopes ANCOVA Model", echo=TRUE}
-# Separate Slopes
+```{r separateSlopes, echo=TRUE}
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H",
+#| fig.cap = "Graph of the Separate Slopes ANCOVA Model"
+
+# Demo Code for the Separate Slopes ANCOVA Model ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
@@ -824,14 +970,19 @@ ggplot(
 
 ```
 
-### Separate Lines
+## Model 5: Separate Lines
 
 The last ANCOVA model is that of separate lines; here is where we believe that there is a theoretically important reason to have the factor(s) and covariate(s) interact. We could see this with a statistically significant interaction term. In this model, we use \(1+1+(g-1)+(g-1)=2g\) *Degrees of Freedom*. We estimate the *Grand Mean*, the various Rates of Change of the response w.r.t. the Covariate by Factor level, and the factor effects (the intercepts). 
 
 Again, we're looking to see how well the lines describe the data in Figure \ref{fig:separateLines}.
 
-```{r separateLines, fig.width=5, fig.height=3, fig.pos="H", fig.cap="Graph of the Separate Lines ANCOVA Model", echo=TRUE}
-# Demo code for the Separate Lines ANCOVA Model
+```{r separateLines, echo=TRUE}
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H",
+#| fig.cap = "Graph of the Separate Lines ANCOVA Model"
+
+# Demo code for the Separate Lines ANCOVA Model ----
 ggplot(
   data = keyboardingData,
   mapping = aes(
