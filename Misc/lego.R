@@ -97,3 +97,43 @@ ggplot(
     size = 0.1
   ) +
   theme_bw()
+
+# Building Data Set
+lego1 <- read.table("Misc/lego1.csv", header = TRUE, sep = ",")
+lego2 <- read.table("Misc/lego2.csv", header = TRUE, sep = ",")
+lego3 <- read.table("Misc/lego3.csv", header = TRUE, sep = ",")
+
+lego3 <- lego3[, 1:7]
+
+legoData <- rbind(
+  lego2[which(lego2$collection == "Architecture"), ],
+  lego2[which(lego2$collection == "Botanical Collection"), ],
+  lego1[which(lego1$collection == "Harry Potter"), ],
+  lego3[which(lego3$collection == "Modular Buildings"), ],
+  sw
+)
+
+sw <- legoData0 %>%
+  filter(collection == "Star Wars") %>%
+  slice_sample(n = 10)
+
+legoData <- legoData %>%
+  filter(!(setName %in% c("Harry Potter Advent Calendar", "Mini Modulars")))
+
+legoData <- rbind(
+  legoData,
+  lego3[which(lego3$setName == "Diagon Alley"), ],
+  legoData0[which(legoData0$setName == "Parisian Restaurant"), ]
+)
+
+legoData <- rbind(
+  legoData,
+  lego3[which(lego3$setName == "The Shrieking Shack & Whomping Willow"), ]
+)
+
+# Check model
+write.csv(
+  x = legoData,
+  file = "dataFiles/legoData.csv",
+  row.names = FALSE
+)

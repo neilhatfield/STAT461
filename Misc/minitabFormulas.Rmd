@@ -40,7 +40,9 @@ In the following formulas, *F* will refer to the *F* ratio for the particular te
 
 \[\eta^2_p=\frac{F\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}}\]
 \[\epsilon^2_p=\frac{(F-1)\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}}\]
-\[\omega^2_p=\frac{(F-1)\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+df_{\text{denom}}+1}\]
+\[\omega^2_p=\frac{(F-1)\cdot df_{\text{num}}}{F\cdot df_{\text{num}}+N - df_{\text{num}}}\]
+
+Where *N* is the sum of the *degrees of freedom* across all rows of your table plus 1 (for the Grand Mean).
 
 # Post Hoc Effect Sizes
 
