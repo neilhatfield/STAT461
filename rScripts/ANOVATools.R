@@ -263,11 +263,21 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
 ## Make a plot of pairwise comparisons of treatments for each subject
 sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "default"){
   require(tidyverse)
-  require(boastUtils)
+  if (colors == "boast" | colors == "psu") {
+    if ("boastUtils" %in% installed.packages()[,"Package"]) {
+      require(boastUtils)
+      palette <- colors
+    } else {
+      warning("boastUtils package not installed; changing colors to default")
+      palette <- "default"
+    }
+  } else {
+    palette <- colors
+  }
 
   if (!is.null(colsIgnore)) {
     dataWide <- dataWide %>%
-      select(!all_of(colsIgnore))
+      dplyr::select(!all_of(colsIgnore))
   }
 
   if (length(subjectID) == 1) {
@@ -291,7 +301,7 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "def
   temp2 <- data.frame(row.names = row.names(temp1))
   for (i in 1:(ncol(temp1) - 1)) {
     for (j in (i + 1):ncol(temp1)) {
-      temp2[,paste(names(temp1)[i], names(temp1)[j], sep = " - ")] <- temp1[,i] - temp1[,j]
+      temp2[,paste(names(temp1)[i], names(temp1)[j], sep = " vs. ")] <- temp1[,i] - temp1[,j]
     }
   }
   temp2 <- tibble::rownames_to_column(
@@ -321,12 +331,15 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "def
     theme(
       legend.position = "none"
     ) +
-    scale_x_discrete(labels = function(x) {stringr::str_wrap(x, width = 10)})
-  
-  if (colors == "boast") {
+    scale_x_discrete(
+      labels = label_wrap_gen(width = 10),
+      guide = guide_axis(angle = 45)
+    )
+
+  if (palette == "boast") {
     plot <- plot +
       scale_color_manual(values = boastUtils::boastPalette)
-  } else if (colors == "psu") {
+  } else if (palette == "psu") {
     plot <- plot +
       scale_color_manual(values = boastUtils::psuPalette)
   }
@@ -397,29 +410,29 @@ anovaScreens <- function(dataFrame, response, factor) {
   } else if (length(factor) > 1) {
     stop("This function is currently only built for Oneway ANOVA")
   }
-  
+
   if (length(response) <= 0 | is.na(response) | is.null(response)) {
     stop("You need to specify the name of your response")
   }
-  
+
   if (!(response %in% names(dataFrame))) {
     stop(paste("The response you gave,", response, "was not found in the data frame supplied."))
   } else if (!(factor %in% names(dataFrame))) {
     stop(paste("The factor you gave,", factor, "was not found in the data frame supplied."))
   }
-  
+
   screens <- dataFrame %>%
     dplyr::select(!!sym(response), !!sym(factor)) %>%
     mutate(
       Screen1.Action = mean(!!sym(response), na.rm = TRUE)
     )
-  
+
   groupMeans <- screens %>%
     group_by(!!sym(factor)) %>%
     summarize(
       factorMean = mean(!!sym(response), na.rm = TRUE)
     )
-  
+
   screens <- screens %>%
     left_join(
       y = groupMeans,
@@ -430,6 +443,6 @@ anovaScreens <- function(dataFrame, response, factor) {
       Screen3.Residuals = !!sym(response) - Screen1.Action - Screen2.Factor
     ) %>%
     dplyr::select(-factorMean)
-  
+
   return(screens)
 }
