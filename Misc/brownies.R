@@ -92,7 +92,7 @@ ggplot(
     text = element_text(size = 18)
   ) +
   scale_x_discrete(
-    labels = scales::label_wrap(10),
+    labels = label_wrap_gen(width = 10),
     guide = guide_axis(angle = 45)
   )
 
@@ -105,7 +105,7 @@ ggplot(
   geom_bin_2d() +
   theme_bw() +
   scale_x_discrete(
-    labels = scales::label_wrap(10),
+    labels = label_wrap_gen(width = 10),
     guide = guide_axis(angle = 45)
   ) +
   scale_fill_gradient2(name = "Score") +
