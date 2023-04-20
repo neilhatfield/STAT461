@@ -35,7 +35,7 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-In this tutorial we will take a look at Repeated Measures ANOVA models. Keep in mind that there are __TWO__ different types of Repeated Measures models: applying every treatment to each subject/measurement unit (a.k.a. "Within Subjects") and measuring each subject/measurement unit multiple times but each only gets one treatment (a.k.a. "Nested Repeated Measures"). 
+In this tutorial we will take a look at Repeated Measures ANOVA models. Keep in mind that there are __two__ different types of Repeated Measures models: applying every treatment to each subject/measurement unit (a.k.a. "Within Subjects") and measuring each subject/measurement unit multiple times but each only gets one treatment (a.k.a. "Nested Repeated Measures"). 
 
 # Important Starting Considerations
 
@@ -46,10 +46,6 @@ There are a few important considerations you need to think through before you ge
 In Repeated Measure designs, our measurement units are not as straightforward as in our other designs. To help signal this, we often use the term *subjects* to denote the living being (or object) who produces the multiple observations. This has two important consequences.
 
 First, our last node in the Hasse diagram will no longer be the measurement units (i.e., objects/living beings) but rather the observations. Second, our subjects are almost always presumed to be randomly sampled from a broader population. Thus, they are *random effects* and need to be marked as such in our Hasse diagram.
-
-## Approaches
-
-What I present here is __*ONE*__ approach to using R to conduct analysis of Repeated Measures designs. This is one particular of analysis where there are dozens of different approaches which have their own champions. In working on putting together this resource for you, I easily came across dozens of different guides all using different formulations and different packages. This is my attempt to provide *one* set of approaches that is mostly consistent with all of our other approaches.
 
 ## Identify Type of Repeated Measures
 
@@ -109,19 +105,7 @@ You'll be able to see the above code examples in action in the examples below.
 
 # Setting Up R
 
-Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. 
-
-The core set of packages to load in include the following:
-
-+ `tidyverse`--for data cleaning/wrangling and the pipe, `%>%`
-+ `knitr` & `kableExtra`--for making professional looking tables
-+ `parameters`--to construct modern ANOVA tables, get omnibus effect sizes, and to switch out the type of *Sums of Squares*
-+ `hasseDiagram`--to construct Hasse diagrams
-+ `car` for nice QQ Plots
-+ `psych`--for easy descriptive statistics by group
-+ `emmeans`--for getting point estimates which attend to our models as well as doing post hoc analyses
-+ `rstatix`--to help with assessing sphericity
-+ `lme4` and `nlme`--to help assess random effects
+Just as in the prior guides/tutorials, we have to first ensure that `R` is properly configured and prepared for our work. We will want to ensure that we load all of the appropriate packages, set our constraint, and load in any additional tools. Many of the packages that we've used throughout the semester will continue to assist us now. [New] Packages that we will need to make sure that we load for Repeated Measures designs: `lme4`, `nlme`, and `rstatix`.
 
 As a reminder, the following code does all of these things:
 
@@ -141,15 +125,13 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ```
 
-# Within Subjects Repeated Measures Design
+# Within Subjects Repeated Measures
 
 The Within Subjects Repeated Measures Design has the hallmark that each subject will be given each and every treatment. To prevent an order effect, we should randomize the order in which each subject gets the treatments.
 
 ## Example Context--Taste Testing Beer
 
-Beer is big business; the craft brewing industry contributed \$79.1 billion to the US Economy in 2018 and 550,000+ jobs (PA: \$6.335 billion).
-
-Getting a craft beer scored can be quite the achievement. In a single blind tasting, judges are given a chilled, properly poured beer and told the style category. They then judge the beer on Aroma (24 pts), Appearance (6 pts), Flavor (40 pts), Mouthfeel (10 pts), and Overall Impression (20 pts).
+Beer is big business; the craft brewing industry contributed \$76.3 billion to the US Economy in 2021 and 490,000+ jobs. Getting a craft beer scored can be quite the achievement. In a single blind tasting, judges are given a chilled, properly poured beer and told the style category. They then judge the beer on Aroma (24 pts), Appearance (6 pts), Flavor (40 pts), Mouthfeel (10 pts), and Overall Impression (20 pts).
 
 We have decided to put several State College beers to the test:
 
@@ -173,7 +155,7 @@ For this particular study, we can express the Repeated Measures-Within Subjects 
 #| fig.height = 2
 
 # Demo Code for Hasse Diagram for Beer Judging ----
-modelLabels <- c("1 Judge Beer 1", "4 Beer 3", "6 (Judge) 5", "24 (Ratings) 15")
+modelLabels <- c("1 Judge Beer 1", "6 (Judge) 5", "4 Beer 3", "24 (Observation) 15")
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
            FALSE, TRUE, TRUE, TRUE, FALSE),
@@ -187,8 +169,6 @@ hasseDiagram::hasse(
 )
 
 ```
-
-Notice that this layout looks a lot like a Randomized Complete Block Design (RCBD). For a one-way (single factor) experiment with repeated measures on all treatments, we end up with an essentially identical approach.
 
 In looking at the Hasse diagram (Figure \ref{fig:beerHD}), we can see that we have sufficient *degrees of freedom* to estimate all effects and residuals/errors. From the design we know that we have a continuous response (beer rating) as well as a categorical factor (the beer). We are also using the same judges for each beer (i.e., our "subjects"), thus we are in a Within Subjects Repeated Measures design. (We also have an additive model.)
 
@@ -240,7 +220,7 @@ For assessing compound symmetry (sphericity), we will need the wide format. For 
 We are going to need to fit three (3) models for Within Subjects designs:
 
 1) We will fit a One-way ANOVA + Block (RCBD) model for our ANOVA table.
-2) We will fit a Mixed Effects model for estimating judge effects and assess assumptions about the judge factor (uses the `lme4` package).
+2) We will fit a Mixed Effects model for estimating effects and assess assumptions about the judge factor (uses the `lme4` package).
 3) We will use a Nested Approach via the `rstatix` package for assessing Compound Symmetry/Sphericity assumption.
 
 ```{r beerModels, echo=TRUE}
@@ -274,15 +254,14 @@ For Within Subjects Repeated Measures designs, we have the following assumptions
 2) Subject effects follow a Gaussian distribution,
 3) Homoscedasticity around the model,
 4) Independence of Subjects
-  - Each subject should be independent of one another
-  - Observations across subjects should be independent (e.g., Subject A's first observation should have no impact on Subject B's first observation)
-  - Observations within a subject will have a dependency.
 5) No interaction between Subjects and Factor (just like RCBDs), and
 6) We have Sphericity.
 
+To assess these assumptions, we'll make use of many of the same tools that we've been using throughout the semester.
+
 ### Gaussian Residuals
 
-Use a QQ plot:
+Just as in other situations, we'll use a QQ Plot to assess whether our residuals follow a Gaussian distribution. Notice that we will use the `beerMixed` model (using the `lme4` package).
 
 ```{r beerQQRes, echo=TRUE}
 #| fig.cap = "QQ Plot of Beer Judging Residuals",
@@ -306,7 +285,7 @@ While there are roughly three points outside of the envelope (see Figure \ref{fi
 
 ### Gaussian Subject Effects
 
-We will want to make us of a QQ plot for assessing our assumption of a Gaussian subject effect. However, rather than looking at the residuals, we need to get the effects of our subjects. To do this we'll need to use the `ranef` function ("random effects") from the `lme4` package.
+We will also use a QQ plot for assessing our assumption of a Gaussian subject effect. However, rather than looking at the residuals, we need to get the effects of our subjects. To do this we'll need to use the `ranef` function ("random effects") from the `lme4` package on the `beerMixed` model.
 
 ```{r beerTrtQQ, echo=TRUE}
 #| fig.cap = "QQ Plot for Judge Effects",
@@ -335,7 +314,9 @@ From Figure \ref{fig:beerTrtQQ}, we can be satisfied with this assumption.
 
 ### Homoscedasticity
 
-For assessing homoscedasticity, we can use the Tukey-Anscombe plot. Again, notice which model we're using in the code.
+For assessing homoscedasticity in a Within Subjects design, we'll make use of *two* visualizations: the Tukey-Anscombe plot and a residual dot plot. In both cases, we will use the `beerMixed` model.
+
+#### Tukey-Anscombe Plot
 
 ```{r beerTA, echo=TRUE}
 #| fig.cap = "Tukey-Anscombe Plot for Beer Judging Study",
@@ -374,7 +355,7 @@ From Figure \ref{fig:beerTA}, I'm a little concerned about heteroscedasticity bu
 
 #### Residual Dot Plots
 
-An alternative approach to assessing homoscedasticity that is useful in Within Subjects Repeated Measures designs is a residual dot plot as shown in Figure \ref{fig:beerDot}.
+We can also use a residual dot plot (as shown in Figure \ref{fig:beerDot}) to look at whether we have homoscedasticity. This plot is similar to a strip chart and can help us make better informed decisions about the extent of issues shown in a Tukey-Asncombe plot.
 
 ```{r beerDot, echo=TRUE}
 #| fig.cap = "Residual Dot Plot for Beer Judging Study",
@@ -424,9 +405,8 @@ As we look at Figure \ref{fig:beerDot}, we can see that we're right on the cusp 
 
 ### Independence of Subjects
 
-If you happen to know measurement order, you can look at an Index plot. However, be sure that you incorporate the subject attribute into the plot (in this situation, the judge). This can help highlight that whether any patterns are due to our subjects (and therefore anticipated) or if we have any additional patterns threats. Treat this situation just like checking for independence of subjects in a RCBD.
-
-The index plot, if measurement order is known, can also help you look for any order effects.
+As with Independence of Observations, the best place to begin assessing this assumption is the study design. Review how researchers selected the subjects and how they collected the data to see if there might be any potential issues. 
+If you know measurement order, then you can look at an index plot. However, be sure that you incorporate your subject identifiers so that you can rule out any patterns that are the result of just switching to a new subject (i.e., switching of the fields in our Barley block example). 
 
 ### Interaction of Subject and Factor
 
@@ -466,6 +446,34 @@ ggplot(
 
 In Figure \ref{fig:beerInteraction}, we can see that as we move from beer to beer, the same general trend holds true for all judges. This indicates that there is not an interaction between judge (subject; our block) and beer (our factor).
 
+In the event that you have more than 6-8 subjects, line plots may be challenging to make sense of; for example, think about the line plot for our Brownie Mix study. In such cases, you might create a set of plots ("small multiple") through the use of a faceting attribute (e.g., breaking the 18 taste testers up into two sections) or use an alternative visualization (e.g., a heat map).
+
+```{r beerHeat, echo=TRUE}
+#| fig.cap = "Heat Map Interaction Plot for Beer Judging Study",
+#| fig.pos = "H",
+#| fig.width = 4,
+#| fig.height = 3
+
+# Demo Code for Heat Map ----
+ggplot(
+  data = beerLong,
+  mapping = aes(x = judge, y = beer, weight = score)
+) +
+  geom_bin_2d() +
+  theme_bw() +
+  xlab("Judge") +
+  ylab("Beer") +
+  scale_y_discrete(
+    labels = label_wrap_gen(width = 10)
+  ) +
+  scale_fill_gradient2(name = "Score")
+```
+
+While in the interaction plot (Figure \ref{fig:beerInteraction}) we're looking for consistency via parallelism of line segments, we want to look for consistency in Figure \ref{fig:beerHeat}. Instead of [near] parallel lines, we want to see the same general pattern as we move through the columns. For example, Judge A's column has Red Mod and Craftsman as darker (i.e., higher scores) while King Richard Red and Barnstromer are lighter (i.e., lower scores). That pattern of which beers are darker/lighter holds across each of the judges. This speaks to there not being an interaction between judge and beer that would need to be modeled.
+
+
+Taking both Figures \ref{fig:beerInteraction} and \ref{fig:beerHeat}, we can be assured that we don't have any interaction effects that we need to model.
+
 ### Sphericity
 
 The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. Thus, this is one assumption where we will supplement with a formal test: Mauchly's Test of Sphericity.
@@ -476,14 +484,15 @@ The idea behind sphericity is that we have essentially the same levels of variat
 #| fig.height = 3
 
 # Demo Code for Sphericity Plot ----
+# Note: to use color = "boast" or "psu" you'll need to install the boastUtils package
+# devtools::install_github("EducationShinyAppTeam/boastUtils")
 sphericityPlot(
   dataWide = beerWide, # Data needs to be in wide format
   subjectID = "judge", # character name of the subject column
   colsIgnore = c("order"),
   colors = "boast" # Optional; "default", "boast", "psu"
 )
-# Note: to use color = "boast" or "psu" you'll need to install the boastUtils package
-# devtools::install_github("EducationShinyAppTeam/boastUtils")
+
 
 ```
 
@@ -524,7 +533,7 @@ While not an assumption of the parametric shortcut, checking for interference ef
 #| fig.width = 5,
 #| fig.pos = "H"
 
-# Demo Code
+# Demo Code for Residual Sequence Plot ----
 cbind(
   beerLong,
   residuals = residuals(beerMixed) ## Notice which model is getting used
@@ -542,8 +551,7 @@ cbind(
   theme_bw() +
   xlab("Tasting Order") +
   ylab("Residuals (score)") +
-  facet_wrap(facets = vars(judge)) +
-  theme(text = element_text(size = 12))
+  facet_wrap(facets = vars(judge))
 ```
 
 Figure \ref{fig:beerResSeq} shows the residuals for each judge's scores, ordered by how the judge's tasted the beers. We are looking for anything that would suggest that there might be a relationship between the residuals and the tasting order. When I look at this plots, I don't see anything that would make me thing that we have significant interference effects to deal with.
@@ -557,8 +565,7 @@ As we have been doing all semester, we can divide our results into an Omnibus po
 For our omnibus test, we will use the same approach as we did for the RCBDs.
 
 ```{r beerTable, echo=TRUE}
-# Demo code of omnibus test
-## Beer Judging Study
+# Demo code of omnibus test ----
 parameters::model_parameters(
   model = beerOmni, # Notice which model we're using here
   effectsize_type = c("eta", "omega", "epsilon")
@@ -593,7 +600,7 @@ Notice that I slipped the `pvalRound` function in to take care of the fact that 
 Since the One-way Within Subjects subjects is like a RCBD, we can get a measure of the efficiency of such a design versus a completely randomized (one-way) design (CRD).
 
 ```{r beerRelEff, echo=TRUE}
-# Use the block relative efficiency function
+# Use the block relative efficiency function ----
 block.RelEff(
   aov.obj = beerOmni,
   blockName = "judge",
@@ -613,6 +620,7 @@ Thus, we would need 8 times as many ratings for each beer as what we used in ord
 If Sphericity is violated (i.e., Mauchly's Test leads you to reject the null hypothesis), we are not out of luck. When we fit the model to check for Sphericity, we also automatically got two corrected tests: the Greenhouse-Geisser and the Huynh-Feldt corrections:
 
 ```{r beerCorrected, echo=TRUE}
+# Demo Code for Corrected Omnibus p-values ----
 correctedTable <- beerSphere$`Sphericity Corrections` %>%
   dplyr::select(GGe, `p[GG]`, HFe, `p[HF]`)
 correctedTable$`p[GG]` <- lapply(
@@ -646,9 +654,7 @@ For the Corrections, the *p*-values are the adjusted *p*-values for the __omnibu
 Due to the mixed effects model (i.e., the random effect of our subjects (judges)), we cannot use the `dummy.coef` call to get point estimates. We need to use the `emmeans` package.
 
 ```{r beerPHPE, echo=TRUE}
-# Demo Code for Point Estimates
-## Beer Judging Study
-## Using emmeans
+# Demo Code for Point Estimates using emmeans package ----
 beerPH <- emmeans::emmeans(
   object = beerMixed, # Notice the use of the mixed model here
   specs = pairwise ~ beer,
@@ -681,13 +687,12 @@ as.data.frame(beerPH$emmeans) %>%
 
 ### Post Hoc Analysis--Pairwise Comparisons
 
-For Post Hoc Analysis, we will want to make use of the `emmeans` package and make sure that we're looking at the correct aspect of our model. We already assume that there's some difference in the judges, thus we are really just after the marginals of our other factor(s). In this situation, the type of beer.
+For Post Hoc Analysis, we will make use of the `emmeans` package and make sure that we're looking at the correct aspect of our model. We already assume that there's some difference in the judges, thus we are really just after the marginals of our other factor(s). In this situation, the type of beer.
 
 You can also do the standard pairwise comparisons of the beer types.
 
 ```{r beerPHPairs, echo=TRUE}
-# Demo Code for Post Hoc Pairwise Comparisons
-## Beer Judging Study
+# Demo Code for Post Hoc Pairwise Comparisons ----
 ## Notice we're using the beerPH object from the point estimates code
 as.data.frame(beerPH$contrasts) %>%
   knitr::kable(
@@ -715,8 +720,9 @@ as.data.frame(beerPH$contrasts) %>%
 For Post Hoc Effect Sizes, you'll need to use the `emmeans` package and my `probSup` function:
 
 ```{r beerES, echo=TRUE}
+# Demo Code for Post Hoc Effect Sizes ----
 tempEMM <- emmeans::emmeans(
-  object = beerMixed,
+  object = beerMixed, # Notice we're using the beerMixed model
   specs = "beer"
 )
 
@@ -756,7 +762,7 @@ as.data.frame(cohenTemp) %>%
 
 # Nested Repeated Measures Design
 
-The second kind of Repeated Measures ANOVA design deals with taking multiple measurements from our measurement units on the same attribute over time. Unlike the Within Subjects design, each measurement unit here only gets __ONE__ treatment. A some what handy way to help you decide if you're in a Nested Repeated Measures design is to see if you can think about the situation as being like a Pre-/Post-Testing situation. This classic situation involves testing/measuring everyone before we apply treatments, then apply the treatments (each person only gets one), and then testing/measuring everyone again afterwards. If you can fit the situation in to the pre/post design, you're a Nested Repeated Measures design.
+The second kind of Repeated Measures ANOVA design deals with taking multiple measurements from our measurement units on the same attribute over time. Unlike the Within Subjects design, each measurement unit here only gets __ONE__ treatment. A somewhat handy way to help you decide if you're in a Nested Repeated Measures design is to see if you can think about the situation as being like a Pre-/Post-Testing situation. This classic situation involves testing/measuring everyone before we apply treatments, then apply the treatments (each person only gets one), and then testing/measuring everyone again afterwards. If you can fit the situation into the pre/post design, you're a Nested Repeated Measures design.
 
 
 ## Example Context--Shoe Advertizing and Sales
@@ -775,8 +781,11 @@ Checking the appropriateness of ANOVA methods, including the Nested Repeated Mea
 2) The *degrees of freedom* will be off for the Markets. The app isn't subtracting the *degrees of freedom* for Campaign. Thus, you'll have to manually adjust the code until I can get a fix in place.
 3) Remember to carry your *degrees of freedom* fix through to the final node.
 
-```{r shoesHD, fig.cap="Hasse Diagram for Shoe Advertisement Study", fig.height=2}
-# Demo Code for Hasse Diagram for Shoe Advertisement Study
+```{r shoesHD}
+#| fig.cap = "Hasse Diagram for Shoe Advertisement Study",
+#| fig.height = 2
+
+# Demo Code for Hasse Diagram for Shoe Advertisement Study ----
 modelLabels <- c("1 Sell Shoes 1", "2 Campaign 1", "10 (Market) 8", "3 Time Point 2",
                  "6 Campaign × Time Point 2", "30 (Markets X Time) 16")
 modelMatrix <- matrix(
@@ -800,8 +809,7 @@ hasseDiagram::hasse(
 The shoe sales data comes to use in the wide format. We will want to make a long format version as well.
 
 ```{r shoesData, echo=TRUE}
-# Demo Code for Reading in Data
-## Shoes Ad Study
+# Demo Code for reading in data ----
 shoesWide <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/shoes.csv",
   header = TRUE,
@@ -818,16 +826,27 @@ shoesLong <- tidyr::pivot_longer(
   names_to = "time",
   names_ptypes = list("time" = factor()),
   values_to = "sales"
-)
-
+) %>%
+  mutate(
+    time = case_match(
+      .x = time,
+      "t1" ~ "before",
+      "t2" ~ "during",
+      "t3" ~ "after",
+      .ptype = factor(levels = c("before", "during", "after"))
+    )
+  )
 # Recode times to before, during, after and puts an ordering
-shoesLong$time <- dplyr::recode_factor(
-  shoesLong$time,
-  "t1" = "before",
-  "t2" = "during",
-  "t3" = "after",
-  .ordered = TRUE
-)
+
+
+## For dplyr version less than 1.1.0
+# shoesLong$time <- dplyr::recode_factor(
+#   shoesLong$time,
+#   "t1" = "before",
+#   "t2" = "during",
+#   "t3" = "after",
+#   .ordered = TRUE
+# )
 
 ```
 
@@ -835,13 +854,12 @@ shoesLong$time <- dplyr::recode_factor(
 
 We will fit two models: one that we'll use for the omnibus test and one we'll use for sphericity checking.
 
-Let's begin with our omnibus testing model. Unfortunately, there is not a nice, clean way to get a well organized table here without doing some manipulation; more on this in the results section.
+Let's begin with our omnibus testing model. Unfortunately, there is not a quick, easy way to get a well organized table. We are going to have to do some manipulations to get that table as we'll see in the results section.
 
 The key here is that you will want to make sure that you listen/watch for a particular warning message: `Error() model is singular`. This is because our final interaction term (subject x time) uses up all remaining *degrees of freedom* so we will not have a traditional Residuals/Error term. That is the crux of this particular message.
 
 ```{r shoeModels, echo=TRUE, warning=TRUE}
-# Demo Code for Omnibus Model
-## Shoes Ad Study
+# Demo Code for Omnibus Model ----
 shoesModel <- aov(
   formula = sales ~ campaign * time + Error(market %in% campaign),
   data = shoesLong
@@ -854,14 +872,20 @@ While we want to see this error message, you don't want the message to show up i
 Due to the lack of a typical Residuals/Error term, we will need to use an alternative route for getting things like residuals or fitted values for our assumption checking. For our second model, we will turn to the `nlme` package.
 
 ```{r shoesnlme, echo=TRUE}
-# Demo code for nlme package
-## Shoe Ad Study
+# Demo code for nlme package ----
 ## Use the nlme package to fit a model that we can use for assumption checking 
 shoesAssumptions <- nlme::lme(
   data = shoesLong,
   fixed = sales ~ campaign * time,
   random = ~ 1|market
 )
+
+check <- lme4::lmer(
+  formula = sales ~ time * campaign/(1|market),
+  data = shoesLong,
+  REML = FALSE
+)
+
 
 ```
 
