@@ -218,30 +218,6 @@ ggplot(
   xlab("Fitted values (score)") +
   ylab("Residuals (score)")
 
-cbind(
-  tasteDataLong,
-  residuals = residuals(bayesMixed) ## Notice which model is getting used
-) %>%
-  ggplot(
-    mapping = aes(x = Order, y = residuals)
-  ) +
-  geom_point(
-    # mapping = aes(shape = Mix, color = Mix),
-    size = 5
-  ) +
-  geom_line() +
-  geom_hline(
-    yintercept = 0,
-    linetype = "dashed",
-    color = "grey50"
-  ) +
-  theme_bw() +
-  xlab("Tasting Order") +
-  ylab("Residuals (score)") +
-  facet_wrap(facets = vars(Taster)) +
-  scale_color_manual(values = boastUtils::psuPalette[c(1:4,6)]) +
-  theme(text = element_text(size = 18))
-
 ## Interaction ----
 sec2 <- c("Mike", "One", "SpaceJam", "Tester", "silly-hedgehog-69",
           "Gordon Ramsay", "CoconutHead", "The terminator (Joseph)", "Jisoo Kim")
@@ -288,3 +264,28 @@ brownieSphere$`Mauchly's Test for Sphericity` %>%
     font_size = 12,
     latex_options = c("HOLD_position")
   )
+
+# Interference Checks ----
+cbind(
+  tasteDataLong,
+  residuals = residuals(bayesMixed) ## Notice which model is getting used
+) %>%
+  ggplot(
+    mapping = aes(x = Order, y = residuals)
+  ) +
+  geom_point(
+    # mapping = aes(shape = Mix, color = Mix),
+    size = 5
+  ) +
+  geom_line() +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  theme_bw() +
+  xlab("Tasting Order") +
+  ylab("Residuals (score)") +
+  facet_wrap(facets = vars(Taster)) +
+  scale_color_manual(values = boastUtils::psuPalette[c(1:4,6)]) +
+  theme(text = element_text(size = 18))
