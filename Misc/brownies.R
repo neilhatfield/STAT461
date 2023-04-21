@@ -246,8 +246,9 @@ tasteDataLong %>%
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
 sphericityPlot(
   dataWide = tasteDataWide, # Data needs to be in wide format
+  colsIgnore = c("Order"),
   subjectID = "Taster",
-  colors = "default",
+  colors = "default"
 )
 
 brownieSphere$`Mauchly's Test for Sphericity` %>%
