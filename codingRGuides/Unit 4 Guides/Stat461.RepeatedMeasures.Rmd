@@ -552,6 +552,7 @@ cbind(
   xlab("Tasting Order") +
   ylab("Residuals (score)") +
   facet_wrap(facets = vars(judge))
+
 ```
 
 Figure \ref{fig:beerResSeq} shows the residuals for each judge's scores, ordered by how the judge's tasted the beers. We are looking for anything that would suggest that there might be a relationship between the residuals and the tasting order. When I look at this plots, I don't see anything that would make me thing that we have significant interference effects to deal with.
@@ -880,25 +881,22 @@ shoesAssumptions <- nlme::lme(
   random = ~ 1|market
 )
 
-check <- lme4::lmer(
-  formula = sales ~ time * campaign/(1|market),
-  data = shoesLong,
-  REML = FALSE
-)
-
-
 ```
 
 ## Assessing the Assumptions
 
-The methods here are the same as for the Within Subjects Repeated Measures design.
+The methods here are the same as for the Within Subjects Repeated Measures design. Remember, we will use the `shoesAssumptions` model object from the `nlme` package.
 
 ### Gaussian Residuals
 
 Use a QQ plot:
-```{r shoesQQRes, fig.cap="QQ Plot of Shoe Sales Study", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Demo Code for QQ plot for residuals
-## Shoe Ad Study
+```{r shoesQQRes, echo=TRUE}
+#| fig.cap = "QQ Plot of Shoe Sales Study",
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos = "H"
+
+# Demo Code for QQ plot for residuals ----
 car::qqPlot(
   x = residuals(shoesAssumptions), # Notice which model is getting used
   distribution = "norm",
@@ -913,9 +911,13 @@ car::qqPlot(
 ### Gaussian Treatment Effects
 
 Again, use a QQ plot:
-```{r shoesTrtQQ, fig.cap="QQ Plot for Market Effects", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Demo Code for Market Effects
-## Shoe Ad Study
+```{r shoesTrtQQ, echo=TRUE}
+#| fig.cap = "QQ Plot for Market Effects",
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos="H"
+
+# Demo Code for Market Effects ----
 car::qqPlot(
   x = unlist( 
     lme4::ranef( # Notice the use of the lme4 package
@@ -936,9 +938,13 @@ car::qqPlot(
 
 Use a Tukey-Anscombe Plot:
 
-```{r shoesTA, fig.cap="Tukey-Anscombe Plot for Shoe Sales Study", fig.width=5, fig.height=3, fig.pos="H", echo=TRUE}
-# Demo Code for Tukey-Anscombe Plot
-## Shoe Ad Study
+```{r shoesTA, echo=TRUE}
+#| fig.cap = "Tukey-Anscombe Plot for Shoe Sales Study",
+#| fig.width = 5,
+#| fig.height = 3,
+#| fig.pos="H"
+
+# Demo Code for Tukey-Anscombe Plot ----
 ggplot(
   data = data.frame(
     residuals = residuals(shoesAssumptions), # Notice which model gets used
@@ -969,9 +975,12 @@ ggplot(
 
 One of the interesting things about Nested Repeated Measures is that we inherently know at least *some* of the measurement order. We might not know which store got measured before which other store, but we know the sequence of measurements for each store. Thus, we can make the following plot:
 
-```{r shoesTimeSeries, echo=TRUE, fig.cap="Shoe Sales by Time and Store", fig.width=5, fig.height=3}
-# Demo Code Independence of Subjects
-## Shoe Ad Study
+```{r shoesTimeSeries, echo=TRUE}
+#| fig.cap = "Shoe Sales by Time and Store",
+#| fig.width = 5,
+#| fig.height = 3
+
+# Demo Code Independence of Subjects ----
 ggplot(
   data = shoesLong,
   mapping = aes(
@@ -1000,9 +1009,12 @@ For Nested Repeated Measures we will ultimately want to fall back on our study d
 
 A similar plot to the previous Time Series plot is to construct a plot known as "Growth Curves". In essence, we want to see how the response changes for each subject over time...but we're going to separate the data a bit more cleanly so we can see if and how the factor might interact with our subjects.
 
-```{r shoesGrowthCurves, fig.cap="Growth Curves for Shoe Sales Study", fig.width=5, fig.height=3, echo=TRUE}
-# Demo Code for Growth Curves
-## Shoe Ad Study
+```{r shoesGrowthCurves, echo=TRUE}
+#| fig.cap = "Growth Curves for Shoe Sales Study",
+#| fig.width = 5,
+#| fig.height = 3
+
+# Demo Code for Growth Curves ----
 ggplot(
   data = shoesLong,
   mapping = aes(
@@ -1032,15 +1044,17 @@ Keep in mind that Market 3 in Campaign 1 is __*not*__ the same market as Market 
 
 The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. 
 
-```{r shoesSpherePlot, echo=TRUE, fig.cap="Sphericity Plot for Shoe Sales Study", fig.width=6, fig.height=3}
-# Demo Code for Sphericity Plot
-## Shoe Ad Study
+```{r shoesSpherePlot, echo=TRUE}
+#| fig.cap = "Sphericity Plot for Shoe Sales Study",
+#| fig.width = 6,
+#| fig.height = 3
+
+# Demo Code for Sphericity Plot ----
 sphericityPlot(
   dataWide = shoesWide,
   subjectID = c("market", "campaign"), 
   colsIgnore = NULL 
 )
-## Look for any groups that have very different amounts of variation
 
 ```
 
@@ -1055,8 +1069,8 @@ As we have been doing all semester, we can divide our results into an Omnibus po
 As mentioned, getting a nice looking table is not as straightforward with the Nested Repeated Measures ANOVA problems.
 
 ```{r shoesTable, echo=TRUE}
-# Demo Code for Omnibus ANOVA Table
-## Shoe Ad Study
+# Demo Code for Omnibus ANOVA Table ----
+
 ## We have to custom build the ANOVA table
 shoesTemp <- summary(shoesModel)
 shoesOmni <- rbind(
@@ -1086,15 +1100,13 @@ shoesOmni %>%
       no = pvalRound(`Pr(>F)`)
     )
   ) %>%
-  dplyr::mutate(
-    across(.cols = where(is.numeric), prettyNum, big.mark = ",")
-  ) %>%
   knitr::kable(
     digits = 4,
     col.names = c("Source", "df", "SS", "MS", "F", "p-value"),
     caption = "ANOVA Table for Athletic Shoes Study",
     align = c('l',rep('c',5)),
-    booktab = TRUE
+    booktab = TRUE,
+    format.args = list(big.mark = ",")
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
@@ -1111,8 +1123,7 @@ We will not worry about effect sizes here.
 For point estimates, you might want to look at both Campaign and Time Effects:
 
 ```{r shoesPH, echo=TRUE}
-# Demo Code for Using emmeans
-## Shoe Ad Study
+# Demo Code for Using emmeans ----
 shoesCampaignPH <- emmeans::emmeans(
   object = shoesModel,
   specs = pairwise ~ campaign,
@@ -1132,8 +1143,7 @@ shoesTimePH <- emmeans::emmeans(
 You can get point estimates for both effects:
 
 ```{r shoesPHPE1, echo=TRUE}
-# Demo Code Point Estimates
-## Shoe Ad Study
+# Demo Code Point Estimates ----
 ## Campaign Effects
 as.data.frame(shoesCampaignPH$emmeans) %>%
   knitr::kable(
@@ -1153,8 +1163,7 @@ as.data.frame(shoesCampaignPH$emmeans) %>%
 ```
 
 ```{r shoesPHPE2, echo=TRUE}
-# Demo Code Point Estimates
-## Shoe Ad Study
+# Demo Code Point Estimates ----
 ## Time Point Effects
 as.data.frame(shoesTimePH$emmeans) %>%
   knitr::kable(
@@ -1178,8 +1187,7 @@ as.data.frame(shoesTimePH$emmeans) %>%
 You can also do the standard pairwise comparisons:
 
 ```{r shoesPHPairs1, echo=TRUE}
-# Demo Code Point Estimates
-## Shoe Ad Study
+# Demo Code Point Estimates ----
 ## Pairwise on Campaign
 as.data.frame(shoesCampaignPH$contrasts) %>%
   knitr::kable(
@@ -1199,8 +1207,7 @@ as.data.frame(shoesCampaignPH$contrasts) %>%
 ```
 
 ```{r shoesPHPairs2, echo=TRUE}
-# Demo Code Point Estimates
-## Shoe Ad Study
+# Demo Code Point Estimates ----
 ## Pairwise on Time Point
 as.data.frame(shoesTimePH$contrasts) %>%
   knitr::kable(
