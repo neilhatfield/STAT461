@@ -23,7 +23,8 @@ knitr::opts_chunk$set(
 )
 
 packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
-              "car", "psych", "rcompanion", "dunn.test")
+              "car", "psych", "rcompanion", "dunn.test",
+              "NSM3", "agricolae")
 lapply(packages, library, character.only = TRUE)
 
 # Tell Knitr to use empty space instead of NA in printed tables
@@ -63,7 +64,8 @@ As usual, there are a few housekeeping items to do to ensure that our current `R
 # Demo code to set up R ----
 ## Load packages
 packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
-              "car", "psych", "coin", "rcompanion", "dunn.test")
+              "car", "psych", "coin", "rcompanion", "dunn.test",
+              "NSM3", "agricolae")
 lapply(packages, library, character.only = TRUE, quietly = TRUE)
 
 ## Set options 
@@ -123,6 +125,24 @@ alfalfaData$Variety <- as.factor(alfalfaData$Variety)
 
 ```
 
+## Rounding Times
+
+Our third data context will a study of how three different methods for rounding first base impact the time (seconds) it takes a runner to reach second base from the home plate. Twenty-two runners took part in the study, running the bases 6 times--twice for each of the three methods. The recorded data are the values of the *SAM* for each pair of run times by trial. This study is a Within Subjects Repeated Measures ANOVA design. These data are part of the `NSM3` package.
+
+```{r roundingData, echo=TRUE}
+# Demo Code for loading data from NSM3 package
+## If you haven't installed the NSM3 package, do so first
+## install.packages("NSM3")
+## library("NSM3")
+
+## The data comes not as a data frame but as a matrix which is compatible with our methods
+
+data("rounding.times", package = "NSM3")
+
+colnames(rounding.times) <- c("Round Out", "Narrow Angle", "Wide Angle")
+
+```
+
 # Explore Your Data
 
 Just as with the Parametric Shortcut, you should always begin by exploring your data. Check out the other guides/tutorials I've posted on data visualizations and descriptive statistics. You should create a data narrative that weaves both of these types of elements together and helps your readers build their understanding of your data.
@@ -177,7 +197,7 @@ The Kruskal-Wallis *H* test makes two assumptions:
   1) Independence of Observations
   2) The response follows some *continuous* distribution that differs between groups by location (*Medians*) at most.
 
-If these assumptions are satisfied, the our test statistic, *H*, follows a \(\chi^2\) with \(k-1\) *degrees of freedom* (where we have *k* levels to our factor).
+If these assumptions are satisfied, then our test statistic, *H*, follows a \(\chi^2\) with \(k-1\) *degrees of freedom* (where we have *k* levels to our factor) under the null hypothesis of no impact due to our factor.
 
 ### Independence of Observations
 
@@ -246,7 +266,7 @@ honeyOmni <- kruskal.test(
 
 Notice that all we've done is swap `aov` for `kruskal.test`. We are still using a `formula` argument in the format `response ~ factor`, the `data` argument, and the optional `na.action` safety argument.
 
-## Results
+## Kruskal-Wallis Results
 
 While fitting the model in `R` was a quick function name change, reporting the results is different. This is due to the fact that there is ANOVA table for the Kruskal-Wallis setting. Instead, we often list out the values in our narrative paragraphs. Just like the parametric shortcut, you must still have set up your decision rule, especially your Type I Risk, \(\mathcal{E}_{I}\), and your Unusualness Threshold (*UT*). For the Honey Study, I'm going to use \(\mathcal{E}_{I}=0.05\) and \(UT=0.03\).
 
@@ -430,23 +450,23 @@ The Probability of Superiority has the same kind of interpretation as in the par
 
 The Hodges-Lehmann Estimate, \(\widehat{\Delta}\), measures the middle difference of all possible pairings between two groups. If we imagine taking all of the plots which got either conventional pest control or the IPM treatment, we can imagine all of the pairings of plot from each group (i.e., the 25 pairings). For each pairing, we can find the difference in number of whole weevil larvae found. For these two groups/treatments, half of all the pairings show that the conventional group has at least 29 fewer whole larvae than the IPM group.
 
-# Friedman Two-way ANOVA Test
+# Two-way ANOVA Tests
 
-The Friedman Two-way ANOVA Test is a nonparametric shortcut for dealing with a subset of two-way ANOVA designs. Specifically, designs which we can map to a Randomized Complete Block Design (One-way + Block). This includes the Within Subjects Repeated Measures design.
+There are two nonparametric shortcuts we can take for Two-way ANOVA designs: Friedman and Mack-Skillings. The main difference between these approaches comes down to the notion of replication. That is, if we designed the study have only 1 replicate within each group (i.e., block-factor pairing) like we see in a Within Subjects design, then we would use the Friedman Test. If we designed our study to have 1 or more replicates in each group AND be balanced, then we would use the Mack-Skillings test.
 
-The underlying model for the Friedman test is 
+In both cases, the underlying model is the same: 
 \[Y_{ij}=\theta_{\bullet\bullet\bullet}+\beta_{i}+\tau_{j}+\epsilon_{ijk}\]
 where \(\theta_{\bullet\bullet\bullet}\) represents the *__Grand Median__*, \(\beta_{i}\) represents the effect due to block *i*, \(\tau_j\) represents the effect of factor level *j* relative to the *Median*, and \(\epsilon_{ijk}\) represents the residuals for this model.
 
 ## Assessing Assumptions
 
-The Friedman test makes three assumptions:
+The Friedman and Mack-Skillings tests make the same three assumptions:
 
   1) Independence of Observations
   2) The response follows some *continuous* distribution that differs between groups by location (*Medians*) at most.
   3) We do not have any significant (and meaningful) interaction between our block and our factor.
 
-If these assumptions are satisfied, the our test statistic, *S*, follows a \(\chi^2\) with \(k-1\) *degrees of freedom* (where we have *k* levels to our factor).
+If these assumptions are satisfied, the our test statistics, Friedman's *S* and Mack-Skillings' *MS*, each follow a \(\chi^2\) with \(k-1\) *degrees of freedom* (where we have *k* levels to our factor).
 
 ### Independence of Observations
 
@@ -500,109 +520,198 @@ ggplot2::ggplot(
 
 In looking at Figure \ref{fig:alfalfaInteraction} we are still looking for parallelism between corresponding line segments. Keep in mind that we do not need perfection. The only somewhat worrying segment is for the Conventional treatment between the ALPV44NP18 and ALPV54QX13 varieties. 
 
+## Post Hoc Comment
+
+In this guide, I'm only going to show how to do all pairwise post hoc comparisons for the Friedman test. That is, when you have only 1 replicate per group like we would have in Within Subjects design. These methods will only control the *Experimentwise Error Rate*.
+
+While post hoc methods exist for doing pairwise comparisons as well as contrasts exist, I could not find easy functions you could use.
+
+# Friedman's Test
+
+We have two different approaches we can take with the Friedman test: we can use base `R` or we can use the `agricolae` package. The base `R` route will work for all two-way designs and allows use to enter a formula-data frame pair (our typical method), a set of vectors, or as a matrix. The `agricolae` package requires us to enter a set of vectors (data frame columns) only.
+
 ## Fitting the Model
 
-```{r friedman}
-# base
-
+```{r friedman, echo=TRUE}
+# Demo Code for Fitting Models for Friedman ----
+## Using Base R
+## CAUTION: Friedman is for only single replicate designs
+### Formula Structure: Response ~ Factor | Block
 alfalfaModel1 <- friedman.test(
   formula = Larvae ~ Treatment | Variety,
   data = alfalfaData
 )
 
-# agricolae
+### Using a matrix with blocks as rows, factor levels as columns
+roundingModel1 <- friedman.test(
+  y = rounding.times
+)
 
+## Using the agricolae package
+### You cannot use the matrix approach here.
 alfalfaModel2 <- agricolae::friedman(
   judge = alfalfaData$Variety, # This is your block
   trt = alfalfaData$Treatment, # This is your factor
   evaluation = alfalfaData$Larvae, # This is your response
-  alpha = 0.9, # Sig level
-)
-
-# temp1 <- NSM3::pWNMT(
-#   x = alfalfaData$Larvae,
-#   b = alfalfaData$Variety,
-#   trt = alfalfaData$Treatment,
-#   method = "Asymptotic"
-# )
-
-RoundingTimes<-matrix(c(5.40, 5.50, 5.55, 5.85, 5.70, 5.75, 5.20, 5.60, 5.50, 5.55, 5.50, 5.40,
-5.90, 5.85, 5.70, 5.45, 5.55, 5.60, 5.40, 5.40, 5.35, 5.45, 5.50, 5.35, 5.25, 5.15, 5.00, 5.85,
-5.80, 5.70, 5.25, 5.20, 5.10, 5.65, 5.55, 5.45, 5.60, 5.35, 5.45, 5.05, 5.00, 4.95, 5.50, 5.50,
-5.40, 5.45, 5.55, 5.50, 5.55, 5.55, 5.35, 5.45, 5.50, 5.55, 5.50, 5.45, 5.25, 5.65, 5.60, 5.40,
-5.70, 5.65, 5.55, 6.30, 6.30, 6.25),nrow = 22,byrow = TRUE,dimnames = list(1 : 22,
-c("Round Out", "Narrow Angle", "Wide Angle")))
-
-temp1 <- NSM3::pWNMT(RoundingTimes,n.mc=2500)
-
-```
-
-## Results
-
-### Omnibus
-
-### Post Hoc Analysis
-
-
-# OLD
-
-## Results
-
-
-
-
-
-## Generating Code
-
-
-# Putting Everything Together--Your Turn
-
-Now is an opportunity for you to get some practice. I'm going to use the data frame `InsectSprays`, which is built into R. You may load this data into your session with the command `data("InsectSprays")`. (This is same data set as in the Parametric Shortcut guide/tutorial.)
-
-Reminder of the study context: the original researchers were exploring the effectiveness of various sprays on reducing the number of instances of particular type of insect for a crop. Each observation is randomly sampled plant from a field. NOTE: we do not know the measurement order.
-
-Explore how you would use the Kruskal-Wallis *H* test with the Insect Sprays data. If you get stuck, check out the code appendix to see the code that I used.
-
-```{r insectSprayHD, fig.height=2}
-# Your Turn Code --------------------------------------------------------------
-
-# Hasse Diagram for Insect Spray Study
-modelLabels <- c("1 Stop Insects 1", "6 Spray 5", "72 (Plants) 66")
-modelMatrix <- matrix(
-  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
-  nrow = 3,
-  ncol = 3,
-  byrow = FALSE
-)
-hasseDiagram::hasse(
- data = modelMatrix,
- labels = modelLabels
+  alpha = 0.1, # Sig. level
 )
 
 ```
 
-```{r insectSprayModel}
-# Load Data
-data("InsectSprays")
+## Base `R` Omnibus Results
 
-# Run Kruskal Wallis Test
-coin::kruskal_test(
-  formula = count ~ spray,
-  data = InsectSprays,
-  ties.method = "mid-ranks"
+Much like the Kruskal-Wallis test, we don't have an ANOVA table. The raw output of the base `R` package looks like the following:
+
+```{r friedBaseRawOut, echo=TRUE}
+# Demo Code for looking at raw output of Friedman Test ----
+alfalfaModel1
+
+roundingModel1
+
+```
+
+| Value | Object Name | Code Example | Final Result |
+|:----|:-------------:|:--------------------------:|:--------:|
+| *S* | `alfalfaModel1$statistic` | `round(alfalfaModel1$statistic, digits = 2)` | `r round(alfalfaModel1$statistic, digits = 2)`|
+| *DF* | `alfalfaModel1$parameter` | `alfalfaModel1$parameter` |`r alfalfaModel1$parameter` |
+| *p*-value | `alfalfaModel1$p.value` | `round(alfalfaModel1$p.value, digits = 4)` | `r round(alfalfaModel1$p.value, digits = 4)` |
+
+Table: Commands to Extract Friedman Results (Base `R` Method)
+
+Once you have these results, you can write a narrative just like the example in the Kruskal-Wallis section.
+
+## `agricolae` Ominbus Results
+
+If you used the `agricolae` package, your raw output has several more components.
+
+At top of the raw output, we have the value of the statistic *S* (labelled as `Chisq`) along with the *degrees of freedom* for *S* and the *p*-value. In the middle of the output (under the heading `$means`) we have the factor level values of the *SAM* (labeled as `alfalfaData.Larvae`) followed by the sum of the ranks of each group (labeled as `rankSum`). We can also see the values for the *SASD*, size (*r*eplicates), and Tukey's Five-Number Summary.
+
+```{r friedagriRawOut, echo=TRUE}
+# Demo Code for looking at raw output of Friedman Test ----
+alfalfaModel2
+
+```
+
+At the bottom of the raw output, under the heading of `$groups` we can see a Connecting Letter Report showing us at a glance which treatment levels are statistically different from the others. __Important Note:__ this connecting letter report only controls the *Experimentwise Error Rate (EER)* via Fisher's Least Significance Difference (LSD) method. The overall Type I Error rate we're controlling at is the alpha given in the command.
+
+You can extract certain element from the output object by name:
+
+  + `alfalfaModel2$statistics` is a data frame that you can make into a table from or continue to extract values
+    - `alfalfaModel2$statistics$Chisq` gives the value of *S*
+    - `alfalfaModel2$statistics$Df` gives the *degrees of freedom*
+    - `alfalfaModel2$statistics$p.chisq` gives the *p*-value for Friedman's test
+  + `alfalfaModel2$means` is a data frame you can build a summary table from
+  + `alfalfaModel2$groups` is a data frame you can also build a table from
+
+Just as with the Kruskal-Wallis *H* test and the base `R` approach to Friedman's test, you will need to write a narrative paragraph. Draw upon the Kruskal-Wallis example as well as what you've done in your narrative text in parametric shortcut settings to identify key elements to talk about. (Don't worry too much about interpreting either *H* or *S*.)
+
+## Post Hoc Analysis
+
+You may only use this method for Within Subjects designs or two-way layouts without replicates.
+
+```{r WNMT1, echo=TRUE}
+# Demo Code for WNMT Post Hoc ----
+## This comes from the NSM3 package
+
+postHocRounding <- pWNMT(
+  x = rounding.times,
+  method = "Monte Carlo", # this is default
+  n.mc = 2500 # Default is 10,000
+)
+
+postHocRounding
+
+```
+
+In the raw output, you'll hopefully notice the three statements that got printed. First thing to notice is that instead of using the treatment names, the output uses "1", "2", and "3". These correspond to the first, second, and third columns, respectively. Based upon the ordering of the columns when we first read in the data, 1 is Round Out, 2 is Narrow Angle, and 3 is Wide Angle. Hence, knowing the structure of your data matrix is vital here.
+
+Each statement provides the value of the WNMT *R* statistic as well as the appropriate *p*-value. To make a decision, compare that *p*-value to your Unusualness Threshold. 
+
+### Making a Data Matrix
+
+If you attempt to use the WNMT in the Alfalfa Pest Study, you'll encounter an error message.
+
+```{r wnmtAlfaError, echo=TRUE, error=TRUE}
+# Demo Code for Alfalfa WNMT; Gives Error ----
+pWNMT(
+  x = alfalfaData$Larvae, # Response
+  b = alfalfaData$Variety, # Block
+  trt = alfalfaData$Treatment, # Factor
+  method = "Monte Carlo", 
+  n.mc = 2500 
 )
 
 ```
 
-```{r insectSprayES}
-# Effect size for KW on Insect Spray
-rcompanion::epsilonSquared(
-  x = InsectSprays$count,
-  g = InsectSprays$spray,
-  digits = 4
+As far as I can tell, the internal algorithm for constructing the appropriate matrix is breaking down. To get around this error, we can form the matrix ourselves by creating a wide format data frame.
+
+```{r alfalfaWNMT, echo=TRUE}
+# Demo Code for Resolving WNMT Error ----
+## Make wide data frame
+alfWide <- alfalfaData %>%
+  dplyr::select(!Plot) %>%
+  pivot_wider(
+    id_cols = Variety,
+    names_from = Treatment,
+    values_from = Larvae
+  ) %>%
+  tibble::column_to_rownames(var = "Variety")
+
+## Create data matrix
+alfMatrix <- as.matrix(alfWide)
+
+alfalfaPostHoc <- pWNMT(
+  x = alfMatrix,
+  method = "Monte Carlo", # this is default
+  n.mc = 2500 # Default is 10,000
+)
+
+alfalfaPostHoc
+
+```
+
+To give ourselves a key for understand what treatments 1, 2, 3, and 4 represent, we can use the following code.
+
+```{r wnmtColNames, echo=TRUE}
+# Demo Code for getting column names from data matrix ----
+colnames(alfMatrix)
+
+```
+
+Again, we can compare the listed *p*-values to our Unusualness Threshold for decision making. (Remember, that *p*-values can't actually be zero.)
+
+# Mack-Skillings Test
+
+If you have 1) a balanced design, and 2) 1+ replicates per group, you can use th Mack-Skillings Test in place of Friedman's Test. To run this test, we will need to use the `NSM3` package.
+
+## Fitting the Model
+
+```{r mackSkil, echo=TRUE}
+# Demo Code for Mack-Skillings Test ----
+## I'm going to use the Alfalfa Pest Study
+
+alfalfaModel3 <- pMackSkil(
+  x = alfalfaData$Larvae, # Response
+  b = alfalfaData$Variety, # Block
+  trt = alfalfaData$Treatment, # Factor
+  method = "Monte Carlo", # Default
+  n.mc = 10000 # Default is 10000
 )
 
 ```
+
+## Omnibus Results
+
+```{r mackSkillOmni, echo=TRUE}
+alfalfaModel3
+
+```
+
+Notice that the raw output for Mack-Skillings is fairly straight to the point. Something to keep in mind is that since a Monte Carlo simulation is being used to generate the sampling distribution for the *MS* statistic, the *p*-values are *approximate* only.
+
+## Post Hoc
+
+If you need to do Post Hoc analysis for this situation, come talk to me.
 
 \newpage
 

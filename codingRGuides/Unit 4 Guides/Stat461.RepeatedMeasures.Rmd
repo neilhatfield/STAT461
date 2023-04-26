@@ -116,7 +116,7 @@ packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "hasseDiagram", "car",
               "psych", "emmeans", "rstatix", "lme4",
               "nlme")
-lapply(packages, library, character.only = TRUE)
+lapply(packages, library, character.only = TRUE, quitely = TRUE)
 
 options(knitr.kable.NA = "")
 options(contrasts = c("contr.sum", "contr.poly"))
