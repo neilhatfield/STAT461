@@ -1,6 +1,6 @@
 checkSetup <- function(){
   ## Check R Version ----
-  currentVersion <- "4.2.2"
+  currentVersion <- "4.3.1"
   errorMessages <- c()
   if (as.numeric(version$major) < 4) {
     stop("Your R version is too far out of date. Update before continuing.")
@@ -14,8 +14,9 @@ checkSetup <- function(){
   corePackages <- c("tidyverse", "knitr", "kableExtra", "car", "psych",
                    "parameters", "rcompanion", "DescTools", "dunn.test",
                     "multcompView", "emmeans", "rstatix", "lme4",
-                    "nlme", "tinytex", "rmarkdown", "sjstats")
-  optionalPackages <- c("lattice", "perm", "boot", "coin", "pwr", "WebPower", "openxlsx")
+                    "nlme", "tinytex", "rmarkdown", "sjstats", "effectsize")
+  optionalPackages <- c("lattice", "perm", "boot", "coin", "pwr", "WebPower",
+                        "openxlsx", "NSM3", "agricolae")
 
   ## Package installation ----
   pkgInstall <- menu(
