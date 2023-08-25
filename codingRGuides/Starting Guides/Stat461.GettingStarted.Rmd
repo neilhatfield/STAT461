@@ -4,7 +4,7 @@ author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output:  
   pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes: \usepackage{subfig}
 ---
@@ -38,8 +38,8 @@ Welcome! Whether this is your first time using R/RStudio or not, I hope that thi
 
 If you have not already done so, you will need to install both R and RStudio from the following links:
 
--   [Download R](https://cran.r-project.org/)--Use version 4.2.0+ (current is 4.2.2)
--   [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)--Use version 2022.12.0+
+-   [Download R](https://cran.r-project.org/)--Use version 4.3.0+ (current is 4.3.1)
+-   [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)--Use version 2023.06.1+
 
 While you can use R without RStudio, you won't have as nice of an environment as you could if you use RStudio. RStudio is an Integrated Development Environment (IDE) that help you keep track of R code, output, and documents all in one place. You can't really use RStudio without R.
 
@@ -83,43 +83,40 @@ To create a new R Markdown file in RStudio, click on the File menu, mouse over N
 
 ### Using the Homework Template
 
-I have also made a [homework template](https://www.dropbox.com/s/cd70l4szvqu9k1x/hwTemplate.Rmd?dl=1) which you can use. This is an R Markdown file. I would download the template and then make copies for each new file. (Be sure to change the file name so you can keep track of which one is which.) Then double click on the file to open it in RStudio.
+I have also made a [homework template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate.Rmd) which you can use. This is an R Markdown file. I would download the template and then make copies for each new file. (Be sure to change the file name so you can keep track of which one is which.) Then double click on the file to open it in RStudio.
 
 # R Markdown Formatting
 
 *If you are not using R Markdown you can skip this section.*
 
-Formatting your text in R Markdown is not quite the same as in Word. If you are new to coding, look for the compass icon <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAaCAYAAABLlle3AAAB9UlEQVR4XrVWbUvcQBBepYrmrSrl5C6bxQ9S8S3JbhClVbRVUMSXD4qUtuf//xnOTDO57aDeeck9sLCZZ2ae7O5kNkq1RJja8zBzl9I+UyTGPuNQqlqQXPfQejkelN9YNEqLH2q1+izdusPGxlKk7QMLNsKZ/aVWyhXp3gmCrDxgoThzJ7EpjmE+xOfQ2Avp3wnizN6RIIg1NlN+pxfR5R/ftzPExt2SKJwp25LUHc1UNDCuqrd3mOj8sN5u2l4qqJlgUAUsIocy+6vSvRMk2m2ySJTax8gUT40wcNK/E8C5XZMgiMHjPI5GGDjp3xqJ3l3jVQX93LEd56PV7q75Ma3RVCmcqfqyFTcEzNFGHPh4Ia3xKdTlb0z8WhNAG3Hg01kvjtPiK2/hUr8yaMMzxO8W52hjHn3/j54SkPyGCggqFh7n0MYiSu0sog05Eq1fZCpw92k1PlrR/Hm0GaF2VzLvBNhZxJ6KCaLU/fQZTlxvLwF9yE59eGT/EKK+2+bky2mufc4vJAb6sD/G+tzE4KsML25VF9AYzPElH2flvSTHIlrPe97Z5JJ/C+jbrBZySP5d1H8FGDzE/yLJvwnwxZh/q3Unkn4HXgFpeyrZcYh0eTZNQc1T29Pub9jbW5fkOGAMxVJbpNtoMgSDwrb6w4NYyuHhBQNagtA/oCNpAAAAAElFTkSuQmCC"/> just above the editor window (close to where the editor meets the Environment pane). Click that icon to get a WYSIWYG editor that includes a formatting tool bar.
+Formatting your text in R Markdown is not quite the same as in Word. If you are new to coding, look for a pair words--Source and Visual--above the top left corner of the editor. Click the word Visual to switch to a WYSIWYG editor, similar to Google Docs.
 
-Otherwise, here is a quick rundown of formatting in R Markdown
+Otherwise, here is a quick rundown of formatting in R Markdown in the Source window.
 
--   Headings -Use the \# to create a heading; the more pound signs you use, higher the heading level. H1 is the highest heading; use H5 and H6 sparingly.
-
--   Bold and Italics
-
-    -   Use \* on both sides of a word/phrase to italicize the word/phrase. For example, \*sample arithemtic mean\* becomes *sample arithmetic mean*.
-    -   Use two underscores \_\_ on both sides of a word/phrase to for boldface. For example, \_\_bold\_\_ becomes **bold**.
-
--   Mathematics
-
-    -   R Markdown will use LaTeX syntax and display mathematical formulas for you. You can choose for math to be inline or display style (on its own line and centered)
-    -   Inline: Use \\ (mathematical expression\\ ) to create an inline mathematical display. For example, \\ (y=x\^2+\\frac{3}{4}\\ ) will become $y=x^2+\frac{3}{4}$. (No space between the backslashes and the parentheses.)
-    -   Display: Replace the parentheses with square brackets. (No space between the backslashes and the square brackets.) Thus, \\ [y=x\^2+\\frac{3}{4}\\ ] will become $$y=x^2+\frac{3}{4}$$
-    -   For multiline mathematical expressions, you'll want to use the align environment. For example,
++ __Headings:__ Use the pound sign/hash tag/octothrope, \#, to create a heading; the more pound signs you use, higher the heading level. H1 is the highest heading; use H5 and H6 sparingly.
++ __Formatting Font__
+  - *Italics:* Type a single asterisk, \*, on both sides of the word or phrase you want to appear in italics. For example, \*sample arithmetic mean\* will become *sample arithmetic mean* when the document knits.
+  - *Bold:* Type two underscores (with no space between them), \_ \_ on both sides of the word or phrase you want to appear in bold. For example, \_ \_NASA\_ \_ becomes __NASA__ when the document knits.
++ __Mathematics:__ R Markdown will use LaTeX syntax and display mathematical formulas for you. You can choose for math to be inline or display style (on its own line and centered).
+  - *Inline:* Start your inline mathematical expression by typing \\( followed by your expression; end your expression with \\). For example, \\(y=x\^2+\\frac{3}{4}\\) will become \(y=x^2+\frac{3}{4}\). 
+  - *Display:* To create display equations (centered on their own line), simply change the parentheses of inline expressions to square brackets; that is, \\[ and \\]. Thus, \\[y=x\^2+\\frac{3}{4}\\] will become \[y=x^2+\frac{3}{4}\]
+  - *Multiple Lines:* If you need to create mathematical expressions that span multiple lines, you can use the align environment. For example,
 
     \\ begin{align\*}\
-    H_0: y = \\mu\_{\\cdot\\cdot} + \\epsilon\_{ij}\\\\\
-    H_1: y = \\mu\_{\\cdot\\cdot} + \\alpha\_{i} + \\epsilon\_{ij}\
+    H_0&: y = \\mu\_{\\cdot\\cdot} + \\epsilon\_{ij}\\\\\
+    H_1&: y = \\mu\_{\\cdot\\cdot} + \\alpha\_{i} + \\epsilon\_{ij}\
     \\ end{align\*}
 
     will become
 
     ```{=tex}
     \begin{align*}
-      H_0: y = \mu_{\cdot\cdot} + \epsilon_{ij}\\
-      H_1: y = \mu_{\cdot\cdot} + \alpha_{i} + \epsilon_{ij}
+      H_0&: y = \mu_{\cdot\cdot} + \epsilon_{ij}\\
+      H_1&: y = \mu_{\cdot\cdot} + \alpha_{i} + \epsilon_{ij}
       \end{align*}
     ```
+
+    The and sign, &, tells LaTeX to line up the characters at that point.
 
 There's plenty more you can explore. Here are few resources which are helpful:
 
@@ -139,9 +136,9 @@ Inline code is great for reporting a value that you have stored in the environme
 
 Code chunks are much larger blocks where you can do more complicated things. For example, you can use code chunks to import a picture, load and clean data, create data visualizations, tables, and run models, etc.
 
-You can add a code chunk manually by typing three graves in a row on new line. When you're finished with the chunk, you type another three graves. All of your code should be on lines in between these two lines with graves. Chunk options, including the language should be on the first line with graves enclosed in curly braces: \{r chunkName [options]\}
+You can add a code chunk manually by typing three graves in a row on new line. When you're finished with the chunk, you type another three graves. All of your code should be on lines in between these two lines with graves. Chunk options, including the language should be on the first line with graves enclosed in curly braces: \{r chunkName, [options]\}
 
-You can also use the insert code chunk button, <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAkCAYAAAD7PHgWAAAEhklEQVR4Xu2Xe0ybVRjGGdMlYpbI4kaymLGEbCZkf/iPGpMRom4zkbiWUVkrG2uhlELpKm0pYyzq7CjGRHcxzsvQLUgwy2TIbgxlcW4kJjqJI2pm3MolZrhkrBmCRKG+vs83vgZO+7XlayUx4Ul+4XAO55yH9z23LyXlf6pFFpfr4Zqautza3buLa/fssQFPXf121KENfyN2mg8tstvty50ez7PNLa0+v9//1fj4+O/BYHASjHEZdWhz79q1wep2r0AfcZD/SqlOp3PtK15vdX9//6V/WKQgtA0ODvV4GxpcDofjUfQVB0u2Us1mcwbMjYzcuTbTzCPtK2cxU4FA4Bf0QV+MIQ6aLCFF9zlcro0DAwOXZzmg6AYhRBt9Mcb0WEnXYr1ev7KltdXHmQuKBmIZRLrtb9qv5b2aN6rxaUj7hnau3GXaNI2aDaIxWUtsDsdGLH5xciiWQehCbzftO+mlpu+P0NGrH9OxvqNx09R7hHxf7CPDIQNpG7U+0RyU5vZ4TNitmEw0FAtoODBMRYcNZDllJmunhSrOl8dFZZeVnN0vk7dnLzX2NJD+oJ4iRXKpp76+io+RKbUGJ6cmKX+/lsztJVR+tizMSCxsXRVUf7GOyk9YkPI20WB6ogYn/p6g/ANaKvnMSOVn5m4QVHc7yHpOMviHaHBZtdtdmkiKh24P0paD+VRyQr1BpBs/sXHCDBabTJpENsnp3tOke7cgzKDngptarn5C7T+fDPHhlffDzM0kksH0x1h8zDSqOWaC3MXRvJMMTVs5xaaQQZiZmJyQ8I/ckEAZujl6UzIvmlMyuJRZZdi2rVDNQd35wznawutve3NRaJN0/Xpeagv8eYe8l/aGJkcZddDM+lgG05iM7OzsJ+d61fUN9dGLh3RUeFhHxk+LqayjlD749j2pDdGKZAKRhSK1KRlcwjzErH4qJ+e5eB8LHZc7aOs7hdLmKDr2Uii9N25fl/7mp1s/hk0OYAwmxfpoBhczDzDLmTVZWVnP5BcU7MDVd93vv8i7+xb7mWL9NTY2Now6rNf1lvVSag0f6cl4fAeVnSqlmi9doXWGNIuTx0Mkg9JjgXmQwatkDfN4ZmZm3gtarbGyqqqSH6o7a2pr7VabrQJ13PZ8blXuPXOcWvPnpdLae/3r10JRjhalaEQyCOGpdH/KPZOI5GpmHfMEk8M8PQ3KqFu3ybNJipxkjlOLKw7pk5XMCMqCSUQS6caaRDRXMVnM2mlQRl0Gv16kTYHIyfcvjg45xUprMBbRDEJIN9YkNg52N46gdGbZNCijLm1zw2bpaqronD0BzjtIaRcDpfp4DMqCUTmiSD0MA5RRl8pPo7DBwdvfvBWKongOIsJXfvtOalO6UeI1GFMYSBxcBpPLJsWbBETbQPNiECBa2CiImAx+V7ri5t2gWpJp8K71bPyv53hQeg+qEg/UZjpuDJskETAexhXnUiV8O+gO6PgcTE4UMQ7Gi/RNolr4CtPt10n/uXQmRpg4FuiH/hhH6asuIeE/RlqYUSxwFaBf1O/iBS1oQVH0L8i2P2l4VnlMAAAAAElFTkSuQmCC"> and select R to get a code chunk.
+You can also use the insert code chunk button (looks like a green square with a plus sign and the letter C) and select R to get a code chunk.
 
 # Importing Data
 
@@ -149,7 +146,7 @@ There are functions and tools that you can use to load data.
 
 ## Import Wizard
 
-You can use the Import Dataset wizard by clicking on the icon <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAkCAYAAAD7PHgWAAACgElEQVR4Xu2VzWvTYBzHqx7Uk0xol2EFwR0ELyJ48CCCNz172E2PCv4Bg6XmpLZJrSbaImyzadlgdlbmlmRqGcMXFBUcKs5SpKLDiuALW1+2trqfeaopT58sbZpmF80XPpenP57vJ0/7pC6XEydO2gzABiY0tJ0JRyk76I+MdpEVluPjo300L075h27cC8aSM3aA9lL3vE4LseNkX1uh+eixwZt3n7zMfFx5+/4z2Mlc+kMpMiY98gnxw1pfryJs3qEEvLhD0wwI4pXnb7JL5OZ2oT75Nx8vBrS+rpR/W7fCfnLL7D7cwzA+IToxn82tkhvbxavMQpkWxBGtryYos9AtcXlKCR7FXdYM+u1FYpOwXoTF21VaiI5pfXXBP/z0yIFTuI8uSLBQXAEjUAm5RtJs5sdioZlgDY/MsS6G2Yh71YMEK9VfYAQqJ9dI8JlCuQJyLgNn5mQ4ODsIPQrXIGOER+LGvYnQVtLPNsFSpQrhd89gb+qqrtw0CvuYUs67bRc8N5KEIw9EfaEFKJmL2yqYXvwKu6dCuiJLKOwt3dfcyS2+HJ+APZOX9EV/8UpB2KlCrq8FJbERVyKxqUFOEyRPxewJ9r9ONZTsn7kGw9kX8H15uT5TLJVb3eJVFRp3aohVwVwxD97pi7WSHpkDf/ohLJXLurkWglVKZk9iOvpYFUQ3FpUcuj8MZ0cTus81DAXb+SchN8UxEux7Ol571+XVUzOaQRgIfqGmgwdwD8NYFUwuzLecQZCCu2aZLe47F3pxh6axKmh2hhRsO528ZszSsSD51GZPx8yMLSdIbmq23MyMI9is3MzMfyAoiKeR5Lqhyg3wsRNkrxMnTv71/Aay3ydc3qEC/gAAAABJRU5ErkJggg=="/> next to the words "Import Dataset" in the Environment tab. This will load the data into your current environment and display the necessary code in the Console. Be sure to copy that code and place inside a code chunk of your R Markdown document. (When you knit R Markdown, a new temporary environment is created; if you don't have the code to the load the data, your knit will fail.)
+You can use the Import Dataset wizard by clicking on the button of the same name in the Environment tab. This will load the data into your current environment and display the necessary code in the Console. Be sure to copy that code and place inside a code chunk of your R Markdown document. (When you knit R Markdown, a new temporary environment is created; if you don't have the code to the load the data, your knit will fail.)
 
 ## Write Your Own Code
 Another way (and a good practice to get into) is to write the code yourself. This is actually pretty easy. Most data files I provide you will either be \*.CSV, \*.DAT, or \*.Rdata. Further, you can use this method to read data in from a URL. 
@@ -265,3 +262,10 @@ Additionally, you can type `?functionName` into the console to bring up the help
 Further, you can place your cursor inside of function name which is in a inline code piece, a code chunk, R script file, or your current console line and then press the F1 key (Mac Users: fn + F1) and the help window will update to the appropriate documentation.
 
 That wraps up this document for R/RStudio.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```

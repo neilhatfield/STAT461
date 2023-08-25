@@ -4,14 +4,14 @@ author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
 ---
 
 ```{r setupFiles, include = FALSE}
-# Setting Document Options
+# Setting Document Options ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -41,11 +41,12 @@ To get started we need to do two major tasks: load the necessary packages and lo
 
 When you start a new session of R, one of the things that you should do is to load the extra packages that will bring new functions and new capabilities. If you don't load the necessary packages, your code might not work.
 
-That being said, I'm going to make use of three key packages in this guide: `ggplot2`, `car`, and `lattice`. The `ggplot2` package will produce the most professional looking graphics, but can be more complicated for coding.
+That being said, I'm going to make use of three key packages in this guide: `ggplot2`, `car`, and `lattice`. The `ggplot2` package will produce the most professional looking graphics in the shortest amount of time.
 
 To load these packages, you'll want to make a code chunk with either of the following:
 
 ```{r loadPackagesA, echo=TRUE, eval=FALSE}
+# Separate calls ----
 library(ggplot2) 
 library(car)
 library(lattice)
@@ -53,11 +54,13 @@ library(lattice)
 ```
 
 ```{r loadPackagesB, eval=TRUE, echo=TRUE, results='hide'}
+# Using lapply to load packages ----
 packages <- c("tidyverse", "car", "lattice")
 lapply(
   X = packages,
   FUN = library,
-  character.only = TRUE
+  character.only = TRUE,
+  quietly = TRUE
 )
 
 ```
@@ -69,6 +72,7 @@ The `tidyverse` package will load `ggplot2` along with some other packages that 
 For this guide I'm going to use the class demo Oreo data set. That way you can see an example that will translate well to your Homework \#1.1.
 
 ```{r loadData, echo=TRUE, eval=TRUE}
+# Load Oreo Data ----
 oreoData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
   header = TRUE,
@@ -92,6 +96,7 @@ I will point out that what I have below are just a few of the many different typ
 Before we get too far into making visualizations, now would be a good time to check the structure of our data.
 
 ```{r structureCheck, echo=TRUE, eval=TRUE}
+# Check the structure of my imported data ----
 str(oreoData)
 
 ```
@@ -105,20 +110,17 @@ The other thing that don't want to include in your analysis reports are raw code
 For ANOVA, we often want one of our attributes to be treated as a factor by R. From the output of the `str` call, R isn't thinking about either of the attributes as a factor. In this case, we want `Type` to be a factor. Thus, let's quickly tell R that we want `Type` to be a factor:
 
 ```{r typeFactor, echo=TRUE, eval=TRUE}
-oreoData <- oreoData %>%
-  dplyr::mutate(
-    dplyr::across(where(is_character), as_factor)
-  )
+# Change Type to a Factor ----
+oreoData$Type <- as.factor(oreoData$Type)
+
 ```
 
 The above code says to do the following:
 
-1)  Grab the data frame, the `%>%` reads as "and then"
-2)  mutate (change) the data set by
-3)  looking across all of the columns to see where the character attributes are; change those character attributes to factors
+1)  Grab the `Type` column of the `oreoData` data frame and pass that into the function `as.factor`,
+2)  use the `as.factor` function to convert the data type of factor, and then
+3)  store the output of `as.factor` in the `Type` column of the `oreoData` data frame.
 4)  save the altered data as `oreoData`.
-
-You'll notice that `mutate` and `across` have `dplyr::` in front of them. This is a way to ensure that you are calling these functions from the `dplyr` package. If you know that you have loaded the package, you can leave `dplyr::` out of your code. I often use the package signifier to demonstrate what packages I'm calling different functions out of.
 
 Check for yourself to see whether if `Type` has a new data type (i.e., no longer `chr`).
 
@@ -126,14 +128,20 @@ Let's now begin to make some visualizations.
 
 ## Histograms and Bar Charts
 
-Some people get very touchy about when you call a histogram a bar chart or a bar chart a histogram. I'm not one of them. The crux of the distinction (histograms are for numeric data and and bar charts are categorical data) has **nothing** to do with the information presented in the visualization nor how a person reads them. Thus, histograms are bar charts and bar charts are histograms. Sadly, software developers have enshrined the distinction without a difference into the code we use to make these kinds of visualizations.
+Some people get very touchy about when you call a histogram a bar chart or a bar chart a histogram. I'm not one of them. The crux of the distinction (histograms are for numeric data and and bar charts are categorical data) has **nothing** to do with how we present the information nor how a person reads them. Thus, histograms are bar charts and bar charts are histograms. Sadly, software developers have enshrined the distinction without a difference into the code we use to make these kinds of visualizations.
 
-```{r histEx1, echo=TRUE, eval=TRUE, fig.cap="Histogram of Oreo Créme Filling Mass"}
-oreoData %>%
-  ggplot2::ggplot(
-    mapping = aes(x = Filling.Mass)
+```{r histEx1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Histogram of Oreo Créme Filling Mass",
+#| fig.height = 3
+
+## Histogram Example Code using ggplot2 ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Filling.Mass)
   ) + 
-  ggplot2::geom_histogram(
+  geom_histogram(
     binwidth = 0.5,
     boundary = 0,
     closed = "left",
@@ -141,41 +149,47 @@ oreoData %>%
     col = "black",
     fill = "blue"
   ) +
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab("Filling mass (g)") +
   ylab("Frequency")
 
 ```
 
-Since we aren't storing this plot in an object, we don't need to use the assignment operator. Additionally, you don't have to use the pipe (`%>%`) as I'll demonstrate later. The first important portion is `ggplot2::ggplot`. This function is what initiates the entire visualization. Since I used the pipe to send a data frame into the function, I did not need to include the `data` argument. The other important element is the `mapping` argument. You'll use the aesthetic function `aes`, to say which variables from the data frame go where: `x` for horizontal axis, `y` for vertical, and more. The `mapping` exists as part of many other function calls (e.g., `geom_histogram`) and will get passed along to them along with the data.
+Since we aren't storing this plot as an object (like we store our data), we don't need to use the assignment operator. The first important portion is `ggplot`. This function is what initiates the entire visualization. The `data` argument is how you'll send data to the plot; the `mapping` argument says which columns are to go to which parts of the plot. You'll use the aesthetic function, `aes`, to say which variables from the data frame go where: `x` for horizontal axis, `y` for vertical, and more. The `mapping` argument exists as part of other function calls (e.g., `geom_histogram`) and will get passed along to them along with the `data`.
 
-This brings us to `ggplot2::geom_histogram` which says that we want to make a histogram. The arguments here are important for you think about.
+This brings us to `geom_histogram` which says that we want to make a histogram. The arguments here are important for you think about.
 
--   `binwidth`: how wide do you want the bins? You might need to play around with this value OR you can use the Freedman-Diaconis rule by using `binwidth = function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`.
++ `binwidth`: how wide do you want the bins? You might need to play around with this value OR you can use the Freedman-Diaconis rule by using `binwidth = function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`.
 
-    -   If I know that I'm going to be making multiple histograms and that I'll be using the Freedman-Diaconis rule, I'll define a function in my file once (`freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`) and then in my histograms I use `binwidth = freedmanDiaconis`.
+  - If I know that I'm going to be making multiple histograms and that I'll be using the Freedman-Diaconis rule, I'll define a function in my file once (`freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`) and then in my histograms I use `binwidth = freedmanDiaconis`.
 
--   `boundry`: this is an optional argument and will set whatever value you put here to be the edge of a bin and work from there; useful to making nice looking visualizations.
++ `boundry`: this is an optional argument and will set whatever value you put here to be the edge of a bin and work from there; useful to making nice looking visualizations.
 
--   `closed`: Most people are familiar with (and except) histograms that include the value on the left edge in the bar, but not the value on the right. This argument allows you match that expectation. The default is the exact opposite (that is, the right value is included but not the left).
++ `closed`: Most people are familiar with (and expect) histograms that include the value on the left edge in the bar, but not the value on the right. This argument allows you match that expectation. The default is the exact opposite (that is, the right value is included but not the left).
 
--   `na.rm`: by saying `TRUE` you are saying "remove the missing values SILENTLY". The R will remove any missing values (`NA`) as the plot gets built but unless you say `na.rm = TRUE` R will be noisy and print messages in your report that should not appear.
++ `na.rm`: by saying `TRUE` you are saying "remove the missing values SILENTLY". The R will remove any missing values (`NA`) as the plot gets built but unless you say `na.rm = TRUE` R will be noisy and print messages in your report that should not appear.
 
--   `col`: determines the color of the piping/edges of the bars.
++ `col`: determines the color of the piping/edges of the bars.
 
--   `fill`: determines the color of the bars.
++ `fill`: determines the color of the bars.
 
 The last three lines set a default theme (background color, font sizes, etc.) and the labels for the axes.
 
 Here is the same data with a *relative* frequency histogram.
 
-```{r histEx2, echo=TRUE, eval=TRUE, fig.cap="Histogram of Oreo Créme Filling Mass"}
-ggplot2::ggplot(
+```{r histEx2}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Histogram of Oreo Créme Filling Mass",
+#| fig.height = 3
+
+## Relative Frequency Histogram Example ----
+ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass)
 ) + 
-  ggplot2::geom_histogram(
-    mapping = aes(y = stat(count) / sum(count)),
+  geom_histogram(
+    mapping = aes(y = after_stat(count) / sum(after_stat(count))),
     binwidth = freedmanDiaconis,
     boundary = 0,
     closed = "left",
@@ -183,30 +197,45 @@ ggplot2::ggplot(
     col = "black",
     fill = "blue"
   ) +
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab("Filling mass (g)") +
   ylab("Rel. frequency") +
-  ggplot2::scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(
+    labels = scales::percent,
+    expand = expansion(mult = 0, add = c(0, 0.05))
+  )
 
 ```
 
-Here I didn't pipe the data set into `ggplot` so I had to include `data = oreoData`. Additionally, the `mapping = aes(y = stat(count) / sum(count))` line is what will create relative frequencies. I also used the Freedman Diaconis rules for bin width. The last line `scale_y_continuous(labels = scales::percent)` calls the `percent` function from the `scales` package to make the labels on the vertical axis look nice. Be sure that you have the `scales` package installed first.
+For this second example (Figure \ref{fig:histEx2}), I created a histogram displaying the relative frequency (percentages) for each bin of values. I used the Feedman-Diaconis rule to calculate the binwidth. To make a relative frequency histogram, I needed to alter the mapping, which is what the line `mapping = aes(y = after_stat(count) / sum(after_stat(count)))` does. The `after_stat` function allows you to access some of the internal calculations that `ggplot2` does to make plots. In this case, the count of observations in each bin. 
+
+The last call, `scale_y_continuous` allows us to adjust the vertical axis of the plot. Here I used the `label` argument to set the axis labels to percentages via `scales::percent`. The `expand` argument allows me to control how much space to add below and above my data. The `expansion` function lets me set this space to be multiple (`mult`) of my data (as a proportion; 0.1 means add 10%) or an absolute amount of added space (`add`). Both of these can be set to a single value or you can give a two-vector. If you give a single value, that value is applied to both the lower and upper sides of your data. If you give a two-vector, the first value is the amount of space to add on the lower end (below the data) while the second is for the upper end (above the data).
 
 Let's now make a similar visualization for `Type`.
 
-```{r histEx3, echo=TRUE, eval=TRUE, fig.cap="Break down of Oreo Types"}
-ggplot2::ggplot(
+```{r histEx3}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Break down of Oreo Types",
+#| fig.height = 3
+
+## Bar chart for Type ----
+
+ggplot(
   data = oreoData,
   mapping = aes(x = Type)
 ) +
-  ggplot2::geom_bar(
+  geom_bar(
     na.rm = TRUE,
     col = "black",
     fill = "blue"
   ) + 
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab("Type of Oreo") +
-  ylab("Frequency")
+  ylab("Frequency") +
+  scale_y_continuous(
+    expand =  expansion(mult = c(0, 0.05), add = 0)
+  )
 
 ```
 
@@ -216,24 +245,30 @@ Pretty much the only thing that changed was that instead of `geom_histogram` we 
 
 A density plots are a smoothed version of a histogram that can help us think about the underlying population rather than the sample in front of us. Making one in `ggplot2` is fairly straight forward.
 
-```{r densityPlot1, echo=TRUE, eval=TRUE, fig.cap="ggplot2 density plot of Oreo créme filling mass"}
-ggplot2::ggplot(
+```{r densityPlot1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "ggplot2 density plot of Oreo créme filling mass",
+#| fig.height = 3
+
+## Density Plot Example using ggplot2 ----
+ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass)
 ) +
-  ggplot2::geom_density(
+  geom_density(
     na.rm = TRUE,
     color = "black",
     fill = "springgreen"
   ) +
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab("Filling mass (g)") +
   ylab("Density") +
-  ggplot2::scale_x_continuous(
+  scale_x_continuous(
     expand = expansion(mult = 0, add = 0),
     limits = c(0, 10)
   ) +
-  ggplot2::scale_y_continuous(
+  scale_y_continuous(
     expand = expansion(mult = 0, add = c(0, 0.025))
   )
 
@@ -241,11 +276,17 @@ ggplot2::ggplot(
 
 Again, many of the arguments do the same thing as for the histograms/bar charts. Notice that instead of `col` you can use the whole word `color` (you can also use British spellings, `colour`) for the same effect. We changed which geometry we used to `geom_density` to get the density plot.
 
-I also want to draw your attention to the last few lines with `scale_x/y_continuous`. This is where you can manipulate the scales of the plot. If notice in the histograms, the bars do not continue all of the way to the bottom of the plot, rather, they float above. The `expand` argument is what you need to manipulate with the `expansion` function. The `mult` is a multiplicative scaling while `add` simply adds values on. If you give these a single value, then that value is used for both sides (left/right or bottom/top). If you give two values, such as `c(0, 0.025)` the first value listed will go to the left/bottom and the second value to right/top. The `limits` argument allows you to control to what extend the plot goes for each axis. These limits will then have the expansion applied to them (if any). If you omit `limits`, then R will figure out decent limits for your data.
+Notice that in addition to `scale_y_continuous` there's also `scale_x_continuous`. They do the same thing, just for different aspects of the plot. (There's also `scale_fill_*`, `scale_color_*` , etc.). The `limits` argument allows you to control to what extend the plot goes for each axis. These limits will then have the expansion applied to them (if any). If you omit `limits`, then R will figure out decent limits for your data.
 
 A second way to create a density plot is with the `lattice` package.
 
-```{r densityEx2, echo=TRUE, eval=TRUE, fig.cap="lattice density plot of créme filling mass"}
+```{r densityEx2}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "lattice density plot of créme filling mass",
+#| fig.height = 3
+
+## Density plot using lattice ----
 lattice::densityplot(
   x = ~ Filling.Mass,
   data = oreoData,
@@ -257,52 +298,28 @@ lattice::densityplot(
 
 The `lattice` package's density plot includes all of the data points (the circles) along the plot's bottom. There is a new argument here: `x = ~ Filling.Mass`. The tilde, \~, is R's formula notation. We will be using throughout the semester. Using the formula notation `lattice`'s is similar to `ggplot2`'s `mapping` argument.
 
-It is possible to use `ggplot2` to create a density plot like the `lattice` package. Think of this as a challenge for you to figure out how to do. Hint: you might need to use two geometries.
-
-```{r densityEx3, fig.cap="Challenge density plot"}
-oreoData %>%
-  mutate(
-    ys = 0.01
-  ) %>%
-  ggplot(
-    mapping = aes(x = Filling.Mass)
-  ) +
-  geom_density(
-    na.rm = TRUE,
-    color = "blue",
-    fill = "white"
-  ) +
-  geom_point(
-    mapping = aes(x = Filling.Mass, y = ys),
-    color = "blue",
-    shape = 1
-  ) +
-  theme_bw() +
-  xlab("Filling mass (g)") +
-  ylab("Density") +
-  ggplot2::scale_x_continuous(
-    expand = expansion(mult = 0, add = 0),
-    limits = c(0, 10)
-  ) +
-  ggplot2::scale_y_continuous(
-    expand = expansion(mult = 0, add = c(0, 0.025))
-  )
-
-```
+It is possible to use `ggplot2` to create a density plot like the `lattice` package. Think of this as a challenge for you to figure out how to do. Hint: you need to use two geometries.
 
 ## Box plots
 
-As you might guess, making a box plot in `gglot2` will involve using `geom_boxplot`.
+As you might guess, making a box plot in `ggplot2` will involve using `geom_boxplot`.
 
-```{r boxEx1, echo=TRUE, eval=TRUE, fig.cap="Box plot of créme filling mass by type"}
-ggplot2::ggplot(
+```{r boxEx1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Box plot of créme filling mass by type",
+#| fig.height = 3
+
+## Box plot in ggplot2 ----
+ggplot(
   data = oreoData,
-  mapping = aes(x = Type, y = Filling.Mass, color = Type)
+  mapping = aes(x = Type, y = Filling.Mass, fill = Type)
 ) +
-  ggplot2::geom_boxplot(
-    na.rm = TRUE
+  geom_boxplot(
+    na.rm = TRUE,
+    linewidth = 0.2
   ) +
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab(NULL) +
   ylab("Filling mass (g)") +
   theme(
@@ -311,7 +328,7 @@ ggplot2::ggplot(
 
 ```
 
-Notice that this time we defined three aesthetics: the horizontal axis (`x`) and `color` using the Type attribute and the vertical axis (`y`) with créme filling mass. When you define the color aesthetic, R will find a color scheme for to use and create a legend to include in the plot. You can alter the color scheme used. You can also position the legend with the `legend.position` argument of the `theme` call. Notice that `xlab(NULL)` does not turn off the horizontal axis; rather just the label disappears.
+Notice that this time we defined three aesthetics: the horizontal axis (`x`) and `color` both get the Type attribute and the vertical axis (`y`) with créme filling mass. When you define the color aesthetic, R will find a color scheme for to use and create a legend to include in the plot. You can alter the color scheme used. You can also position the legend with the `legend.position` argument of the `theme` call. Notice that `xlab(NULL)` does not turn off the horizontal axis; rather just makes the label disappear.
 
 If you don't have any groups for the box plot, then you can omit the extra aesthetics. For vertical box plots, assign the attribute to `y`; for horizontal box plots, use `x` instead.
 
@@ -323,7 +340,13 @@ Strip charts (or dot plots) are a type of scatter plot where instead of using tw
 
 The base R method is pretty easy to do:
 
-```{r stripEx1, echo=TRUE, eval=TRUE, fig.cap="Strip chart for the Oreo data using base R"}
+```{r stripEx1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Strip chart for the Oreo data using base R",
+#| fig.height = 3
+
+## Strip chart in base R ----
 stripchart(
   x = Filling.Mass ~ Type,
   data = oreoData,
@@ -338,34 +361,37 @@ Notice that we used R's formula notation `Filling.Mass ~ Type`. The ordering is 
 
 To do the same thing in `ggplot2`:
 
-```{r stripEx2, echo=TRUE, eval=TRUE, fig.cap="Strip chart for the Oreo data using ggplot2"}
-ggplot2::ggplot(
+```{r stripEx2}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Strip chart for the Oreo data using ggplot2",
+#| fig.height = 3
+
+## Strip chart in ggplot2 ----
+ggplot(
   data = oreoData,
   mapping = aes(x = Type, y = Filling.Mass, fill = Type)
 ) + 
-  ggplot2::geom_dotplot(
-    binaxis = "y",
-    binwidth = 0.15,
-    binpositions = "bygroup",
-    stackdir = "centerwhole"
-  ) +
-  ggplot2::theme_bw() +
+  geom_point(size = 2) +
+  theme_bw() +
   xlab("Type") +
-  ylab("Filling mass (g)")
+  ylab("Filling mass (g)") +
+  theme(
+    legend.position = "none"
+  )
 ```
-
-Notice that I used the `fill` aesthetic with the Type attribute. Within `geom_dotplot` there are a couple of arguments we need to talk about.
-
--   `binaxis`: states which axis R should try to create bins for; this should be whichever axis you place the numerical data on.
--   `binwidth`: this value controls how wide the bins are and to a certain extent the size of the dots. If you omit this argument, `binwidth = NULL`, you might get a warning message. You can either ignore the message (and suppress the printing of the message in your report) OR you can try various values to see what works well with your data.
--   `binpositions`: generally if you are displaying some type of group like I did you'll want to bin the values separately by each group.
--   `stackdir`: the direction you want the dots to stack. The most common is `"up"` which will make the dots stack on top of each other (or to the right depending on orientation). Another method is `"center"` (or `"centerwhole"`) which stakes the dots in both directions from the center point.
 
 ## QQ Plots
 
 Quantile-Quantile (QQ) plots are a useful tool to see whether or not your data follow a particular distribution. Much like density plots there are two ways you can create them; one using the `car` package and one (more complicated) using `ggplot2`.
 
-```{r qqEx1, echo=TRUE, eval=TRUE, fig.cap="QQ plot for Oreo créme filling mass using car"}
+```{r qqEx1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "QQ plot for Oreo créme filling mass using car",
+#| fig.height = 4
+
+## QQ Plots using car ----
 car::qqPlot(
   formula = ~ Filling.Mass,
   data = oreoData,
@@ -385,23 +411,32 @@ The `id` argument when set to `TRUE` will identify the two points with the most 
 
 To create a similar plot in `ggplot2`, you'll need to do the following:
 
-```{r qqEx2, echo=TRUE, eval=TRUE, fig.cap="QQ plot for Oreo créme filling mass using ggplot2", fig.align='center', fig.height=3, fig.width=6, fig.pos='h'}
-ggplot2::ggplot(
+```{r qqEx2}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "QQ plot for Oreo créme filling mass using ggplot2",
+#| fig.align = 'center',
+#| fig.height = 3,
+#| fig.width = 6,
+#| fig.pos = 'h'
+
+## QQ Plot using ggplot2 ----
+ggplot(
   data = oreoData,
   mapping = aes(sample = Filling.Mass)
 ) +
-  ggplot2::geom_qq(
+  geom_qq(
     na.rm = TRUE,
     distribution = stats::qnorm,
     dparams = list()
   ) + 
-  ggplot2::geom_qq_line(
+  geom_qq_line(
     na.rm = TRUE,
     distribution = stats::qnorm,
     dparams = list(),
     color = "blue"
   ) +
-  ggplot2::theme_bw() +
+  theme_bw() +
   xlab("Theoretical quantiles") +
   ylab("Empirical quantiles")
 ```
@@ -414,7 +449,7 @@ The `dparams` argument is where you can specify particular parameters. Notice th
 
 # Figure Options in R Markdown
 
-There are a variety of options that you can apply to your data visualizations in R Markdown. If you aren't using R Markdown, your visualizations will appear in the Plots window in the lower-right of RStudio. You can click the <img src="data:image/png;base64,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"/> Export button and copy the plot to your clipboard or save as a file. You can then put that picture into Word or Google Docs. You will then manipulate the following aspects there.
+There are a variety of options that you can apply to your data visualizations in R Markdown. If you aren't using R Markdown, your visualizations will appear in the Plots window in the lower-right of RStudio. You can click the Export button and copy the plot to your clipboard or save as a file. You can then put that picture into Word or Google Docs. You will then manipulate the following aspects there.
 
 ## Basic Format
 
@@ -424,11 +459,23 @@ When you create a chunk, you should have a some text inside of a set of curly br
 
 Both `echo` and `eval` don't deal with the visualization, just whether to print the code (`echo`) and run the code (`eval`). You can omit them; the homework template has these predefined for you. However, `fig.cap` is a figure option. If you wanted to include more figure options, you just keep adding to the list: `{r histEx1, fig.align='center', fig.height=3, fig.width=6, fig.cap="QQ plot for Oreo créme filling mass using ggplot2", fig.pos='h'}`. The order does not matter. There are many different ones that you can use but I'm going to focus on what I feel are the most useful ones.
 
+Alternatively, you can list each of the options just after you start a code chunk. You would have something like the following:
+
+```{r altCodeOptions, echo=TRUE, eval=FALSE}
+{r histEx1}
+#| echo = TRUE,
+#| eval = TRUE,
+#| fig.cap = "Histogram of Oreo Créme Filling Mass"
+```
+
+Each option goes on it's own line, which starts with `#|`. You will need to end each line (except the last) with a comma.
+
 ## Alignment
 
 Alignment refers to whether the visualization appears to the left, center, or right of the page horizontally. Almost uniformly, data visualizations should appear centered. To do this, you would need to set `fig.align='center'` in each code chunk where a visualization gets made. However, you can also set this as a standard for your entire document:
 
 ```{r defaultEx1, echo=TRUE, eval=FALSE}
+# Setting options for your document ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -451,9 +498,9 @@ Your caption should appear in quotation marks just after the equals sign: `fig.c
 
 ### Referencing
 
-One of the most useful aspects about using `fig.cap` is that your figures become numbered and referenceable. Have you ever read something and you come across something like "As shown in Figure 3.1..."? This is an example of referencing a figure. The computer figures out the appropriate number for you...provided you've set up a caption for the visualization.
+One of the most useful aspects about using `fig.cap` is that your figures become numbered and referenceable. Have you ever read something and you come across something like "As shown in Figure 3.1 we can see..."? This is an example of referencing a figure. The computer figures out the appropriate number for you...provided you've set up a caption for the visualization.
 
-In R Markdown, you need to have two things first: you have to name your code chunk and provide something as `fig.cap`. Once you have those things, you can that visualization. Start by typing the word "Figure" and then`\ref{fig:chunkName}`. When you knit your file, R will replace the ref code with the appropriate value. For example, if I were to type "Figure `\ref{fig:histEx1}`", I will get Figure \@ref(fig:histEx1)---the reference to the first histogram.
+In R Markdown, you need to have two things first: you have to name your code chunk and provide something as `fig.cap`. Once you have those things, you can that visualization. Start by typing the word "Figure" and then`\ref{fig:chunkName}`. When you knit your file, R will replace the ref code with the appropriate value. For example, if I were to type "Figure `\ref{fig:histEx1}`", I will get Figure \ref{fig:histEx1}---the reference to the first histogram.
 
 You can add captions, auto numbered labels, and cross references in programs like Word. From the Insert menu select caption to set up what you want. To add a reference to a figure, select Cross-reference from the Insert menu, select the appropriate type and then the correct figure. Do set the cross reference to only include the label and number, not the whole caption.
 
@@ -472,3 +519,10 @@ Hopefully as you've gone through this guide, you have a better idea of how to ma
 -   Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
 This concludes this guide to data visualizations in R/RStudio.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
