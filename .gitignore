@@ -43,3 +43,5 @@ vignettes/*.pdf
 /Assignments/
 .DS_Store
 /StudentWork/
+# Temporary Ignore
+/stat461Webpage/
