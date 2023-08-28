@@ -1,10 +1,10 @@
 ---
-title: "Descriptive (Incisive) Statistics"
+title: "Descriptive (Incisive) Statistics and Professional Tables"
 author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output:
   pdf_document: default
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes: \usepackage{subfig}
 ---
@@ -35,11 +35,13 @@ For descriptive/incisive statistics, the bulk of the statistics are part of base
 Thus, we will need to load the following packages: `psych`, `knitr`, and `kableExtra`. Go ahead and load these packages. If you need a refresher on what code does this, check below:
 
 ```{r loadPackagesB, eval=TRUE, echo=TRUE, results='hide'}
+# Load useful packages ----
 packages <- c("tidyverse", "psych", "knitr", "kableExtra")
 lapply(
   X = packages,
   FUN = library,
-  character.only = TRUE
+  character.only = TRUE,
+  quietly = TRUE
 )
 
 ```
@@ -51,14 +53,17 @@ Notice that I included `tidyverse` in my package list. I almost always load `tid
 For this guide I'm going to use two different data sets: the class demo Oreo data set and `palmerpenguins`. 
 
 ```{r loadData, echo=TRUE, eval=TRUE}
+# Loading Data into my session ----
+## Oreo Data (HW #1.1)
 oreoData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
   header = TRUE,
   sep = ","
 )
 
-# If you don't have the palmerpenguins package run the 
-# following line in your console, removing the # sign
+## Palmer Penguins Data 
+### If you don't have the palmerpenguins package run the 
+### following line in your console, removing the # sign
 
 # install.packages("palmerpenguins")
 
@@ -66,23 +71,39 @@ penguins <- palmerpenguins::penguins
 
 ```
 
-We've now loaded the two data sets. I'm going to go head and show the structure of both files, and you'll have to trust that I used the `View` function in my console to look at both data frames.
+### Check Loaded Data
+
+Once you've loaded the data into your session, it is always a good idea to check the data. The two functions I use for this are `View` and `str`. The `View` function will open up a new tab that will display the object whose name I pass as the input. For a data frame, this will be tabular format like Excel or Google Sheets, except you can't click into any cells. This allows me to do a visual inspection and see if anything looks problematic.
+
+```{r view, echo=TRUE, eval=FALSE}
+# Viewing objects ----
+View(oreoData)
+
+View(penguins)
+
+## Note: the effect of the View function in both of these
+## calls will not appear in this guide. I also don't recommend
+## using the View function inside of a R Markdown file.
+
+```
+
+The `str` function I run in my console and will tell me the structure of the object whose name I pass as the input.
 
 ```{r structure, echo=TRUE}
+# Examining the structure ----
 str(oreoData)
 
 str(penguins)
 
 ```
 
-Because I'm reloading the Oreo data from the source file, I do need to tell my current session of R that Type should be a factor. In the penguins data, I see that species, island, and sex are already marked as factors. You'll also notice in the preview of values that there are a few `NA`s. `NA` denotes a missing value. We will see what happens in R when you go to use data with missing values.
+The `str` function will tell me what type of object I have (e.g., `data.frame` or `tibble`), the names of columns (denoted by `$`; e.g., `Filling.Mass`, `Type`, `species`), information about the type of data in each column (e.g., `num`, `chr`, `Factor`, `int`), and a preview of some of the data values.
+
+Because I'm reloading the Oreo data from the source file, I will need to tell my current session of R that Type should be a factor. In the penguins data, I see that species, island, and sex are already marked as factors. You'll also notice in the preview of values that there are a few `NA`s. `NA` denotes a missing value. We will see what happens in R when you go to use data with missing values.
 
 ```{r fixType, echo=TRUE}
-# Quickly recode Type as a factor
-oreoData <- oreoData %>%
-  dplyr::mutate(
-    dplyr::across(where(is_character), as_factor)
-  )
+# Quickly recode Type as a factor ---
+oreoData$Type <- as.factor(oreoData$Type)
 
 ```
 
@@ -136,7 +157,7 @@ Remember that the five quartiles are:
 4) The *third quartile*, \(Q_3\)
 5) The *fourth quartile*, \(Q_4\), a.k.a., *sample max*
 
-The five quartiles for the filling mass data are: `r quantile(oreoData$Filling.Mass, na.rm = TRUE)` (`quantile(oreoData$Filling.Mass, na.rm = TRUE)`). 
+The five quartiles for the filling mass data are: `r quantile(oreoData$Filling.Mass, na.rm = TRUE)` (found by using the command `quantile(oreoData$Filling.Mass, na.rm = TRUE)`). 
 
 You can adjust what type of quantile you're looking at with the `probs` argument. Suppose I want to look at octiles for the flipper lengths; I would need to use `probs = seq(0, 1, 1/8)` in the `quantile` function to get these nine values. Thus, `quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)` yields the values `r quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)`. Notice that I used `1/8` rather than `0.125`; remember that R will do calculations for you.
 
@@ -201,12 +222,12 @@ Just as with the *SGM*, you can also use the `DescTools` package's `Hmean` funct
 
 Rates are special types of numbers. Knowing a bit about how the data were collected and the rates constructed will help you decide which of the above *sample means* is most appropriate. To help you get a sense of what to look for, I'll use the example of speed---the rate (of change) of distance traveled with respect to the time spent traveling, which I'll represent with \(X_i\).
 
-+ If everyone traveled for the same amount of time BUT could go any distance in that time, then use the *SAM*.
-    - \(x_i = \frac{\text{any distance}}{\text{same amount of time}}\) use *SAM*
-+ If everyone traveled the same amount of distance BUT could do so in any amount of time, then use the *SHM*.
-    - \(x_i = \frac{\text{same distance}}{\text{any amount of time}}\) use *SHM*
-+ If everyone could travel for however much time and for whatever distance they wanted, then use the *SGM*.
-    - \(x_i = \frac{\text{any distance}}{\text{any amount of time}}\) use *SGM*
+* If everyone traveled for the same amount of time BUT could go any distance in that time, then use the *SAM*.
+    \[x_i = \frac{\text{any distance}}{\text{same amount of time}}\]
+* If everyone traveled the same amount of distance BUT could do so in any amount of time, then use the *SHM*.
+    \[x_i = \frac{\text{same distance}}{\text{any amount of time}}\]
+* If everyone could travel for however much time and for whatever distance they wanted, then use the *SGM*.
+    \[x_i = \frac{\text{any distance}}{\text{any amount of time}}\]
 
 ## Variation as Spread
 
@@ -259,6 +280,7 @@ Rarely should you ever rely on just one statistic to describe your data. A much 
 If you just want Tukey's Five Number Summary (the five *quartiles*) and the value of the *SAM*, then you can use the `summary` function.
 
 ```{r summaryEx1, echo=TRUE}
+# Using the summary function ----
 summary(oreoData$Filling.Mass, na.rm = TRUE)
 
 ```
@@ -266,6 +288,7 @@ summary(oreoData$Filling.Mass, na.rm = TRUE)
 The `psych` package has a function called `describe` that goes beyond what `summary` can do. This function takes a data vector (\*safest option) or an entire data frame (\* use with *extreme* caution) and will calculate the values of many of the statistics listed above. If you choose to put in an entire data frame, the function will calculate values of these statistics, even for character data. The `describe` function will return a new data frame that contains the requested statistics and their values. 
 
 ```{r summaryEx2, echo=TRUE}
+# Using the Psych Package's describe function ----
 summaryOreo <- psych::describe(
   x = oreoData$Filling.Mass,
   na.rm = TRUE,
@@ -292,6 +315,7 @@ You can customize what statistics get calculated through the various arguments. 
 In our course we will almost always want to look at data along any grouping factors. The `psych` package includes an extension to the `describe` that allows you to use a grouping factor: `describeBy`. You'll make use of the same arguments as `describe` plus a few extra:
 
 ```{r summaryEx3, echo=TRUE}
+# Get Summary Values by Group ----
 sumGrpOreo <- psych::describeBy(
   x = oreoData$Filling.Mass,
   group = oreoData$Type,
@@ -312,6 +336,7 @@ The two new arguments are `mat = TRUE` which will allow for a better way to stor
 Try to come up with the code that will display the penguins' body mass, grouped by species as shown below.
 
 ```{r summaryEx4, echo=FALSE, eval=TRUE}
+# Summarizing Penguin Data by Species ----
 sumSpeciesPenguins <- psych::describeBy(
   x = penguins$body_mass_g,
   group = penguins$species,
@@ -327,7 +352,7 @@ sumSpeciesPenguins <- psych::describeBy(
 sumSpeciesPenguins
 ```
 
-# Displaying Values in Professional Ways
+# Displaying Values in Professional Ways (Display Tables)
 
 The above displays are useful for when you want to just look at values for yourself. They are not particularly well formatted for sharing with fellow team members, supervisors, or the broader public. For this, you need to present values in a much more professional manner.
 
@@ -338,6 +363,7 @@ Now, you could present the values woven in to the narrative. While this is usefu
 The most basic of tables can be generated with the following code:
 
 ```{r kableEx1, echo=TRUE, eval=TRUE}
+# Quick Table Example ----
 summaryOreo %>%
   knitr::kable() 
 
@@ -355,10 +381,10 @@ While the table does look better than the raw display's above, there is still mu
 
 ## Improved Tables
 
-We can easily add a caption as well as digits by including two additional arguments: `caption` and `digits`. For `caption` you'll need to include a character string, enclosed in either double or single quotation marks that provides the title/caption for your table. This text should be explain what the table shows in a concise manner. For `digits`, you'll just need to put the number of digits after the decimal place you want. The `big.mark` argument of `format.args = list()` will let you set the character to separate sets of place values (i.e., 123,456 vs. 123456), when needed.
+We can easily add a caption as well as control the number of digits displayed by including two additional arguments: `caption` and `digits`. For `caption` you'll need to include a character string, enclosed in either double or single quotation marks that provides the title/caption for your table. This text should be explain what the table shows in a concise manner. For `digits`, you'll just need to put the number of digits after the decimal place you want. The `big.mark` argument of `format.args = list()` will let you set the character to separate sets of place values (i.e., 123,456 vs. 123456), when needed.
 
 ```{r kableEx2, echo=TRUE, eval=TRUE}
-# Table 1 Code
+# Table 1 Code ----
 summaryOreo %>%
   knitr::kable(
     caption = "Summary Statistics for Oreo Filling Masses",
@@ -373,8 +399,10 @@ summaryOreo %>%
 
 While Table \ref{tab:kableEx2} is an improvement, we can do better. For column alignment and column names, we will need to know how many columns there are AND the order the columns are currently being displayed. We will use the `align` argument which is looking for a series of `'l'` (left), `'c'` (center), and/or `'r'` (right)---one for each column. For the column names, we'll set `col.names` equal to vector that contains the improved names.
 
+\newpage
+
 ```{r kableEx3, echo=TRUE, eval=TRUE}
-# Table 2 Code
+# Table 2 Code ----
 summaryOreo %>%
   knitr::kable(
     caption = "Summary Statistics for Oreo Filling Masses",
@@ -395,7 +423,7 @@ I find centered aligned cells (particularly for numbers) to be better as shown i
 If you notice, the table is still a bit crowded and we don't necessarily need all of these values. Further, we might like to rearrange them to a more logical order. We can drop and rearrange columns using the `dplyr` package, in particular the `select` function.
 
 ```{r kableEx4, echo=TRUE, eval=TRUE}
-# Table 3 Code
+# Table 3 Code ----
 summaryOreo %>%
   dplyr::select(
     n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
@@ -405,8 +433,8 @@ summaryOreo %>%
     digits = 3,
     format.args = list(big.mark = ","),
     align = rep('c', 11),
-    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
-                  "Sample Ex. Kurtosis")
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
   ) %>%
   kableExtra::kable_styling(
     latex_options = c("HOLD_position", "scale_down")
@@ -421,7 +449,7 @@ Table \ref{tab:kableEx4} is nearly there. If you look through the preceding tabl
 What I'm going to present here allows us to create truly professional looking tables in format similar to APA style. To begin with we'll start with the code for Table \ref{tab:kableEx4} and then add on some new code.
 
 ```{r kableEx5, echo=TRUE, eval=TRUE}
-# Table 4 Code
+# Table 4 Code ----
 summaryOreo %>%
   dplyr::select(
     n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
@@ -431,9 +459,8 @@ summaryOreo %>%
     digits = 3,
     format.args = list(big.mark = ","),
     align = rep('c', 11),
-    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
-                  "Sample Ex. Kurtosis"),
-    format = "latex",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
     booktabs = TRUE
   )  %>%
   kableExtra::kable_styling(
@@ -443,16 +470,18 @@ summaryOreo %>%
 
 ```
 
-Notice that we've added two arguments (`format` and `booktabs`) to the `kable` call. These tell R to be sure to make the table ready for LaTeX production and to get rid of the vertical lines between the columns (`booktabs = TRUE`).
+Notice that we've added `booktabs` argument to the `kable` call. This tells R get rid of the vertical lines between the columns.
 
 Hopefully you noticed that at the end of each of chunk of code making the tables, I used `kableExtra::kable_styling`. This gives us some additional controls. For example, we can use `font_size` to stipulate what size of font to use in the table. I would not go much smaller than 8 or 9 point font---and only if your table is extremely big. I do not recommend that you use a font size larger than what your narrative is (typically 12pt). The other argument, `latex_options` has a vector of two values at the moment: `"scale_down"` and `"HOLD_position"`. These will make sure that the table fits the width of the page and will appear where you placed the code, respectively. If you have a table with multiple rows, you can include a third value to the vector `"striped"`. This will make a "zebra table" where the rows will alternate between white and grey backgrounds.
 
-## Displaying Grouped Summarries and Table Footnotes
+## Displaying Grouped Summaries and Table Footnotes
 
 The above code works well for relatively simple tables. However, we need to do a bit more work if we want to take the output of `psych::describeBy` and display that as a table. The biggest action is that we need to convert the grouping column (`group1`) into row names. We can use `tibble`'s `column_to_rownames` function. (The `tibble` package is part of `tidyverse`.) Let's see how to make a table similar to Table \ref{tab:kableEx5}, but using the grouped summaries.
 
+\newpage
+
 ```{r kableEx6, echo=TRUE, eval=TRUE}
-# Table 5 Code
+# Table 5 Code ----
 sumGrpOreo %>%
   tibble::remove_rownames() %>%
   tibble::column_to_rownames(
@@ -466,9 +495,8 @@ sumGrpOreo %>%
     digits = 3,
     format.args = list(big.mark = ","),
     align = rep('c', 11),
-    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
-                  "Sample Ex. Kurtosis"),
-    format = "latex",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
     booktabs = TRUE
   )  %>%
   kableExtra::kable_styling(
@@ -494,7 +522,7 @@ In addition to using `psych`'s `describe` and `describeBy` functions, you can al
 To demonstrate these, I'm going to create a table of summary statistics for the penguin data, grouping by species and sex.
 
 ```{r kableEx7, echo=TRUE, eval=TRUE}
-# Code for Table 6
+# Code for Table 6 ----
 penguins %>%
   dplyr::select(species, sex, flipper_length_mm) %>%
   dplyr::group_by(species, sex) %>%
@@ -573,3 +601,10 @@ This guide served two purposes: demonstrate how you can use R to calculate the v
 + Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
 This concludes this guide to descriptive statistics in R/RStudio.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```

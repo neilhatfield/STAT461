@@ -4,14 +4,14 @@ author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
 ---
 
 ```{r setupFiles, include = FALSE}
-# Setting Document Options
+# Setting Document Options ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -25,13 +25,6 @@ Welcome to the latest installment of using R and RStudio. This guide will be loo
 
 # Getting Started
 
-```
-`` `{r setup}
-#Comment
-str(obj)
-`` `
-```
-
 To get started we need to do two major tasks: load the necessary packages and load our data.
 
 ## Load Packages and Helper Functions
@@ -41,14 +34,16 @@ When you start a new session of R, one of the things that you should do is to lo
 For getting effect sizes, we will make use of the `psych` package. In addition, we will also import the ANOVA tools that I have created from my [STAT461 GitHub](https://github.com/neilhatfield/STAT461)
 
 ```{r loadPackages, eval=TRUE, echo=TRUE, results='hide'}
+# Load useful packages ----
 packages <- c("tidyverse", "psych")
 lapply(
   X = packages,
   FUN = library,
-  character.only = TRUE
+  character.only = TRUE,
+  quietly = TRUE
 )
 
-# Load my helper tools
+# Load my helper tools ----
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
 
 
@@ -59,17 +54,15 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 For this guide I'm going to use two different data sets: the class demo Oreo data set.
 
 ```{r loadData, echo=TRUE, eval=TRUE}
+# Load Oreo Data ----
 oreoData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
   header = TRUE,
   sep = ","
 )
 
-# Quickly recode Type as a factor
-oreoData <- oreoData %>%
-  dplyr::mutate(
-    dplyr::across(where(is_character), as_factor)
-  )
+# Recode Type as a factor
+oreoData$Type <- as.factor(oreoData$Type)
 
 ```
 
@@ -98,6 +91,7 @@ The Distance Family of effect sizes, deals with looking at the distance/differen
 If you used a parametric shortcut, then you should look at the statistics known as Cohen's *D* and Hedge's *G* for effect sizes:
 
 ```{r effectEx1, echo=TRUE, eval=TRUE}
+# Getting Cohen's D and Hedge's G ----
 effectOut1 <- psych::cohen.d(
   x = oreoData$Filling.Mass,
   group = oreoData$Type
@@ -117,11 +111,13 @@ When your sample size is small, say \(n < 20\), Hedge's *G* does a better job. H
 If you used a Nonparametric method such as the Wilcoxon/Mann-Whitney, Permutation, or Bootstrapping, I would recommend using the Hodges-Lehmann Estimator \(\widehat{\Delta}\). You can calculate this by using the `hodgesLehmann` function __*after*__ loading my ANOVA Tools. Notice that the function name begins with a period. You will need to have your data set up in two separate vectors/columns (`unstack` is useful here).
 
 ```{r effectEx2, echo=TRUE, eval=TRUE}
+# Widen the Data Frame ----
 twoColOreo <- unstack(
   x = oreoData, 
   form = Filling.Mass ~ Type
 )
 
+# Get Hodeges-Lehmann Estimate ----
 hlEst <- hodgesLehmann(
   x = twoColOreo$Regular,
   y = twoColOreo$Double.Stuf
@@ -139,6 +135,8 @@ Suppose that you find the Probability of Superiority of Double Stuf Oreos' crém
 You may get this value by using the `probSup` function from my set of ANOVA Tools. However, you'll need to first calculate Cohen's *D* and use that value as the input.
 
 ```{r effectEx3, echo=TRUE, eval=TRUE}
+# Probability of Superiority ----
+## Have to load my helper tools first
 ps <- probSup(effectOut1$cohen.d[2])
 
 ```
@@ -158,3 +156,10 @@ Remember, the best way to improve your skills is by practicing.
 -   Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
 This concludes this guide to Effect Sizes in R/RStudio.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```

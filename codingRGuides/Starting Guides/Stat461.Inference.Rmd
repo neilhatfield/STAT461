@@ -4,14 +4,14 @@ author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', Sys.Date())`"
 output: 
   pdf_document
-geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
+geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes: 
   \usepackage{subfig}
 ---
 
 ```{r setupFiles, include = FALSE}
-# Setting Document Options
+# Setting Document Options ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -38,11 +38,13 @@ When you start a new session of R, one of the things that you should do is to lo
 For basic statistical inference, base R has plenty of functions which will assist you in conducting a hypothesis test and/or constructing confidence intervals. That being said, I will still use a couple of packages: `perm` (you'll need to install this package), and `boot` (should be installed if you used the [`checkSetup` function](https://github.com/neilhatfield/STAT461#check-setup)). (Don't forget `tidyverse`.)
 
 ```{r loadPackagesB, eval=TRUE, echo=TRUE, results='hide'}
+# Load useful packages ----
 packages <- c("tidyverse", "perm", "boot")
 lapply(
   X = packages,
   FUN = library,
-  character.only = TRUE
+  character.only = TRUE,
+  quietly = TRUE
 )
 
 ```
@@ -52,17 +54,15 @@ lapply(
 For this guide I'm going to use two different data sets: the class demo Oreo data set.
 
 ```{r loadData, echo=TRUE, eval=TRUE}
+# Load Oreo data ----
 oreoData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
   header = TRUE,
   sep = ","
 )
 
-# Quickly recode Type as a factor
-oreoData <- oreoData %>%
-  dplyr::mutate(
-    dplyr::across(where(is_character), as_factor)
-  )
+# Recode Type as a factor ----
+oreoData$Type <- as.factor(oreoData$Type)
 
 ```
 
@@ -70,9 +70,9 @@ I've loaded the data and set Type as a factor. We're almost ready to begin.
 
 # Inference Refresher
 
-Before we delve too far into doing statistical inference with R, I believe that doing a quick refresher would be good. I would recommend reading the *On Statistical Inference* PDF that I've assigned to get a fuller picture.
+Before we delve too far into doing statistical inference with R, I believe that doing a quick refresher would be good.
 
-Whether you're doing a Hull Hypothesis Significance Test (NHST) or building a confidence interval, you have to rely on some logic.
+Whether you're doing a Null Hypothesis Significance Test (NHST) or building a confidence interval, you have to rely on some logic.
 
 1)  You pick your esti**mator**
 
@@ -80,7 +80,7 @@ Whether you're doing a Hull Hypothesis Significance Test (NHST) or building a co
 
 3)  You calculate the esti**mate** using your data
 
-4)  Depends
+4)  Depends on your approach...
 
     -   NHSTs: You look to see how unusual your esti**mate** is given the long-run behavior of the esti**mator** under the null hypothesis
     -   Confidence Intervals: you look to see if your esti**mate** and null hypothesis are consistent with each other.
@@ -97,8 +97,8 @@ In my opinion, the most important step in the logic process is the second one: d
 
 2)  Simulations: this family of methods while old did not take off until the advent of computers. Doing these methods with anything larger than small data sets by hand is difficult. Computers have helped make these methods much more feasible.
 
-    -   Permutation Methods: we can permute data values between the various groups to test whether the grouping factor impacts the response. (We often use combinations rather than permutations to reduce the work load.)
-    -   Bootstrapping: we sample with replacement from our sample. This lets us treat our original sample as a proxy of the population and attempt to carry out the goals of Replication.
+    - Permutation Methods: we can permute data values between the various groups to test whether the grouping factor impacts the response. (We often use combinations rather than permutations to reduce the work load.)
+    - Bootstrapping: we sample with replacement from our sample. This lets us treat our original sample as a proxy of the population and attempt to carry out the goals of Replication.
 
 3)  Shortcuts: statisticians created these methods to greatly cut down the amount of time needed to get to sampling distributions (hence they are shortcuts). These methods rely on multiple assumptions each and tend to be less robust than other methods
 
@@ -118,6 +118,7 @@ You will need to be sure that you check the assumptions for any shortcut method.
 For a *t* test, you'll make use of the `t.test` function in R:
 
 ```{r tTestGeneric, echo=TRUE, eval=FALSE}
+# Generic t Test Function call ----
 testOutput1 <- t.test(
   formula = response ~ factor,
   data = dataFrame,
@@ -144,6 +145,7 @@ Argument Details:
 Let's now look at raw output using the my Oreo data.
 
 ```{r tTestExample, echo=TRUE, eval=TRUE}
+# t Test Example with Raw Output ----
 testOutput1 <- t.test(
   formula = Filling.Mass ~ Type,
   data = oreoData,
@@ -155,6 +157,7 @@ testOutput1 <- t.test(
   na.action = "na.omit"
 )
 
+## Get Raw Output ----
 testOutput1
 
 ```
@@ -190,6 +193,7 @@ What I typed in my R Markdown file:
 Suppose that your data do not meet the assumptions and you did not transform your data in a way that would let you then meet them. You could choose to make use of a Nonparametric shortcut instead. For a difference between two groups, this would be the Wilcoxon/Mann-Whitney test.
 
 ```{r wilTestGeneric, echo=TRUE, eval=FALSE}
+# Generic Wilcoxon Test Call ----
 testOutput1 <- wilcox.test(
   formula = response ~ factor,
   data = dataFrame,
@@ -218,6 +222,7 @@ Argument Details:
 
 Let's now look at raw output using the my Oreo data.
 ```{r wilTestExample, echo=TRUE, eval=TRUE}
+# Wilcoxon Test Example with Raw Output ----
 testOutput2 <- wilcox.test(
   formula = Filling.Mass ~ Type,
   data = oreoData,
@@ -231,6 +236,7 @@ testOutput2 <- wilcox.test(
   na.action = "na.omit"
 )
 
+## Get Raw Output ----
 testOutput2
 
 ```
@@ -248,11 +254,14 @@ What might you type in R Markdown to produce the following?
 
 > Using the Wilcoxon/Mann-Whitney test, we find that *W*=`r round(testOutput2$statistic, digits = 2)`; this yielded a *p*-value `r ifelse(test = testOutput2$p.value < 0.0001, yes = "< 0.0001", no = round(testOutput1$p.value, digits = 4))`. The 97% confidence interval is (`r round(testOutput2$conf.int, digits = 3)`). There is approximately `r round(testOutput2$estimate, digits = 2)` grams of créme filling between the two groups' location parameters.
 
+\newpage 
+
 # Permutation Simulations
 
-You could also use a permutation simulation rather than a shortcut. This is where the `perm` package wil come into play. 
+You could also use a permutation simulation rather than a shortcut. This is where the `perm` package will come into play. 
 
 ```{r permTestGeneric, echo=TRUE, eval=FALSE}
+# Generic Permutation Test Function Call ----
 permOutput <- perm::permTS(
   formula = response ~ factor,
   data = dataFrame,
@@ -273,6 +282,7 @@ There are fewer arguments to the Two Sample Permutation test (`permTS`) function
 
 Let's now see this in action:
 ```{r permExample, echo=TRUE, eval=TRUE}
+# Permutation Test Example and Raw Output ----
 permOutput <- perm::permTS(
   formula = Filling.Mass ~ Type,
   data = oreoData,
@@ -281,6 +291,7 @@ permOutput <- perm::permTS(
   na.action = "na.omit"
 )
 
+## Get Raw Output ----
 permOutput
 ```
 
@@ -299,6 +310,7 @@ The last method I'm going to show is for Bootstrapping. This method typically re
 This extra flexibility does mean that we need to first define our estimator and make sure our data is in wide format.
 
 ```{r dataWide, echo=TRUE, eval=TRUE}
+# Change the shape of our data ----
 twoColOreos <- unstack(
   x = oreoData, 
   form = Filling.Mass ~ Type
@@ -310,6 +322,7 @@ The `unstack` function will take our data frame and re-arrange the columns so th
 Let's now come up with an estimator to use. How about we use the ratio of *Sample Medians* to see whether Double Stuf have twice the filling of Regular Oreos?
 
 ```{r ourEstimator, echo=TRUE, eval=TRUE}
+# Define bootstrap estimator ----
 myEstimator <- function(df, w) {
   return(
     median(df$Double.Stuf * w) / median(df$Regular * w)
@@ -321,6 +334,7 @@ myEstimator <- function(df, w) {
 Our custom estimator, `myEstimator` will allow us to look at our desired ratio. Notice the inclusion of the `w`. We need to place this into our estimator's definition for the bootstrapping call.
 
 ```{r bootGeneric, echo=TRUE, eval=FALSE}
+# Generic Bootstrap Function Call ----
 bootOutput <- boot::boot(
   data = dataFrame,
   statistic = functionName,
@@ -339,6 +353,7 @@ Notice that are there are only a few arguments we need to attend to:
 You'll want to save this output into an object as I have done. This is because to get confidence intervals, we will have to pass this output into the function `boot::boot.ci`.
 
 ```{r bootExample, echo=TRUE, eval=TRUE}
+# Example Bootstrapping with Raw Output----
 bootOutput <- boot::boot(
   data = twoColOreos,
   statistic = myEstimator,
@@ -346,12 +361,14 @@ bootOutput <- boot::boot(
   R = 1000
 )
 
+## Form Confidence Intervals ----
 bootCI <- boot::boot.ci(
   boot.out = bootOutput,
   conf = 0.97,
   type = c("perc", "bca")
 )
 
+## Get Raw Output ----
 bootCI
 
 ```
@@ -362,6 +379,8 @@ For percentile method confidence intervals (`type = "perc"`), we will need to do
 
 For the Bias Corrected and Accelerated intervals (`type = "bca"`), we do pretty much the same thing, just using `bca` instead of `percent`: (`round(bootCI$bca[1,4], digits = 2)`, `round (bootCI$bca[1, 5], digits = 2)`). This would give us: (`r round(bootCI$bca[1,4], digits = 2)`, `r round(bootCI$bca[1, 5], digits = 2)`).
 
+\newpage 
+
 # Data Transformations
 
 Some times when you are doing inference, you find yourself needing to transform your data. Within `dplyr` (part of `tidyverse`) is the very useful `mutate` function which allows you to create new columns in your data frame. I'm going to show you how to use this function to create several new columns:
@@ -371,6 +390,7 @@ Some times when you are doing inference, you find yourself needing to transform 
 + `doubleR`: double only the Regular Oreo's filling masses
 
 ```{r transformData, echo=TRUE, eval=TRUE}
+# Creating new columns for transformations of data ----
 oreoData <- oreoData %>%
   dplyr::mutate(
     halfMass = Filling.Mass / 2,
@@ -400,3 +420,10 @@ This guide served two purposes: demonstrate how you can use R to calculate the v
 -   Palmer Penguin Data---install the `palmerpenguins` package first, then access with `palmerpenguins::penguins`
 
 This concludes this guide to descriptive statistics in R/RStudio.
+
+\newpage
+
+# Code Appendix
+
+```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
