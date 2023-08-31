@@ -1,7 +1,7 @@
 ---
 title: "Homework #1.1-Example A"
 author: "A. Student"
-date: "1/20/2023"
+date: "9/1/2023"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
@@ -9,7 +9,7 @@ header-includes:
   - \usepackage{subfig}
 ---
 
-```{r setupFiles, include = FALSE}
+```{r setupFiles, include = TRUE}
 # Setting Document Options
 knitr::opts_chunk$set(
   echo = FALSE,
@@ -20,11 +20,13 @@ knitr::opts_chunk$set(
 
 # Add additional packages by name to the following list
 packages <- c("tidyverse", "knitr", "kableExtra", "psych")
-lapply(
+invisible(lapply(
   X = packages,
   FUN = library,
-  character.only = TRUE
-)
+  character.only = TRUE,
+  warn.conflicts = FALSE,
+  quietly = TRUE
+))
 
 oreoData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat",
@@ -35,7 +37,7 @@ oreoData <- read.table(
 ```
 
 <!-- This will be Beginning/Progressing Example -->
-*Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.*
+<!--*Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.*-->
 
 For this assignment, I was assigned the Oreo 1 data set.
 
@@ -61,20 +63,27 @@ psych::skew(oreoData[which(oreoData$Type == "Double Stuf"), "Filling.Mass"])
 
 The sample min is the smallest value, the sample max is the biggest value. Twenty-five percent of the cookies have 2.936 grams of filling (or 5.59). Half of the cookies have less than 3.04 grams (5.85 grams) of créme filling. The average of regular oreos is 3.178 grams; double stuf are 5.915 grams. Q3 for the oreos are 3.23 and 6.41. The variances are the square of the standard deviation, so they are the squared typical deviation from the average. Skewness tells us that the regular oreos are left skewed while double stuff are right skewed as shown in the histograms.
 
-```{r hists}
+```{r hist1}
+#| fig.pos = "H",
+#| fig.height = 4
 hist(
   x = oreoData[which(oreoData$Type == "Regular"), "Filling.Mass"]
 )
 
+```
+
+```{r hist2}
+#| fig.pos = "H",
+#| fig.height = 4
 hist(
   x = oreoData[which(oreoData$Type == "Double Stuf"), "Filling.Mass"]
 )
 
 ```
 
-The question of whether double stuf oreos are actually double the stuff, I guess, is a two sample location problem.
+The question of whether double stuf oreos are actually double the stuff is a two-sample location problem.
 
-The null hypothesis would be \(2D = R\); while the alternative hypothesis would be 2D not equal R. I can reframe this as \(2D - R = 0\) vs \(2D - R \neq 0\). This would be a two-sample t test.
+The null hypothesis would be \(D = 2R\); while the alternative hypothesis would be D not equal 2R. I can treat this as \(D - 2R = 0\) vs \(D - 2R \neq 0\). This would be a two-sample t test.
 
 ```{r tTest, echo=TRUE}
 t.test(
@@ -86,10 +95,12 @@ t.test(
 
 My t value is 15.661; degrees of freedom is 57.566. The p-value is really small (< 2.2e-16). This would mean that there is essentially no chance that the null hypothesis is true. The 97% confidence interval is (2.348, 3.125); we're 97% confident that the true difference between double stuf and regular oreos is between 2.348 and 3.125 grams. The mean of regular oreos is 3.178, which is not in this interval; so clearly double stuf can't have double the filling; they have less.
 
-\newpage
+<!--\newpage
 
 # Code Appendix
 
 ```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+#| include = FALSE
 
 ```
+-->

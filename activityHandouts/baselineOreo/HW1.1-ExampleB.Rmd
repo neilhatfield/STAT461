@@ -1,7 +1,7 @@
 ---
 title: "Homework #1.1-Example B"
 author: "B. Student"
-date: "1/20/2023"
+date: "9/1/2023"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
@@ -20,10 +20,14 @@ knitr::opts_chunk$set(
 
 # Add additional packages by name to the following list
 packages <- c("tidyverse", "knitr", "kableExtra", "psych")
-lapply(
-  X = packages,
-  FUN = library,
-  character.only = TRUE
+invisible(
+  lapply(
+    X = packages,
+    FUN = library,
+    character.only = TRUE,
+    warn.conflicts = FALSE,
+    quietly = TRUE
+  )
 )
 
 oreoData <- read.table(
@@ -35,30 +39,34 @@ oreoData <- read.table(
 ```
 
 <!-- This will be a Proficient Example -->
-*Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.*
+<!-- *Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.* -->
 
-If companies are going to market things as being "double", then consumers should be confident that they are getting twice as much. This brings us to the question of whether Double Stuf Oreos have double the creme filling of regular oreos. We've been given some actual data to explore this question with.
+If Nabisco is going to market things as being "double", then consumers should be confident that they are getting twice as much. This brings us to the question of whether Double Stuf Oreos have double the creme filling of regular oreos. We've been given some actual data to explore this question with.
 
 # Exploratory Data Analysis
 
 We will begin by looking at box plots of our data.
 ```{r boxplots}
+#| fig.height = 3
 ggplot(
   data = oreoData,
   mapping = aes(x = Type, y = Filling.Mass, color = Type)
 ) + 
-  geom_boxplot()
+  geom_boxplot() +
+  theme_dark()
 ```
 
 There appear to be two outliers; one in the Regular and one in the Double Stuf. These turn out to be rows 2 and 35; I'm going to drop them since you get rid of the most extreme outliers.
 
 ```{r dropValues}
+#| fig.height = 3
 oreoData <- oreoData[-c(2, 35),]
 ggplot(
   data = oreoData,
   mapping = aes(x = Type, y = Filling.Mass, color = Type)
 ) + 
-  geom_boxplot()
+  geom_boxplot() +
+  theme_dark()
 ```
 
 The new box plots look much better (no outliers). We can also look at histograms of creme filling mass.
@@ -68,11 +76,12 @@ ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass, fill = Type)
 ) +
-  geom_histogram(col = "black")
+  geom_histogram(col = "black") +
+  theme_dark()
 
 ```
 
-There seems to be more variation in filling masses for double stuf oreos than regular. Double stuf oreos do have larger amounts of creme filling than Regular.
+There seems to be more variation in filling masses for double stuf oreos than regular. Double stuf oreos have larger amounts of creme filling than Regular.
 
 Let's look at some values of descriptive statistics
 
@@ -128,7 +137,7 @@ t.test(
 
 ```
 
-From our null hypothesis test we find that \(t(48.98)=-8.72\) with a p-value of \(1.575 \times 10^{-11}\). This indicates that under the null hypothesis, we would only expect the *t* statistic to take a value at least as extreme as -8.72 essentially 0 percent of the time. Since is value is less than our threshold of 0.03, we have an unusual event and will take this as evidence against the null hypothesis. The 97% confidence interval for the difference is (-1.42, -0.84). Thus, if we were to repeat the entire experiment a large number of times, we will make an interval that contains the true difference 97% of the time. Since 0 isn't in the interval, we can again take this as evidence against the null hypothesis. Thus, we will reject the null hypothesis and decide that double stuf oreos do not have twice the creme filling of regular oreos. Given that the point estimate is `r 5.226 - 6.353` (double minus 2*regular) and the interval consists of all negative values for the same order of subtraction, this would suggest that double stuff oreos might have less than twice the amount of creme filling of regular oreos.
+From our null hypothesis test we find that \(t(48.98)=-8.72\) with a p-value of \(1.575 \times 10^{-11}\). This indicates that under the null hypothesis, we would only expect the *t* statistic to take a value at least as extreme as -8.72 essentially 0 percent of the time. Since is value is less than our threshold of 0.03, we have an unusual event and will take this as evidence against the null hypothesis. The 97% confidence interval for the difference is (-1.42, -0.84). Since 0 isn't in the interval, we can again take this as evidence against the null hypothesis. Thus, we will reject the null hypothesis and decide that double stuf oreos do not have twice the creme filling of regular oreos. Given that the point estimate is `r 5.226 - 6.353` (double minus 2*regular) and the interval consists of all negative values for the same order of subtraction, this would suggest that double stuff oreos might have less than twice the amount of creme filling of regular oreos.
 
 From our sample, we've decided that double stuf oreos don't have twice the creme filling of regular oreos. There is some evidence that they have less creme filling. However, we should collect a larger sample to test this new hypothesis.
 
