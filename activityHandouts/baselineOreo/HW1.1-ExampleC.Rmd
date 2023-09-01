@@ -1,5 +1,6 @@
 ---
-title: "Homework #1.1-Example C"
+title: "Exploring Double Stuf vs. Regular Oreos®"
+subtitle: "Homework #1.1-Example C"
 author: "C. Student"
 date: "9/1/2023"
 output: pdf_document
@@ -40,13 +41,21 @@ oreoData <- read.table(
 
 <!-- *Note to Readers: Keep in mind that this example report still needed to meet the requirements of the assignment (e.g., explaining _every_ statistic) which would not necessarily happen in a standard report.* -->
 
-# Exploring Double Stuf vs. Regular Oreos®
+The exchange of services and goods between people is the foundation of economies worldwide. For as long as consumers have purchased products, goods, and services, there have been instances of less than reputable sellers. One category of such instances deals with claims of false advertising. False advertising occurs when a company's advertisement contains untrue or misleading information about their product [@losangelesdepartmentofconsumerandbusinessaffairs2011]. False advertising negatively impacts consumers in various ways including impacting their physical, mental, and emotional well-being. Additionally, false advertising can undercut consumer confidence in a product, hurting the company's revenue stream.
 
-For as long as people have sold products, goods, and services to others, there have also been claims of false advertising[^1]. False advertising occurs when a company's advertisement contains untrue or misleading information about their product [@losangelesdepartmentofconsumerandbusinessaffairs2011]. Subway® has been sued several times for false advertising issues: once for their "footlong" sandwiches being allegedly less than 12 inches long [@goldman2016] and more recently for their tuna salad allegedly not containing any actual tuna [@fitzsimons2021].
+In the present report, I'll report on investigating a false advertising question: Do Double Stuf Oreos® have twice the créme filling mass as Regular Oreos®? I'll first present some relevant background information, then describe the methods I used to investigate this research question. I'll then describe the collected sample and share the results of my analysis. Finally, I'll close with some discussion of those results and implications.
+
+# Literature Review
+
+For as long as people have sold products, goods, and services to others, there have also been claims of false advertising[^1]. Subway® has been sued several times for false advertising issues: once for their "footlong" sandwiches being allegedly less than 12 inches long [@goldman2016] and more recently for their tuna salad allegedly not containing any actual tuna [@fitzsimons2021].
 
 [^1]: <https://www.truthinadvertising.org/timeline/>
 
 Subway is not the only food brand to face such charges. Oreos® (under the Nabisco brand owned by Mondelēz International) have also faced this issue with regards to whether Double Stuf Oreos have twice the créme filling as regular Oreos. One article describes how one math teacher investigated this question and found that Double Stuf oreos had only around 1.86 times the amount of filling as Regular oreos [@tepper2013].
+
+## Prior Investigations of Double-Stuf vs. Regular Oreos®
+
+# Methodology
 
 Dr. Hatfield worked with an introductory statistics class to investigate whether double stuf oreos have twice the créme filling as regular oreos. They used a proper process to select a grocery store at random in Tempe, AZ and then to select 9 packages of regular and 9 packages of Double Stuf Oreos from the shelves. They then split these 9 packages into 9 pairs (one of each type of cookie) to measure the créme filling masses (in grams) for each cookie.
 
@@ -218,7 +227,9 @@ The last two statistics in Table \ref{tab:descStatsTable} are *sample skewness* 
 
 Now that I have a better understanding of the data, I believe that I can answer the statistical research question.
 
-# Statistical Inference
+# Results
+
+## Assumptions
 
 "Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?" is a two-sample test of location. The null hypothesis would be that Double Stuf Oreos do have twice the amount of créme filling mass as Regular Oreos. The alternative hypothesis would be that they do not. We can express these two hypotheses as the following models: $$ H_0:\frac{\mu_D}{\mu_R} = 2 \qquad \text{vs.} \qquad H_1:\frac{\mu_D}{\mu_R} \neq 2$$ While a two sample test of the ratio of location parameters does exist, I'm going to choose to use a log transformation to make models fit the form most often seen for this type of problem: \begin{align*}
 H_0:\log(\mu_D)-\log(\mu_R) &= \log(2) \\
@@ -268,9 +279,7 @@ car::qqPlot(
 
 ```
 
-To assess the issue of independence, knowing the order in which measurements were taken is important. There is no explicit column given for the measurement order. I have spoken to Dr. Hatfield and he confirmed that the data appear in the file in measurement order. Thus, we can look at the index plot in Figure \ref{fig:indexPlot}. I do not see any patterns in the measurements of filling mass that suggest a violation of independence. However, I will note that Discovery UK's How It's Made video documenting the creation of a similar cookie suggests that there could be a lack independence in the actual production process[^2].
-
-[^2]: <https://youtu.be/b_hDOHmF9nE?t=196>
+To assess the issue of independence, knowing the order in which measurements were taken is important. There is no explicit column given for the measurement order. I have spoken to Dr. Hatfield and he confirmed that the data appear in the file in measurement order. Thus, we can look at the index plot in Figure \ref{fig:indexPlot}. I do not see any patterns in the measurements of filling mass that suggest a violation of independence. However, I will note that Discovery UK's How It's Made video documenting the creation of a similar cookie suggests that there could be a lack independence in the actual production process [@sandwich2019].
 
 ```{r indexPlot}
 #| fig.cap="Index Plot for Log Filling Mass", 
@@ -300,7 +309,7 @@ ggplot(
 
 ```
 
-## Parametric Shortcut
+### Parametric Shortcut
 
 Given all of this, I will proceed, with caution, to a Welch's *t* test using the log transformed masses and setting the null hypothesis value to log(2). For this test, I will use an Unusualness Threshold of 3% (confidence level of 97%) as asked.
 
@@ -325,7 +334,7 @@ I found an interval estimate for the ratio using a method which will capture the
 
 I will decide to reject the null hypothesis and act as if the Double Stuf Oreos to Regular Oreo créme filling ratio is something other than 2. The value of Cohen's *d* is approximately `r round(t_to_d(t = tOut$statistic, df_error = tOut$parameter)$d, 2)` pooled standard deviations beyond our hypothesized difference (i.e., $\log (2)$). This is suggestive of a large observed effect for these data.
 
-## Bootstrapping
+### Bootstrapping
 
 ```{r boot}
 # Set type as Factor since I hadn't already done so
@@ -406,7 +415,7 @@ ggplot(
 
 The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in Figure \ref{fig:bootPlot} as the solid red lines. Worth noting here is that the minimum observed value of our test statistic in the bootstrapping simulation is approximately `r round(min(bootOut$t), 2)` grams/gram; which is just slightly above the null hypothesis value. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work would need to be done.
 
-# Final Thoughts
+# Discussion
 
 After exploring the data and doing statistical inference, I believe that Oreos are not engaged in false advertisement with their Double Stuf Oreos. While I can always find a pair of Oreos (one Regular, one Double Stuf) that shortchanges the consumer, I can also find pairs of Oreos where the consumer will have a Double Stuf oreo with more than twice the créme filling of a regular oreo. However, there is a preponderance of evidence here to convince me to give the benefit of the doubt to Nabisco. Future work could take this study as a starting point and expand out. For example, we could take a random sampling of Oreo packages from across the country to limit any geographical influences. Additionally, we might consider the age of the Oreos when we take measurements. Oreos that are older might have altered masses. The number of experiments abounds when we think about Oreos and their compositions.
 
