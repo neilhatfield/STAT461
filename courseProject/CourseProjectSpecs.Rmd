@@ -15,8 +15,8 @@ The purpose of the Course Project is multifaceted. On the one hand, you get to p
 
 The course project is fairly straightforward with two options: 
 
-+ __Option 1__: Design and carryout an experiment to collect data and then analyze that data to answer your research question.
-+ __Option 2__: Find and adopt a data set that works for your research question (you must describe the way the data was collected and for what original purpose) and then analyze the data to answer your research question.
++ __Option 1__: Design and carryout a study (experiment, quasi-experiment, observational) to collect data and then analyze that data to answer your research question.
++ __Option 2__: Find and adopt a real data set that works for your research question (you must describe the way the data was collected and for what original purpose) and then analyze the data to answer your research question.
 
 In either option, you will be submitting a single report (including an Executive Summary) at the end of the semester.
 
@@ -29,26 +29,30 @@ Let's take a look at the details a bit more closely. Short assignment names appe
 1) Begin thinking about ideas and teams (GP #1)
 
 2) Teams get formed
-    A) Neil will help people to form teams of roughly 2-4 people. Final team formation will be joint enterprise between the class and Neil.
-    B) At the end of the semester, each member of a team will be responsible for anonymously grading each team member as well as themselves.
+    A) Neil will form teams of roughly 2-4 people. The creation of teams is a joint enterprise between the class and Neil. Be sure to check out the important notice at the end of this document.
+    B) At the end of the semester, each member of a team will be responsible for grading each team member as well as themselves in terms of group work and contributions to the project.
 3) Develop a Statistical Research Question (GP #2)
-    A) As a team, develop a statistical research question.
-    B) You will have to get approval from Neil.
+    A) As a team, you will
+        i) state what you're trying to learn,
+        ii) come up with one or more SRQs
+        iii) identify potential key design elements (e.g., measurement units, response, factor)
+        iv) explain how you are going to get your data
+        v) generate a Hasse diagram for your proposed studies
+    B) Your group will need to schedule a "pitch meeting" with Neil to go through your proposed study for feedback and approval.
 4) Develop your Study/Experiment
-    A) As a team, develop your experiment or observational study (as the case might be)
-    B) You will have to get your plan approved by Neil 
-    C) Special Note--Involvement of Human and Animal Subjects
+    A) As a team, use feedback to finish designing your study
+    B) Special Note--Involvement of Human and Animal Subjects
         i) In the event you need to use either Humans or Animals subjects, you will need to have your study scrutinized carefully in coordination with Neil.
         ii) If you need to go down this route, your timetable is now ASAP.
-        iii) Data may NOT be collected until after IRB approval is secured.
+        iii) Data may NOT be collected until after IRB approval is secured, if necessary.
 5) Collect your Data
-    A) As a team, carry out your experiment or observational study to collect your data.
+    A) As a team, carry out study to collect your data.
     B) If you are adopting data, you need to identify whether any Data Sharing Agreements need to be signed. If so, you need to work with Neil so that we can get you access to the data. DO NOT FILL OUT ANY DATA AGREEMENT ON YOUR OWN.
     C) I have limited funds which may help to defray costs.
 6) Analyze your Data
     A) Clean your Data
     B) Write your Data Narrative
-    C) Carry out the appropriate method(s) of analysis from the __ANOVA toolkit__. (Note: you can't use a regression model for this project)
+    C) Carry out the appropriate method(s) of analysis from the __ANOVA toolkit__. (Note: you can't use a regression model as the primary analysis for this project)
 6) Write your report.
     A) Structure (You're structure should look similar to this)
         1) Executive Summary (2 page max)
@@ -56,9 +60,9 @@ Let's take a look at the details a bit more closely. Short assignment names appe
             a) Literature Review & Background, as appropriate
             b) Statement of Research Questions and Hypotheses
         3) Methods
-            a) Describe the experiment/study
+            a) Describe the study
             b) Describe the analytical/statistical methods you used
-            c) Describe the sample (if applicable; Exploratory Data Analysis)
+            c) Describe the sample (i.e., Exploratory Data Analysis)
         5) Results
             a) Assumption Checking
             b) Omnibus Results
@@ -69,39 +73,32 @@ Let's take a look at the details a bit more closely. Short assignment names appe
         7) References (include where others can get access to your data)
         8) Author Contributions
         9) Code Appendix
-    B) Make sure that you answer your SRQ.
 7) Submit your Project Report (GP #3).
 8) Complete Peer Evaluations (GP #4)
 
 ## Potential Topics
 
-You are only bound by four things: 1) ethics, 2) what you can complete (i.e., collect and analyze) in the remaining time this semester, 3) the interests of your team, and 4) what you can afford.
+You are only bound by four things: 
 
-I will not approve any SRQ and subsequent study design (experimental or observational) that I believe to be ethically questionable. The same is true for using data obtained by someone else. I will do my best to help your team refine your SRQs into something that you can explore this semester and I will give you pointers on your study design. Try to draw from your experiences for inspiration.
+1) ethics, 
+2) what you can complete (i.e., collect and analyze) in the remaining time this semester,
+3) the interests of your team, and 
+4) what you can afford (I can help out with some limited costs).
 
-I have a few suggestions for projects that I would like to see students pick up and complete this semester.
+I will not approve any SRQ and subsequent study design that I believe to be ethically questionable. The same is true for using data obtained by someone else. I will do my best to help your team refine your SRQs into something that you can explore this semester and I will give you pointers on your study design. Try to draw from your experiences for inspiration.
 
-### Cost of Voting with Voter ID Laws
+### Word about Kaggle
 
-Much of the focus on Voter ID laws is on their discriminatory impacts on minorities. My curiosity with these laws is different: I want to know more about the *cost* to vote in a federal/state election. There are at least two ways to opertionalize cost here: what is the minimal cost for a typical voter to obtain the ID; what is the maximal cost for a typical voter to obtain the ID? Further, I would like to know whether the party in power of each state's legislature and governor's office has an impact on these costs.
+I must issue a few important cautions about trying to adopt data from Kaggle. The vast majority of data sets found on Kaggle are *not* designed for ANOVA. This means that students who are insistent on using data from Kaggle are either having to manufacture a way to get a Kaggle data to fit within the parameters of the project or they try to substitute a regression analysis. Neither option will result in a successful course project.
 
-Note: because of the multiple ways to operationalize cost here, several different groups may explore this issue...provide they have different operationalizations.
-
-### Wisconsin Fast Plants and Fertilizer
-
-Several years ago, I had a couple of students do an Honors project where they looked at the impacts of different kinds of fertilizer on different species of Wisconsin Fast Plants. (They primarily looked at plant height.) However, they ran into a couple of issues that confounded their results. Their original study could be re-done or you could propose something new. For example, some fertilizers don't impact plant height, but rather plant "bushy-ness". 
-
-### Oreos
-
-I'm always open to new explorations of Oreos, especially since they keep coming out with different sizes (Thin, Regular, Double Stuf, Mega Stuf, the Most Stuf) and flavors. What are the differences in the amount of créme filling? What are the differences in the ratios of créme filling to wafer cookies?
-
+Second, I have noticed two disturbing trends the last several years with Kaggle data sets: more and more of the data are fake/synthetic (i.e., not real but potentially simulated from real) and many of the people posting the data are not the originators of the data. You need to make use of real data for this project. Simulated (fake/synthetic) data often is generated from a particular model--you finding that model is neither interesting nor the point of this project. People posting the data sets created by others often with little to no attribution and/or no clear permission is an ethically ambiguous space. How would you feel if someone posted your work product, under their name, without your knowledge?
 
 ### Additional Project Ideas
 
 Here are some ideas that have been done by students in the past:
 
 | Factors | Response |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------|
+|--------------------------------|-------------------------|
 | seat height, generator, tire pressure | bike course completion time/pulse rate |
 | popcorn brand, batch size, popcorn to oil ratio | yield of popcorn |
 | amount of yeast, amount of sugar, liquid type, rise temp, rise time | quality of bread |
@@ -132,3 +129,15 @@ Here are some ideas that have been done by students in the past:
 | brand of pop/soda, type of candy | volume of displaced foam |
 | species of Wisconsin Fast Plant, fertilizer type, light conditions | height of plant |
 | Minecraft Character Handedness, Shooting Hand, Type of Bow | Shot power |
+
+# Important Notice--Working in Groups
+
+A potentially useful way to think about this group project is to think of it as a team project at a job. To this end, I will play several roles throughout the project:
+
++ __Technical Supervisor:__ I will act as your immediate supervisor on the job, periodically checking in with the team, asking questions, answering questions/offering advice, etc.
++ __Human Resources Office:__ I will also check in to see how well the team is working together. If there are interpersonal conflicts, I need to know so that I can help resolve them.
++ __Course Instructor:__ Ultimately, I will be assessing the final product your group produces.
+
+Given these many hats, I end up in the position where I might need to "fire" and/or otherwise remove a member from a team. Thus, I reserve the right to remove individuals from any team for the course group project. Depending on when that removal happens, I might reassign them to another group or seek an alternative. 
+
+Such removals can happen *after* the submission of the final report. These cases are generally the result of a team member ghosting their team and not contributing to the report. In such cases, it is at my discretion about whether the removed student will have an opportunity to submit an alternative assignment.
