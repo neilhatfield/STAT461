@@ -7,6 +7,9 @@ output:
     toc: false
     toc_depth: 4
     number_sections: true
+  html_document:
+    toc: false
+    number_sections: true
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: 
@@ -33,7 +36,7 @@ options(knitr.kable.NA = "")
 options(contrasts = c("contr.sum", "contr.poly"))
 
 # Load extra tools
-source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+source("https://raw.github.com/neilhatfield/STAT461/main/rScripts/ANOVATools.R")
 
 ```
 
@@ -93,7 +96,7 @@ Over the years I have created some additional tools which can be useful as you p
 
 ```{r extraTools, eval=FALSE, echo=TRUE}
 # Demo code for loading Neil's extra tools ----
-source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+source("https://raw.github.com/neilhatfield/STAT461/main/rScripts/ANOVATools.R")
 
 ```
 
@@ -108,7 +111,7 @@ The following code demonstrates how we can read in the three data sets:
 # Demo Code for Loading Data ----
 ## Song Data
 songData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv",
+  file = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/songKnowledge_Fa23.csv",
   header = TRUE,
   sep = ","
 )
@@ -128,7 +131,7 @@ honey$Varietal <- as.factor(honey$Varietal)
 
 ## Resin Lifetimes Data
 resin <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/resinLifetimes.dat",
+  file = "https://raw.github.com/neilhatfield/STAT461/main/dataFiles/resinLifetimes.dat",
   header = TRUE,
   sep = "" # Notice the change in separator
 )
@@ -573,9 +576,13 @@ parameters::model_parameters(
 
 Either table (Table \ref{tab:resinANOVATable} or Table \ref{tab:resinTable2}) is sufficient. You only need to worry about fixing a *p*-value looking like 0 IF you have a *p*-value that is sufficiently close to zero (i.e., less than 0.0001). While 0.0001 is a fairly common threshold, you could update the `pvalRounding` function to use another threshold such as 0.001. I do not recommend going smaller than 0.0001 (`digits = 4`).
 
-# Reporting Point Estimates
+# Reporting Estimates
 
-One of the last things that we're going to do in this tutorial is get the point estimates for our Grand Mean and treatment effects.
+One the last things we can do related to the ANOVA omnibus analysis is to estimate the various parameters in our models. We can do this in two way: point and interval. Thinking back to HW #1.2, both of these approaches have their strengths and their weaknesses. 
+
+## Point Estimation
+
+Here's how we can get the point estimates for our Grand Mean and factor effects.
 
 __Make sure that you've told R to use the Sum to Zero constraint before proceeding.__
 
