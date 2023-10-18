@@ -7,9 +7,6 @@ output:
     toc: false
     toc_depth: 4
     number_sections: true
-  html_document:
-    toc: false
-    number_sections: true
 geometry: left=0.5in,right=0.5in,top=0.5in,bottom=0.5in
 urlcolor: blue
 header-includes: 
@@ -366,13 +363,13 @@ ggplot(
 
 When we look at strip charts for assessing homoscedasticity, we're primarily focused two aspects: comparing the lengths of the strips and if there are any patterns. 
 
-Let's first focus on the Song Knowledge portion of Figure \ref{fig:stripCharts}. We have three strips of 4 points (note: two points for the lowest fitted value are on top of each other). The lengths of these strips are such that the first strip just about half that of the third strip. This is a rule of thumb that we want to look out for: if any group has more than twice the length of another group, we should start worrying about homoscedasticity. If we turn our attention to the Honey portion of Figure \ref{fig:stripCharts}, we can see the same kind of worry. Having a single group with different amount of variation is not a terminal violation, especially if we have a balanced design. However, we will want to proceed with caution.
+Let's first focus on the Song Knowledge portion of Figure \ref{fig:stripCharts}. We have three strips of 4 points. The lengths of these strips are such that the first strip just about half that of the third strip. This is a rule of thumb that we want to look out for: if any group has more than twice the length of another group, we should start worrying about homoscedasticity. If we turn our attention to the Honey portion of Figure \ref{fig:stripCharts}, we can see the same kind of worry. Having a single group with different amount of variation is not a terminal violation, especially if we have a balanced design. However, we will want to proceed with caution.
 
 A bigger issue for homoscedasticity is that of patterns in a strip chart. The most common pattern to look out for is a megaphone or funnel shape. We have a (right-opening) megaphone if the length of the strips get larger as you move from the left to the right along the horizontal axis. We have a funnel (left-opening megaphone) if the length of the strips gets smaller as you move from left to right. Keep an eye out for other patterns or shapes. These indicate deeper issues that result in violating the homoscedasticity assumption.
 
-Turning back to Figure \ref{fig:stripCharts}, we need to keep in mind that having only three strips makes judging patterns challenging. When I look at the Song Knowledge strip chart, I see a funnel shape. When I look at the Honey strip chart, I see a bow tie (wide on the outsides, narrow in the middle). 
+Turning back to Figure \ref{fig:stripCharts}, we need to keep in mind that having only three strips makes judging patterns challenging. When I look at the Song Knowledge strip chart, I see slight funnel shape. When I look at the Honey strip chart, I see a bow tie (wide on the outsides, narrow in the middle). 
 
-Taking the two pieces together (vertical spacing and patterns), I'm would say that for the Song Knowledge data, we do not satisfy homoscedasticity assumption. For the Honey study, we've violated the homoscedasticity assumption. In both cases, I would recommend either applying some type of variance-stabilizing transformation (see Table 6.3 in the Oehlert text) or using the nonparametric shortcut known as Kruskal-Wallis.
+Taking the two pieces together (vertical spacing and patterns), I'm would say that for the Song Knowledge data, we would want to proceed cautiously with the homoscedasticity assumption. For the Honey study, we've violated the homoscedasticity assumption. For the Song Knowledge study, I might look into the nonparametric shortcut known as Kruskal-Wallis or use a simulation inconjunction with the parametric shortcut. In the Honey Study, I would recommend either applying some type of variance-stabilizing transformation (see Table 6.3 in the Oehlert text) or using the nonparametric shortcut known as Kruskal-Wallis.
 
 ### Your Turn
 
@@ -502,7 +499,7 @@ parameters::model_parameters(
 
 #### Interpretation of Table \ref{tab:songANOVATable}
 
-We can see that a STAT461 undergraduate's year in school accounts for about 1.1 times as much variation as the residuals in Table \ref{tab:songANOVATable}. Drawing upon the balanced design to grant some robustness to the heteroscedasticity, we would anticipate seeing an *F* ratio at least as large as this ~37% of the time we would repeat the experiment if there truly was no impact of year in school on quiz score. Since our *p*-value is greater than our Unusualness Threshold (*UT*), we have an event that is "usual" (or typical) under the null hypothesis model and we would fail to reject the null hypothesis. We will decide to act as if a student's year in school does not impact how well they do on a song knowledge quiz.
+We can see that a STAT461 undergraduate's year in school accounts for about 1.9 times as much variation as the residuals in Table \ref{tab:songANOVATable}. Drawing upon the balanced design to grant some robustness to the heteroscedasticity, we would anticipate seeing an *F* ratio at least as large as this ~20% of the time we would repeat the experiment if there truly was no impact of year in school on quiz score. Since our *p*-value is greater than our Unusualness Threshold (*UT*), we have an event that is "usual" (or typical) under the null hypothesis model and we would fail to reject the null hypothesis. We will decide to act as if a student's year in school does not impact how well they do on a song knowledge quiz.
 
 ### Resin Study Example
 
@@ -542,7 +539,7 @@ The operating temperature accounts for ~96 times as much variation in the \(\log
 
 Notice that both Table \ref{tab:songANOVATable} and Table \ref{tab:resinANOVATable} look much more professional than the raw output we got from using `summary` and `anova`. Further, by using this approach with the `model_parameters` function, we've gotten our three estimates of effect size for the model (i.e., practical significance). There is a downside in this approach: the *p*-value in Table \ref{tab:resinANOVATable} has been made to look equal to zero. We know that while *p*-values may be essentially equal to zero, they are never actually zero. We added a footnote to Table \ref{tab:resinANOVATable}. 
 
-Alternatively, we could adopt the convention of reporting that the *p*-value is less than a given threshold. Part of my suite of ANOVA tools is the `pvalRound` function. This function takes an input *p* and the argument `digits` to determine whether the input is less than \(10^{-\text{digits}}\). If so, the function returns a character string such as "< 0.0001" for `digits = 4` (the default). If the input *p* is larger than the \(10^{-\text{digits}}\), the the function returns the input unchanged.
+Alternatively, we could adopt the convention of reporting that the *p*-value is less than a given threshold. Part of my suite of ANOVA tools is the `pvalRound` function. This function takes an input *p* and the argument `digits` to determine whether the input is less than \(10^{-\text{digits}}\). If so, the function returns a character string such as "< 0.0001" for `digits = 4` (the default). If the input *p* is larger than \(10^{-\text{digits}}\), then the function returns the input unchanged.
 
 ```{r resinTable2, echo=TRUE}
 # Demo Code to fix p-value rounding issues ----
@@ -646,7 +643,11 @@ data.frame("Estimate" = pointEst) %>%
 
 ```
 
-\newpage
+## Confidence Intervals
+
+Thinking back the activities we did in Unit 1 (i.e., HW #1.2--Estimation Exploration), we know that while point estimates are much more interpretable, they have extremely low success rates. This is where we can turn towards using interval estimation.
+
+In ANOVA contexts, our use of interval estimation typically occurs during a phases called *Post Hoc Analysis* which will be covered in the next guide for Unit 3.
 
 # Putting Everything Together--Your Turn
 
