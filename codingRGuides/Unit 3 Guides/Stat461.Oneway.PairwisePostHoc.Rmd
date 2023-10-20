@@ -79,7 +79,7 @@ Take a moment to think about how you would read in the data then compare your co
 # Demo code for loading data ----
 ## Song Data
 songData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv",
+  file = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/songKnowledge_Fa23.csv",
   header = TRUE,
   sep = ","
 )
@@ -164,7 +164,7 @@ If you aren't sure what method to pick, ask yourself the following questions:
 + Want to use middle ground?
   - __Yes__: Use Benjamini-Hochberg, provided you have independent tests
 + Have no idea?
-  - __Yes__: Tukey (-Kramer) makes a good default
+  - __Yes__: Tukey(-Kramer) makes a good default
 
 ## Checking Appropriateness and Assumptions
 
