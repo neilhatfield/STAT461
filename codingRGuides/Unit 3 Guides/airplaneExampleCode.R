@@ -26,7 +26,7 @@ airplaneLong <- airplaneData %>%
   pivot_longer(
     cols = !Thrower,
     names_to = "design",
-    names_transform = list(Design = as.factor),
+    names_transform = list(design = as.factor),
     values_to = "distance"
   )
 
