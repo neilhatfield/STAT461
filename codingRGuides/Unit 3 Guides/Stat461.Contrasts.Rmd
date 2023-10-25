@@ -75,7 +75,7 @@ cheeseData <- data.frame(
 
 ## Song Knowledge study
 songData <- read.csv(
-file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv",
+file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fa23.csv",
 header = TRUE,
 sep = ","
 )
