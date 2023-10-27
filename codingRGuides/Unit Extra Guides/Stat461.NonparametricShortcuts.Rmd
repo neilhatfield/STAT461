@@ -130,7 +130,7 @@ alfalfaData$Variety <- as.factor(alfalfaData$Variety)
 Our third data context will a study of how three different methods for rounding first base impact the time (seconds) it takes a runner to reach second base from the home plate. Twenty-two runners took part in the study, running the bases 6 times--twice for each of the three methods. The recorded data are the values of the *SAM* for each pair of run times by trial. This study is a Within Subjects Repeated Measures ANOVA design. These data are part of the `NSM3` package.
 
 ```{r roundingData, echo=TRUE}
-# Demo Code for loading data from NSM3 package
+# Demo Code for loading data from NSM3 package ----
 ## If you haven't installed the NSM3 package, do so first
 ## install.packages("NSM3")
 ## library("NSM3")
@@ -682,7 +682,7 @@ Again, we can compare the listed *p*-values to our Unusualness Threshold for dec
 
 # Mack-Skillings Test
 
-If you have 1) a balanced design, and 2) 1+ replicates per group, you can use th Mack-Skillings Test in place of Friedman's Test. To run this test, we will need to use the `NSM3` package.
+If you have 1) a balanced design, and 2) 1+ replicates per group, you can use the Mack-Skillings Test in place of Friedman's Test. To run this test, we will need to use the `NSM3` package.
 
 ## Fitting the Model
 
