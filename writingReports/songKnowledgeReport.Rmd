@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   fig.align = "center",
-  dpi = 300 # helps create higher quality graphics
+  dpi = 300 # helps create higher quality graphics in Word
 )
 
 # Add additional packages by name to the following list ----
@@ -38,7 +38,7 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R
 
 ```{r loadData}
 songData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv",
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fa23.csv",
   header = TRUE,
   sep = ","
 )
@@ -68,22 +68,22 @@ To this end, we want to explore whether a STAT461 undergraduate student's year i
 # Study Design and Methods
 <!-- In this portion you'll write the narrative format of the study design-that is everything we've discussed in Unit 2. You'll want to incorporate the Hasse diagram, your hypotheses for any SRQs, any sample size considerations, as well as how you are going to handle the multiple comparison problem.-->
 
-In order to investigate our comparative/relationship research question, we've designed a quasi-experimental study by synthesizing the various versions of studies STAT461 students created during class. Due to enrollments, we did reduce the number of levels to our factor (year in school) from 4 levels to 3 (junior, senior, and other). Our population of interest is all students enrolled in STAT461 during the Spring 2023 semester.
+In order to investigate our comparative/relationship research question, we've designed a quasi-experimental study by synthesizing the various versions of studies STAT461 students created during class. Due to enrollments, we did reduce the number of levels to our factor (year in school) from 4 levels to 3 (junior, senior, and other). Our population of interest is all students enrolled in STAT461 during the Fall 2023 semester.
 
 To collect our data, Dr. Hatfield constructed a set of 20-second snippets of 10 different songs. The songs came from submissions that members of the class made as part of an introductory assignment in the course. Only student submissions that included valid YouTube links to the songs were included in the pool of potential songs. Dr. Hatfield then placed the snippets into an Apple Keynote presentation and prepared an answer sheet with lines for artist and title for each song along with which year in school group individuals were in.
 
-On the day of data collection, every enrolled student took part in the activity of attempting to identify the song titles and artists. Nine enrolled individuals either did not consent to be part of the data pool or were not present this day. After class, Dr. Hatfield sorted the response sheets filtering out individuals who did not clearly consent to be part of the research data from those who did. He then scored each sheet. For each correctly identified primary artist and full title (baring spelling issues), Dr. Hatfield gave a point and then summed the points earned. 
+On the day of data collection, every enrolled student took part in the activity of attempting to identify the song titles and artists who were present for class. After class, Dr. Hatfield sorted the response sheets filtering out individuals who did not clearly consent to be part of the research data from those who did. He then scored each sheet. For each correctly identified primary artist and full title (barring spelling issues), Dr. Hatfield gave a point and then summed the points earned. 
 
 Dr. Hatfield then placed all scores and the associated years in school into an Excel table and used stratified sampling (via `dplyr`'s `group_by` and `slice_sample` functions) to randomly select four students from each of the three year in school categories. This sample size is a reflection of the effect sizes detectable from past semesters as well as limitations on how many individuals were available in each stratum. We wanted to design the study to be balanced.
 
 The final data collection is publicly available[^1].
 
-[^1]: Data available at [https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv](https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Sp23.csv)
+[^1]: Data available at [https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fa23.csv](https://raw.github.com/neilhatfield/STAT461/master/dataFiles/songKnowledge_Fa23.csv)
 
 Our primary response is a student's level of song knowledge. We've operationalized this as the total score they earned based upon their correct identification of song titles and primary artists. Our only factor of interest is their categorical year in school. Taken together and with our research question, ANOVA methods appear to be appropriate. Figure \ref{fig:hasseDiagram} shows the Hasse diagram for this study. We can see that an additive model will work and that we have sufficient degrees of freedom to estimate effects and residuals/errors.
 
 ```{r hasseDiagram}
-#| fig.cap = "Hasse Diagram for the Song Knowledge Study (Sp'23)",
+#| fig.cap = "Hasse Diagram for the Song Knowledge Study (Fall '23)",
 #| fig.height = 2,
 #| fig.pos = "H"
 
@@ -139,7 +139,7 @@ shadowgram(
 
 ```
 
-Figure \ref{fig:shadowgram} provides the shadowgram for our 12 song knowledge scores. In examining the shadowgram, we can that there is one dominant modal clump with some faint separation in the background. While we know that we have three groups based upon year in school, Figure \ref{fig:shadowgram} suggests that there may not be significant differences in terms of performance between them.
+Figure \ref{fig:shadowgram} provides the shadowgram for our 12 song knowledge scores. In examining the shadowgram, we can that there is one dominant modal clump (from 0 to 7 points) with some faint separation in the background. While we know that we have three groups based upon year in school, Figure \ref{fig:shadowgram} suggests that there may not be significant differences in terms of performance between them.
 
 ```{r descStats}
 # Descriptive statistics on score by year in school ----
@@ -179,7 +179,7 @@ scoreStats %>%
 
 ```
 
-Table \ref{tab:descStats} shows the values of various descriptive statistics broken out by year in school. Visually, we can see that the seniors tend to have scores just as good or better than juniors. The Other group appears to be slightly lower than the other two groups but not by much. Visually, we can see this in the box plots of Figure \ref{fig:boxplots}. There does appear to be differences in the performance of each year when we look at values of the *Sample Arithmetic Mean* (*SAM*). There also appears to be different amounts of variation with each year as evidenced by the values of the *Sample Arithmetic Standard Deviation* (*SASD*). 
+Table \ref{tab:descStats} shows the values of various descriptive statistics broken out by year in school. Visually, we can see that the juniors tend to have the better scores as we look across Tukey's Five Number summary. The Other group appears to be some what between the other two groups. Visually, we can see this in the box plots of Figure \ref{fig:boxplots}. There does appear to be differences in the performance of each year when we look at values of the *Sample Arithmetic Mean* (*SAM*). There also appears to be different amounts of variation with each year as evidenced by the values of the *Sample Arithmetic Standard Deviation* (*SASD*). 
 
 ```{r boxplots}
 #| fig.cap = "Side-by-side Box Plots of Score by Year",
@@ -223,7 +223,7 @@ songModel <- aov(
 
 ```{r assumptionPlots}
 #| fig.cap = "Assessing Assumptions for Song Knowledge Study",
-#| fig.subcap = c("QQ Plot", "Srip Chart"),
+#| fig.subcap = c("QQ Plot", "Strip Chart"),
 #| fig.ncol = 2,
 #| out.width = "50%",
 #| fig.pos = "H",
@@ -255,9 +255,9 @@ ggplot(
 
 ```
 
-Let us first turn towards the Gaussian assumption. Figure \ref{fig:assumptionPlots}a shows the QQ plot for our residuals with a 90% confidence envelope. No observations fall outside of this envelope. Additionally from Table \ref{tab:descStats}, while all groups have positive skewness, the skewness values are all fairly small and in the same direction. Further, all three groups have similar levels of excess kurtosis, pointing to there being fewer potential outliers in the data than we would expect for a Gaussian distribution. This is not surprising given the relatively small sample size used in this study. We find strength in the fact that all of the groups have (roughly) the same skewness and kurtosis issues. Taking these values together with the QQ plot, we will decide that our residuals (response data) satisfy this assumption.
+Let us first turn towards the Gaussian assumption. Figure \ref{fig:assumptionPlots}a shows the QQ plot for our residuals with a 90% confidence envelope. No observations fall outside of this envelope. Additionally from Table \ref{tab:descStats}, the Juniors and Other groups have some slight positive skewness; the Seniors appear to have zero skewness. Further, all three groups have similar levels of excess kurtosis, pointing to there being fewer potential outliers in the data than we would expect for a Gaussian distribution. This is not surprising given the relatively small sample size used in this study. We find strength in the fact that all of the groups have (roughly) the same skewness and kurtosis issues. Taking these values together with the QQ plot, we will decide that our residuals satisfy the Gaussian assumption.
 
-In Figure \ref{fig:assumptionPlots}b we can also see the strip chart for assessing the homoscedasticity assumption. The leftmost group uses just about half the vertical space as the rightmost group. There is additionally a faint fanning as we move from lower fitted values to higher ones. Taken together this suggests we should have some care as to whether we've satisfied this assumption. We will proceed with caution.
+In Figure \ref{fig:assumptionPlots}b we can also see the strip chart for assessing the homoscedasticity assumption. The leftmost group uses the least amount of vertical space, but not less than half that of the other strips. There is an ever so faint fanning as we move from lower fitted values to higher ones. This suggests that we might have a slight problem with homoscedasticity. Referring back to Table \ref{tab:descStats}, we can know that the Senior group had the smallest value for the *SASD* and *MAD* (both measures of variation). However, the differences in these values are not overly large. Combining the visual inspection and these values of statistics with the fact that we have a small sample size, we would anticipate such variability. Keeping in mind that we have a balanced design, we can proceed with caution for homoscedasticity.
 
 For the issue of independence of observations, we know that each student completed the quizzes individually. Further, Dr. Hatfield used a computerized system to carry out the selection of individuals from the broader pools. Thus, we can be relatively assured that we have the independence of observations.
 
@@ -290,7 +290,7 @@ parameters::model_parameters(
 
 ```
 
-As we can see from Table \ref{tab:parametricCase}, a STAT461 undergraduate's year in school accounts for ~1.1 times as much variation as the residuals. Under the null model that year in school does not statistically impact song knowledge, we would anticipate observing a value for the *F* ratio at least as large as we did ~37% of the time we repeat the study. Since our *p*-value is greater than our unusualness threshold (0.3733 > 0.04), we will fail to reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does not impact their song knowledge score. This statistical significance is supported by the two of the effect size metrics, \(\omega^2\) and \(\epsilon^2\), which suggest that only about 2% of variation in score could be attributable to a students' year in school. Given that \(\eta^2\) is known to overestimate the effect size, we will attend to the other two metrics.
+As we can see from Table \ref{tab:parametricCase}, a STAT461 undergraduate's year in school accounts for ~1.9 times as much variation as the residuals. Under the null model that year in school does not statistically impact song knowledge, we would anticipate observing a value for the *F* ratio at least as large as we did ~20% of the time we repeat the study. Since our *p*-value is greater than our unusualness threshold (0.2041 > 0.04), we will fail to reject the null hypothesis and decide to act as if a STAT461 undergraduate student's year in college does not impact their song knowledge score. This statistical significance is supported by the two of the effect size metrics, \(\omega^2\) and \(\epsilon^2\), which suggest that only about 14% of variation in score could be attributable to a students' year in school. Given that \(\eta^2\) is known to overestimate the effect size, we will attend to the other two metrics.
 
 ```{r pointEstimates}
 # Point Estimates for Parametric Shortcut ----
@@ -314,14 +314,14 @@ data.frame("Estimate" = pointEst) %>%
 
 ```
 
-In general a group of students will accumulate `r round(dummy.coef(songModel)[[1]], 2)` times as many points as students; this is our estimate for baseline performance (\(\widehat{\mu_{\bullet\bullet}}\)). We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Seniors, they accumulated an additional `r round(dummy.coef(songModel)$Year[2], 2)` points per student where as the Juniors only accumulated `r round(dummy.coef(songModel)$Year[1], 2)` points per student and the Others accumulated `r round(dummy.coef(songModel)$Year[3], 2)` points per student. This suggests that Others were performing worse that baseline (*GSAM*).
-
+In general a group of students will accumulate `r round(dummy.coef(songModel)[[1]], 2)` times as many points as students; this is our estimate for baseline performance (\(\widehat{\mu_{\bullet\bullet}}\)). We can also see the factor level (treatment) effects (\(\widehat{\alpha_i}\)) estimates. For Seniors, they accumulated an additional `r round(dummy.coef(songModel)$Year[2], 2)` points per student where as the Juniors  accumulated `r round(dummy.coef(songModel)$Year[1], 2)` points per student and the Others only accumulated `r round(dummy.coef(songModel)$Year[3], 2)` points per student. This suggests that both Seniors and Others were performing worse that baseline (*GSAM*).
 
 ## Post Hoc
 <!--If applicable; this is where you're present and interpret the results of any
 post hoc analyses. Don't forget effect sizes. Remove this section if you do not need post hoc analyses.-->
 
 Given that we failed to reject our null hypothesis, we will not conduct any post hoc analyses.
+
 
 <!-- Example Post Hoc Section
 For our post hoc analyses, we are interested in all of the pairwise comparisons between the three years in school (sophomore, junior, and senior).
@@ -352,7 +352,7 @@ knitr::kable(
 
 ```
 
-From Table \ref{tab:tukeyHSD}, we can see that the differences in performance between juniors and sophomores and seniors and sophomores are at last as large in magnitude as what we observed 36.2% and 13.9% of time under the null hypothesis. We will take these as usual or typical events when there is no distinction between juniors and sophomores and seniors and sophomores. However, there does appear to a statistical difference between juniors and seniors. We would only anticipate seeing a difference at least as large as 5.4 (in magnitude) about 1% of the time if there was truly no difference between these groups. Approximately 98% of the time we randomly select a junior from STAT461 and a senior from STAT461, the junior will have the higher song knowledge score (see Table \ref{tab:postHocES1}). 
+From Table \ref{tab:tukeyHSD}, we can see that the differences in performance between Senior and Juniors, Others and Juniors, and Others and Seniors are at last as large in magnitude as what we observed 18.1%, 54.8%, and 67.4% of time under the null hypothesis. We will take these as usual or typical events when there is no statistically significant distinctions between the three pairings. While Table \ref{tab:postHocES1} displays the effect sizes for these comparisons, such differences are not statistically significant at this time. 
 
 ```{r postHocES1}
 # Post Hoc Effect Sizes ----
@@ -382,7 +382,7 @@ where we might want to go next for future work. -->
 
 We explored our research question of whether a STAT461 undergraduate student's year in school impacted their song knowledge. From our data, we found that year in school does not appear to influence the score they got on the trivia quiz. However, this effect appears to be limited to just juniors and seniors.
 
-Our study has several limitations. First, we are looking at a niche population of just students taking STAT461 in the Spring 2023 semester. In future work, we may want to broaden this to a larger population. Second, our total sample size was only 12 students. We may want to increase this sample size along with the broadening of the population. Additionally, we may want to incorporate additional attributes that will allow us to more accurately investigate what might be going on. For example, we might collect information on what a student's most commonly listened to genre of music might be.
+Our study has several limitations. First, we are looking at a niche population of just students taking STAT461 in the Fall 2023 semester. In future work, we may want to broaden this to a larger population. Second, our total sample size was only 12 students. We may want to increase this sample size along with the broadening of the population. Additionally, we may want to incorporate additional attributes that will allow us to more accurately investigate what might be going on. For example, we might collect information on what a student's most commonly listened to genre of music might be.
 
 \newpage
 
