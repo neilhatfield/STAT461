@@ -128,5 +128,52 @@ anova.PostHoc(airplaneModel) %>%
   kable_classic()
 
 
+# Log Transformation ----
+airplaneLong$sqrtDist <- sqrt(airplaneLong$distance)
+
+airplaneModel3 <- aov(
+  formula = sqrtDist ~ design,
+  data = airplaneLong
+)
+
+# Check Assumptions ---- 
+## Gaussian Residuals ----
+qqPlot(
+  x = residuals(airplaneModel3),
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (sq. root inches)"
+)
+
+## Homoscedasticity ----
+ggplot(
+  data = data.frame(
+    residuals = residuals(airplaneModel3),
+    fitted = fitted(airplaneModel3)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (sq. root inches)",
+    y = "Residuals (sq. root inches)"
+  )
+
+dummy.coef(airplaneModel)
 
 
+# Impact of Block ----
+ggplot(
+  data = airplaneLong,
+  mapping = aes(x = design, y = distance)
+) +
+  geom_point() +
+  theme_bw() +
+  labs(
+    x = "Design",
+    y = "Distance flown (in)"
+  ) +
+  facet_wrap(facets = vars(Thrower))
