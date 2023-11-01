@@ -4,6 +4,8 @@ checkSetup <- function(){
   errorMessages <- c()
   if (as.numeric(version$major) < 4) {
     stop("Your R version is too far out of date. Update before continuing.")
+  } else if (as.numeric(version$minor) < 3) {
+    stop("You need to update your R to at least 4.3.0")
   } else if (paste(version$major, version$minor, sep = ".") < currentVersion) {
     warning("You should update your R when possible.")
   } else {
