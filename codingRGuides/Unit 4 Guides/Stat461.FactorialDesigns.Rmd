@@ -73,28 +73,10 @@ This data comes from the design that we put together in class to explore the imp
 # Demo code for loading and cleaning data ----
 ## Loading Gummy Bear Data
 gummyData <- openxlsx::readWorkbook(
-  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Spring2023.xlsx",
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Fall2023.xlsx",
   sheet = 1,
   colNames = TRUE,
   rowNames = FALSE
-)
-
-## Clean Gummy Bear Data 
-### Remove any extra white space in the two factor columns, put into title case
-### Tell R to treat them as factors
-gummyData <- gummyData %>%
-  mutate(
-    Launch.Angle = str_to_title(str_trim(Launch.Angle)),
-    Launch.Position = str_to_title(str_trim(Launch.Position)),
-    across(.cols = where(is.character), ~as.factor(.x))
-  )
-
-### Rename columns for ease and to minimize errors (i.e., distance column)
-gummyData <- rename(
-  gummyData,
-  angle = Launch.Angle,
-  position = Launch.Position,
-  distance = `Distance.(cm)`
 )
 
 ### Impose a logical ordering on the angle factor
@@ -102,6 +84,9 @@ gummyData$angle <- factor(
   x = gummyData$angle,
   levels = c("Flat", "Low", "High")
 )
+
+gummyData$position <- as.factor(gummyData$position)
+gummyData$team <- as.factor(gummyData$team)
 
 ```
 
@@ -585,7 +570,7 @@ What do we know about how the study was designed? Quite a bit, after all, we des
 ggplot(
   data = gummyData,
   mapping = aes(
-    x = Measurement.Order,
+    x = order,
     y = distance
   )
 ) +
@@ -595,7 +580,7 @@ ggplot(
   xlab("Measurement order") +
   ylab("Distance (cm)") +
   facet_wrap(
-    facets = vars(Team),
+    facets = vars(team),
     scales = "fixed"
   )
 
@@ -980,7 +965,7 @@ as.data.frame(plateContrasts1) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
-    latex_options = c("HOLD_position")
+    latex_options = c("HOLD_position", "scale_down")
   ) 
 ```
 
