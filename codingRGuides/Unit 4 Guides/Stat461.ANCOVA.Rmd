@@ -106,9 +106,9 @@ keyboardingData$kbd.type <- as.factor(keyboardingData$kbd.type)
 
 ## Lego Set Prices
 
-This study stems from Context 6 in the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and as friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
+This study stems from Context 6 in the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
 
-One of Neil's friends scrapped two online databases to build master data file covering nearly the entire Lego catalog. Neil wrangled this master data file and used the `slice_sample` function from the `dplyr` package to conduct a stratified random sample of sets based upon the theme/collection used in the study. The total sample size in our balanced study is 50.
+One of Neil's friends scrapped two online databases to build a data file covering nearly the entire Lego catalog. Neil wrangled this data file and used the `slice_sample` function from the `dplyr` package to conduct a stratified random sample of sets based upon the theme/collection used in the study. The total sample size in our balanced study is 50.
 
 ### Data
 
@@ -246,11 +246,11 @@ ggplot(
   )
 ) +
   geom_point(size = 2) +
-  geom_smooth( # Adds a linear regression line
+  geom_smooth( # Adds a smoother function's graph
     inherit.aes = FALSE,
     mapping = aes(x = hrs.kbd, y = hrs.pain),
-    method = "lm",
-    formula = y ~ x,
+    method = "lm", # Fit a Linear Model
+    formula = y ~ x, # Specifies the form of the "linear" model
     color = "black",
     linetype = "dashed",
     se = FALSE
@@ -265,13 +265,66 @@ Figure \ref{fig:keyboardScatter} shows the scatter plot of hours of pain experie
 
 Ultimately, we're looking to see whether there is a linear relationship between the response and the covariate. That is to say, is the a constant rate of change between them. If we are plotting in the standard Cartesian coordinate system without scale transformations (e.g., log), then we should be able to sketch a straight line. In Figure \ref{fig:keyboardScatter}, I added the plot of the estimated linear regression model of the response (hours of pain) with respect to the covariate (hours spent keyboarding). This graph appears as the dashed, black line. Does this line appear to mimic what we see in the scatter plot?
 
-If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  hrs.kbd^2 + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship.
+From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate. While not the best of fits, the graph of the fitted linear model appears to coincide with the trend (i.e., the generalized relationship) between the response (hours of pain) and the covariate (time spent keyboarding). If the graph of the fitted model didn't, we could explore other models by tweaking the `formula` argument. For instance, we could look a quartic (fourth power) relationship.
 
-From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate.
+```{r examplePlots, echo=FALSE, results='asis'}
+#| fig.cap = "Examples of Alternative Models",
+#| fig.subcap = c("Failed Quartic: formula = y $\\sim$ x$\\wedge$4", "Actual Quartic: formula = y $\\sim$ I(x$\\wedge$4)"),
+#| fig.ncol = 2,
+#| out.width = "50%",
+#| fig.show = "hold"
+
+# Failed Quadratic Model
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( 
+    inherit.aes = FALSE,
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm", 
+    formula = y ~ x^4, 
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  xlab("Hours Spent Keyboarding") +
+  ylab("Hours of Pain")
+
+# Actual Quadratic Model
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( 
+    inherit.aes = FALSE,
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm", 
+    formula = y ~ I(x^4), 
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  xlab("Hours Spent Keyboarding") +
+  ylab("Hours of Pain")
+
+```
+
+Notice that in Figure \ref{fig:examplePlots} we can see the impact of the "As Is" operator of R (`I`) on formula statements. Figure \ref{fig:examplePlots}a is a carbon copy of our original linear relationship (i.e., `formula = y ~ x`). However, using the "As Is" operator in Figure \ref{fig:examplePlots}b will force R to fit the appropriate model. If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  I(hrs.kbd^2) + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship.
 
 ### Your Turn
 
-Create a scatter plot for the Lego Set Price study between the resposne and the covariate. Do we have a linear relationship between these quantities?
+Create a scatter plot for the Lego Set Price study between the response and the covariate. Do we have a linear relationship between these quantities?
 
 ## Checking Potential Outliers
 
@@ -372,11 +425,19 @@ ggplot(
 ) +
   geom_point(size = 1) +
   theme_bw() +
-  xlab("Number of Pieces") +
-  ylab("Price ($US)") +
   labs(
-    color = "Collection",
-    shape = "Potential Outlier"
+    x = "Number of Pieces",
+    y = "Price ($US)",
+    shape = "Potential Outlier",
+    color = "Collection"
+  ) +
+  scale_color_manual(values = boastUtils::psuPalette) +
+  theme( # Adjust legend titles so they both appear
+    legend.spacing.y = unit(-1, "points")
+  ) +
+  guides(
+    color = guide_legend(byrow = TRUE),
+    shape = guide_legend(byrow = TRUE)
   )
 
 ```
@@ -830,9 +891,9 @@ ggplot(
     color = "blue"
   ) +
   theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
   labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
     color = "Keyboard Type",
     shape = "Keyboard Type"
   ) +
@@ -844,7 +905,7 @@ ggplot(
 
 ## Model 2: Single Line
 
-The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in Figure \ref{fig:singleLine} would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of response with respect to the covariate.
+The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in Figure \ref{fig:singleLine} would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of the response with respect to the covariate.
 
 ```{r singleLine,  echo=TRUE}
 #| fig.width = 5,
@@ -864,16 +925,16 @@ ggplot(
 ) +
   geom_point(size = 2) +
   geom_smooth(
-    inherit.aes = FALSE,
+    inherit.aes = FALSE, # Tells smoother to ignore the factor
     mapping = aes(x = hrs.kbd, y = hrs.pain),
     method = "lm",
     formula = y ~ x,
     se = FALSE
     ) +
   theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
   labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
     color = "Keyboard Type",
     shape = "Keyboard Type"
   ) +
@@ -891,7 +952,7 @@ Again, if this is the case, the *g* parallel lines we plot should accurately des
 
 ```{r separateIntercepts, echo=TRUE}
 #| fig.width = 5,
-#| fig.height = 3,
+#| fig.height = 2.5,
 #| fig.pos = "H",
 #| fig.cap = "Graph of the Separate Intercepts/Parallel Lines ANCOVA Model",
 
@@ -914,9 +975,9 @@ ggplot(
     se = FALSE
   ) +
   theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
   labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
     color = "Keyboard Type",
     shape = "Keyboard Type",
     linetype = "Keyboard Type"
@@ -935,7 +996,7 @@ As before, we would look at the lines in Figure \ref{fig:separateSlopes} to see 
 
 ```{r separateSlopes, echo=TRUE}
 #| fig.width = 5,
-#| fig.height = 3,
+#| fig.height = 2.5,
 #| fig.pos = "H",
 #| fig.cap = "Graph of the Separate Slopes ANCOVA Model"
 
@@ -953,13 +1014,13 @@ ggplot(
   geom_point(size = 2) +
   geom_smooth(
     method = "lm",
-    formula = y ~ x + 0,
+    formula = y ~ x + 0, # Require all lines to intersect at x = 0
     se = FALSE
   ) +
   theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
   labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
     color = "Keyboard Type",
     shape = "Keyboard Type",
     linetype = "Keyboard Type"
@@ -1000,9 +1061,9 @@ ggplot(
     se = FALSE
   ) +
   theme_bw() +
-  xlab("Hours Spent Keyboarding") +
-  ylab("Hours of Pain") +
   labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
     color = "Keyboard Type",
     shape = "Keyboard Type",
     linetype = "Keyboard Type"
