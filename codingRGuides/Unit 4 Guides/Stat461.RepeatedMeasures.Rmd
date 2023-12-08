@@ -446,7 +446,7 @@ ggplot(
 
 In Figure \ref{fig:beerInteraction}, we can see that as we move from beer to beer, the same general trend holds true for all judges. This indicates that there is not an interaction between judge (subject; our block) and beer (our factor).
 
-In the event that you have more than 6-8 subjects, line plots may be challenging to make sense of; for example, think about the line plot for our Brownie Mix study. In such cases, you might create a set of plots ("small multiple") through the use of a faceting attribute (e.g., breaking the 18 taste testers up into two sections) or use an alternative visualization (e.g., a heat map).
+In the event that you have more than 6-8 subjects, line plots may be challenging to make sense of; for example, think about the line plot for our snicker doodle study. In such cases, you might create a set of plots ("small multiple") through the use of a faceting attribute (e.g., breaking the 18 taste testers up into two sections) or use an alternative visualization (e.g., a heat map).
 
 ```{r beerHeat, echo=TRUE}
 #| fig.cap = "Heat Map Interaction Plot for Beer Judging Study",
