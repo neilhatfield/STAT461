@@ -70,13 +70,13 @@ ggplot(
   )
 ggsave(filename = "~/Desktop/temp1.png", width = 6, height = 4, units = "in")
 
-model1 <- aov(
+modelGB <- aov(
   formula = distance ~ angle*position,
   data = bears
 )
 
 car::qqPlot(
-  x = residuals(model1),
+  x = residuals(modelGB),
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
@@ -86,8 +86,8 @@ car::qqPlot(
 
 ggplot(
   data = data.frame(
-    residuals = residuals(model1),
-    fitted = fitted.values(model1)
+    residuals = residuals(modelGB),
+    fitted = fitted.values(modelGB)
   ),
   mapping = aes(x = fitted, y = residuals)
 ) +
@@ -108,7 +108,7 @@ ggplot(
   xlab("Fitted values (cm)") +
   ylab("Residuals (cm)") +
   ggtitle("Tukey-Anscombe Plot for Gummy Bear Study")
-ggsave(filename = "~/Desktop/temp1.png", width = 6, height = 4, units = "in")
+ggsave(filename = "~/Desktop/ta_ModelGB.png", width = 3, height = 2, units = "in")
 
 ggplot(
   data = bears,
@@ -127,7 +127,7 @@ ggplot(
     scales = "fixed"
   ) +
   ggtitle("Index Plots by Spoonapult")
-ggsave(filename = "~/Desktop/temp1.png", width = 6, height = 4, units = "in")
+ggsave(filename = "~/Desktop/index_ModelGB.png", width = 6, height = 4, units = "in")
 
 
 means <- bears %>%
@@ -209,10 +209,67 @@ bears2 <- bears %>%
     sam_shifted = mean(shifted_distance, na.rm = TRUE)
   )
 
-model2 <- aov(
+modelSP <- aov(
   formula = sam_dist ~ angle*position,
   data = bears2
 )
+
+car::qqPlot(
+  x = residuals(modelSP),
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (cm)"
+)
+
+ggplot(
+  data = data.frame(
+    residuals = residuals(modelSP),
+    fitted = fitted.values(modelSP)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  xlab("Fitted values (cm)") +
+  ylab("Residuals (cm)") +
+  ggtitle("Tukey-Anscombe Plot for Gummy Bear Study")
+ggsave(filename = "~/Desktop/ta_ModelGB.png", width = 3, height = 2, units = "in")
+
+ggplot(
+  data = bears,
+  mapping = aes(
+    x = order,
+    y = distance
+  )
+) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  theme_bw() +
+  xlab("Measurement order") +
+  ylab("Distance (cm)") +
+  facet_wrap(
+    facets = vars(team),
+    scales = "fixed"
+  ) +
+  ggtitle("Index Plots by Spoonapult")
+
+
+
+
 plot(model2)
 parameters::model_parameters(model2, effectsize_type = c("eta", "omega", "epsilon")) %>%
   kable(digits = 4) %>%
