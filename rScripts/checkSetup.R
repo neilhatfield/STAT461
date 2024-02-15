@@ -13,12 +13,14 @@ checkSetup <- function(){
   }
 
   ## Define package lists ----
-  corePackages <- c("tidyverse", "knitr", "kableExtra", "car", "psych",
+  corePackages <- c("tidyverse", "devtools", "knitr", "car", "psych",
                    "parameters", "rcompanion", "DescTools", "dunn.test",
                     "multcompView", "emmeans", "rstatix", "lme4",
                     "nlme", "tinytex", "rmarkdown", "sjstats", "effectsize")
+  ### kableExtra is temporally a separate install 
   optionalPackages <- c("lattice", "perm", "boot", "coin", "pwr", "WebPower",
                         "openxlsx", "NSM3", "agricolae")
+  
 
   ## Package installation ----
   pkgInstall <- menu(
@@ -51,6 +53,10 @@ checkSetup <- function(){
     if (!("hasseDiagram" %in% installed.packages()[, "Package"])) {
       install.packages("hasseDiagram")
     }
+    
+    ### Install last working version of kableExtra ----
+    #### kableExtra v 1.4.0 is breaking on scale_down
+    devtools::install_version(package = "kableExtra", version = "1.3.4")
 
     print("Finished installing packages")
   }
