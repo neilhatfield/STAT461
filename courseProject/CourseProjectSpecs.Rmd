@@ -1,5 +1,5 @@
 ---
-title: "Course Project Specifications"
+title: "Course Group Project Specifications"
 author: "Neil J. Hatfield"
 date: "`r paste('Last Updated:', format(Sys.Date(), '%B %d, %Y'))`"
 output: pdf_document
@@ -11,16 +11,22 @@ urlcolor: blue
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-The purpose of the Course Project is multifaceted. On the one hand, you get to put into practice (and show off) your understandings of the course material in an authentic way. That is to say, there is little room to hide what you do and do not understand. On the other, you will further practice your communication and teamwork skills that are vital to you getting a job and becoming a top-notch statistician, data scientist, or other wielder of statistical tools.
+The purpose of the Course Group Project is multifaceted. On the one hand, you get to put into practice (and show off) your understandings of the course material in an authentic way. That is to say, there is little room to hide what you do and do not understand. On the other, you will further practice your communication and teamwork skills that are vital to you getting a job and becoming a top-notch statistician, data scientist, or other wielder of statistical tools.
 
-The course project is fairly straightforward with two options: 
+The course group project is fairly straightforward with two options: 
 
-+ __Option 1__: Design and carryout a study (experiment, quasi-experiment, observational) to collect data and then analyze that data to answer your research question.
++ __Option 1__: Design and carryout a study (experiment, quasi-experiment, or observational) to collect data and then analyze that data to answer your research question.
 + __Option 2__: Find and adopt a real data set that works for your research question (you must describe the way the data was collected and for what original purpose) and then analyze the data to answer your research question.
 
-In either option, you will be submitting a single report (including an Executive Summary) at the end of the semester.
+In either option, each group will submit a single report (including an Executive Summary) at the end of the semester.
 
 Since this is a project for our ANOVA class, your central analysis __must__ come from the ANOVA Toolkit. You may not propose a regression project. If you are proposing multiple analyses, the primary one should be ANOVA. Any secondary analyses are up to you.
+
+## Groups
+
+With relatively few exceptions each person *must* complete this project in a group with at least one other person. Only in special circumstances (e.g., using this project as an Honor's project or part of the Master's thesis) will I consider allowing a person to work alone. If you feel that you have a special situation, you need to tell me as soon as possible.
+
+While I will take input from each student, *I* will make the groups for the project.
 
 ## Details 
 
@@ -49,11 +55,13 @@ Let's take a look at the details a bit more closely. Short assignment names appe
     A) As a team, carry out study to collect your data.
     B) If you are adopting data, you need to identify whether any Data Sharing Agreements need to be signed. If so, you need to work with Neil so that we can get you access to the data. DO NOT FILL OUT ANY DATA AGREEMENT ON YOUR OWN.
     C) I have limited funds which may help to defray costs.
-6) Analyze your Data
+6) Register Your Study (GP #3)
+    A) Your group will practice some of the principles of Open Science by registering your study.
+7) Analyze your Data
     A) Clean your Data
     B) Write your Data Narrative
     C) Carry out the appropriate method(s) of analysis from the __ANOVA toolkit__. (Note: you can't use a regression model as the primary analysis for this project)
-6) Write your report.
+8) Write your report.
     A) Structure (You're structure should look similar to this)
         1) Executive Summary (2 page max)
         2) Introduction
@@ -73,8 +81,8 @@ Let's take a look at the details a bit more closely. Short assignment names appe
         7) References (include where others can get access to your data)
         8) Author Contributions
         9) Code Appendix
-7) Submit your Project Report (GP #3).
-8) Complete Peer Evaluations (GP #4)
+9) Submit your Project Report (GP #4).
+10) Complete Peer Evaluations (GP #5)
 
 ## Potential Topics
 
@@ -93,7 +101,20 @@ I must issue a few important cautions about trying to adopt data from Kaggle. Th
 
 Second, I have noticed two disturbing trends the last several years with Kaggle data sets: more and more of the data are fake/synthetic (i.e., not real but potentially simulated from real) and many of the people posting the data are not the originators of the data. You need to make use of real data for this project. Simulated (fake/synthetic) data often is generated from a particular model--you finding that model is neither interesting nor the point of this project. People posting the data sets created by others often with little to no attribution and/or no clear permission is an ethically ambiguous space. How would you feel if someone posted your work product, under their name, without your knowledge?
 
-### Additional Project Ideas
+# Important Notice--Working in Groups
+
+A potentially useful way to think about this group project is to think of it as a team project at a job. To this end, I will play several roles throughout the project:
+
++ __Technical Supervisor:__ I will act as your immediate supervisor on the job, periodically checking in with the team, asking questions, answering questions/offering advice, etc.
++ __Human Resources Office:__ I will also check in to see how well the team is working together. If there are interpersonal conflicts, I need to know so that I can help resolve them.
++ __Course Instructor:__ Ultimately, I will be assessing the final product your group produces.
+
+Given these many hats, I end up in the position where I might need to "fire" and/or otherwise remove a member from a team. Thus, I reserve the right to remove individuals from any team for the course group project. Depending on when that removal happens, I might reassign them to another group or seek an alternative. 
+
+Such removals can happen *after* the submission of the final report. These cases are generally the result of a team member ghosting their team and not contributing to the report. In such cases, it is at my discretion about whether the removed student will have an opportunity to submit an alternative assignment.
+
+\newpage 
+# Additional Project Ideas
 
 Here are some ideas that have been done by students in the past:
 
@@ -129,15 +150,3 @@ Here are some ideas that have been done by students in the past:
 | brand of pop/soda, type of candy | volume of displaced foam |
 | species of Wisconsin Fast Plant, fertilizer type, light conditions | height of plant |
 | Minecraft Character Handedness, Shooting Hand, Type of Bow | Shot power |
-
-# Important Notice--Working in Groups
-
-A potentially useful way to think about this group project is to think of it as a team project at a job. To this end, I will play several roles throughout the project:
-
-+ __Technical Supervisor:__ I will act as your immediate supervisor on the job, periodically checking in with the team, asking questions, answering questions/offering advice, etc.
-+ __Human Resources Office:__ I will also check in to see how well the team is working together. If there are interpersonal conflicts, I need to know so that I can help resolve them.
-+ __Course Instructor:__ Ultimately, I will be assessing the final product your group produces.
-
-Given these many hats, I end up in the position where I might need to "fire" and/or otherwise remove a member from a team. Thus, I reserve the right to remove individuals from any team for the course group project. Depending on when that removal happens, I might reassign them to another group or seek an alternative. 
-
-Such removals can happen *after* the submission of the final report. These cases are generally the result of a team member ghosting their team and not contributing to the report. In such cases, it is at my discretion about whether the removed student will have an opportunity to submit an alternative assignment.

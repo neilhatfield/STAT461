@@ -141,7 +141,7 @@ Once you've entered these values, you just need to click the Calculate button to
 
 ## Examples
 
-### Generic, One Factor Study
+### Generic, One Factor Study Using *f*
 
 Let's start with a generic study were we know that we have six groups, a Type I risk of 0.1, a Type II risk of 0.2, and a medium effect size (\(f=025\)) for a single factor study. We would enter the values into G\*Power as shown in Figure \ref{fig:ex1Inputs}.
 
@@ -161,7 +161,7 @@ knitr::include_graphics("sampleSizeImages/example1Outputs.png")
 
 The line that we most care about is the Total sample size line. This will tell us how many measurement units are needed to achieve the levels we set as the inputs. G\*Power aims for balanced designs everywhere possible. If you want to see how many measurement units you need in treatment _i_ (i.e., how many replicates you will have in each treatment), simply divide the total sample size by the number of groups/treatments, \(n_i = N/g\).
 
-### Using \(\eta^2\)
+### Educational, One Factor Study Using \(\eta^2\)
 
 Suppose that we're conducting an educational study on the impact of three different strategies on students' abilities to recall basic multiplication facts. The strategies consistent of Mad Mintues, flash cards, and studying multiplication fact families. 
 
@@ -181,7 +181,7 @@ knitr::include_graphics("sampleSizeImages/example2InsOuts.png")
 
 We would need a total of 27 students (9 in each treatment). This is the fewest number of students we would need given our choices of Type I and Type II risk to observe an effect size at least as big as 40% variation explained.
 
-### Using Minimum Difference of Interest
+### Agricultural, One Factor Study Using Minimum Difference of Interest
 
 Suppose that we're wanting to test out three new fertilizers meant to increase yield for corn crops. (We will also compare with no fertilizers at all.) The costs associated with the fertilizers and the differences between them are such that if they do not increase the yield by at least 2 bushels per acre (bpa), the farmer will lose money. From past studies, we have a sense of the error variation being around 32.4 bpa-squared.
 
@@ -196,6 +196,23 @@ knitr::include_graphics("sampleSizeImages/example3InsOuts.png")
 ```
 
 From Figure \ref{fig:ex3InsOuts}, we can see that our total sample size is 648 measurement units. That's a lot of fields or even portions of fields that we have to cover.
+
+### Using a Block, More than One Factor, and/or Covariates
+
+There are many cases where we have more than just a single factor in our models. We could have other factors and/or incorporate additional qualitative attributes. In these situations, we can still use G*Power to estimate sample sizes but we will have to make a few modifications.
+
+1. You will still choose *F tests* for the Test family.
+2. Select the appropriate choice for the  Statistical test drop down menu 
+    + Use *ANOVA: Fixed effects, special, main effects and interactions* option for multiple factors or if you have a block.
+    + Use *ANCOVA: Fixed effects, main effects, and interactions* if you have a covariate.
+3. Type will follow the same guidance as in the one factor situations.
+4. Enter the input parameters.
+
+The first three input parameters are the same as in the One Factor situations (effect size, Type I error risk, and Power). The last input (Number of groups) is nearly the same. The key here is that this won't be the same as the number of levels of your factor. Rather, the number of groups should reflect how many groupings you have in your study across all of the factors and qualitative attributes you are incorporating in your model. Suppose that you have two factors: A with 3 levels, and B with 4 levels. In this case you could have a maximum of 12 groups (3 \* 4). Suppose we add biological sex (forced dichotomous) as an additional attribute in our model, that increases the number of groups to a max of 24.
+
+The first new input parameter that we have to include is *Numerator df*. Here you need to think about which factor you want to focus on. You'll then enter the *degrees of freedom* for that term which is typically (but not always) the number of levels for that factor minus 1. Keep in mind that as you change which factor you're focusing on the sample size calculation can change. You might need to find a middle ground.
+
+The last new input parameter is the *Number of covariates*. Enter how many *quantitative* attributes that are NOT the response you have in our model.
 
 ## Exploring With G\*Power
 
