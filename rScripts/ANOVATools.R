@@ -446,3 +446,31 @@ anovaScreens <- function(dataFrame, response, factor) {
 
   return(screens)
 }
+
+# Type I Risk Per Inference Act----
+## A function which returns the Type 1 Risk at the per inference act
+## given a particular methodology
+perActRisk <- function(type1Risk, numActs, method = "Bonferroni", outType = "num"){
+  stopifnot(
+    "Specify an overall Type I Risk between 0 and 1" = type1Risk <= 1,
+    "Specify an overall Type I Risk between 0 and 1" = type1Risk > 0,
+    "Specify a positive integer for the number of inference acts" = all(numActs > 0)#,
+    # "Specify a positive integer for the number of inference acts" = !is.integer(numActs)
+  )
+  
+  if (method %in% c("Bonferroni", "bonferroni", "Bon", "bon")) {
+    ind <- type1Risk / numActs
+    reportMethod <- "Bonferroni"
+  } else if (method %in% c("Sidak", "sidak", "Sid", "sid")) {
+    ind <- 1 - (1 - type1Risk)^(1 / numActs)
+    reportMethod <- "Sidak"
+  }
+  
+  if (outType %in% c("words")) {
+    return(paste("The individual Type 1 Risk using the", reportMethod, "method is", round(ind, digits = 4)))
+  } else if (outType %in% c("num", "number", "numbers", "Num", "Number")) {
+    return(round(ind, digits = 3))
+  }
+}
+perActRisk <- Vectorize(perActRisk)
+
