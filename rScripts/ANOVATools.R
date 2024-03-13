@@ -404,6 +404,8 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 anovaScreens <- function(dataFrame, response, factor) {
   require(dplyr)
   require(rlang)
+  
+  ## Error Checking
   errorMessages <- c()
   if (length(factor) <= 0 | is.na(factor) | is.null(factor)) {
     stop("You need to specify the name of your factor")
@@ -420,7 +422,11 @@ anovaScreens <- function(dataFrame, response, factor) {
   } else if (!(factor %in% names(dataFrame))) {
     stop(paste("The factor you gave,", factor, "was not found in the data frame supplied."))
   }
+  
+  ## Remove Missing Cases
+  dataFrame <- na.omit(dataFrame)
 
+  ## Build Screens
   screens <- dataFrame %>%
     dplyr::select(!!sym(response), !!sym(factor)) %>%
     mutate(
