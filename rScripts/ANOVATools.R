@@ -401,7 +401,7 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 # Anova Screens Function ----
 ## A function that takes a data frame, and two strings to return the
 ## Oneway ANOVA screens
-anovaScreens <- function(dataFrame, response, factor) {
+anovaScreensT <- function(dataFrame, response, factor, block = NULL) {
   require(dplyr)
   require(rlang)
   
@@ -421,36 +421,80 @@ anovaScreens <- function(dataFrame, response, factor) {
     stop(paste("The response you gave,", response, "was not found in the data frame supplied."))
   } else if (!(factor %in% names(dataFrame))) {
     stop(paste("The factor you gave,", factor, "was not found in the data frame supplied."))
-  }
+  } 
   
-  ## Remove Missing Cases
-  dataFrame <- na.omit(dataFrame)
+  if (!is.null(block) && (block %in% names(dataFrame))) {
+    stop(paste("The block you gave,", block, "was not found in the data frame supplied."))
+  }
 
   ## Build Screens
-  screens <- dataFrame %>%
-    dplyr::select(!!sym(response), !!sym(factor)) %>%
-    mutate(
-      Screen1.Action = mean(!!sym(response), na.rm = TRUE)
-    )
-
-  groupMeans <- screens %>%
+  if (!is.null(block)) {
+    screens <- dataFrame %>%
+      dplyr::select(!!sym(response), !!sym(block), !!sym(factor)) %>%
+      mutate(
+        Screen1.Action = mean(!!sym(response), na.rm = TRUE)
+      )
+  } else {
+    screens <- dataFrame %>%
+      dplyr::select(!!sym(response), !!sym(factor)) %>%
+      mutate(
+        Screen1.Action = mean(!!sym(response), na.rm = TRUE)
+      )
+  }
+  
+  screens <- na.omit(screens)
+  
+  ## Get Block Means
+  if (!is.null(block)) {
+    blockMeans <- screens %>%
+      group_by(!!sym(block)) %>%
+      summarize(
+        blockMean = mean(!!sym(response), na.rm = TRUE)
+      )
+  } 
+  
+  ## Get Factor Means
+  factorMeans <- screens %>%
     group_by(!!sym(factor)) %>%
     summarize(
       factorMean = mean(!!sym(response), na.rm = TRUE)
     )
-
-  screens <- screens %>%
-    left_join(
-      y = groupMeans,
-      by = dplyr::join_by(!!sym(factor))
-    ) %>%
-    mutate(
-      Screen2.Factor = factorMean - Screen1.Action,
-      Screen3.Residuals = !!sym(response) - Screen1.Action - Screen2.Factor
-    ) %>%
-    dplyr::select(-factorMean)
-
-  return(screens)
+  
+  ## Build Resulting Data Frame
+  if (is.null(block)) {
+    screens <- screens %>%
+      left_join(
+        y = factorMeans,
+        by = dplyr::join_by(!!sym(factor))
+      ) %>%
+      mutate(
+        Screen2.Factor = factorMean - Screen1.Action,
+        Screen3.Residuals = !!sym(response) - Screen1.Action - Screen2.Factor
+      ) %>%
+      dplyr::select(-factorMean)
+    
+    return(screens)
+  } else {
+    screens <- screens %>%
+      left_join(
+        y = blockMeans,
+        by = dplyr::join_by(!!sym(block))
+      ) %>%
+      mutate(
+        Screen2.Block = blockMean - Screen1.Action
+      ) %>%
+      left_join(
+        y = factorMeans,
+        by = dplyr::join_by(!!sym(factor))
+      ) %>%
+      mutate(
+        Screen3.Factor = factorMean - Screen1.Action - Screen2.Block,
+        Screen4.Residuals = !!sym(response) - Screen1.Action - Screen2.Block - Screen3.Factor
+      ) %>%
+      dplyr::select(-factorMean, -blockMean)
+    
+    return(screens)
+  }
 }
 
 # Type I Risk Per Inference Act----
