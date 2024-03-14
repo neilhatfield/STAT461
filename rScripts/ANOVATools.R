@@ -400,7 +400,7 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 
 # Anova Screens Function ----
 ## A function that takes a data frame, and two strings to return the
-## Oneway ANOVA screens
+## Oneway ANOVA screens, with and without a block
 anovaScreens <- function(dataFrame, response, factor, block = NULL) {
   require(dplyr)
   require(rlang)
@@ -418,13 +418,13 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
   }
 
   if (!(response %in% names(dataFrame))) {
-    stop(paste("The response you gave,", response, "was not found in the data frame supplied."))
+    stop(paste("The response you gave,", response, ", was not found in the data frame supplied."))
   } else if (!(factor %in% names(dataFrame))) {
-    stop(paste("The factor you gave,", factor, "was not found in the data frame supplied."))
+    stop(paste("The factor you gave,", factor, ", was not found in the data frame supplied."))
   } 
   
-  if (!is.null(block) && (block %in% names(dataFrame))) {
-    stop(paste("The block you gave,", block, "was not found in the data frame supplied."))
+  if (!is.null(block) && (!block %in% names(dataFrame))) {
+    stop(paste("The block you gave,", block, ", was not found in the data frame supplied."))
   }
 
   ## Build Screens
