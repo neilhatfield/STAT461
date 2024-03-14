@@ -1,0 +1,363 @@
+---
+title: "ANOVA Screens"
+author: "Neil J. Hatfield"
+date: "Mar. 14, 2024"
+date-modified: now
+date-format: medium
+latex-tinytex: false
+geometry: 
+  - left=0.5in
+  - right=0.5in
+  - top=0.5in
+  - bottom=0.5in
+format: 
+  pdf:
+    linkcolor: blue
+    fig-align: center
+    fig-cap-location: bottom
+    fig-dpi: 300
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+The focus of this guide will be on how we can use R to visualize pass our through a series of screens for the purpose of ANOVA. The main tool that we'll leverage is a function that developed that may be applied to One-way ANOVA situations as well as One-Way + Block ANOVA situations. At the time of writing, my function only works for these two types of ANOVA models.
+
+## Getting Started
+
+We will need two things: 1) load all necessary tools and 2) have some data to work with.
+
+### Loading Our Tools
+
+The notion of ANOVA screens is not something that is built into R (or any other statistical software system). However, we can easily expand out R's tools through packages and custom functions.
+
+For this guide, we will need to draw upon the following packages: `{tidyverse}`, `{hasseDiagram}`, `{openxlsx}`, `{knitr}`, and `{kableExtra}`. We can load them into our current session of R using the following commands. If you don't have these packages installed, you will get an error message along the lines of "there is no package called [...]".
+
+:::{.callout-note}
+#### Installing Packages
+Remember, I wrote a script that can check your R set up and install all the  packages we use in this class for you. I highly recommend that run this script, even if you are an experienced R user. All you need to do is run the following commands in your R console:
+```{r checkSetup}
+#| echo: true
+#| eval: false
+
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R")
+checkSetup()
+```
+:::
+
+```{r loadPackages}
+#| echo: true
+#| output: false
+
+# Load Packages ----
+packages <- c("tidyverse", "hasseDiagram", "openxlsx", "knitr", "kableExtra") # <1>
+lapply( #<2>
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+```
+1. This is the list of packages I want to load.
+2. The `lapply` function lets me repeatedly apply the `library` function--which actually loads the package whose name is listed.
+
+Once you have loaded your packages, a next step would be to load any additional tools. Since I have yet to create a package containing all of the tools I've built for Stat 461, we'll need to load them by using the `source` function as shown below.
+
+```{r loadExtraTools}
+#| echo: true
+
+# Load extra tools ----
+source("https://raw.github.com/neilhatfield/STAT461/main/rScripts/ANOVATools.R")
+
+```
+
+The `anovaScreens` function that we'll use is part of the suite of tools I've created. There are multiple other tools that are part of this suite that we'll use at other points during the semester.
+
+:::{.callout-tip}
+#### ANOVA Screens in JMP
+
+Several years ago I wrote a tool for use in the JMP point-and-click statistical software (free to PSU students; available on PSU lab machines). You'll need to download and install my [StatsTools JMP Addin](https://www.dropbox.com/s/zjveb2k8h7g2v9v/StatsTools.jmpaddin?dl=1). This addin will then let you get the screen results in that software similar to what you'll see in this guide.
+:::
+
+### Getting Our Data
+
+In order to pass data through a set of screens, we need to have data in our R environment. There are multiple ways in which we can load data into R. For additional examples, please check out the Getting Started guides in Canvas (specifically, the Stat461.GettingStarted.pdf).
+
+Many of the data sets that we'll be working with in Stat 461 will be accessible online either as CSV, DAT, TXT, or XLSX files. Provided you have internet access, R can directly read online data files into your current R session/environment; you don't need to download the data to your computer first. While there is a certain attraction to this method (allows for quick data file updates), there are risks (e.g., what happens when you don't have internet access?). The methods that I'll use in the guides work equally well with a file located online or on your computer--the only change you'll need to make is the path to the file.
+
+With the exception of XLSX files (and extremely large data files), my go-to function for reading data into R is `read.table` from base R. For XLSX files, I like to use the `readWorkbook` function from the `{openxlsx}` package. The following code demonstrates reading in various data files.
+
+```{r loadData}
+#| echo: true
+
+# Load Paper Airplane Data ----
+centralPath <- "https://raw.github.com/neilhatfield/STAT461/main/dataFiles/" 
+## Section 2 ----
+plane2 <- readWorkbook(
+  xlsxFile = paste0(centralPath, "PaperAirplanes_Sp24_Sec2.xlsx")
+)
+## Section 3 ----
+plane3 <- readWorkbook(
+  xlsxFile = paste0(centralPath, "PaperAirplanes_Sp24_Sec3.xlsx")
+)
+
+# Load Barley Data ----
+## Example for the One-way ANOVA + Block Section
+barleyData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
+  header = TRUE,
+  sep = ","
+)
+
+```
+I'm using this `centralPath` to help ensure that you can read the full path to the paper airplane data is. If the path can fit on the line without getting cut off, you don't need to take this step.
+
+
+No matter what route you take, you'll always need to know the path to the data file. Additionally, knowing whether the first row contains column headers (i.e., `header = TRUE`) as well as what character (comma, semicolon, whitespace) separates columns from each other (i.e., `sep = ","`) are incredibly useful.
+
+:::{.callout-tip}
+#### Check Your Import
+After you load your data, I highly recommend that you check the result. You can do this by using the `View` function (e.g., typing `View(plane2)` in the console) OR by clicking on the data frame in the Environment list of RStudio. If things don't look correct, try adjusting the arguments of your import command and re-importing the data. The most common issue is the wrong separator character.
+:::
+
+### Clean your Data
+
+After you load your data, you should always clean your data. What this step entails will differ from data collection to data collection as well as your goals. An important step for ANOVA models is to ensure that R is thinking about our response quantitatively (either as `int` or `num` data type) and our factors (and blocks) as the `factor` data type.
+
+```{r exampleCleaning}
+#| echo: true
+
+# Example Cleaning ----
+## Section 2 Paper Airplane ----
+### Simplify column names (i.e., variables)
+names(plane2) <- c("design", "folder", "thrower", "distance")
+### Set factor data type to columns involving character data
+plane2 <- plane2 %>%
+  mutate(
+    across(where(is.character), factor)
+  )
+
+## Section 3 Paper Airplane ----
+### Simplify column names
+names(plane3) <- c("design", "distance", "notes")
+### Clean the designs to remove the asterisks 
+plane3$design <- gsub(pattern = "\\*", replacement = "", x = plane3$design)
+### Set design to factor data type
+#### NOTE: this has to be done AFTER the removal of asterisks
+plane3$design <- as.factor(plane3$design)
+
+## Barley Data ----
+### Use a contextual name for the factor and set data type
+names(barleyData)[which(names(barleyData) == "Treatment")] <- "Varietal"
+barleyData$Varietal <- as.factor(barleyData$Varietal)
+### Set factor data type for field
+barleyData$Field <- as.factor(barleyData$Field)
+### Use a simpler name for order
+names(barleyData)[which(names(barleyData) == "Planting.Harvesting.Order")] <- "Order"
+
+```
+
+## ANOVA Screens for One-way ANOVA Models
+
+Our first encounter with ANOVA screens has been with One-way ANOVA models like that of the Paper Airplane studies. These are models that have one factor and other other terms beyond the main action and the residuals.
+
+To identify our screens, we'll draw upon our model. Each node in the Hasse diagram will be a screen. Further, each screen will be a separate term in our algebraic formula. For the Paper Airplane studies, we can turn our attention to the following Hasse diagrams (see @fig-planeHasse).
+
+```{r planeHasse}
+#| label: fig-planeHasse
+#| layout-ncol: 2
+#| fig-cap: "Hasse Diagrams for the Paper Airplane Studies"
+#| fig-subcap: 
+#|   - "Section 2"
+#|   - "Section 3"
+#| fig-alt: "Hasse diagrams for both Section 2' and Section 3's paper airplane studies"
+
+# Section 2 Hasse Diagram ----
+modelLabels <- c("1 Fly 1", "4 Design 3", "23 (Planes) 19")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
+  nrow = 3,
+  ncol = 3,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+# Section 3 Hasse Diagram ----
+modelLabels <- c("1 Fly 1", "4 Design 3", "28 (Planes) 24")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
+  nrow = 3,
+  ncol = 3,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+The `anovaScreens` function will not produce a visualization like what we saw in class for the ANOVA screens. Rather, this function will return a new, tidy data frame that will show the original data values as well as the screens for each measurement unit. Thus, the Hasse diagrams serve an extra purpose of visually reminding us that we are passing our data through the sequence of screens.
+
+To use the `anovaScreens` function, we simply need to call the function by name and pass along three inputs: the data frame, the response name, and the factor name. I will quickly note that if there are any additional columns in the data frame you pass, they will not be returned by `anovaScreens`. Thus, I highly recommend that you save the output as a new data frame.
+
+```{r planeScreens}
+#| echo: true
+# Using the anovaScreens Function ----
+## Section 2
+plane2_Screens <- anovaScreens(
+  dataFrame = plane2, # <1>
+  response = "distance", # <2>
+  factor = "design"
+)
+
+## Section 3
+plane3_Screens <- anovaScreens(
+  dataFrame = plane3,
+  response = "distance",
+  factor = "design"
+)
+
+```
+1. The `dataFrame` argument needs to be the object name of the data frame exactly as listed in your current R session/environment.
+2. The values for the `response` and `factor` arguments need to be strings (i.e., enclosed in quotation marks) that match the column names in the data frame.
+
+In the above code, I saved the output of the `anovaScreens` function calls into `plane2_Screens` and `plane3_Screens` by using the assignment operator, `<-`. If you do the same, then the output will not get printed to either your console or in your document. @tbl-planeSec2 shows Section 2's results.
+
+```{r planeSec2}
+#| echo: true
+#| label: tbl-planeSec2
+#| tbl-cap: "ANOVA Screens for Section 2's Paper Airplane Study"
+
+# Display the ANOVA Screens for Section 2's Data ----
+kable(
+  x = plane2_Screens,
+  digits = 3,
+  align = "cccc",
+  booktab = TRUE,
+  table.attr = 'data-quarto-disable-processing="true"' # <1>
+) %>%
+  kableExtra::kable_classic(
+    latex_options = c("HOLD_position"),  
+    full_width = FALSE
+  )
+
+```
+1. Omit this line if you are using R Markdown; only necessary if you are using Quarto.
+
+
+\newpage
+Section 3's results appear in @tbl-planeSec3.
+
+```{r planeSec3}
+#| echo: true
+#| label: tbl-planeSec3
+#| tbl-cap: "ANOVA Screens for Section 3's Paper Airplane Study"
+
+# Display the ANOVA Screens for Section 3's Data ----
+kable(
+  x = plane3_Screens,
+  digits = 3,
+  align = "cccc",
+  booktab = TRUE,
+  table.attr = 'data-quarto-disable-processing="true"' # <1>
+) %>%
+  kableExtra::kable_classic(
+    latex_options = c("HOLD_position"),  
+    full_width = FALSE
+  )
+
+```
+1. Omit this line if you are using R Markdown; only necessary if you are using Quarto.
+
+In both @tbl-planeSec2 and @tbl-planeSec3, we have separate columns for each of our screens. Looking through these columns, we can see the values that each screen captured. We can work with these data frames such as verifying the constraint on factor effects and that our residuals add to zero.
+
+```{r checkValues}
+#| echo: true
+
+# Check factor effects add to zero ----
+sum(plane2_Screens$Screen2.Factor)
+sum(plane3_Screens$Screen2.Factor)
+
+# Check Residuals add to zero ----
+sum(plane2_Screens$Screen3.Residuals)
+sum(plane3_Screens$Screen3.Residuals)
+```
+
+You'll notice that the sums aren't technically zero. The values reported are incredibly close to zero and a result of how computers do arithmetic. We will call them zero.
+
+Generally speaking, these tables should __*not*__ appear in the body of a report. Hasse diagrams and algebraic formulas are the go-to visual representations. If you feel that you absolutely must include such a table in a report, then these should appear only as an appendix. Tables of data don't have a worthwhile communicative purpose in reports--even if you only include a small subset of the data frame. Use the space for more meaningful visualizations.
+
+## ANOVA Sreens with a Block
+
+My `anovaScreens` function may be used in ANOVA situations involving a single factor and a single block. A full discussion of what these models entail will be saved for later in the course and another guide.
+
+For the Barley Study, our Hasse diagram appears in @fig-barleyHasse.
+
+```{r barleyHasse}
+#| label: fig-barleyHasse
+#| fig-cap: "Hasse Diagrams for the Barley Study"
+#| fig-alt: "Hasse diagrams for the Barley Study"
+#| fig-pos: "H"
+#| fig-height: 2
+
+# Barley Hasse Diagram
+modelLabels <- c("1 Grow Barley 1", "4 Field 3", "4 Variety 3", "16 (Field Sections) 9")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+The `anovaScreens` function has a `block` argument that allows us to pass the name of the block along to the process. @tbl-barley shows the result of doing this in the Barley study. Generally, we will pass data through a block screen before a factor screen.
+
+```{r barleyResults}
+#| echo: true
+#| label: tbl-barley
+#| tbl-cap: "ANOVA Screens for Barley Study"
+
+# Apply ANOVA Screens to Barley Study ----
+barley_Screens <- anovaScreens(
+  dataFrame = barleyData,
+  response = "Yield",
+  factor = "Varietal",
+  block = "Field"
+)
+
+# Display the ANOVA Screens for the Barley Study ----
+kable(
+  x = barley_Screens,
+  digits = 3,
+  align = "cccc",
+  booktab = TRUE,
+  table.attr = 'data-quarto-disable-processing="true"'
+) %>%
+  kableExtra::kable_classic(
+    latex_options = c("HOLD_position"),  
+    full_width = FALSE
+  )
+```
+
+Just as with One-way ANOVA, we can work with the output of the `anovaScreens` call in this context. Similarly, we don't want to typically include tables such as @tbl-barley in a report.
+
+\newpage
+# Code Appendix
+
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+
+
+
