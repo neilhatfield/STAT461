@@ -401,7 +401,7 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 # Anova Screens Function ----
 ## A function that takes a data frame, and two strings to return the
 ## Oneway ANOVA screens
-anovaScreensT <- function(dataFrame, response, factor, block = NULL) {
+anovaScreens <- function(dataFrame, response, factor, block = NULL) {
   require(dplyr)
   require(rlang)
   
