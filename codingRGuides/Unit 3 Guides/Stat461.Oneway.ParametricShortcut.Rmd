@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 )
 
 packages <- c("tidyverse", "hasseDiagram", "knitr", 
-              "kableExtra", "car", "psych", "parameters")
+              "kableExtra", "car", "psych", "parameters", "emmeans")
 lapply(packages, library, character.only = TRUE)
 
 # Tell Knitr to use empty space instead of NA in printed tables
@@ -46,12 +46,12 @@ There are two parts to this portion of the tutorial: getting `R` in order and re
 
 ## Getting `R` Ready
 
-The first thing that we need to do is ensure that `R` is set up so that we can have success. For this particular tutorial, we will be using the following packages: `tidyverse`, `hasseDiagram`, `knitr`, `kableExtra`, `car`, `psych`, and `parameters`. You can load these packages into your session by running the following code in the Console or by placing this code into a code chunk in your R Markdown file:
+The first thing that we need to do is ensure that `R` is set up so that we can have success. For this particular tutorial, we will be using the following packages: `tidyverse`, `hasseDiagram`, `knitr`, `kableExtra`, `car`, `psych`, `parameters`, and `emmeans`. You can load these packages into your session by running the following code in the Console or by placing this code into a code chunk in your R Markdown file:
 
 ```{r packageLoadingExample, eval=FALSE, echo=TRUE}
 # Demo code for loading packages ----
 packages <- c("tidyverse", "hasseDiagram", "knitr", 
-              "kableExtra", "car", "psych", "parameters")
+              "kableExtra", "car", "psych", "parameters", "emmeans")
 lapply(packages, library, character.only = TRUE)
 
 ```
@@ -76,7 +76,7 @@ I typically place this code right after I load my packages.
 ### Set Our Constraint
 
 Recall that in order to ensure that we have estimable functions, we must set a side condition or constraint on our treatments: 
-\[\sum_i^k\alpha_i=0\]
+\[\sum_i^g\alpha_i\cdot n_i=0\]
 This is not what R does by default, but we can tell R to adopt this constraint with the following code:
 
 ```{r setConstraint, eval=FALSE, echo=TRUE}
@@ -101,7 +101,7 @@ This is typically the last line of code in my first code chunk of any R Markdown
 
 ## Load Data
 
-Once you have set the `R` options, now comes reading in data. For this tutorial, we're going to work with three different data sets: our Song Knowledge data, data from a honey study, and data from Example 3.2 Resin Lifetimes from the Oehlert textbook. 
+Once you have set the `R` options, now comes reading in data. For this tutorial, we're going to work with three different data sets: the Fall 2023 Song Knowledge data, data from a honey study, and data from Example 3.2 Resin Lifetimes from the Oehlert textbook. 
 
 The following code demonstrates how we can read in the three data sets:
 ```{r loadData, echo=TRUE}
@@ -577,7 +577,7 @@ parameters::model_parameters(
 
 Either table (Table \ref{tab:resinANOVATable} or Table \ref{tab:resinTable2}) is sufficient. You only need to worry about fixing a *p*-value looking like 0 IF you have a *p*-value that is sufficiently close to zero (i.e., less than 0.0001). While 0.0001 is a fairly common threshold, you could update the `pvalRounding` function to use another threshold such as 0.001. I do not recommend going smaller than 0.0001 (`digits = 4`).
 
-# Reporting Estimates
+# Reporting Estimates of Factor Effects
 
 One the last things we can do related to the ANOVA omnibus analysis is to estimate the various parameters in our models. We can do this in two way: point and interval. Thinking back to HW #1.2, both of these approaches have their strengths and their weaknesses. 
 
@@ -631,7 +631,7 @@ Attempt to come up with the code that makes the following table for the Resin Li
 pointEst <- dummy.coef(resinModel)
 pointEst <- unlist(pointEst)
 names(pointEst) <- c("Grand Mean", "175ºC", "194ºC",
-                 "213ºF", "231ºF", "250ºF")
+                 "213ºC", "231ºC", "250ºC")
 
 data.frame("Estimate" = pointEst) %>%
   knitr::kable(
@@ -647,12 +647,45 @@ data.frame("Estimate" = pointEst) %>%
 
 ```
 
-## Confidence Intervals
+## Interval Estimation
 
-Thinking back the activities we did in Unit 1 (i.e., HW #1.2--Estimation Exploration), we know that while point estimates are much more interpretable, they have extremely low success rates. This is where we can turn towards using interval estimation.
+Thinking back the activities we did in Unit 1 (i.e., HW #1.2--Estimation Exploration), we know that while point estimates are much more interpretable, they have extremely low success rates. On the flip side, interval estimation (i.e., confidence intervals) have better success rates but are harder to interpret.
 
-In ANOVA contexts, our use of interval estimation typically occurs during a phases called *Post Hoc Analysis* which will be covered in the next guide for Unit 3.
+In ANOVA contexts, there are two places where we often use interval estimation. The most common area is in a phase called *Post Hoc Analysis* which will be covered in the next guide. The other place is for estimating the factor effects.
 
+One of the easiest approaches is to use the `emmeans` package to build confidence intervals for us. The catch is that the `emmeans` back focuses on marginal (cell) means rather than factor effects. That is, this package returns point and interval estimates based on $\mu_{i\bullet}$ rather than $\alpha_i$. This is not necessarily a problem, as long as you are aware of the change.
+
+```{r confIntEst1, echo=TRUE}
+# Produce Point and Interval Estimates for Marginal Means ----
+resinMeans <- emmeans(
+  object = resinModel, # Pass your ANOVA object
+  specs = ~ temp, # Specify what element you want (i.e, your factor)
+  level = 0.9, # This should be 1 - Type I Error 
+  adjust = "bonferroni" # what adjustment method should be used
+) 
+
+resinMeans <- as.data.frame(resinMeans)
+
+resinMeans %>%
+  kable(
+    digits = 4,
+    caption = "Marginal Mean Estimates from the Resin Lifetime Study",
+    col.names = c("Stress Temp. (ºC)", "Marginal Mean", "SE", "df", "Lower Bound", "Upper Bound"),
+    booktabs = TRUE,
+    align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+Table \ref{tab:confIntEst1} shows the results of using the `emmeans` package. By saving the output of `emmeans` to the object `resinMeans`, I can then access these values whenever I want. This makes writing out an interpretation sentence a bit easier (especially for updating). For example, I might want to say the following: Using our particular sample and 95% Bonferroni adjusted method, the lifetime performance of the resin (in log10 hours) when heated to `r resinMeans$temp[1]`ºC might be between `r round(resinMeans$lower.CL[1], digits = 2)` and `r round(resinMeans$upper.CL[1], digits = 2)` log10 hours per circuit. 
+
+If you want, you can convert the estimates in Table \ref{tab:confIntEst1} by subtracting the value of the *GSAM* from the Marginal Means, Lower Bound, and Upper Bound columns. 
+
+\newpage
 # Putting Everything Together--Your Turn
 
 Now is an opportunity for you to get some practice. I'm going to use the data frame `InsectSprays`, which is built into R. You may load this data into your session with the command `data("InsectSprays")`.

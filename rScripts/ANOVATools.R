@@ -504,8 +504,7 @@ perActRisk <- function(type1Risk, numActs, method = "Bonferroni", outType = "num
   stopifnot(
     "Specify an overall Type I Risk between 0 and 1" = type1Risk <= 1,
     "Specify an overall Type I Risk between 0 and 1" = type1Risk > 0,
-    "Specify a positive integer for the number of inference acts" = all(numActs > 0)#,
-    # "Specify a positive integer for the number of inference acts" = !is.integer(numActs)
+    "Specify a positive integer for the number of inference acts" = all(numActs > 0)
   )
   
   if (method %in% c("Bonferroni", "bonferroni", "Bon", "bon")) {
