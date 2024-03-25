@@ -1,0 +1,65 @@
+---
+title: "Type I Error Rates"
+author: "Neil J. Hatfield"
+date: "Mar. 25, 2024"
+date-modified: now
+date-format: medium
+latex-tinytex: false
+geometry: 
+  - left=0.5in
+  - right=0.5in
+  - top=0.5in
+  - bottom=0.5in
+format: 
+  pdf:
+    linkcolor: blue
+    fig-align: center
+    fig-cap-location: bottom
+    fig-dpi: 300
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+The purpose of this guide is to introduce and discuss the five kinds of Type I Error rates. 
+
+## Type I Errors
+
+Recall that a Type I error occurs whenever we claim a statistical discovery that turns out false. That is to say, we reject a null hypothesis that turns out to be the better model. We might also think about a Type I error as a false positive test result.
+
+While we often talk about Type I errors at the level of a single hypothesis test, we need to keep in mind that *each* hypothesis test we do carries a non-zero risk of making a Type I error. Thus, as we conduct more and more hypothesis tests, our overall risk of making at least one Type I error will increase.
+
+```{r errorPlot1}
+#| label: errorPlot1
+#| fig-cap: "Overall Risk of at Least One Type I Error by Number of Acts"
+
+# Creating the overall plot ----
+library(ggplot2)
+overallRisk <- function(acts, risk) {
+  return(1 - (1 - risk)^acts)
+}
+overallRisk <- Vectorize(overallRisk)
+ggplot() +
+  stat_function(
+    fun = overallRisk,
+    args = list(risk = 0.05),
+    xlim = c(1, 100),
+    geom = "point"
+  ) +
+  theme_bw() +
+  labs(
+    x = "Number of Inference Acts",
+    y = "Prob. of 1+ Type I Error",
+    caption = "Per Act Type I Risk of 0.05"
+  ) +
+  scale_y_continuous(
+    limits = c(0,1),
+    expand = expansion(mult = 0, add = 0.01)
+  ) +
+  theme(
+    text = element_text(size = 12)
+  )
+
+```
+
