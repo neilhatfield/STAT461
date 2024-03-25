@@ -71,7 +71,7 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 ## Loading Data
 
-For this guide/tutorial, we are going to make use of the __Free Amino Acids in Cheese__ (or the Cheese study). For information on the Cheese study, look at Table 5.2 and Example 5.5 from page 91 of Oehlert. You can also make use of the Spring 2023 Song Knowledge Study for the Your Turn examples.
+For this guide/tutorial, we are going to make use of the __Free Amino Acids in Cheese__ (or the Cheese study). For information on the Cheese study, look at Table 5.2 and Example 5.5 from page 91 of Oehlert. You can also make use of the Fall 2023 Song Knowledge Study for the Your Turn examples.
 
 Take a moment to think about how you would read in the data then compare your code with the following:
 
@@ -109,21 +109,23 @@ cheeseData <- data.frame(
 
 # Key Decisions for Post Hoc Analysis
 
-When we think about Post Hoc Analysis (either the pairwise explorations of this guide/tutorial or contrasts/linear combinations of a separate guide/tutorial), there are some steps that we need to take first.
+When we think about Post Hoc Analysis (either the pairwise explorations of this guide or contrasts/linear combinations in a separate guide), there are some steps that we need to take first.
 
 ## Study Design Decisions
 
-Our first steps for Post Hoc Analysis actually relate to our study design. Post Hoc analyses are different from our initial approach in that we engage in these analyses __*after*__ we've seen the data. In fact, we only engage in Post Hoc analyses when we reject the null hypothesis for the (One-way) ANOVA model. To help guard ourselves against any claims that we might be up to problematic behaviors, we often add a couple of sentences to our study design such as the following:
+Our first steps for Post Hoc Analysis actually relate to our study design. Post Hoc analyses are different from our initial approach in that we engage in these analyses __*after*__ we've seen the data. In fact, we only engage in Post Hoc analyses when we have a statistical discovery (i.e., reject the null hypothesis) for the (One-way) ANOVA model. To help guard ourselves against any claims that we might be up to problematic behaviors, we often add a couple of sentences to our study design such as the following:
 
 > After getting and cleaning the data, we'll use the parametric ANOVA *F* test to answer the research question at a 5% level of significance. For Post Hoc analysis, we'll use an overall Type I Error Rate of 5% using Tukey's HSD.
 
-Some of the above statement should feel familiar: 1) choice of the parametric shortcut, 2) statement of our Unusualness Threshold (level of significance), and 3) a statement of our overall Type I Risk. However, this third element has some slightly different language--"Error Rate" vs. "Risk". There is an additional element of method ("Tukey's HSD").
+*Note:* if you want a high quality set of sentences, you can start with the above example and then add on a few more sentences that explain/justify your choice of method and level.
+
+Some of the above example statement should feel familiar: 1) choice of the parametric shortcut, 2) statement of our Unusualness Threshold (level of significance), and 3) a statement of our overall Type I Risk. However, this third element has slightly different language--"Error Rate" vs. "Risk". There is an additional element of method ("Tukey's HSD").
 
 There are several different ways in which we can operationalize or quantify Type I Risk. We refer to these ways as "Type I Error Rates" and there are five common types. We have to pick one of these types of error rates to then select a method.
 
 ### Testing Families
 
-To help us pick a method, we need to conceptualize our post hoc "testing family"; that is, if we reject the null hypothesis from the "omnibus" ANOVA test (via shortcut, permutation, bootstrapping, etc.), what combinations of groups/treatments do we want to test? Here are few examples of testing families:
+To help us pick a method, we need to conceptualize our post hoc *testing family*; that is, if we reject the null hypothesis from the omnibus ANOVA test (via shortcut, permutation, bootstrapping, etc.), what combinations of groups/treatments do we want to test? Here are few examples of testing families:
 
 + Pairwise Combinations
   - All possible pairs
@@ -139,11 +141,11 @@ To help us pick a method, we need to conceptualize our post hoc "testing family"
   - Ex: Graduating vs. Not Yet Graduating
   - Ex: Oral Medication (aspirin, acetaminophen, ibuprofen) vs. Topical Medications (lidocaine, capsaicin, benzocaine) for pain relief
 
-In this tutorial/guide, we'll focus on pairwise families. (We'll have a separate tutorial/guide for the combinations.) One of the key aspects of conceptualizing your post hoc testing family is to count the number of comparisons, *m*, that make up the family.
+In this guide, we'll focus on pairwise families. (We'll have a separate guide for the combinations.) One of the key aspects of conceptualizing your post hoc testing family is to count the number of comparisons, *m*, that make up the family.
 
 ### Choose Your Type I Error Rate and Method
 
-Once you conceptualize your testing family, you can yourself "Which Type I Error Rate do I want to control?" The following table shows the five different Type I Error Rates we can choose from. I've ordered the table from the most conservative to the least conservative; top to bottom. This order also reflects moving from the strongest guards against Type I Errors (top) to the weakest guards against Type I Errors (bottom).
+Once you conceptualize your testing family, you can ask yourself "Which Type I Error Rate do I want to control?" The following table shows the five different Type I Error Rates we can choose from. I've ordered the table from the most conservative (top) to the least conservative (bottom). This order also reflects moving from the strongest guards against Type I Errors (top) to the weakest guards against Type I Errors (bottom).
 
 | Selected Type I Error Rate        | Possible Adjustment Methods |
 |---------------------|--------------------------------|
@@ -158,7 +160,9 @@ After picking which Error Rate you want to control, you choose an appropriate me
 If you aren't sure what method to pick, ask yourself the following questions:
 
 + Am I looking at all possible pairwise comparison?
-  - __Yes__: Use Tukey (-Kramer) HSD; __No__: Use Bonferroni
+  - __Yes__: Use Tukey (-Kramer) HSD
+  - __No__: Are all the tests independent of each other?
+    - __Yes__: Use Šidák; __No__/__Unsure__: Use Bonferroni
 + Did someone data snoop?
   - __Yes__: Must use Scheffé
 + Want to use middle ground?
@@ -252,7 +256,7 @@ The `emmeans` approach is a nice one to take and has two distinct advantages:
 1) This gives you a single set of code which you can use with ten different adjust methods (see below).
 2) The `specs` argument gives us some great flexibility (we'll see that flexibility in Unit 4).
 
-The downside is that you do need to install and load the `emmeans` package in order to use this method. Additionally, this method does not produce confidence intervals for the differences.
+The downside is that you need to install and load the `emmeans` package in order to use this method. Additionally, this method does not produce confidence intervals for the differences.
 
 Available adjustment methods for control our Type I error rate include `"bonferroni"`, `"tukey"`, `"sidak"`, `"scheffe"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` or `"fdr"`, `"BY"`, or `"none"` (for no Type I Error Rate adjustment). 
 
@@ -347,7 +351,10 @@ If I'm after using the Least Significant Difference, then I use the `DescTools` 
 
 ## Special Comparisons (Dunnett's)
 
-In certain studies, you might want to do all possible pairwise comparisons. You might want to compare treatments to a null treatment, a standard care treatment, or the current "gold standard". To make such comparisons, we will need to use the `DescTools` package and Dunnett's Test (`DunnettTest`).
+In certain studies, you might want to do all possible pairwise comparisons. However, in other studies you might only want to compare a set of treatments to a single, special treatment (e.g., a null treatment, a standard care treatment, or the current "gold standard"). To make such comparisons, we will need to use the `DescTools` package and Dunnett's Test (`DunnettTest`).
+
+
+
 
 ```{r dunnet, echo=TRUE}
 # Demo Code for Special Pairwise Comparisons ----
@@ -415,7 +422,7 @@ There are a number of ways that you can visualize your pairwise comparisons. A u
 
 ## Connecting Letter Report
 
-The Connecting Letters Report is similar to the Oehlert's Underline diagrams (p. 88). Rather than using lines, we use lowercase letters. If different treatments share the same letter, they are statistically indistinguishable from one other. If they have different letters, then there is a statistical difference between those treatments.
+The Connecting Letters Report is similar to the Oehlert's Underline diagrams (p. 88). Rather than using lines, we use lowercase letters. If different treatments share the same letter, they are statistically indistinguishable from one other. If they have different letters, then there is a statistically detectable difference between those treatments.
 
 ```{r connectLetters, echo=TRUE}
 # Demo Code for Connecting Letters Report ----
@@ -462,12 +469,13 @@ Play with the values of `fig = c(x1, x2, y1, y2)` to get the best arrangement fo
 \newpage
 # Putting Things Together--Your Turn
 
-Use the above examples to explore the Song Knowledge study in terms of Post Hoc Analysis. Generate not only which years in school are significantly different from each other, but what are effect sizes and see if you can re-create the following plot.
+Use the above examples to explore the Song Knowledge study in terms of Post Hoc Analysis. Generate not only which years in school are significantly different from each other, but what are the effect sizes.
 
-```{r songBoxLetters, fig.cap="Box Plot and Connecting Letters Report for the Song Knowledge Study", fig.width=6, fig.height=4.5, eval=FALSE}
+```{r songBoxLetters, fig.cap="Box Plot and Connecting Letters Report for the Song Knowledge Study", fig.width=6, fig.height=4.5, eval=FALSE, include=FALSE}
 # Your Turn Code------------------------------------
+## This code is not working for some reason.
 multcompView::multcompBoxplot(
-  formula = score ~ year,
+  formula = Score ~ Year,
   data = songData,
   compFn = "TukeyHSD",
   plotList = list(
