@@ -155,7 +155,7 @@ parameters::model_parameters(
   align = c("l", rep("c", 8))
   ) %>%
   kableExtra::kable_styling(
-    font_size = 12,
+    font_size = 11,
     latex_options = c("HOLD_position")
   ) 
 
@@ -298,7 +298,7 @@ as.data.frame(cheeseContrasts1) %>%
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
+    font_size = 11,
     latex_options = c("HOLD_position", "scale_down")
   ) %>%
   kableExtra::footnote(
@@ -378,7 +378,7 @@ adjustPValues(
     align = rep("c", 5)
   ) %>%
   kableExtra::kable_styling(
-    font_size = 12,
+    font_size = 11,
     latex_options = c("HOLD_position")
   ) 
 
@@ -442,7 +442,7 @@ knitr::kable(
   align = rep("c", 4)
   ) %>%
   kableExtra::kable_styling(
-    font_size = 12,
+    font_size = 11,
     latex_options = c("HOLD_position")
   ) 
 
