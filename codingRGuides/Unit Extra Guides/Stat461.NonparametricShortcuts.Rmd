@@ -448,11 +448,11 @@ knitr::kable(
 
 The Probability of Superiority has the same kind of interpretation as in the parametric shortcut: approximately 27% of the time we randomly select a plot getting conventional weevil treatment and one getting the IPM treatment, the conventional plot will have the higher number of whole larvae. 
 
-The Hodges-Lehmann Estimate, \(\widehat{\Delta}\), measures the middle difference of all possible pairings between two groups. If we imagine taking all of the plots which got either conventional pest control or the IPM treatment, we can imagine all of the pairings of plot from each group (i.e., the 25 pairings). For each pairing, we can find the difference in number of whole weevil larvae found. For these two groups/treatments, half of all the pairings show that the conventional group has at least 29 fewer whole larvae than the IPM group.
+The Hodges-Lehmann Estimate, \(\widehat{\Delta}\), measures the middle difference of all possible pairings between two groups. If we imagine taking all of the plots which got either conventional pest control or the IPM treatment, we can imagine all of the pairings of plot from each group (i.e., the 25 pairings). For each pairing, we can find the difference in number of whole weevil larvae found. For these two groups/treatments, half of all the pairings show that the conventional group have at least 29 fewer whole larvae than the IPM group.
 
 # Two-way ANOVA Tests
 
-There are two nonparametric shortcuts we can take for Two-way ANOVA designs: Friedman and Mack-Skillings. The main difference between these approaches comes down to the notion of replication. That is, if we designed the study have only 1 replicate within each group (i.e., block-factor pairing) like we see in a Within Subjects design, then we would use the Friedman Test. If we designed our study to have 1 or more replicates in each group AND be balanced, then we would use the Mack-Skillings test.
+There are two nonparametric shortcuts we can take for Two-way ANOVA designs: Friedman and Mack-Skillings. The main difference between these approaches comes down to the notion of replication. That is, if we designed the study to have only 1 replicate within each group (i.e., block-factor pairing) like we see in a Within Subjects design, then we would use the Friedman Test. If we designed our study to have 1 or more replicates in each group AND be balanced, then we would use the Mack-Skillings test.
 
 In both cases, the underlying model is the same: 
 \[Y_{ij}=\theta_{\bullet\bullet\bullet}+\beta_{i}+\tau_{j}+\epsilon_{ijk}\]
@@ -489,7 +489,7 @@ How would you assess the Continuous Distribution assumption for the Alfalfa Pest
 Just as we've done in the past, we will want to look at an interaction plot. A major difference here is to not use the *SAM* but the *Sample Median*.
 
 ```{r alfalfaInteraction, echo=TRUE}
-#| fig.cap = "Interation Plot for Alfalfa Pest Study",
+#| fig.cap = "Interaction Plot for Alfalfa Pest Study",
 #| fig.pos = "H",
 #| fig.height = 3
 
@@ -528,7 +528,7 @@ While post hoc methods exist for doing pairwise comparisons as well as contrasts
 
 # Friedman's Test
 
-We have two different approaches we can take with the Friedman test: we can use base `R` or we can use the `agricolae` package. The base `R` route will work for all two-way designs and allows use to enter a formula-data frame pair (our typical method), a set of vectors, or as a matrix. The `agricolae` package requires us to enter a set of vectors (data frame columns) only.
+We have two different approaches we can take with the Friedman test: we can use base `R` or we can use the `agricolae` package. The base `R` route will work for all two-way designs and allows us to enter a formula-data frame pair (our typical method), a set of vectors, or as a matrix. The `agricolae` package requires us to enter a set of vectors (data frame columns) only.
 
 ## Fitting the Model
 
@@ -594,7 +594,7 @@ alfalfaModel2
 
 At the bottom of the raw output, under the heading of `$groups` we can see a Connecting Letter Report showing us at a glance which treatment levels are statistically different from the others. __Important Note:__ this connecting letter report only controls the *Experimentwise Error Rate (EER)* via Fisher's Least Significance Difference (LSD) method. The overall Type I Error rate we're controlling at is the alpha given in the command.
 
-You can extract certain element from the output object by name:
+You can extract certain elements from the output object by name:
 
   + `alfalfaModel2$statistics` is a data frame that you can make into a table from or continue to extract values
     - `alfalfaModel2$statistics$Chisq` gives the value of *S*
@@ -614,7 +614,7 @@ You may only use this method for Within Subjects designs or two-way layouts with
 ## This comes from the NSM3 package
 
 postHocRounding <- pWNMT(
-  x = rounding.times,
+  x = rounding.times, # The data matrix in a wide format
   method = "Monte Carlo", # this is default
   n.mc = 2500 # Default is 10,000
 )

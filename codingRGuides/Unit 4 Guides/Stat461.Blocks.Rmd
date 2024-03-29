@@ -83,7 +83,7 @@ barleyData <- read.table(
 )
 
 # Glancing at the data frame, we can improve our column names (variables)
-# as well as set our factor and block to be.
+# as well as tell R how to think about our factor and block.
 
 ## I'm going to change "Treatment" to "Varietal"
 names(barleyData)[which(names(barleyData) == "Treatment")] <- "Varietal"
