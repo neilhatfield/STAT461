@@ -65,9 +65,9 @@ source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R
 
 For this guide/tutorial, we'll make use of two contexts: __Gummy Bears__ and __Battery Manufacturing__.
 
-## Gummy Bears
+## Gummy Bears-Fall 2023
 
-This data comes from the design that we put together in class to explore the impacts of launch angle and launch position for our spoon-apults for launching gummy bears to see how far they will fly.
+This data comes from the design that the Fall 2023 put together to explore the impacts of launch angle and launch position for our spoon-apults for launching gummy bears to see how far they will fly. __NOTE:__ The design that the Fall 2023 class used and what we used in Spring 2024, are two distinct designs.
 
 ```{r loadGummyBears, echo=TRUE}
 # Demo code for loading and cleaning data ----

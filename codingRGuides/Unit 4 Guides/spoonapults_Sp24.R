@@ -115,7 +115,36 @@ spoons_sec3 <- spoonapultsData %>%
 #' to account for the missing cell (combination) in Section 3.
 
 # Explore the Data ----
-#' This is currently omitted.
+#' This is currently omitted with the exception of an interaction plot for the
+#' factors.
+
+ggplot(
+  data = spoons_sec2,
+  mapping = aes(
+    x = Angle,
+    y = sam,
+    shape = Position,
+    color = Position,
+    linetype = Position,
+    group = Position
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) +
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) +
+  geom_jitter(width = 0.1, height = 0.1, alpha = 0.25, size = 1) +
+  ggplot2::theme_bw() +
+  xlab("Launch Angle") +
+  ylab("SAM Distance (cm/bear)") +
+  labs(
+    color = "Launch Position",
+    shape = "Launch Position",
+    linetype = "Launch Position"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  )
 
 # Fit the Model ----
 spoonapultModel2 <- aov(
