@@ -106,7 +106,7 @@ keyboardingData$kbd.type <- as.factor(keyboardingData$kbd.type)
 
 ## Lego Set Prices
 
-This study stems from Context 6 in the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
+This study stems from Context 3 in the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
 
 One of Neil's friends scrapped two online databases to build a data file covering nearly the entire Lego catalog. Neil wrangled this data file and used the `slice_sample` function from the `dplyr` package to conduct a stratified random sample of sets based upon the theme/collection used in the study. The total sample size in our balanced study is 50.
 
@@ -201,7 +201,7 @@ keyboardModel <- aov(
 
 ### Model for checking covariate's homogeneity
 interactionCheck <- aov(
-  formula = hrs.pain ~ hrs.kbd * kbd.type,
+  formula = hrs.pain ~ hrs.kbd + kbd.type + hrs.kbd:kbd.type,
   data = keyboardingData
 )
 
@@ -229,7 +229,7 @@ For ANCOVA models, a good practice would be to start with the three ANCOVA-speci
 
 ## Linear Relationship between Response and Covariate
 
-The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. Again, the best approach here is to look at a scatter plot. 
+The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. The best approach here is to look at a scatter plot. 
 
 ```{r keyboardScatter, echo=TRUE}
 #| fig.cap = "Hours of Pain vs Hours Spent Keyboarding",
@@ -261,11 +261,11 @@ ggplot(
 
 ```
 
-Figure \ref{fig:keyboardScatter} shows the scatter plot of hours of pain experienced by the hours spent keyboarding. Notice that I've NOT incorporated the type of keyboard each person got assigned. I want to get as clear of a sense of the relationship between the response and the covariate as I possibly can. If I add too many other attributes to this plot (e.g., the factor), I might overlook what I need to attend to.
+Figure \ref{fig:keyboardScatter} shows the scatter plot of hours of pain experienced by the hours spent keyboarding. Notice that I've NOT incorporated the type of keyboard each person got assigned. I want to get a clear sense of the relationship between the response and the covariate. If I add too many other attributes to this plot (e.g., the factor), I might overlook what I need to attend to.
 
 Ultimately, we're looking to see whether there is a linear relationship between the response and the covariate. That is to say, is the a constant rate of change between them. If we are plotting in the standard Cartesian coordinate system without scale transformations (e.g., log), then we should be able to sketch a straight line. In Figure \ref{fig:keyboardScatter}, I added the plot of the estimated linear regression model of the response (hours of pain) with respect to the covariate (hours spent keyboarding). This graph appears as the dashed, black line. Does this line appear to mimic what we see in the scatter plot?
 
-From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate. While not the best of fits, the graph of the fitted linear model appears to coincide with the trend (i.e., the generalized relationship) between the response (hours of pain) and the covariate (time spent keyboarding). If the graph of the fitted model didn't, we could explore other models by tweaking the `formula` argument. For instance, we could look a quartic (fourth power) relationship.
+From Figure \ref{fig:keyboardScatter} I would say that we have a linear relationship between the response and our covariate. While not the best of fits, the graph of the fitted linear model appears to coincide with the trend (i.e., the generalized relationship) between the response (hours of pain) and the covariate (time spent keyboarding). If the graph of the fitted model didn't, we could explore other models by tweaking the `formula` argument. For instance, we could look a quartic (fourth power) relationship (see Figure \ref{fig:examplePlots}).
 
 ```{r examplePlots, echo=FALSE, results='asis'}
 #| fig.cap = "Examples of Alternative Models",
@@ -274,6 +274,7 @@ From Figure \ref{fig:keyboardScatter} I would say that we have a linear relation
 #| out.width = "50%",
 #| fig.show = "hold"
 
+# Example Code Showing the As Is operator ----
 # Failed Quadratic Model
 ggplot(
   data = keyboardingData,
@@ -320,7 +321,7 @@ ggplot(
 
 ```
 
-Notice that in Figure \ref{fig:examplePlots} we can see the impact of the "As Is" operator of R (`I`) on formula statements. Figure \ref{fig:examplePlots}a is a carbon copy of our original linear relationship (i.e., `formula = y ~ x`). However, using the "As Is" operator in Figure \ref{fig:examplePlots}b will force R to fit the appropriate model. If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  I(hrs.kbd^2) + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship.
+Notice that in Figure \ref{fig:examplePlots} we can see the impact of the "As Is" operator of R (`I`) on formula statements. Figure \ref{fig:examplePlots}a is a carbon copy of our original linear relationship (i.e., `formula = y ~ x`). However, using the "As Is" operator in Figure \ref{fig:examplePlots}b will force R to fit the appropriate model. If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  I(hrs.kbd^2) + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship. (You can find the code for Figure \ref{fig:examplePlots} in the Code Appendix; this code demonstrates the 'As Is' operator inside formula statements.)
 
 ### Your Turn
 
