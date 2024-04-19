@@ -4,7 +4,8 @@ library(rvest)
 
 # Load Spreadsheet ----
 links <- readWorkbook(
-  xlsxFile = "StudentWork/leah/leah.xlsx",
+  # xlsxFile = "StudentWork/leah/leah.xlsx",
+  xlsxFile = "temp/leah/leah.xlsx",
   colNames = FALSE
 )
 names(links) <- c("SchoolSport", "link")
@@ -24,27 +25,30 @@ newLinks <- links %>%
     na.rm = TRUE
   )
 
-# Testing one page scrape ----
-# page <- read_html(
-#   x = newLinks$link[3]
-# ) %>%
-#   html_elements(css = "table") %>%
-#   html_table()
+# Testing one page scrape of Live HTML via chromote ----
+ses <- chromote::ChromoteSession$new()
+ses$Page$navigate("https://iuhoosiers.com/sports/baseball/roster/2023")
+ses$view()
 
+test1 <- ses$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value %>%
+  read_html() %>%
+  html_elements(css = "table") %>%
+  html_table()
 
+## works for Indiana Un
 
-# Create a function for vectorization ---- 
+# Create a function for vectorization ----
 grabTables <- function(index) {
   pageTables <- read_html(x = newLinks$link[index]) %>%
     html_elements(css = "table") %>%
     html_table()
-  
+
   outObj <- list(
     school = newLinks$school[index],
     sport = newLinks$sport[index],
     tables = pageTables
   )
-  
+
   return(outObj)
 }
 
@@ -84,14 +88,14 @@ getRosters <- function(index) {
     roster <- initialList[[index]]$tables[[targetTables[index]]]
     roster$school <- school
     roster$sport <- sport
-    
+
   } else {
     roster <- data.frame(
       school =  school,
       sport = sport
     )
   }
-  
+
   return(roster)
 }
 
@@ -107,7 +111,7 @@ poids <- c("Weight", "Wt.")
 
 parseRosters <- function(index) {
   roster <- rosterSet[[index]]
-  
+
   if (nrow(roster) == 1) {
     roster$Name <- NA
     roster$Height <- NA
@@ -116,14 +120,14 @@ parseRosters <- function(index) {
    roster <- roster %>%
       dplyr::select(school, sport, any_of(noms), any_of(hauteurs), any_of(poids))
   }
-  
+
   names(roster) <- c("School", "Sport", "Name", "Height", "Weight")
-  
+
   roster <- roster %>%
     mutate(
       across(.cols = everything(), .fns = as.character)
       )
-  
+
   return(roster)
 }
 
