@@ -1,6 +1,7 @@
 library(openxlsx)
 library(tidyverse)
 library(rvest)
+library(chromote)
 
 # Load Spreadsheet ----
 links <- readWorkbook(
@@ -26,8 +27,12 @@ newLinks <- links %>%
   )
 
 # Testing one page scrape of Live HTML via chromote ----
+# temp1 <- read_html("https://iuhoosiers.com/sports/baseball/roster/2023") %>%
+#   html_elements(css = "table") %>%
+#   html_table()
+
 ses <- chromote::ChromoteSession$new()
-ses$Page$navigate("https://iuhoosiers.com/sports/baseball/roster/2023")
+ses$Page$navigate("https://purduesports.com/sports/baseball/roster/2023")
 ses$view()
 
 test1 <- ses$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value %>%
@@ -35,7 +40,9 @@ test1 <- ses$Runtime$evaluate("document.querySelector('html').outerHTML")$result
   html_elements(css = "table") %>%
   html_table()
 
-## works for Indiana Un
+## works for Indiana University; University of Minnesota
+## University of Michigan; Northwestern; Ohio State University; Purdue University
+## need xpath. Explore:html_elements(xpath = '//*[@id="listPanel"]/div[1]/div[1]/div[1]')
 
 # Create a function for vectorization ----
 grabTables <- function(index) {
@@ -62,6 +69,36 @@ initialList <- lapply(
 problemSchools <- c("Indiana University", "University of Michigan",
                     "University of Minnesota", "Northwestern University",
                     "Ohio State University", "Purdue University")
+
+## Potential Workaround
+## works for Indiana University; University of Minnesota
+### Indiana is 4:6; UMN is 19:21
+ses <- chromote::ChromoteSession$new()
+
+grabTables2 <- function(index) {
+  ses$Page$navigate(newLinks$link[index])
+  pageTables <- ses$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value %>%
+    read_html() %>%
+    html_elements(css = "table") %>%
+    html_table()
+  
+  outObj <- list(
+    school = newLinks$school[index],
+    sport = newLinks$sport[index],
+    tables = pageTables
+  )
+  
+  return(outObj)
+}
+
+
+ses$Page$navigate("https://purduesports.com/sports/baseball/roster/2023")
+ses$view()
+
+test1 <- ses$Runtime$evaluate("document.querySelector('html').outerHTML")$result$value %>%
+  read_html() %>%
+  html_elements(css = "table") %>%
+  html_table()
 
 targetTables <- c(
   3, 3, 4,
