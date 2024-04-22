@@ -78,17 +78,6 @@ ggplot(
     text = element_text(size = 18)
   )
 
-### Shadowgram of Scores ----
-source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R")
-shadowgram(
-  dataVec = tasteDataLong$score,
-  label = "Hedonic Score",
-  color = "darkblue"
-) +
-  theme(
-    text = element_text(size = 18)
-  )
-
 ## Bivariate Plots ----
 ### Box plot of Score by Mix ----
 ggplot(
@@ -118,6 +107,7 @@ ggplot(
 
 ## Multivariate Plots ----
 ### Heat Map ----
+#### Useful for interactions
 ggplot(
   data = tasteDataLong,
   mapping = aes(x = taster, y = recipe, weight = score)
@@ -156,16 +146,6 @@ ggplot(
     legend.position = "none"
   )
 
-# Random Sample ----
-set.seed(461)
-
-tasterSubWide <- tasteDataWide %>%
-  group_by(Section) %>%
-  slice_sample(n = 5)
-
-tasterSubLong <- tasteDataLong %>%
-  filter(taster %in% tasterSubWide$taster)
-
 # Fit Models ----
 ## Omnibus Model ----
 brownieOmni <- aov(
@@ -184,13 +164,6 @@ bayesMixed <- blme::blmer(
   formula = score ~ (1|taster) + recipe,
   data = tasteDataLong,
   cov.prior = wishart
-)
-
-library(nlme)
-brownieMix2 <- nlme::lme(
-  fixed = score ~ recipe,
-  random = ~1|taster,
-  data = tasteDataLong
 )
 
 ## Model for checking Spherecity ----
@@ -215,15 +188,6 @@ car::qqPlot(
   ylab = "Residuals (score)"
 )
 
-car::qqPlot(
-  x = residuals(brownieMixed), ## Notice which model is getting used
-  distribution = "norm",
-  envelope = 0.90,
-  id = FALSE,
-  pch = 20,
-  ylab = "Residuals (score)"
-)
-
 ## Gaussian Taster Effect ----
 car::qqPlot(
   x = unlist(
@@ -239,49 +203,11 @@ car::qqPlot(
   ylab = "Subject Effects"
 )
 
-car::qqPlot(
-  x = unlist(
-    lme4::ranef(
-      object = brownieMix2, ## Notice which model is getting used
-      whichel = c("taster")
-    )
-  ),
-  distribution = "norm",
-  envelope = 0.90,
-  id = FALSE,
-  pch = 20,
-  ylab = "Subject Effects"
-)
-
 ## Homoscedasticity ----
 ggplot(
   data = data.frame(
     residuals = residuals(bayesMixed), ## Notice which model is getting used
     fitted = fitted.values(bayesMixed)
-  ),
-  mapping = aes(x = fitted, y = residuals)
-) +
-  geom_point(size = 2) +
-  geom_hline(
-    yintercept = 0,
-    linetype = "dashed",
-    color = "grey50"
-  ) +
-  geom_smooth(
-    formula = y ~ x,
-    method = stats::loess,
-    method.args = list(degree = 1),
-    se = FALSE,
-    linewidth = 0.5
-  ) +
-  theme_bw() +
-  xlab("Fitted values (score)") +
-  ylab("Residuals (score)")
-
-ggplot(
-  data = data.frame(
-    residuals = residuals(brownieMix2), ## Notice which model is getting used
-    fitted = fitted.values(brownieMix2)
   ),
   mapping = aes(x = fitted, y = residuals)
 ) +
@@ -334,14 +260,14 @@ brownieSphere$`Mauchly's Test for Sphericity` %>%
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
+    font_size = 24,
     latex_options = c("HOLD_position")
   )
 
 # Interference Checks ----
 cbind(
   tasteDataLong,
-  residuals = residuals(brownieMix2) ## Notice which model is getting used
+  residuals = residuals(bayesMixed) ## Notice which model is getting used
 ) %>%
   ggplot(
     mapping = aes(x = order, y = residuals)
@@ -350,7 +276,7 @@ cbind(
     mapping = aes(shape = recipe, color = recipe),
     size = 2
   ) +
-  geom_line() +
+  geom_line(color = "darkgrey") +
   geom_hline(
     yintercept = 0,
     linetype = "dashed",
@@ -359,7 +285,7 @@ cbind(
   theme_bw() +
   xlab("Tasting Order") +
   ylab("Residuals (score)") +
-  facet_wrap(facets = vars(taster), nrow = 6) +
+  facet_wrap(facets = vars(taster), ncol = 6) +
   scale_color_manual(values = boastUtils::psuPalette) +
   theme(
     text = element_text(size = 10),
@@ -382,13 +308,13 @@ parameters::model_parameters(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
                   "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
-    caption = "ANOVA Table for Beer Judging Study",
+    caption = "ANOVA Table for Brownie Study (Sp. '24)",
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
+    font_size = 24,
     latex_options = c("scale_down", "HOLD_position")
   )
 
@@ -402,12 +328,12 @@ knitr::kable(
   x = correctedTable,
   digits = 4,
   col.names = c("Greenhouse-Geisser", "p-value", "Huynh-Feldt", "p-value"),
-  caption = "Sphericity Corrections",
+  caption = "Sphericity Corrections--Brownie Study (Sp. '24)",
   align = "c",
   booktab = TRUE
 ) %>%
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
+    font_size = 24,
     latex_options = c("HOLD_position")
   )
