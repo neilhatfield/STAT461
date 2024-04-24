@@ -33,15 +33,35 @@ options(contrasts = c("contr.sum", "contr.poly"))
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
 ```
 
-In this tutorial, we are going to explore using the Random Effects Model in several ANOVA situations.
+In this tutorial, we are going to explore using the Random Effects Model in several ANOVA situations. This guide will be organized a bit different from the others. This will be very driven by a single example.
 
-# New Key Package
+# Setting Up R
 
-To fit Random Effects (and Mixed Effect) Models, we will need to use the `lme4` package. If you used the `checkSetup` function, then you should have this package installed. If you didn't, you'll want to install this package (`install.packages("lme4")`)
+As with the other guides, we will always want to ensure that we have set ourselves up for success by first getting everything set in R. This includes loading any packages, setting options and our constraint, and loading any additional tools, as shown below.
+
+```{r exampleSetup, eval=FALSE, echo=TRUE}
+# Load Packages ----
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "hasseDiagram", "DescTools",
+              "lme4")
+lapply(packages, library, character.only = TRUE)
+
+# Set Options and Constraint ----
+options(knitr.kable.NA = "")
+options(contrasts = c("contr.sum", "contr.poly"))
+
+# Load any additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+## Key Package
+
+In the above package list, you'll notice the `lme4` package. This is the key package that we'll leverage for Random Effects (and Mixed Effects) Models. If you used the `checkSetup` function, then you should have this package installed. If you didn't, you'll want to install this package (`install.packages("lme4")`).
+
+While we can use the standard `aov` call for the omnibus test, we will need to use the model we generate through the `lme4` package for any assumption checking AND post hoc analyses.
 
 # Looms and Fabric Strength
-
-Our example comes from Test 1: 
 
 A textile company weaves fabric on a large number of looms which they then supply to other companies. As such, they would like the looms to be as homogeneous as possible so that the fabric has the same strength. One of the process engineers suspects that in addition to naturally occurring variation in the fabric strength within a bolt, there is variation in the strength due to what loom gets used. You will be allowed to use four of the company's looms and create 1 bolt of the same type of fabric (1 bolt = 100 yards). You will test four, 3-inch squares from each bolt for the fabric strength.
 
@@ -64,7 +84,7 @@ hasseDiagram::hasse(
 
 ## Fit the Model
 
-We are going to fit both a Fixed and Random Effects model. We do so that you can see the differences/similarities between them and so that we can get useful output (i.e., the ANOVA table.)
+We are going to fit two models: a Fixed Effects model and a Random Effects model. This will allow us to explore the consequences that arise from the differences between them.
 
 ```{r loomModels, echo=TRUE}
 # Load Data
@@ -75,12 +95,13 @@ fabric <- read.table(
 )
 
 # Set Loom to be a Factor not integers
-fabric$loom <- dplyr::recode_factor(
+fabric$loom <- dplyr::case_match(
   .x = fabric$loom,
-  `1` = "Loom 1",
-  `2` = "Loom 2",
-  `3` = "Loom 3",
-  `4` = "Loom 4"
+  1 ~ "Loom 1",
+  2 ~ "Loom 2",
+  3 ~ "Loom 3",
+  4 ~ "Loom 4",
+  .ptype = factor(levels = c("Loom 1", "Loom 2", "Loom 3", "Loom 4"))
 )
 
 # Fixed effects model
@@ -99,7 +120,7 @@ loomRandom <- lme4::lmer(
 
 ## Check Assumptions
 
-To check our assumptions we will need to use the random effects object, `loomRandom`. However, we will need to make use of the `residuals` function rather than `$residuals`.
+To check our assumptions we will need to use the random effects object, `loomRandom`.
 
 ### Gaussian Residuals
 
@@ -108,7 +129,7 @@ Use a QQ plot like usual:
 ```{r residualQQ, fig.cap="QQ Plot for Residuals", fig.width=4, fig.height=3, echo=TRUE, fig.pos="H"}
 # QQ plot for residuals
 car::qqPlot(
-  x = residuals(loomRandom), # Notice we're using the random effects model
+  x = residuals(loomFixed), # Notice we're using the random effects model
   distribution = "norm",
   envelope = 0.90,
   id = FALSE,
