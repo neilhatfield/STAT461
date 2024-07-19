@@ -1,0 +1,689 @@
+---
+title: "Descriptive (Incisive) Statistics and Professional Tables"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: false
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+  cache: true
+---
+
+Welcome! This Getting Started guide focuses on Descriptive or Incisive Statistics and creating professional-looking tables. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
+
+# Getting Started
+
+As a reminder, there are two major tasks that we need to complete before we get any further into our analysis of any data: load the necessary packages and load our data.
+
+## Load Packages
+
+When you start a new session of R, one of the things that you should do is to load the extra packages that will bring new functions and new capabilities. If you don't load the necessary packages, your code might not work.
+
+For this guide, there are relatively few packages that we need to load. The bulk of the [Descriptive and Incisive Statistics](#stats) we will use are part of base R. However, we'll make use of the `{dplyr}` (part of `{tidyverse}`) and the `{psych}` packages to make our lives easier. We will also make use of the `{knitr}` and `{kableExtra}` packages to help us create [Professional Tables](#tables) in R. 
+
+Thus, we will need to load the following packages: `{tidyverse}`, `{psych}`, `{knitr}`, and `{kableExtra}`. Go ahead and load these packages. If you need a refresher on what code does this, check below:
+
+```{r}
+#| label: loadPackages
+#| eval: true
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "psych", "knitr", "kableExtra")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+```
+
+## Load Data
+
+For this guide I'm going to use two different data sets: penguin data from the `{palmerpenguins}` package and a version of the Oreo data that you'll have in HW #1.1. 
+
+```{r}
+#| label: loadData
+#| echo: true
+#| eval: true
+# Loading data into my session ----
+## Palmer Penguin data
+# install.packages("palmerpenguins")  # <1>
+penguins <- palmerpenguins::penguins # <2>
+
+## Oreo Data (HW #1.1) 
+oreoData <- read.table( 
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
+  header = TRUE,
+  sep = ","
+) # <3>
+
+```
+1. If you don't have the `{palmerpenguins}` package, run this install command without the octothrope.
+2. Since we're just after the data frame, we don't need to load the whole package.
+3. This code can be quickly modified for you to use with your own Oreo data.
+
+### Check Loaded Data
+
+Once you've loaded the data into your session, it is __always__ a good idea to check the data. The two functions I use for this are `View` and `str`. The `View` function will open up a new tab that will display the object whose name I pass as the input. For a data frame, this will be tabular format like Excel or Google Sheets, except you can't click into any cells. This allows me to do a visual inspection and see if anything looks problematic.
+
+```{r}
+#| label: viewing
+#| echo: true
+#| eval: false
+# Viewing objects ----
+View(penguins)
+
+View(oreoData)
+
+## Note: the effect of the View function in both of these
+## calls will not appear in this guide. I also don't recommend
+## using the View function inside of a Markdown-enabled document.
+
+```
+
+The `str` function I also run in my console and will tell me the structure of the object whose name I pass as the input.
+
+```{r}
+#| label: structureCheck
+#| echo: true
+# Examining the structure ----
+str(penguins)
+
+str(oreoData)
+
+```
+
+The `str` function will tell me what type of object I have (e.g., `data.frame` or `tibble`), the names of columns (denoted by `$`; e.g., `Filling.Mass`, `Type`, `species`), information about the type of data in each column (e.g., `num`, `chr`, `Factor`, `int`), and a preview of some of the data values.
+
+In the penguins data, I see that species, island, and sex are marked as factors. You'll also notice in the preview of values that there are a few `NA`s. `NA` denotes a missing value. Later on we will see what happens in R when you go to use data with missing values. Since I'm loading the Oreo data from a plain text `.dat` file, I will need to tell R that Type should be thought of as a factor. The following command will do that
+
+
+```{r}
+#| label: fixType
+#| echo: true
+# Quickly recode Type as a factor ---
+oreoData$Type <- as.factor(oreoData$Type)
+
+```
+
+As you use the `View` and `str` functions, this is a great opportunity to ensure that your data are *tidy*. Data tables/frames that are tidy often make analysis easier.
+
+:::{.callout-note}
+### What are Tidy Data?
+We say that data are tidy when 1) each row of the data table/frame reflects one and only one observed case, 2), each column reflects a single attribute of the cases, and 3) each cell contains the value of the row's case and column's attribute.
+:::
+
+# Descriptive and Incisive Statistics {#stats}
+
+Now that we have the data (and packages) loaded, we can use our R (or another statistical software/spreadsheet program) to calculate the values of various statistics. There are so many statistics out there that if I were to talk about all of them, we would do nothing else for the semester. Instead, I'm going to focus on some of the most useful ones for working descriptively and incisively. (Inferential usages will be covered in another guide.)
+
+Remember that a *statistic* is a function of data that measures __*one*__ attribute of a data collection. When we use a statistic to help us characterize a data collection we use the statistic *descriptively*. If our usage of a statistic is accurate, sharply focused, and reflects analytical thinking, then we are using the statistic *incisively*.
+
+To help you focus on the attributes of data collections that different statistics measure, I've organized this section by those attributes.
+
+:::{.callout-caution}
+## Case Atributes vs. Collection Attributes
+An important distinction to keep in mind is when you are thinking about the attribute of *case* versus the attribute of a *collection of cases*. In the Oreo data, a case is an individual cookie which has the attributes of type and filling mass (in grams). The data collection (i.e., the entirety of all observed Oreo cookies) has its own attributes that stem from the aggregation of the cases that make up the collection.
+:::
+
+:::{.callout-important}
+## Sloppy Language
+You will want to be careful with your language when discussing statistics. Sloppy language can cause you to confuse yourself and others and even lead people to make problematic decisions. A great example is the word "average": nearly everything in Statistics is an average.
+:::
+
+## Size
+
+When talking about the size of a data set, we have several meanings:
+
++ How many observations/cases are there?
++ How many attributes did we track?
++ How many missing/nonmissing values are there?
+
+Provided that our data are tidy, the first two questions are answered by the `nrow` and `ncol` functions, respectively. Using `nrow(oreoData)` will reveal that there are `r nrow(oreoData)` observations in the data frame, while `ncol(oreoData)` reveals that there are `r ncol(oreoData)` columns. For the penguin data, what code would you write to verify that there are `r nrow(penguins)` observations and `r ncol(penguins)` columns?
+
+Notice that `nrow` did not make any distinctions between any types of cookies or species of penguin. You can restrict the counting provided you know some information. For example, `nrow(penguins[which(penguins$species == "Gentoo"),])` will yield that there are `r nrow(penguins[which(penguins$species == "Gentoo"),])` Gentoo penguins. You can get counts by groups a bit more easily using the methods I'll talk about later.
+
+Knowing whether you have missing values, and how many, can be useful. If you have a high proportion of missing values, you might need to rethink your data collection methods and your results might not be accurate reflections of the broader population.
+
+We can use code such as `nrow(oreoData[is.na(oreoData$Type),])` to get a count of how many observations are missing the Type attribute (`r nrow(oreoData[is.na(oreoData$Type),])` observations.) Similarly, we can find out that `r nrow(penguins[is.na(penguins$flipper_length_mm),])` penguins are missing measurements of their flipper length (`nrow(penguins[is.na(penguins$flipper_length_mm),])`).
+
+If you wanted the count of observations that are NOT missing, you can use R's logical negation, `!`. Thus, `nrow(penguins[!is.na(penguins$flipper_length_mm),])` yields how many observations aren't missing (`r nrow(penguins[!is.na(penguins$flipper_length_mm),])`).
+
+## Extrema
+
+When the case attribute has some logical order to the values reflecting having more or less of the attribute, the data collection gains the two *extrema* attributes: the smallest and largest values.
+
+The statistics that we use here are the *sample max[-imum]* (via `max`) and the *sample min[-imum]* (via `min`). The outputs of these two statistics can be the same value (indicating that all observations are the same) or different. Keep in mind that statistical software will assume the typical numeric ordering.
+
+Both functions are easy to use: `max(oreoData$Filling.Mass)` and `min(oreoData$Filling.Mass)` will yield results of `r max(oreoData$Filling.Mass)` and `r min(oreoData$Filling.Mass)`, respectively. However, we need to have care. Notice what you get if you swap `penguins$flipper_length_mm` for `oreoData$Filling.Mass` in the `max` function: `r max(penguins$flipper_length_mm)`. We got NA because there are missing values in the column of flipper length. To correct this, we will add the `na.rm = TRUE` argument to both `max` and `min`. `max(penguins$flipper_length_mm, na.rm = TRUE)` gives `r max(penguins$flipper_length_mm, na.rm = TRUE)`, and `min(penguins$flipper_length_mm, na.rm = TRUE)` yields `r min(penguins$flipper_length_mm, na.rm = TRUE)`.
+
+Pretty much every statistic we're going to use has the `na.rm` argument. Thus, a good habit to get into is to always include `na.rm = TRUE` to ensure that you get a value.
+
+## Middle
+
+The case attribute having an order also underpins the collection attribute known as the *middle*. The middle of an ordered data collection is measured by the *sample median*, often denoted with $\widetilde{x}$. In R, to get the value of the *sample median* you will use the `median` function. For example, `median(oreoData$Filling.Mass, na.rm = TRUE)` will review the value of the *sample median* of créme filling mass, ignoring type of cookie; `r median(oreoData$Filling.Mass, na.rm = TRUE)` grams. 
+
+## Order
+
+The extrema and middle of a data collection (relative to some ordered case attribute) are just three examples of several families of statistics whose job is measure certain aspects of the ordering. 
+
+The most common of such families are the __quantiles__. Within this family, there are the *quartiles*, *percentiles*, *tritiles*, *quintiles*, just to name a few of the most popular. Each quartile is a value cuts an ordered data collection into two pieces: one containing the k-th proportion of the data and the other containing everything else.
+
+For example, the five quartiles are
+
+1) The *zeroth quartile*, $Q_0$, a.k.a, *sample min*, cutting off the smallest 0% of the data.
+2) The *first quartile*, $Q_1$, cutting off the smallest 25% of the data.
+3) The *second quartile*, $Q_2$, a.k.a., *sample median*, $\widetilde{x}$, cutting off the smallest 50% of the data.
+4) The *third quartile*, $Q_3$, cutting off the smallest 75% of the data.
+5) The *fourth quartile*, $Q_4$, a.k.a., *sample max*, cutting off the smallest 100% of the data.
+
+We can use the `quantile` function in R to get the cut point values. For example, using `quantile(oreoData$Filling.Mass, na.rm = TRUE)` will return the five quartiles: `r quantile(oreoData$Filling.Mass, na.rm = TRUE)`. By default, `quantile` will return all five quartiles. 
+
+You can adjust what type of quantile you're looking at with the `probs` argument. Suppose I want to look at octiles for the flipper lengths; I would need to use `probs = seq(0, 1, 1/8)` in the `quantile` function to get these nine values. Thus, `quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)` yields the values `r quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)`. Notice that I used `1/8` rather than `0.125`; remember that R will do calculations for you.
+
+:::{.callout-warning}
+The function definition of quantiles are not universally agreed upon. For example, some people insist that cut point must be equal to an observed case's value; others don't require this restriction. Thus, two people asking for the same quantiles on the same data but using two different statistical software packages could end up with slightly different values. If you continually are getting a value flagged as incorrect, come talk with me.
+:::
+
+## Group Performance
+
+Group Performance deals with how well a collection did in terms of some goal. Most often, the goals deal with amassing some case attribute. There are two statistics which measure this that are worth mentioning: *GP+* and *GP\**. The key between them deals with whether your data values may be meaningfully combined with addition or if multiplication is the way to go.
+
+If your values are additive in nature, then you can use the `sum` function in R; `sum(penguins$body_mass_g, na.rm = TRUE)` yields the total amassed mass of the penguins (`r sum(penguins$body_mass_g, na.rm = TRUE)` grams).
+
+If your values are multiplicative in nature, then you should use the `prod` function in R. This will multiply all of the values together. The data in my two example data frame are all additive in nature (most things are). However, here are some examples where there is a multiplicative structure to the data:
+
++ Rates
++ Percentages
++ pH measurements
++ Anything on a logarithmic scale
+
+## Adjusted Group Performance
+
+The group performance attribute of a data collection is only useful if 1) you have no plans to compare the collection to any other collection and you don't want to connect to a bigger population or 2) you only make comparisons between groups that are exactly the same size as each other and you don't want to connect to a bigger population. If you want to make connections to the population or make comparisons between potentially different sizes of collections, then you need to look at the Adjusted Group Performance attribute. The adjustment accounts for the size of your collection. The statistics which measure this attribute are collectively known as *sample means*. This family includes all of the following:
+
++ *Sample Arithmetic Mean* (*SAM*)
++ *Sample Geometric Mean* (*SGM*)
++ *Sample Harmonic Mean* (*SHM*)
++ *Sample Contra-Harmonic Mean*
++ *Sample 1st Contra-Geometric Mean*
++ *Sample 2nd Contra-Geometric Mean*
++ *Nicomachus’ Mean*
++ *Pappus’s Mean*
++ *Heron’s Mean*
++ *Archimedean Mean*
++ *Euclidean Mean*
++ *Logarithmic Mean*
++ *Huntington Mean*
++ *Gauss’ Arithmetic-Geometric Mean*
++ And more
+
+Thus, you need to have care with which statistic you're using. Just saying "the value of the *sample mean* is..." is __too vague__; which mean do you mean? I will not go into depth for all of the means, but I will briefly discuss the three most commonly used means.
+
+### *Sample Arithmetic Mean*
+
+The *Sample Arithmetic Mean* or *SAM* is the most commonly used *sample mean* (often denoted as $\overline{x}$). This statistic has a critical assumption that most people fail to realize: the input data set must consist of values which can be meaningfully combined through addition. If this assumption is not satisfied, then the resulting value of the *SAM* is junk at best, misleading at worst.
+
+In R, you'll use the `mean` function to get values of the *SAM*. (You may add on the argument `trim` to get a *trimmed [arithmetic] mean*.) If we wanted to know the value of the *SAM* for the flipper lengths, we would use `mean(penguins$flipper_length_mm, na.rm = TRUE)` and find a value of `r mean(penguins$flipper_length_mm, na.rm = TRUE)` mm/penguin. Notice that the output is not rounded. This is a good example that you'll want to use the `round` function (see the Getting Started guide) to make sure numbers look nice. There is little reason to ever present more than four (4) decimals.
+
+### *Sample Geometric Mean*
+
+The *Sample Geometric Mean* or *SGM* is useful when data meet the assumption that the values may be meaningfully combined through multiplication. Examples here include percentages, growth factors, many rates, and anything best described by a logarithmic scale.
+
+To have R calculate values of the *SGM* you will need to load th `{psych}` package and then use the `geometric.mean` function. For this example, let's say that $\mathcal{A}$ consists of a set of annual interest rates for a non-fixed rate student loan; $\mathcal{A}=\{6.8, 7.2, 6.8, 5.2, 5.4. 7.8\}$. These values may not be meaningfully combined through addition, but may with multiplication. The value of the *SGM* for this collection is `r psych::geometric.mean(c(6.8, 7.2, 6.8, 5.2, 5.4, 7.8), na.rm = TRUE)`, obtained with the code `psych::geometric.mean(c(6.8, 7.2, 6.8, 5.2, 5.4, 7.8), na.rm = TRUE)`. Notice that you can directly enter values as I did with the `c(6.8, 7.2, 6.8, 5.2, 5.4, 7.8)`; the `c` function is for combine/concatenate and will turn all of the inputs into a vector.
+
+An alternate method is to use the `{DescTools}` package's `Gmean` function.
+
+### *Sample Harmonic Mean*
+
+The *Sample Harmonic Mean* or *SHM* is a useful statistic when you are dealing with rates and ratios, harmonics, and optics. The underlying assumption here is that there is an additive structure for the *multiplicative inverses* (i.e., $\frac{1}{x_i}$). Notice that adds on the additional assumption that no data values are zero; $x_i \neq 0$.
+
+You will also need to use the `{psych}` package to calculate the *SHM* by calling `harmonic.mean`. To ensure that your data free of zeros, you can use the argument `zero = FALSE` which will convert any zeros in `NA`. The `NA`'s will then be ignored with our standard `na.rm = TRUE`.
+
+Just as with the *SGM*, you can also use the `{DescTools}` package's `Hmean` function.
+
+### When Data Are Rates
+
+Rates are special types of numbers. Knowing a bit about how the data were collected and the rates constructed will help you decide which of the above *sample means* is most appropriate. To help you get a sense of what to look for, I'll use the example of speed---the rate (of change) of distance traveled with respect to the time spent traveling, which I'll represent with $X_i$.
+
+* If everyone traveled for the same amount of time BUT could go any distance in that time, then use the *SAM*.
+    $$x_i = \frac{\text{any distance}}{\text{same amount of time}}$$
+* If everyone traveled the same amount of distance BUT could do so in any amount of time, then use the *SHM*.
+    $$x_i = \frac{\text{same distance}}{\text{any amount of time}}$$
+* If everyone could travel for however much time and for whatever distance they wanted, then use the *SGM*.
+    $$x_i = \frac{\text{any distance}}{\text{any amount of time}}$$
+
+## Variation as Spread
+
+There are two principle statistics for measuring Variation as Spread (as opposed to Variation as Deviation or Variation as Consistency): the *sample range* and the *interquartile range* or *IQR*.
+
+While there is a function in R called `range`, this function is not a statistic, and instead returns the values of the *sample min* and *sample max* as a vector. However, you can quickly calculate the the value of the *sample range* yourself be remembering that this statistic just measures the distance between the two extrema. Thus, since R will perform calculations for you, you just need to use `max(oreoData$Filling.Mass, na.rm = TRUE) - min(oreoData$Filling.Mass, na.rm = TRUE)` to get the value; `r max(oreoData$Filling.Mass, na.rm = TRUE) - min(oreoData$Filling.Mass, na.rm = TRUE)`.
+
+For the *interquartile range* (*IQR*), you can use the `IQR` function. Thus, `IQR(oreoData$Filling.Mass, na.rm = TRUE)` will tell us that the interval going from $Q_1$ to $Q_3$ is `r IQR(oreoData$Filling.Mass, na.rm = TRUE)` grams wide.
+
+## Variation as Deviation
+
+Measuring Variation as Deviation has resulted in just as many, if not more, statistics as measuring Adjusted Group Performance. Just as there are the *Sample Arithmetic Mean*, *Sample Geometric Mean*, and *Sample Harmonic Mean*, there are matching *sample variance* statistics: *Sample Arithmetic Variance* (*SAV*), *Sample Geometric Variance* (*SGV*), and *Sample Harmonic Variance* (*SHV*). In addition to the *sample variances*, there are also *sample standard deviations*.
+
+The `{DescTools}` package has the `Gsd` function for calculating the value of the *Sample Geometric Standard Deviation*. 
+
+### *Sample Arithmetic Variance* and *Sample Arithmetic Standard Deviation*
+
+To get the value of the the *Sample Arithmetic Variance* (*SAV*), you will use a call such as `var(oreoData$Filling.Mass, na.rm = TRUE)`. You would find the result to be `r var(oreoData$Filling.Mass, na.rm = TRUE)` sq. grams. Remember, many squared versions of units of measure are just weird to think about. Thus, the *Sample Arithmetic Standard Deviations* (*SASD*) will give more familiar units. You could get these values through an application of the `sqrt` function OR you could just use the `sd` function: `sd(oreoData$Filling.Mass, na.rm = TRUE)` yields `r sd(oreoData$Filling.Mass, na.rm =TRUE)` grams. Again, notice that using the `round` function would be wise here.
+
+### *Median Absolute Deviation* (*MAD*)
+
+If you need a more robust and resistant statistic to measure Variation as Deviation, you might want to consider the *Median Absolute Deviation* or *MAD*. The *MAD* has the nice benefit of not inflating the measure as much as the *SAV* does. This statistic reports the middle distance the cases are from the middle of the collection.
+
+To use this statistic, you simply use `mad(oreoData$Filling.Mass, na.rm = TRUE)` to get the value; in our case `r mad(oreoData$Filling.Mass, na.rm = TRUE)` grams.
+
+:::{.callout-warning}
+### MAD vs MAD
+There are several statistics that share the initialism "MAD" including the *Median Absolute Deviation* and the *Mean Absolute Deviation*. The *Mean* version looks at the mean distance cases are from the *arithmetic mean* value. In Stat 461, I'll only ever refer to the *Median Absolute Deviation*.
+:::
+
+## Skewness and Kurtosis
+
+Keeping in mind that the *sample means* and *sample variances* are often the top estimators for the first moment and second central moment, respectively. However, examining estimates of the third and fourth central (and standardized) moments are useful for making determinations about whether data follow a Gaussian ("normal") distribution. The *Sample Skewness* and *Sample Excess Kurtosis* statistics provide these estimates, respectively. 
+
+Skewness measures the direction from the central modal clump(s) we observe potential outliers. A positive value for *Sample Skewness* indicates that there are more potential outliers with values for the case attribute that are larger than the central modal clump(s); negative values indicate more potential outliers that have smaller values. A *Sample Skewness* value of zero indicates symmetry: we have approximately as many potential outliers with values that are smaller and larger than the central modal clump(s).
+
+Kurtosis measures the amount of potential outliers we might expect. Since the Gaussian distribution has a Kurtosis measure of exactly 3, we often use this as a benchmark and report the *Sample Excess Kurtosis* (how far above or below 3 we are.) If we have 0 for the *Sample Excess Kurtosis*, then we are observing approximately as many potential outliers as we might anticipate seeing in Gaussian distribution. Negative values for *Sample Excess Kurtosis* indicate that we're seeing fewer potential outliers while positive values indicate that we're seeing more potential outliers.
+
+You will need to use the `{psych}` package for both of these statistics. To get the value of *Sample Skewness* of a data set, you will need to do the following `psych::skew(oreoData$Filling.Mass, na.rm = TRUE)` (value is `r psych::skew(oreoData$Filling.Mass, na.rm = TRUE)`). For *Sample Excess Kurtosis* you use this code (__look at the spelling__): `psych::kurtosi(oreoData$Filling.Mass, na.rm = TRUE)` (yields a value of `r psych::kurtosi(oreoData$Filling.Mass, na.rm = TRUE)`). 
+
+:::{.callout-tip}
+If you've loaded the `{psych}` package, you don't need to include `psych::` when you use the `skew` function. I've included the package name in the function call to be clear that this function lives in the `{psych}` package.
+:::
+
+## Measures of Association
+
+If you want a measure of the association, there are also many different statistics you may use. In R, the `cor` function will produce the values of Pearson's correlation, Spearman's correlation, or Kendall's $\tau$ (tau) for your selected data. To choose which you'll use the `method` argument along with one of `"pearson"`, `"spearman"`, or `"kendall"`.
+
+Instead of `na.rm = TRUE`, you will need to use either of the following: `use = "complete.obs"` or `use = "pairwise.complete.obs"`. The former case is when you are only putting in two data vectors; the later for when you are putting into two data frames *__with only numeric data columns__* and want the correlations between all combinations.
+
+For example, suppose I wanted to get the value of Pearson's Correlation for penguin bill length and body mass. To do so, I would need to code `cor(penguins$bill_length_mm, penguins$body_mass_g, method = "pearson", use = "complete.obs")`; this yields a value of `r cor(penguins$bill_length_mm, penguins$body_mass_g, method = "pearson", use = "complete.obs")`. 
+
+## Most Frequent Value
+
+You'll notice that I haven't mentioned anything about the the sample mode (i.e., the most frequently occurring value). After all, this is the third thing that students often learn about ("mean, median, mode"). The reason is quite simple: the mode is __NOT__ a statistic. Recall that statistic is a function and functions may only return one output for each unique input. Consider the data set $\mathcal{A}=\{1,2,3,3,3,2,2,4\}$. Both 2 and 3 occur the same number of times, and more than any other value. Thus, both are the "mode" of the sets. However, this means that there are TWO outputs, which violates the definition of a function. (And no, you can't count "(2, 3)" as a single entity; non-multivariate statistics are functions that map to the Real number line not to a two dimensional space.) Base R does not provide any functions to calculate the sample mode; the `mode` function that exists deals with how R stores an object.
+
+# Getting Multiple Values at Once
+
+Rarely should you ever rely on just one statistic to describe your data. A much better practice is to use a variety of statistics so that you can build a deeper and richer understanding of the data collection. In a command line driven package like R, this means you have to write a lot of code. Unless, that is, someone has already done the work for you.
+
+If you just want Tukey's Five Number Summary (the five *quartiles*) and the value of the *SAM*, then you can use the `summary` function.
+
+```{r}
+#| label: summaryEx1
+#| echo: true
+# Using the summary function ----
+## On a single column
+summary(oreoData$Filling.Mass, na.rm = TRUE) 
+## On an entire data frame
+summary(oreoData, na.rm = TRUE)
+
+```
+
+Notice that when `summary` is applied to a single column (vector), we get a horizontal print out. However, when applied to an entire data frame, we can set a columns showing the result of the `summary` call on each column of the data frame. This approach is great provided you don't have too many columns in your data frame and are only interested in Tukey's Five Number Summary (plus the *SAM*) and/or the frequency of categories.
+
+The `{psych}` package has a function called `describe` that goes beyond what `summary` can do. This function takes a data vector (the safest option) or an entire data frame (use with *extreme* caution) and will calculate the values of many of the statistics listed above. If you choose to put in an entire data frame, the function will calculate values of these statistics, even for character data. The `describe` function will return a new data frame that contains the requested statistics and their values. 
+
+```{r}
+#| label: summaryEx2
+#| echo: true
+# Using the Psych Package's describe function ----
+summaryOreo <- psych::describe(
+  x = oreoData$Filling.Mass,
+  na.rm = TRUE,
+  skew = TRUE,
+  ranges = TRUE,
+  quant = c(0.25, 0.75),
+  IQR = TRUE
+)
+
+row.names(summaryOreo) <- "Filling Mass"
+
+summaryOreo
+
+```
+
+The `describe` function will yield values of the following statistics when you used the above code: *SAM*, *SASD*, *Sample Median*, a *10% Trimmed SAM* (5% of the data from each end of ordered data is dropped before calculating the value of the *SAM*), *MAD*, *Sample Min*, *Sample Max*, *Sample Range*, *Sample Skewness*, *Sample Excess Kurtosis*, *Standard Error* for the *SAM*, *IQR*, *First Quartile*, and *Third Quartile*. Additionally, we have the number of observations. The `vars` column is just the index number and may be safely ignored.
+
+Notice that I assigned the output of `describe` to the object `summaryOreo`. This is so I can manipulate the data frame as well as call values as I need. For example, if I were to use `summaryOreo["Filling Mass", "mean"]` in an inline code chunk, I would be able to display the value of the *SAM*: `r summaryOreo["Filling Mass", "mean"]` grams/cookie. A little further on in this guide, I'll show you how to format a table to display your results.
+
+You can customize what statistics get calculated through the various arguments. If you don't want *Sample Skewness* or *Sample Excess Kurtosis*, use `skew = FALSE`. Don't want the value of the *Sample Range*; use `range = FALSE`. Similarly for the *IQR*. If you want different quantiles change the argument to a vector of portions you want. For example `quant = seq(0, 1, 1/8)` will yield all nine octiles. If you don't want any quantiles then use `quant = NULL`
+
+# Values of Statistics by Groups
+
+In Stat 461, we will almost always want to look at our data when grouped by one or more factors. There are several different ways that we can do this. I'll cover two.
+
+## Using `psych::describeBy`
+
+The `{psych}` package includes an extension to the `describe` that allows you to use a grouping factor: `describeBy`. This approach is perhaps the easiest and the most similar to point-and-click GUI statistical software packages. You'll make use of the same arguments as `describe` plus a few extra:
+
+```{r}
+#| label: summaryEx3
+#| echo: true
+# Get Summary Values by Group ----
+sumGrpOreo <- psych::describeBy(
+  x = oreoData$Filling.Mass,
+  group = oreoData$Type,
+  na.rm = TRUE,
+  skew = TRUE,
+  ranges = TRUE,
+  quant = c(0.25, 0.75),
+  IQR = TRUE,
+  mat = TRUE,
+  digits = 4
+)
+
+sumGrpOreo
+```
+
+The two new arguments are `mat = TRUE` which will allow for a better way to store the results for then displaying them as I will show in the [Professional Tables](#tables) section. The second is `digits = 4`. This essentially applies the `round` function for you.
+
+Try to come up with the code that will display the penguins' body mass, grouped by species as shown below.
+
+```{r}
+#| label: summaryEx4
+#| echo: false
+#| eval: true
+# Summarizing Penguin Data by Species ----
+sumSpeciesPenguins <- psych::describeBy(
+  x = penguins$body_mass_g,
+  group = penguins$species,
+  na.rm = TRUE,
+  skew = TRUE,
+  ranges = TRUE,
+  quant = seq(0.2, 0.8, 1/5),
+  IQR = TRUE,
+  mat = TRUE,
+  digits = 2
+)
+
+sumSpeciesPenguins
+```
+
+## The Data Wrangling Approach
+
+A second approach hinges on you writing code to wrangle your data and calculate the values of whatever statistics you want. While there are many ways you can do this, I find using `{dplyr}` to be easiest. Here is an example of this approach where I mimic what we did on the Oreo data using `describeBy`.
+
+```{r}
+#| label: summaryEx5
+#| echo: true
+#| eval: true
+# Using dplyr and data wrangling ----
+grpOreoSummary <- oreoData %>% # <1>
+  group_by(Type) %>% # <2>
+  summarize( # <3>
+    n = n(), 
+    mean = mean(Filling.Mass, na.rm = TRUE),
+    sd = sd(Filling.Mass, na.rm = TRUE),
+    median = median(Filling.Mass, na.rm = TRUE),
+    trimmed = mean(Filling.Mass, trim = 0.05, na.rm = TRUE),
+    mad = mad(Filling.Mass, na.rm = TRUE),
+    min = min(Filling.Mass, na.rm = TRUE),
+    max = max(Filling.Mass, na.rm = TRUE),
+    range = max(Filling.Mass, na.rm = TRUE) - min(Filling.Mass, na.rm = TRUE),
+    skew = skew(Filling.Mass, na.rm = TRUE),
+    kurtosis = kurtosi(Filling.Mass, na.rm = TRUE),
+    se = sd(Filling.Mass, na.rm = TRUE) / sqrt(n()),
+    IQR = quantile(Filling.Mass, na.rm = TRUE, probs = 0.75) -
+      quantile(Filling.Mass, na.rm = TRUE, probs = 0.25),
+    Q0.25 = quantile(Filling.Mass, na.rm = TRUE, probs = 0.25),
+    Q0.75 = quantile(Filling.Mass, na.rm = TRUE, probs = 0.75)
+  ) %>%
+  mutate( # <4>
+    across(
+      .cols = where(is.numeric),
+      .fns = ~round(.x, digits = 4)
+    )
+  )
+
+grpOreoSummary
+
+```
+1. The pipe character set, `%>%`, works like function composition. You can use the phrase "and then do..." in its place.
+2. The `group_by` call does the same thing as the `group` argument in `describeBy`. Omit this line if you don't want to split the data by group first.
+3. The `summarize` call is where we'll place all of the statistics that we want to calculate values for.
+4. This `mutate` call applies the `round` function to all numeric columns.
+
+The data wrangling approach is more intensive coding-wise but offers much more in the way of customization. That is, if you only want certain statistics but not all from `describeBy` and/or you have some statistics that aren't part of `describeBy`, then the data wrangling approach will be easier.
+
+# Professional Tables {#tables}
+
+In the preceding sections, the outputs were printed directly to the R console. This works when you are working for yourself and don't intend to share with others. If you are going to share such output with others, you should take a little bit of time to ensure that the output is formatted to help others build their understandings. These default outputs are not particularly well formatted for sharing with others.
+
+You could present the values of the various statistics woven into your narrative. While this is useful in that doing so will help you to give interpretations of the values, this also results in the inevitable scavenger hunt when you just want to know a particular value. Thus, my recommendation is to prepare a high quality table using the `knitr` and `kableExtra` packages.
+
+## Basic Table
+
+The most basic of tables can be generated with the following code:
+
+```{r}
+#| label: kableEx1
+#| echo: true
+# Basic Table Example ----
+summaryOreo %>%
+  knitr::kable() 
+
+```
+
+While the table does look better than the raw display's above, there is still much we can improve about the display. For instance, we could 
+
++ Remove any columns we don't need
++ Change the names of the columns
++ Add a caption/title to the table so that we can reference the table in our narrative,
++ Fix the number of digits to reign in extremely long decimals and add place commas for large numbers
++ Control the alignment of values (left, center, right, etc.)
++ Adjust the styling of the table to improve readbility
++ Ensure that the table doesn't run off the page when in PDF/Word document or require scrolling in a web page.
+
+## Improving the Summary Table
+
+I'll walk us through an iterative process of improving the basic table so that you can focus on smaller pieces of the code to see what each one is doing.
+
+### Step 1: Remove extra columns and give better names
+
+In this step we'll focus on just the columns that we want to report and give them better (clearer, more meaningful) names in our table.
+
+```{r}
+#| label: tbl-kableEx2a
+#| echo: true
+# Improving the Table, Part 1 ----
+summaryOreo %>%
+  dplyr::select( # <1>
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", # <2>
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
+  )
+```
+1. There are several `select` functions thus to be safe I always use `dplyr::select` to ensure I use the one I want. This function will keep just the columns we list AND put them in the order we set.
+2. The `col.names` argument defines what will be used as the table column headers.
+
+### Step 2: Add a Caption
+
+The resulting table now fits on the page and has a better reading order. However, we can still improve the table by adding a caption.
+
+```{r}
+#| label: tbl-kableEx2b
+#| echo: true
+# Improving the Table, Part 2 ----
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    caption = "Summary Statistics for Oreo Filling Masses", # <1>
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
+  )
+
+```
+1. In R Scripts and R Markdown documents, you'll use the `caption` argument of `kable`. For Quarto documents, you may use either this argument OR the `tbl-cap` code chunk option (but not both).
+
+Be sure to place your caption inside a set of qoutation marks. 
+
+Adding a caption to the table has an additional benefit in that we can now reference the table by name (e.g., @tbl-kableEx2b) in Markdown-enabled documents. For R Markdown, the enclosing code chunk should needs a unique name and only have this one output. For Quarto documents, the code chunk needs a unique label starting with `tbl-` and only have this one output. 
+
+### Step 3: Format Column Values
+
+We can format the column values in several ways. Keep in mind that there is rarely a need to report four decimals places and never a reason to report more than four decimal places. For large numbers (i.e., 1,000+) we often break the number into three digit chunks using either commas or spaces. Finally, a common convention is to center the values in their column rather than using left or right alignment. Let's see how to impliment these in our table.
+
+```{r}
+#| label: tbl-kableEx2c
+#| echo: true
+# Improving the Table, Part 3 ----
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    caption = "Summary Statistics for Oreo Filling Masses",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3, # <1>
+    format.args = list(big.mark = ","), # <2>
+    align = rep("c", 11) # <3>
+  )
+
+```
+1. The `digits` argument controls how many decimal places get printed.
+2. The `format.args` argument allows us to pass additional formatting commands such as defining the comma as the separator between orders of magnitude.
+3. The `align` argument allows us to specify if a column is left (`"l"`), right (`"r"`), or center (`"c"`) aligned. The `rep` function will type 11 c's for me given we have 11 columns.
+
+@tbl-kableEx2c is already showing some nice improvements. An important word of caution about the `align` argument is that the characters you list must be in a one-to-one relationship with the columns in the table. If you are off by either having too few or too many alignment characters listed, you will get errors.
+
+:::{.callout-tip}
+If your table code isn't working, try commenting out different lines by adding an octothrope to the start. This will let you roll the table back to a version that is working and then find which line(s) are causing the issue.
+:::
+
+### Additional Options
+
+There are few additional options that we can specify using the `{kableExtra}` package. Some of these are purely stylistic and some of these are related to knitting/rendering process and will be linked to your target output type (e.g., PDF or HTML).
+
+#### Table Styles
+
+The `{kableExtra}` provides a number of pre-defined styles or themes that you can apply to your table. Further, you can create your own table style and apply. 
+
+The following code will apply the Classic theme to our table.
+
+```{r}
+#| label: tbl-kableEx2d
+#| echo: true
+# Applying a Predefined Theme ----
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    caption = "Summary Statistics for Oreo Filling Masses",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3, # <1>
+    format.args = list(big.mark = ","), # <2>
+    align = rep("c", 11) # <3>
+  ) %>%
+  kable_classic()
+
+```
+
+There are several other pre-made themes. You can find the full list with examples online in the [Alternative Themes](https://haozhu233.github.io/kableExtra/awesome_table_in_html.html#Alternative_themes) page.
+
+A benefit to using a theme like `kable_classic` is that if you are working in an R script, when you run the table code RStudio Desktop will render the table in the Viewer tab. Without this theme, R will print the raw HTML code to the console.
+
+#### PDF Options
+
+If your output
+
+What I'm going to present here allows us to create truly professional looking tables in format similar to APA style. To begin with we'll start with the code for Table \ref{tab:kableEx4} and then add on some new code.
+
+```{r kableEx5, echo=TRUE, eval=TRUE}
+# Table 4 Code ----
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  knitr::kable(
+    caption = "Summary Statistics for Oreo Filling Masses",
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep('c', 11),
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    booktabs = TRUE
+  )  %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+Notice that we've added `booktabs` argument to the `kable` call. This tells R get rid of the vertical lines between the columns.
+
+Hopefully you noticed that at the end of each of chunk of code making the tables, I used `kableExtra::kable_styling`. This gives us some additional controls. For example, we can use `font_size` to stipulate what size of font to use in the table. I would not go much smaller than 8 or 9 point font---and only if your table is extremely big. I do not recommend that you use a font size larger than what your narrative is (typically 12pt). The other argument, `latex_options` has a vector of two values at the moment: `"scale_down"` and `"HOLD_position"`. These will make sure that the table fits the width of the page and will appear where you placed the code, respectively. If you have a table with multiple rows, you can include a third value to the vector `"striped"`. This will make a "zebra table" where the rows will alternate between white and grey backgrounds.
+
+## Displaying Grouped Summaries and Table Footnotes
+
+The above code works well for relatively simple tables. However, we need to do a bit more work if we want to take the output of `psych::describeBy` and display that as a table. The biggest action is that we need to convert the grouping column (`group1`) into row names. We can use `tibble`'s `column_to_rownames` function. (The `tibble` package is part of `tidyverse`.) Let's see how to make a table similar to Table \ref{tab:kableEx5}, but using the grouped summaries.
+
+\newpage
+
+```{r kableEx6, echo=TRUE, eval=TRUE}
+# Table 5 Code ----
+sumGrpOreo %>%
+  tibble::remove_rownames() %>%
+  tibble::column_to_rownames(
+    var = "group1"
+  ) %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  knitr::kable(
+    caption = "Summary Statistics for Oreo Filling Masses",
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep('c', 11),
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    booktabs = TRUE
+  )  %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  ) %>%
+  kableExtra::footnote(
+    general = "Here is an example of a footnote.",
+    general_title = "Note. ",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+The two lines with `tibble` are what converts the `group1` column of `sumGrpOreo` into the row names. The `tibble::remove_rownames()` option will clear out any existing row names; this is a good practice as `column_to_rownames` will __not__ replace any existing row names.
+
+The `kableExtra::footnote` call demonstrates how you can add a footnote to your table. In addition to the general footnote (`genral`), you can add numbered notes (`number`), lettered notes (`alphabet`), and/or symbol notes (`symbol`). Check out the help documentation for these.
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```

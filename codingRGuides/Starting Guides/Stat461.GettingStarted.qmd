@@ -1,0 +1,547 @@
+---
+title: "Getting Started"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: false
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+  cache: true
+---
+
+Welcome! Whether this is your first time using R/RStudio or not, I hope that this document will be helpful for getting started. If you do not intend to use R and/or aren't interested in learning to use R, you do not need to read any further than Section 1.
+
+# Important Note
+
+For Stat 461, you are NOT required to use R. You may elect to use any other statistical software you wish. I am familiar with a number of alternatives such as JMP, Minitab, SAS, and SPSS. For some basic things, you can even use spreadsheet programs such as Microsoft Excel or Google Sheets. I will help each student to the best of my ability with their chosen software during Student Hours or by appointment. During class sessions, I will only demonstrate R.
+
+If you are using other statistical software, keep in mind that you are still responsible for answering all questions in assignments. Leaving a portion blank with the reason that "my statistical software doesn't do that" is not a valid excuse. If you are running into problems, come see me.
+
+# Installing the Software
+
+If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.4.0 or higher; at the time of writing, the current version of R is 4.4.1.
+
+## Check Your Version
+Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:
+
+    R version 4.4.1 (2024-06-14) -- "Race for Your Life"
+    Copyright (C) 2024 The R Foundation for Statistical Computing
+    Platform: aarch64-apple-darwin20
+    
+    R is free software and comes with ABSOLUTELY NO WARRANTY.
+    You are welcome to redistribute it under certain conditions.
+    Type 'license()' or 'licence()' for distribution details.
+    
+    Natural language support but running in an English locale
+    
+    R is a collaborative project with many contributors.
+    Type 'contributors()' for more information and
+    'citation()' on how to cite R or R packages in publications.
+    
+    Type 'demo()' for some demos, 'help()' for on-line help, or
+    'help.start()' for an HTML browser interface to help.
+    Type 'q()' to quit R
+
+The very first line of this text will tell you the version number. If you already have R up and running, you don't need to quit and restart R to check your version. In your console, simply type `version` and hit the Enter/Return key. R will return some key information about your computer as a two-column list that looks like the following:
+
+```{r}
+#| label: versionInfo
+# Display version info for R ----
+version
+
+```
+
+Look for the lines `major` and `minor` (or the line `version.string`). These will provide you with the version information.
+
+
+## Using an IDE
+
+R will come with a bare-bones set of tools for working with the R language. However, many users find that working in an Integrated Development Environment (IDE) useful. For R, there are several options that you can explore.
+
++ RStudio Desktop
+  + RStudio Desktop is by the far the most common IDE for working with R.
+  + [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)
+    + Use the most recent version; at time of writing, Version: 2024.04.2+764
++ Visual Studio Code
+  + VS Code can be used with a variety of different programming languages. However, you will need to [configure VS Code](#Config-VSCode) for using R.
+  + [Download Visual Studio Code](https://code.visualstudio.com/download)
+    + Use the most recent version; at time of writing, Version 1.91
++ Positron
+  + This is a brand new IDE built by the Posit PBC. I will caution that it is still an early stage product and should only be treated with some care.
+  + This is based upon Visual Studio Code but works with R (and Python) from the get go (provided you've installed R) with needing any additional setup.
+  + [Download Positron](https://github.com/posit-dev/positron/releases)
+
+## Can't Install Software?
+
+In the event that you can't install software on your device (e.g., you use a Chromebook), there are a couple of options available to you. First, all Penn State computers should have R and RStudio Desktop installed on them. You can go to any open computer lab to do your work.
+
+A second option is to use R in a cloud-based environment. Posit PBC (the company behind RStudio Desktop) has a service called [Posit Cloud](https://posit.cloud/). You will need to make an account. I encourage you to see if you can use the __Free__ version for the course before you purchase any of the other plans.
+
+Keep in mind that while you are able to work with others on many assignments/projects, each person is individually responsible to submit their own answers. There are also some questions where each student is assigned their own data. Thus, having someone else do your coding work for you is not a wise option.
+
+# Getting R Ready To Go {#setup}
+
+Once you have R installed or updated to the current version and have decided on which IDE you'll use (if applicable), your next step is to make sure that you have all of the key packages installed. These packages offer ways to extend R and make our lives easier. 
+
+To assist everyone with ensuring that you will have all of necessary packages installed, I've written a script that will help you. 
+
+```{r}
+#| label: checkStep
+#| eval: false
+#| echo: true
+# Load the checkSetup function ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R") # <1>
+checkSetup() # <2>
+
+```
+1. The `source` function will tell R to go out to the listed website and pull the `checkSetup` function into your current R session.
+2. This command will run the `checkSetup` function.
+
+You can copy/paste the above lines into your R console and press Enter/Return. My `checkSetup` function runs *interactively*. Thus, you'll need to watch the console and respond to the questions. If you version of R is too old, the `checkSetup` function will tell you. At the end of successful run you should get the following message: `[1] "All finished. Your computer is ready for Stat 461!"`. 
+
+If you do not get that message and/or run into problems, please come see me.
+
+::: {.callout-note}
+You only need to load and run the `checkSetup` function successfully *once* for the entire semester. The only times you might need to run this function multiple times is if you 1) ran into problems on previous runs, 2) are using a computer for the first time, or 3) needed to update R to new major version (e.g., 4.3.* to 4.4.*).
+:::
+
+# Writing and Running R Code
+
+Whether you're working with R directly or via an IDE (e.g., RStudio Desktop), you'll need to make a decision about how/where you'll write your R code. There are three options: directly in the console, using a R script file, or using a Markdown-enabled document.
+
+## Directly in Console
+
+You can write R code directly in the console. All you need to do is click into the console window and make sure that your cursor is blinking next to the right-angle bracket symbol (i.e., `>`). Then you can begin typing (or pasting) the code/commands you want. Keep in mind that the Enter/Return key will submit your code to R to run. If you need to move down to a new line, press and hold the Shift key before you press the Enter/Return key. Alternatively, you can also type a semicolon (i.e., `;`) to introduce a new line in your code without moving to a new line.
+
+Writing code directly in the console is useful if you want to do something that is simple and/or quick. This is also useful if you don't really care to keep a record of your commands in a way that is easy to access and edit.
+
+:::{.callout-tip}
+### Using R History
+R will keep a history of submitted commands--both in the native R application and in IDEs. You can quickly move submitted commands from the history back to the console (or to a source editor for IDEs). This will let you either re-run the command or edit the command.
+:::
+
+## Write R Scripts
+
+R Scripts are text files that end with the extension `.R`. These files provide a safe space for you to write R code without fear of accidentally submitting your commands too early by pressing the Enter/Return key. R Scripts are especially useful if you need to write a more complicated or multi-line command. They work just like any plain text file. If you are using an IDE, you may see tool tips with auto-completion as you are coding. You can save the R Script and update at a later time.
+
+I highly recommend that you use comments in the R script to help you organize and remember what different parts of your code do. In R, the octothrope (a.k.a. the pound sign or hash tag; `#`) denotes that what follows is a comment. The octothrope __must__ start the line for a comment. To exit the comment, press the Enter/Return key to move to a new line.
+
+:::{.callout-tip}
+### More on Comments
+Comments are a great way to structure your document by giving yourself headers (like those in this guide). You can also put reminders about what certain commands/chunks of code do.
+
+If you need multiple lines for a comment, each line needs to begin with the octothrope (`#`).
+:::
+
+To run the code you've written in your R Script, all you need to do is to either place your cursor in the command you want to run OR highlight all of the commands you want to run. Then, in RStudio Desktop you can click the Run button located in upper-right corner of the source editor (where your R Script is displayed.)
+
+### Creating a New R Script File
+
+In the basic R application, click on the File menu and select New Document.
+
+To create a new R file in RStudio Desktop (or other IDE), click on the File menu and then mouse over New File. In the list that appears click on R Script. A new blank document will appear in the upper left pane of RStudio (unless you have rearranged the panes).
+
+## Markdown-enabled Documents
+
+A third approach to writing code is to use a Markdown-enabled document. Markdown-enabled documents come in two dominant flavors for R: R Markdown (\*.rmd) files and Quarto (\*.qmd) files. These documents are meant to help you create reproducible analyses and blend together both narrative elements with your code in a single file. I typically prepare these guides using either R Markdown or Quarto. 
+
+### Creating a new Markdown-enabled Document
+
+To create a Markdown-enabled document, you'll need to be sure that you have the appropriate tools installed. My `checkSetup` function will ensure that you can use R Markdown files. If you want to use Quarto, you'll need to install the `{quarto}` package.
+
+To create a new Markdown-enabled file in RStudio Desktop, click on the File menu, mouse over New File and click on R Markdown... (or Quarto Document...) This will launch the wizard you can add a title, author, and choose the default output types. I would recommend that you choose PDF or Word for your output. (These are the formats that can be uploaded for your assignments; I will not accept HTML files.)
+
+:::{.callout-tip}
+### Markdown Templates
+I have created two templates that you can use. You can download and save these template files to your computer. To use them, you'll need to make a copy of the file and give the copy a new and meaningful file name. You can then double-click on the new file to open in RStudio (or other IDE).
+
++ [R Markdown Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate.Rmd)
++ [Quarto Template] coming soon
+:::
+
+Be sure to check out the section of this guide on [working with Markdown-enabled documents](#Working-MD) for more information.
+
+# Next Steps
+
+You installed and configured all of the software you need and you've selected how you're going to write code. The next thing to do is to ensure that you have everything for your current coding tasks. The most important elements here are to ensure that you load any packages you might needs and to load the data.
+
+## Loading Packages
+
+One of the most powerful and useful features of R is its open source nature. This allows for people all over the world to create functions and tools that other people can use. This enables constant growth and extension to R's utility.
+
+These extensions are typically put into R packages that we can install on our computers and the load during an R session. If you have used my `checkSetup` function successfully (see the [Getting R Ready section](#setup)), then you should already have all of the key packages installed. If you did not, you will need to install any missing packages with the `install.packages` command.
+
+To load a package into your current session of, use the `library` command. For instance `library(ggplot2)` will load the `{ggplot2}` package. I highly recommend that you start each R script by loading all of the necessary packages. You can do this by using a sequence of separate `library` calls or you can use the `lapply` command to repeatedly do the `library` call for you.
+
+:::{.callout-tip}
+If you attempt to load a package that isn't currently installed on your computer, you will get an error message such as `Error in library(packageName) : there is no package called ‘packageName’`. Run the `install.packages("packageName")` command to install the missing package.
+:::
+
+Let's look at loading some of the most used packages in Stat 461.
+
+```{r}
+#| label: loadPackages1
+#| echo: true
+#| eval: false
+# Using separate calls ----
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(psych)
+
+```
+
+The `{knitr}` and `{kableExtra}` packages assist with creating professional looking tables (and help with knitting/render Markdown-enabled documents) while the `{psych}` package has some additional tools that make analysis easier. The `{tidyverse}` package is actually a *meta-package* that allows us to quickly load multiple packages such as `{ggplot2}` and `{dplyr}` for data cleaning and visualization.
+
+Alternatively, we could use the following approach
+
+```{r}
+#| label: loadPackages2
+#| echo: true
+#| eval: false
+# Using lapply to load packages ----
+packages <- c("tidyverse", "knitr", "kableExtra", "psych")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+```
+
+Where we first create a `packages` object that contains the name of all of the packages we want to load. The subsequent `lapply` command then applies the `library` command to each element of `packages`. The `character.only` and `quietly` arguments help smooth the processing.
+
+When I work in a Markdown-enabled documents, I typically place my very first code chunk towards the top of the document and name this chunk "setup" or "setupFiles". This chunk is where I put my library commands.
+
+In an R Markdown document, this would look something like the following:
+````markdown
+```{{r setup}}
+packages <- c("tidyverse", "knitr", "kableExtra", "psych")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+```
+````
+
+In a Quarto document, the name of the chunk moves to the chunk option `label`:
+````markdown
+```{{r}}
+#| label: setup
+packages <- c("tidyverse", "knitr", "kableExtra", "psych")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+```
+````
+
+## Loading Data
+
+There are several functions and tools that you can use to load data.
+
+### Import Wizard (RStudio Desktop)
+
+You can use the Import Dataset wizard by clicking on the button of the same name in the Environment tab. This will load the data into your current environment and display the necessary code in the Console. Be sure to copy that code and place inside a code chunk of your R Markdown document.
+
+:::{.callout-warning}
+When you knit/render a Markdown-enabled document, a new temporary environment is created that is not connected to your current R session's environment. If you don't have the code to the load the data inside the document, your knit/render will fail.
+:::
+
+### Write Your Own Code
+
+A good practice to get into is to write the code yourself to import data. This is actually easier than you might think. Most data files I provide you will either be \*.CSV, \*.DAT, \*.TXT, or \*.Rdata. Further, you can use this method to read data in from an online source using the URL/web address of the data file. 
+
+```{r}
+#| label: loadDataEx1
+#| eval: false
+#| echo: true
+# Basic Structure for reading in data ----
+## Applies to CSV, DAT, or TXT files
+objectName <- read.table( # <1>
+  file = "path/to/file/on/your/computer.csv or URL", # <2>
+  header = TRUE, # <3>
+  sep = "," # <4>
+)
+
+```
+1. The `read.table` function is a powerful workhorse and can be used with many different file types. If you have worked with R before you might have used `read.csv` which actually calls `read.table`.
+2. The `file` argument is required. You have to tell R where to look to get the file.
+3. The `header` argument tells R to interpret the first row as providing column names or not.
+4. The separator argument, `sep`, tells R what to use to tell where one cell ends and the next begins. The two most common values you'll encounter in this course are `sep = ","` and `sep = ""`.
+
+You'll have to know where you have saved your file. For example, if I have a CSV saved to my desktop that I want to load, I would have to use `~/Desktop/mydata.csv`. You can simplify the file path if you set your working directory (which will be covered in the next section). 
+
+Here's an example using a provided URL to bring in a CSV, DAT, or TXT file.
+```{r}
+#| label: loadDataEx2
+#| eval: false
+#| echo: true
+# Importing Data via URL ----
+## Note: If you lose internet connection, this command will fail to run
+oreoData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
+  header = TRUE,
+  sep = ","
+)
+```
+
+If you are loading an RData file (the native data file of R), all you need to do is the following:
+```{r}
+#| label: loadDataEx3
+#| eval: false
+#| echo: true
+# Example loading RData File ----
+load(file = "path/to/file.Rdata")
+
+```
+
+In all of these three examples, the resulting data should be immediately loaded to your current environment and ready to call via their object name.
+
+### Other File Types
+
+There are other file types that can house data including Excel (\*.xls or \*.xlsx) and Google Sheets as well as a host of other proprietary file types (e.g., SPSS, SAS, JMP, MPX). As the need arises, I'll demonstrate how you can read these files into R.
+
+# Some Useful Functions
+
+R has many functions built in. Each library/package you load will give you even more. However, I want to mention some basic functions that are incredibly useful.
+
+## `setwd` and `getwd`
+
+A working directory (computer folder) is the file path that software uses to look for data and write output to. In R, you can type `getwd()` in the console to see where your R session is currently look. As I write this, my working directory is <code>`r getwd()`</code>. 
+
+If you want to change the working directory, you can use the `setwd` function. For example, `setwd("/Users/neilhatfield/Desktop/")` would change my working directory to my desktop. 
+
+:::{.callout-tip}
+If you are using the RStudio Desktop IDE, I highly recommend creating an R Project for the class and then do all of your work inside that project. This will create a dedicated space for all of your files and will ensure that your working directory is always pointing to the right place.
+
+To create an R Project, click on File, New Project... to launch the wizard.
+:::
+
+## `str`
+
+The structure function, `str` allows you to see the structure of any object in your R session. This is useful when you want to see how R is thinking about an object rather than viewing all of the things inside of the object. Here's an example of `str` in action:
+
+```{r}
+#| label: strExample
+#| echo: true
+#| eval: true
+
+# str example ----
+load(
+  file = url(  
+    "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/onewayExplorations.Rdata"
+  )
+)
+str(fabric)
+
+```
+
+The `fabric` object is a data frame (`data.frame`) with 16 observations on two attributes. The variables to access those attributes are `fabric$loom` (a factor with 4 levels) and `fabric$strength` (a numeric value). 
+
+Notice that the `load` function needs URLs to be wrapped in a `url` call in order to pull files from the internet.
+
+## `View`
+
+The `View` function will open up a window that shows you the contents of the object. This is particularly useful when you want to look at a data table or list. __This should only be used in the Console.__ Using the `View` function inside code chunks of a Markdown-enabled document tends to cause problems varying from extremely slow knitting or errors that prevent knitting.
+
+In your console, type `View(objectName)` to use this function.
+
+## `names`
+
+Many objects in R will have other objects inside of them. The one that we'll be using the most are data frames. Each column has a name. You can call individual columns for analysis by `dataFrameName$columnName`. However, you have to know what the names of the columns are. You can see what these are in the `str` output but you can also use the `names` function to get a list of the column names. For example `names(fabric)` will return: `r names(fabric)`.
+
+If a data frame has row names, you can use `row.names` to see what those names are. For the fabric data frame, the rows are named `r row.names(fabric)`. If there are no pre-defined row names, R will use the number of the row as the row name as what shows for the fabric data.
+
+## Calling Individual Cells
+
+While not a function per se, you can use row names and column names to grab individual elements from a data frame. For example, `fabric["4","strength"]` will return the strength value for the object named "4" in the data set; in this case, `r fabric["4", "strength"]`. Notice the use of quotation marks. If you were to use 4 instead of "4", you'll end up with the 4th *row* rather than the named row you would want.
+
+You can also call individual cells via numeric indices. For example `fabric[3, 1]` would return the value in the third row, first column. Notice this isn't as helpful for knowing what you're getting as using names.
+
+If you want an entire row, omit the column value but include the comma. For example, `fabric["4",]` or by index `fabric[3,]`).
+
+If you want an entire column and you know the name, use `fabric$strength` format. If you don't know the name, but you know the index, you can use `fabric[,1]`. However, using the name is much better (and safer).
+
+## Formatting Numbers
+
+There are two functions that can help you format numbers to make them look nice. 
+
+### `round`
+
+The first is `round`. This function takes two arguments: `x` the number/vector/data frame that you want to round, and `digits` which is the number of digits *after* the decimal you wish to keep. You can apply `round` to multiple values at time IF they are part of the same vector or data frame.
+
+```{r}
+#| label: roundExamples
+#| echo: true
+#| eval: true
+# Examples of using the round function ----
+round(x = 124.512, digits = 2)
+round(x = 124.512, digits = 0)
+round(x = 124.512, digits = -1)
+head(x = round(x = fabric$strength, digits = 0), n = 2)
+
+```
+
+Notice that you can use negative values for `digits`, which will shift the rounding to places left of the decimal; -1 will be to the nearest 10, -2 to the nearest 100, etc.
+
+The last example line shows applying the `round` function to a vector. (The function `head` will limit the display to the first `n` observations.)
+
+### `prettyNum`
+
+The other useful number formatting function is `prettyNum`. As the function name suggests, this makes your numbers look "pretty". By default, R does not make numbers easy to read when printed. For example, `r 1234567890.0987654321`. However, we can add in commas AND round using `prettyNum`. The code `prettyNum(x = 12345.54321, digits = 7, big.mark = ",")` will yield `r prettyNum(x = 12345.54321, digits = 7, big.mark = ",")`--much easier to read.
+
+The three important arguments of `prettyNum` are `x` the number/vector you want to manipulate, `digits` refers to the total number of *significant* digits that you want (negative values __NOT__ allowed here), and `big.mark` which sets the symbol that gets used between three digit chunks.
+
+## Getting Help in R
+
+There are a couple of ways that you can get help with a function in R.
+
+In the lower right pane of RStudio Desktop, there should be a Help tab. There is a search box that will help you search through the packages of R for the function you want help with.
+
+Additionally, you can type `?functionName` into the console to bring up the help page for a function you know the name of. If you use two question marks, `??functionName`, this will cause R to search through all documentation, not just the packages you currently have loaded.
+
+Further, you can place your cursor inside of function name which is in a inline code piece, a code chunk, R script file, or your current console line and then press the F1 key (Mac Users: fn + F1) and the help window will update to the appropriate documentation.
+
+# Configuring Visual Studio Code for R {#Config-VSCode}
+
+If you are wanting to use Visual Studio Code as your IDE for working with R, you will need to take some additional steps. Before proceeding with the following steps, make sure that you have installed __BOTH__ R and Visual Studio Code.
+
+1. Launch the R application.
+2. Install the following packages
+    i. The `{languageserver}` package using the following command: `install.packages("languageserver")`.
+    ii. The `{httpgd}` package using the command `install.packages("httpgd")`.
+    iii. If you asked for a CRAN mirror, select whichever mirror is closest to you geographically.
+    iv. Once completed, you may close the R application.
+3. Launch the Visual Studio Code application.
+4. Enter the Extensions Marketplace.
+5. You'll need to search for and install the following extensions
+    i. "R Extension for Visual Studio Code"
+    ii. (Optional) "Quarto"
+
+After you finish the above process, when you launch the New File dialog inside Visual Studio Code, you'll be able to specify if you want to create a new R Document (i.e., a .R file) or a new R Markdown document (i.e., a .Rmd file). If you have installed the Quarto extension, you'll also see choices for new Quarto Documents (like R Markdown) or Quarto projects.
+
+# Working with Markdown-enabled Documents {#Working-MD}
+
+*If you are not using Markdown-Enabled Documents, you can skip this section.*
+
+When you are working with Markdown-enabled documents, you are working with a source document--not the finalized output document. You'll need to knit/render the document to produce the output document that you'll submit or give to a client. This distinction between working in the source file and the output file has some impacts on how you create documents.
+
+Formatting your text in Markdown-enabled documents is not quite the same as in Word. If you are new to coding, look for a pair words--Source and Visual--above the top left corner of the editor in RStudio Desktop. Click the word Visual to switch to a WYSIWYG editor, similar to Google Docs.
+
+## Formatting Narrative Text
+
+You can use Markdown syntax to format text in a number of ways such as italicizing or making something boldface. Keep in mind that until you render/knit the document, the format isn't actually applied.
+
+To italicize a word or phrase, you'll need to place a single asterisk, \*, on both sides of the word/phrase. For example, \*sample arithmetic mean\* will get rendered as *sample arithmetic mean* in the render/knitted document.
+
+To make a word or phrase bold, you'll need to type two underscores. \_ \_ (with no space between them) on both sides of the word/phrase. For example, \_ \_ NASA\_ \_ becomes __NASA__ in the final output.
+
+Enclose any text you want superscripted in a caret, '^', immediately after the base word. For example, x\^2\^ will become x^2^. For subscripting, use the tilde, '~' in place of the carets. Thus, score\~pre\~ becomes score~pre~.
+
+There are additional formatting options that you can employ via the WYSISWYG Visual editor of RStudio Desktop or using the Source editor. To learn more, check out the [Additional Resources](#addResources) listed below.
+
+## Headings
+
+Many students often think about headings as being a stylistic element and to a certain extent this is true. However, headings also serve an important structural purpose: headings help readers build their sense of how the different parts of the document connect to each other in a hierarchical fashion. Throughout this guide, I've been using (numbered) headings to communicate the guide's structure and help you get a sense of what each section might be about.
+
+In Markdown-enabled documents, we denote headings by starting the line with one or more octothropes (pound signs, hash tags; \#). Immediately after the octothrope(s), you'll type a few words that will serve as the text of the heading. 
+
+Keep in mind that headings follow a hierarchy with Heading Level 1 being the top level; Heading Level 2 is the next level down, and so forth. While you can get down to Heading Levels 5 and 6, please try to keep these to a minimum. Also do not skip heading levels. That is, don't use a Heading Level 3 after a Heading Level 1 and no Heading Level 2.
+
+The number of octothropes you use at the start of the line will determine the heading level. One octothrope is Heading Level 1; two will give you Heading Level 2, etc.
+
+## Typing Mathematics
+
+R Markdown will use LaTeX syntax and display mathematical formulas for you. You can choose for math to be inline or display style (on its own line and centered).
+
+### Inline
+
+Start your inline mathematical expression by typing a single dollar sign, \$, followed by your expression; end your expression with another dollar sign, \$. For example, \$y=x\^2+\\frac{3}{4}\$ will become $y=x^2+\frac{3}{4}$. 
+
+If done correctly, the starting and ending dollar signs should appear as red text in the RStudio Desktop IDE Source view.
+
+:::{.callout-tip}
+Need to type a dollar sign to list a price and want to make sure you don't enter into math mode? Just place a backslash, \\, immediately before the dollar sign. This also works with other Markdown characters such as the asterisk, \*, and underscore, \_.
+:::
+
+A possible alternative to the single dollar sign is to use the \\ \( and \\ \) delimiters. Note that they are a paring of a backslash with the open/left or right/close parenthesis character with no space after the backslash.
+
+### Display
+
+To create display equations (centered on their own line), use two dollar signs to begin and end the expression. Thus, \$ \$y=x\^2+\\frac{3}{4}\$ \$ (no space between the dollar signs) will become $$y=x^2+\frac{3}{4}$$
+
+There is an alternative set of delimiters for display math: \\ \[ and \\ \]. Again, there should be no space between the backslash and the appropriate square bracket.
+
+### Multiple Lines
+
+If you need to create mathematical expressions that span multiple lines, you can use the align environment inside a display math mode. For example,
+
+```
+$$
+\begin{align*}\
+H_0&: y = \mu_{\cdot\cdot} + \epsilon_{ij}\\
+H_1&: y = \mu\_{\cdot\cdot} + \alpha_{i} + \epsilon_{ij}\\
+end{align*}
+$$
+```
+will become
+$$
+\begin{align*}
+H_0&: y = \mu_{\cdot\cdot} + \epsilon_{ij}\\
+H_1&: y = \mu_{\cdot\cdot} + \alpha_{i} + \epsilon_{ij}
+\end{align*}
+$$
+The ampersand, &, tells LaTeX to line up the characters at that point.
+
+## Writing Code
+
+There are two ways in which you can write code in a Markdown-enabled file.
+
+### Inline Code
+
+Inline code is great for reporting a value that you have stored in the environment, to do a quick calculation, or something else that is **simple**. To create some inline code, you'll need to start with a grave, \`, the symbol located on the key just to the left of the 1 key. This will start your code; you'll close the code with another instance of the grave, \`. You'll need to type a lower case r right after the first grave to state what language your code is supposed to be (in this case R). For example, \` r 1 + 2 \` will yield `r 1 + 2`. Notice that inline code is evaluated and the result is displayed.
+
+Inline code will automatically be run when you knit/render the document.
+
+### Code Chunks
+
+Code chunks are much larger blocks where you can do more complicated things. For example, you can use code chunks to import a picture, load and clean data, create data visualizations, tables, and run models, etc.
+
+You can add a code chunk manually by typing three graves in a row on new line. When you're finished with the chunk, you type another three graves. All of your code should be on lines in between these two lines with graves. Chunk options, including the language should be on the first line with graves enclosed in curly braces: \{r chunkName, [options]\}
+
+In RStudio Desktop, you can also use the insert code chunk button (looks like a green square with a plus sign and the letter C) and select R to get a code chunk.
+
+Code chunks can be run individually by clicking the play button located in the upper right corner of each chunk. This should display the output of the code chunk in a collapsible window below the code. All code chunks will run when you knit/render the document unless you've specified otherwise as a chunk option.
+
+## Additional Resources {#addResources}
+
+There's plenty more you can explore. Here are few resources which are helpful:
+
++ Xie, Allaire, and Grolemund's [R Markdown: The Definitive Guide](https://bookdown.org/yihui/rmarkdown/)
++ Xie's [Kintr Options](https://yihui.org/knitr/options/)
++ Ismay and Kennedy's [Getting Used to R, RStudio, and R Markdown](https://ismayc.github.io/rbasics-book/) +
++ [The Quarto Guide](https://quarto.org/docs/guide/)
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
