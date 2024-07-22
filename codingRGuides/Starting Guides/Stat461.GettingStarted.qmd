@@ -167,7 +167,7 @@ To create a new Markdown-enabled file in RStudio Desktop, click on the File menu
 I have created two templates that you can use. You can download and save these template files to your computer. To use them, you'll need to make a copy of the file and give the copy a new and meaningful file name. You can then double-click on the new file to open in RStudio (or other IDE).
 
 + [R Markdown Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate.Rmd)
-+ [Quarto Template] coming soon
++ [Quarto Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate_2024.qmd)
 :::
 
 Be sure to check out the section of this guide on [working with Markdown-enabled documents](#Working-MD) for more information.
