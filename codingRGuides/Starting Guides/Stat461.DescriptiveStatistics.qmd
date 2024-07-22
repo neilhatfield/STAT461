@@ -2,7 +2,7 @@
 title: "Descriptive (Incisive) Statistics and Professional Tables"
 author: "Neil J. Hatfield"
 date-modified: now
-latex-tinytex: false
+latex-tinytex: true
 format: 
   html:
     embed-resources: true
@@ -13,6 +13,7 @@ format:
     toc-depth: 4
     toc-location: right
     cap-location: top
+    tbl-cap-location: top
     link-external-newwindow: true
 execute: 
   echo: false
@@ -464,6 +465,36 @@ grpOreoSummary
 
 The data wrangling approach is more intensive coding-wise but offers much more in the way of customization. That is, if you only want certain statistics but not all from `describeBy` and/or you have some statistics that aren't part of `describeBy`, then the data wrangling approach will be easier.
 
+<!---
+# Interpreting Values
+
+Interpreting values of statistics is important. First, doing so forces you to critically think about 1) what the statistic tells us about the data collection, and 2) how this value enriches the data story. Second, providing interpretations helps your readers to make connections and build their own understanding of the data and what *you* are trying to say about the data and the context. Finally, providing interpretations will better enable you to make decisions and defend those decisions.
+
+I'm going to give example interpretative statements drawn from the Oreo data context and looking at the mass (g) of créme filling in Oreos.
+
++ Size: There are `r summaryOreo$n` cookies in the data collection.
++ *Sample Minimum*: The smallest amout of créme filling observed was `r round(summaryOreo$min, digits = 2)` grams.
++ *First Quartile*: One quarter (25% or ~`r 0.25 * summaryOreo$n` cookies) had less than `r round(summaryOreo$Q0.25, digits = 2)` grams of créme filling.
++ *Sample Median*: One half (50% or 30 cookies) had less than `r round(summaryOreo$median, digits = 2)` grams of créme filling.
++ *Third Quartile*: One quarter (25% or ~`r 0.25 * summaryOreo$n` cookies) had at least `r round(summaryOreo$Q0.75, digits = 2)` grams of créme filling.
+    - Notice that you can go either way for the quantiles.
++ *Sample Maximum*: The most créme filling we observed as `r round(summaryOreo$max, digits = 2)` grams.
++ *Sample Range*: The smallest interval which contains all of our observations is `r round(summaryOreo$range, digits = 2)` grams wide.
++ *IQR*: The smallest interval which contains the middle 50% of our observations is `r round(summaryOreo$IQR, digits = 2)` grams wide.
++ *MAD*: Half of all possible pairs of cookies are less than `r round(summaryOreo$mad, digits = 2)` grams different (in absolute value).
++ *SAM*: This collection of cookies amassed  `r round(summaryOreo$mean, digits = 2)` times as much créme filling as cookies.
++ *SASD*: The typical deviation in créme filling mass between pairs of cookies in our collection was approximately `r round(summaryOreo$sd, digits = 2)` grams.
++ *Sample Skewness*: The positive value of *Sample Skewness* (i.e., `r round(summaryOreo$skew, digits = 2)`) indicates that the underlying process will generate some cookies with *more* créme filling than most cookies.
+    - Negative values would indicate *less* créme filling
+    - A zero value indicates that process produces essentially just as many heavy and light cookies (symmetric)
+    - __Important__: the numerical value is not as interpretable as you might think. For example a *sample kurtosis* of 8 does not produce cookies that are 8 times heavier than most cookies.
++ *Sample Ex. Kurtosis*: The negative value of *Sample Ex. Kurtosis* indicates that the underlying process generates fewer outlier cookies than we would anticipate if a Guassian (normal) distribution described the process.
+    - Positive values indicate the process generates *more* outlier cookies
+    - A zero value inicates that the process generates just as many outlier cookies as we would expect of a Guassian (normal) distribution.
+    - __Important__: don't attempt to over interpret the values. A value of 8 for *Sample Ex. Kurtosis* does not mean that the process produces 8 times as many outliers.
+
+--->
+
 # Professional Tables {#tables}
 
 In the preceding sections, the outputs were printed directly to the R console. This works when you are working for yourself and don't intend to share with others. If you are going to share such output with others, you should take a little bit of time to ensure that the output is formatted to help others build their understandings. These default outputs are not particularly well formatted for sharing with others.
@@ -519,28 +550,79 @@ summaryOreo %>%
 
 ### Step 2: Add a Caption
 
-The resulting table now fits on the page and has a better reading order. However, we can still improve the table by adding a caption.
+The resulting table now fits on the page and has a better reading order. However, we can still improve the table by adding a caption. Captions not only give a title to each table, they also cause the knitting/rendering process to automatically label and number each table. This allows us to quickly reference any table through the use of cross-referencing. Provided we set things up correctly, our documents will keep track of the numbering process for us. (Note: Microsoft Word and other programs also have this capability.)
 
-```{r}
+There are two elements we need for this two work: each code chunk needs a name/label and we need to provide some text to use as the caption.
+
+#### R Markdown Captions
+
+If you are using R Markdown, the easiest approach is to use `kable`'s `caption` argument as shown here:
+
+````markdown
+```{{r kableEx2b}}
+# Improving the Table, Part 2 ----
+## (I'm just showing code in this example)
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    caption = "Summary Statistics for Oreo Filling Masses",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
+  )
+
+```
+````
+
+Notice that at the top of the code chunk I've placed "kableEx2b" right after the language specifier (`r`). This sets the name of the code chunk and is how we reference this table for cross-referencing. If we want to refer to this table in our narrative text, we would simply type "Table `\ref{tab:kableEx2b}`" (without the quotation marks). The `\ref` command tells the knitting process to create a reference to the table ("tab") that has the name "kableEx2b".
+
+#### Quarto Captions
+
+For Quarto documents, you'll want to use two (or three) code chunk options. You'll want to use the `label` option to set the label you'll use for cross-referencing. For tables, the label __MUST__ begin with `tbl-`. You'll then use the `tbl-cap` option to define what the caption should be. Make sure to enclose the caption text in quotation marks.
+
+````markdown
+```{{r}}
 #| label: tbl-kableEx2b
-#| echo: true
+#| tbl-cap: "Summary Statistics for Oreo Filling Masses"
+
 # Improving the Table, Part 2 ----
 summaryOreo %>%
   dplyr::select(
     n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
   ) %>%
   kable(
-    caption = "Summary Statistics for Oreo Filling Masses", # <1>
     col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
                   "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
   )
 
 ```
-1. In R Scripts and R Markdown documents, you'll use the `caption` argument of `kable`. For Quarto documents, you may use either this argument OR the `tbl-cap` code chunk option (but not both).
+````
 
-Be sure to place your caption inside a set of qoutation marks. 
+```{r}
+#| label: tbl-kableEx2b
+#| tbl-cap: "Summary Statistics for Oreo Filling Masses"
+#| echo: false
+# Improving the Table, Part 2 ----
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis")
+  )
 
-Adding a caption to the table has an additional benefit in that we can now reference the table by name (e.g., @tbl-kableEx2b) in Markdown-enabled documents. For R Markdown, the enclosing code chunk should needs a unique name and only have this one output. For Quarto documents, the code chunk needs a unique label starting with `tbl-` and only have this one output. 
+```
+
+There is an optional third option, `tbl-cap-location`. You can use this to specify where you want the caption to be printed. The most common place is at the top of the table.
+
+To cross-reference a table in Quarto documents (e.g., @tbl-kableEx2b), we just need to type `@tbl-kableEx2b` in our narrative. When we knit/render the document, this cross-reference will automatically get replaced with the appropriate type (i.e., Table) and number.
+
+:::{.callout-important}
+### Unique Names/Labels
+Keep in mind that all named elements (e.g., code chunks, tables, figures, headings, etc.) need to have a unique name/label. Any duplication will cause problems not only for the knitting/rendering process but also cause problems for the cross-referencing.
+::::
 
 ### Step 3: Format Column Values
 
@@ -574,11 +656,11 @@ summaryOreo %>%
 If your table code isn't working, try commenting out different lines by adding an octothrope to the start. This will let you roll the table back to a version that is working and then find which line(s) are causing the issue.
 :::
 
-### Additional Options
+## Additional Options
 
 There are few additional options that we can specify using the `{kableExtra}` package. Some of these are purely stylistic and some of these are related to knitting/rendering process and will be linked to your target output type (e.g., PDF or HTML).
 
-#### Table Styles
+### Table Styles
 
 The `{kableExtra}` provides a number of pre-defined styles or themes that you can apply to your table. Further, you can create your own table style and apply. 
 
@@ -608,74 +690,192 @@ There are several other pre-made themes. You can find the full list with example
 
 A benefit to using a theme like `kable_classic` is that if you are working in an R script, when you run the table code RStudio Desktop will render the table in the Viewer tab. Without this theme, R will print the raw HTML code to the console.
 
-#### PDF Options
+### Wide Tables
 
-If your output
+There is a crucial difference between PDF documents and HTML documents that you need to be aware of as an author: pagination. There is no sense of a page within a single HTML document---rather, we merely keep scrolling. In print media, like PDFs and Word documents, we have rather tangible forms of pages. 
 
-What I'm going to present here allows us to create truly professional looking tables in format similar to APA style. To begin with we'll start with the code for Table \ref{tab:kableEx4} and then add on some new code.
+Pagination can cause a couple of issues. First, pages have a certain width and a reader can't scroll side-to-side if our table is too wide. Luckily, the `{kableExtra}` package has an option (`"scale_down"`) that will automatically shrink a table that is too wide for the page. This option will need to be set inside of a table styling command such as `kable_classic` or the generic `kable_styling`:
 
-```{r kableEx5, echo=TRUE, eval=TRUE}
-# Table 4 Code ----
+```{r}
+#| label: tbl-kableEx2e
+#| echo: true
+# Scaling a Too Wide Table ----
 summaryOreo %>%
   dplyr::select(
     n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
   ) %>%
-  knitr::kable(
+  kable(
     caption = "Summary Statistics for Oreo Filling Masses",
-    digits = 3,
-    format.args = list(big.mark = ","),
-    align = rep('c', 11),
     col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
                   "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep("c", 11),
     booktabs = TRUE
-  )  %>%
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  ) %>%
+  kable_classic(
+    latex_options = c("scale_down")
   )
-
 ```
 
-Notice that we've added `booktabs` argument to the `kable` call. This tells R get rid of the vertical lines between the columns.
+While @tbl-kableEx2e might not look any different from @tbl-kableEx2d in the HTML, the two will look different in PDF documents. @fig-tooWide shows what @tbl-kableEx2d would look like when rendered in a PDF; @fig-scaled shows how the code for @tbl-kableEx2e would look.
 
-Hopefully you noticed that at the end of each of chunk of code making the tables, I used `kableExtra::kable_styling`. This gives us some additional controls. For example, we can use `font_size` to stipulate what size of font to use in the table. I would not go much smaller than 8 or 9 point font---and only if your table is extremely big. I do not recommend that you use a font size larger than what your narrative is (typically 12pt). The other argument, `latex_options` has a vector of two values at the moment: `"scale_down"` and `"HOLD_position"`. These will make sure that the table fits the width of the page and will appear where you placed the code, respectively. If you have a table with multiple rows, you can include a third value to the vector `"striped"`. This will make a "zebra table" where the rows will alternate between white and grey backgrounds.
+![Too Wide Table](tooWide.png){#fig-tooWide fig-alt="PDF Version of #kableEx2d that runs off the right side of the page"}
 
-## Displaying Grouped Summaries and Table Footnotes
+![Scaled Down Table](scaled.png){#fig-scaled fig-alt="PDF Version of #kableEx2e that shows the table completely in the page"}
 
-The above code works well for relatively simple tables. However, we need to do a bit more work if we want to take the output of `psych::describeBy` and display that as a table. The biggest action is that we need to convert the grouping column (`group1`) into row names. We can use `tibble`'s `column_to_rownames` function. (The `tibble` package is part of `tidyverse`.) Let's see how to make a table similar to Table \ref{tab:kableEx5}, but using the grouped summaries.
+An additional difference you might notice between @fig-tooWide and @fig-scaled is the presence of vertical lines. The `kable` argument `booktabs = TRUE` is responsible for this change. In professional styling of tables, the vertical rules are omitted. 
 
-\newpage
+### Table Position
 
-```{r kableEx6, echo=TRUE, eval=TRUE}
-# Table 5 Code ----
-sumGrpOreo %>%
-  tibble::remove_rownames() %>%
-  tibble::column_to_rownames(
-    var = "group1"
-  ) %>%
+A second place that pagination comes into play is where in the document our tables get placed. For HTML documents, the table will appear in the same relative place as the generating code chunk. This isn't true when we knit/render to PDFs or other print documents. The knitting/rendering engine will do its best to place the table as close as possible to the code chunk while also trying to avoid putting the table on a page break. Typically, this will yield tables either appear at the top of the page the code chunk would appear on or the top of the next page. (Large tables might get their own page.)
+
+If we want to exercise more control over where the table appears (e.g., in middle of the page), we can. However, the route we take depends upon whether you're working a R Markdown or a Quarto file.
+
+#### R Markdown Position
+
+If you are working in a R Markdown file, we'll turn to an option from `{kableExtra}`, namely `"HOLD_position"`.
+
+```{r}
+#| label: kableEx2f
+#| echo: true
+#| eval: false
+# Using HOLD_position ----
+## (I've chosen not to render this table, rather just showing the code)
+summaryOreo %>%
   dplyr::select(
     n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
   ) %>%
-  knitr::kable(
+  kable(
     caption = "Summary Statistics for Oreo Filling Masses",
-    digits = 3,
-    format.args = list(big.mark = ","),
-    align = rep('c', 11),
     col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
                   "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep("c", 11),
     booktabs = TRUE
-  )  %>%
-  kableExtra::kable_styling(
-    font_size = 12,
+  ) %>%
+  kable_classic(
+    latex_options = c("scale_down", "HOLD_position")
+  )
+```
+
+The `"HOLD_position"` value tells the knitting process to place the table in the same relative position as the code chunk in the document. The knitting process will do so--provided that there is 1) enough room on the page for the table, and 2) doesn't cause the table to break across pages.
+
+#### Quarto Position
+
+If you are working in a Quarto document, we will make use of a code chunk table position option: `tbl-pos: H`. (H for "Here".)
+
+````markdown
+```{{r}}
+#| label: kableEx2f
+#| echo: true
+#| tbl-cap: "Summary Statistics for Oreo Filling Masses"
+#| tbl-pos: H
+# Quarto Placement ----
+## (I've chosen not to render this table, rather just showing the code)
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    # caption = "Summary Statistics for Oreo Filling Masses",
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep("c", 11),
+    booktabs = TRUE
+  ) %>%
+  kable_classic(
+    latex_options = c("scale_down")
+  )
+
+```
+````
+
+## Quarto Specific
+
+If you are using Quarto, there is an additional argument that you will need to add. Quarto has a rather greedy built-in approach for rendering tables, regardless of what you might specify.
+
+You can tell Quarto to __*not*__ use its default approach. This can be done in different places, the most basic of which is at the individual table level. 
+
+````markdown
+```{{r}}
+#| label: kableEx2g
+#| echo: true
+#| tbl-cap: "Summary Statistics for Oreo Filling Masses"
+#| tbl-pos: H
+
+# Quarto Processing ----
+## (I've chosen not to render this table, rather just showing the code)
+summaryOreo %>%
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep("c", 11),
+    booktabs = TRUE,
+    table.attr = 'data-quarto-disable-processing="true"'
+  ) %>%
+  kable_classic(
+    latex_options = c("scale_down")
+  )
+
+```
+````
+
+The argument `table.attr` of the `kable` call allows us to pass the `'data-quarto-disable-processing="true"` command. This will prevent Quarto for using its default process.
+
+:::{.callout-important}
+Make sure that you use the `tbl-cap` and `tbl-pos` code chunk options instead of the the `caption` argument and the `"HOLD_position"` option. This will prevent some strange side effects when knitting to PDF.
+
+:::
+
+## Table Footnotes
+
+Occasionally we can improve a table by adding a footnote. Such footnotes might help explain a particular abbreviation used in the table, provide additional information about a column, or add some clarity to the table as a whole. The `{kableExtra}` package has a useful tool for adding such notes. Be sure to check out the [Table Footnote documentation](https://haozhu233.github.io/kableExtra/awesome_table_in_html.html#Table_Footnote) for more information.
+
+Here is a quick example of adding general footnote to table.
+
+```{r}
+#| label:  tbl-kableEx3
+#| echo: true
+#| tbl-cap: "Summary Statistics for Oreo Filling Masses"
+# Table Footnote Example ----
+sumGrpOreo %>% # <1>
+  tibble::remove_rownames() %>% # <2>
+  tibble::column_to_rownames( # <2>
+    var = "group1" # <2>
+  ) %>% # <2>
+  dplyr::select(
+    n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  kable(
+    col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD",
+                  "SAM", "SASD", "Sample Skew", "Sample Ex. Kurtosis"),
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep("c", 11),
+    booktabs = TRUE,
+    table.attr = 'data-quarto-disable-processing="true"'
+  ) %>%
+  kable_classic(
     latex_options = c("scale_down", "HOLD_position")
   ) %>%
-  kableExtra::footnote(
+  kableExtra::footnote( # <3>
     general = "Here is an example of a footnote.",
     general_title = "Note. ",
     footnote_as_chunk = TRUE
   )
-
 ```
+1. I'm also demonstrating using the results of the `describeBy` command to displayed grouped summary statistics.
+2. These commands from the `{tibble}` package allow me to change out any pre-defined row names for those that define the groups in `describeBy`; that is, the type of Oreos.
+3. The `footnote` function from the `{kableExtra}` package is the key to adding this note across the entire table.
 
 The two lines with `tibble` are what converts the `group1` column of `sumGrpOreo` into the row names. The `tibble::remove_rownames()` option will clear out any existing row names; this is a good practice as `column_to_rownames` will __not__ replace any existing row names.
 
