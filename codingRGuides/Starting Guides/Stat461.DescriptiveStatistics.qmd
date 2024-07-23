@@ -18,7 +18,6 @@ format:
 execute: 
   echo: false
   warning: false
-  cache: true
 ---
 
 Welcome! This Getting Started guide focuses on Descriptive or Incisive Statistics and creating professional-looking tables. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
@@ -880,6 +879,74 @@ sumGrpOreo %>% # <1>
 The two lines with `tibble` are what converts the `group1` column of `sumGrpOreo` into the row names. The `tibble::remove_rownames()` option will clear out any existing row names; this is a good practice as `column_to_rownames` will __not__ replace any existing row names.
 
 The `kableExtra::footnote` call demonstrates how you can add a footnote to your table. In addition to the general footnote (`genral`), you can add numbered notes (`number`), lettered notes (`alphabet`), and/or symbol notes (`symbol`). Check out the help documentation for these.
+
+## Empty Table Cells
+
+While we haven't yet seen an example of empty table cells, these can and will show up in Statistics and Data Science. @tbl-emptyCells1 is a good example of such tables that we would come across in context of ANOVA (Stat 461) using the penguin data.
+
+```{r}
+#| label: tbl-emptyCells1
+#| tbl-cap: "Example Table with Empty Cells"
+#| echo: false
+# Example of table with empty cells ----
+quickAOV <- aov(
+  formula = flipper_length_mm ~ species,
+  data = penguins
+)
+
+parameters::model_parameters(
+  model = quickAOV,
+  effectsize_type = c("eta", "omega", "epsilon")
+) %>%
+  knitr::kable(
+    digits = 3,
+    format.args = list(big.mark = ","),
+    booktabs = TRUE,
+    table.attr = 'data-quarto-disable-processing="true"'
+  ) %>%
+  kable_classic() %>%
+  footnote(
+    general = "P-value was auto-rounded to look like zero; p-values cannot be equal to zero.",
+    general_title = "Note: ",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+You'll notice that strictly speaking there are not any empty table cells in @tbl-emptyCells1. However, there are five cells that are filled with the initialism "NA" ("not applicable"). These cells are technically empty but the default in `kable` is to fill empty cells with NA. 
+
+In many professional styles (e.g., APA) empty cells should appear empty. This helps prevent the table from becoming to visually cluttered. To change the default behavior we can use the following command: `options(knitr.kable.NA = "")`. Whatever you place between the double quotation marks will be what `kable` enters into empty cells. For example, if you use `"-"`, you'll see en-dashes printed. The empty quotation marks (i.e., `""`) will make the table cells completely empty. Here is what such a table would look like.
+
+```{r}
+#| label: tbl-emptyCells2
+#| tbl-cap: "Example Table with (Non-)Empty Cells"
+#| echo: true
+# Change Default ----
+options(knitr.kable.NA = "")
+
+# Create table ----
+parameters::model_parameters(
+  model = quickAOV,
+  effectsize_type = c("eta", "omega", "epsilon")
+) %>%
+  knitr::kable(
+    digits = 3,
+    format.args = list(big.mark = ","),
+    booktabs = TRUE,
+    table.attr = 'data-quarto-disable-processing="true"'
+  ) %>%
+  kable_classic() %>%
+  footnote(
+    general = "P-value was auto-rounded to look like zero; p-values cannot be equal to zero.",
+    general_title = "Note: ",
+    footnote_as_chunk = TRUE
+  )
+
+```
+
+:::{.callout-tip}
+Notice that only the table created *after* the `options` command now displays the truly empty cells. Any change brought on by an `options` command will only affect commands/calls made after the `options` command runs. Thus, I recommend making such calls at the top of your document just like loading packages.
+:::
 
 {{< pagebreak >}}
 

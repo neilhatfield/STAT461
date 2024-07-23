@@ -20,16 +20,295 @@ execute:
   cache: true
 ---
 
-```{r setupFiles, include = FALSE}
-# Setting Document Options ----
-knitr::opts_chunk$set(
-  echo = FALSE,
-  warning = FALSE,
-  message = FALSE,
-  fig.align = "center"
+Welcome! This Getting Started guide focuses on Data Visualizations. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
+
+An important think to remember as you read this guide is that this guide is *not* meant to be exhaustive. I am not going to cover every possible type of data visualization nor am I going to cover every possible way to create the same kind of data visualization in R. 
+
+# Getting Ready
+
+When getting ready to do anything in R, you'll always want to take a moment and ensure that you identify what packages and data you'll need. Then you should load those items. Again, a good habit to get into is to always start your R script (or your first code chunk) by loading packages, setting any global options, and loading data.
+
+## Graphics Packages
+
+When you use a statistical software package like Minitab, SPSS, JMP, or a spreadsheet program like Excel or Sheets, you are typically limited to the visualization tools in that program. In R, that isn't the case. There are many packages you can use to create data visualizations.  There are many packages that are dedicated to extending the graphing capabilities of base R such as `{ggplot2}`, `{lattice}`, `{plotly}`, `{Rgraphviz}`, and `{scatterplot3d}` to list a few. In addition to these, many packages will often contain functions that will create specialized graphs (e.g., the `qqPlot` function from the `{car}` package).
+
+I'm going to focus on using the `{ggplot2}` package that is part of the `{tidyverse}`. This package has many nice tools and creates some nice looking data visualizations. I'll also make use of the `{car}` package.
+
+```{r}
+#| label: loadPackages
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "car")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
 )
 
-freedmanDiaconis <- function(x) {
+```
+
+## Load Data
+
+I'm going to use the penguin data from the `{palmerpenguins}` package as well as a version of the Oreo data related to HW #1.1. As a reminder, here's how you load these both into R.
+
+```{r}
+#| label: loadData
+#| echo: true
+# Loading data into my session ----
+## Palmer Penguin data
+# install.packages("palmerpenguins")  
+penguins <- palmerpenguins::penguins 
+
+## Oreo Data (HW #1.1) 
+oreoData <- read.table( 
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
+  header = TRUE,
+  sep = ","
+) 
+
+```
+
+# Planning
+
+Most people skip over one of the most important steps in creating data visualizations: __planning__. It is very easy to skip this step and jump straight into clicking buttons or running graphing commands. However, good data visualizations demand that not only do you think about the visualization but you think about how you are going to use and talk about what appears in the data visualization. By taking a few minutes to plan your data visualization, you'll be in a better position as a whole.
+
+Here are some questions to ask yourself as you plan your data visualization:
+
++ What is your goal? What are you trying to do?
++ What data do you need? What data do you have?
+    + Is the data tidy? Do you need to wrangle the data first?
++ What kind of visualization do you want to make?
++ What geometry(-ies) do you need for your visualization?
++ What goes into the framework of your visualization?
++ What goes into the content?
++ What do you need in terms of labels and scales?
++ Do you need multiple layers to the visualization?
+
+:::{.callout-tip}
+A good practice is to sketch what you're trying to create. This will help you think through the various elements of your visualization. Additionally, this can help you better ask others for help.
+:::
+
+## Data Wrangling
+
+An important part of making a plan is to double check that you have the data you need and that the data is in a useful form. For this guide, I'm using the penguins data, which is ready to go, and some Oreo data, which isn't quite ready. The major thing that I need to do for my data is to tell R to treat the type of Oreo as a factor.
+
+```{r}
+#| label: makeFactor
+#| echo: true
+# Set the Type as a Factor ----
+oreoData$Type <- as.factor(oreoData$Type)
+
+```
+
+# Creating Data Visualizations
+
+Once you've made a plan, the next step is to actually create the data visualization. If you are using some another statistical software (e.g., Minitab) or spreadsheet program (e.g., Excel), I still encourage you to read the following. Doing so will help you better understand some of the most common kinds of data visualizations.
+
+## Frequency Based Visualizations
+
+One of the most common classes of data visualizations are those that are based upon how often we observe different values for a single case attribute we're interested in. Keep in mind that we can express frequency on several different scales. *Absolute Frequency* refers to a strict counting of cases in each value grouping while *Relative Frequency* measures what percentage or proportion of the data collection has each value. 
+
+### Dot Plots
+
+Perhaps the most simple form of a frequency histogram is that of a dot plot. @fig-dot1 provides an example of such a plot.
+
+```{r}
+#| label: fig-dot1
+#| fig-cap: "Dot plot of Oreo Filling Mass (g)"
+#| fig-alt: "Dots showing the filling mass in grams for 60 Oreos"
+#| fig-height: 3
+#| echo: true
+# Dot Plot of Oreo Filling Mass ----
+ggplot(
+  data = oreoData, # <1>
+  mapping = aes(x = Filling.Mass) # <2>
+) +
+  geom_dotplot( # <3>
+    method = "histodot",
+    binwidth = 0.1,
+    right = FALSE,
+    dotsize = 1
+  ) +
+  labs( # <4>
+    # title = "Dot Plot of Oreo Filling Mass", # <5>
+    x = "Filling Mass (g)"
+  ) +
+  theme_bw() + # <6>
+  theme( # <7>
+    axis.text.y = element_blank(), 
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank()
+  )
+
+```
+1. The `data` argument of the `ggplot` command is how we send data to the visualization.
+2. The `mapping` argument allows us to assign a column of our data to an aesthetic (`aes`) such as the horizontal (`x`) axis.
+3. In the dot plot geometry (and others), we may need to play around with additional arguments to make the visual look good. 
+4. We can define the labels of our plot with the `labs` call.
+5. You need to either have a plot title OR a figure caption for every plot. Since I'm using figure captions, I've commented out the title.
+6. This is a pre-defined theme that makes a classic background for the plot.
+7. You can further customize your plot. Here I'm hiding the vertical (`y`) axis as this is unneeded in a dot plot.
+
+Dot plots such as @fig-dot1 show *absolute frequencies* as each dot (i.e., a glyph) corresponds to a specific case (here, an Oreo cookie). The position of each dot is determined by the filling mass of that cookie. The `binwidth` argument creates bins of 0.1 grams. The cookies that are in the same bin will then stack on top of each other. 
+
+While this visualization allows you to get a big picture view of your data, playing around the with arguments of the geometry (`geom_dotplot`) can be time consuming.
+
+### Bar Charts
+
+Many people are familiar with bar charts; they are a classic type of visualization. We can use either absolute or relative frequencies. An important difference between a bar chart and a dot plot is that bar charts *aggregate* our data. That is, while a dot plot shows the individual cases, the bar chart will hide them. Generally, bar charts are used with attributes that are categorical in nature such as the species of penguins or the type of Oreo.
+
+```{r}
+#| label: fig-bar1
+#| fig-cap: "Bar plot of Penguin Species"
+#| fig-alt: "Bar plot showing the absolute frequencies of penguin species"
+#| fig-height: 3
+#| echo: true
+# Bar Plot of Penguin Species ----
+ggplot(
+  data = penguins,
+  mapping = aes(x = species)
+) +
+  geom_bar( # <1>
+    color = "black", # <2>
+    fill = "blue" # <3>
+  ) +
+  labs(
+    # title = "Bar plot of Penguin Species",
+    x = "Species",
+    y = "Freq."
+  ) +
+  theme_bw()
+
+```
+1. Use the `geom_bar` to create a bar plot.
+2. The `color` argument for this geometry controls the color of the piping/edges of the bars.
+3. The `fill` argument controls the color of the bars themselves.
+
+@fig-bar1 shows an absolute frequency bar plot for the three species of penguins in the penguin data. Notice that the species appear alphabetically across the axis they were assigned to (the horizontal). This is the default behavior of `ggplot`. You can reverse the order or even impose your own order if you so desire.
+
+If we want to make a relative frequency bar plot, we can do so with a quick adjustment to the code as shown in @fig-bar2.
+
+```{r}
+#| label: fig-bar2
+#| fig-cap: "Relative Frequency Bar plot of Penguin Species"
+#| fig-alt: "Bar plot showing the relative frequencies of penguin species"
+#| fig-height: 3
+#| echo: true
+# Bar Plot of Penguin Species ----
+ggplot(
+  data = penguins,
+  mapping = aes(x = species, y = after_stat(prop), group = 1) # <1>
+) +
+  geom_bar(
+    color = "black",
+    fill = "blue"
+  ) +
+  labs(
+    # title = "Relative Frequency Bar plot of Penguin Species",
+    x = "Species",
+    y = "Relative Freq."
+  ) +
+  theme_bw() +
+  scale_y_continuous(
+    labels = scales::percent, # <2>
+    expand = expansion(add = c(0, 0.03)) # <3>
+  )
+
+```
+1. By specifying `y = after_stat(prop)` we tell R that we want relative frequencies (or proportions). To set the appropriate denominator, we use `group = 1` to combine all cases into one group.
+2. The `labels` argument allows us to adjust the labels on the vertical axis. The `{scales}` package has an automated function for showing percentages.
+3. The `expand` argument allows us to control buffer space above/below (or left/right) of our data. Here, I'm *adding* zero buffer below the bars and a 3% buffer above the top of the highest bar.
+
+Something to notice is that @fig-bar1 and @fig-bar2 look identical to each other up to the scale of the vertical axis. This will be true any time you shift between absolute and relative frequencies: the general appearance will be the same. We like to use relative frequency forms when we need to make comparisons between collections that are not the same size. For example, comparing a set of 60 Oreo cookies to a set of just 20 cookies.
+
+If you incorporate multiple attributes, you can create additional types of bar charts such as side-by-side or stacked bar charts. These are not covered in this guide.
+
+### Histograms
+
+Histograms are very similar to bar charts. In fact, we read the two types of plots in the same way. The key difference is what attributes we want to visualize. While bar charts start with categorical attributes, histograms start out with quantitative attributes (especially, continuous ones). Behind the scenes (i.e., the computer does this) the interval of values gets broken down into a set of bins and we count how many cases fall into each bin. 
+
+```{r}
+#| label: fig-hist1
+#| fig-cap: "Histogram of Filling Mass"
+#| fig-alt: "Histogram of Oreo filling masses"
+#| fig-height: 3
+#| echo: true
+# Histogram of Filling Mass ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Filling.Mass)
+) +
+  geom_histogram( # <1>
+    color = "black",
+    fill = "blue",
+    binwidth = 0.1,
+    boundary = 0, # <2>
+    closed = "left" # <3>
+  ) +
+  labs(
+    # title = "Histogram of Filling Mass",
+    x = "Fillng Mass (g)",
+    y = "Freq."
+  ) +
+  theme_bw() +
+  scale_y_continuous(
+    expand = expansion(add = c(0, 2)) # <4>
+  )
+
+```
+1. For histograms we use the `geom_histogram` call.
+2. The `boundary` argument allows us to set where we want to specify a particular bin edge to be set at. Alternatively, you can use `center` to specify a value you want to be the center of a bin. All other bins will adjust to this.
+3. Most people are used to left-closed histograms: each bin contains the left-edge value up to the right-edge but not the right-edge value. By default, `{ggplot2}` does the reverse. This argument follows convention.
+4. Here I'm adding two units of space above the tallest bar.
+
+@fig-hist1 is an example histogram using the filling masses of the Oreo data. We can get some general impressions of our data collection and what values we've observed by looking at a histogram. To make a relative frequency histogram, we need to make similar changes as for the bar chart.
+
+```{r}
+#| label: fig-hist2
+#| fig-cap: "Relative Frequency Histogram of Filling Mass"
+#| fig-alt: "Relative Frequency Histogram of Oreo filling masses"
+#| fig-height: 3
+#| echo: true
+# Histogram of Filling Mass ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Filling.Mass)
+) +
+  geom_histogram(
+    mapping = aes(y = after_stat(count / sum(count))), # <1>
+    color = "black",
+    fill = "blue",
+    binwidth = 0.1,
+    boundary = 0,
+    closed = "left"
+  ) +
+  labs(
+    # title = "Relative Frequency Histogram of Filling Mass",
+    x = "Fillng Mass (g)",
+    y = "Relative Freq."
+  ) +
+  theme_bw() +
+  scale_y_continuous(
+    labels = scales::percent,
+    expand = expansion(add = c(0, 0.03))
+  )
+
+```
+1. A `mapping` call inside `geom_histogram` lets us specify that we want to use the `after_stat` command to generate the relative frequencies for each bin.
+
+#### Choosing Bin Width (Number of Bins)
+
+Much like with dot plots, one of the biggest challenges for producing useful histograms is determining either the number of bins (the `bins` argument) or the width of each bin (the `binwidth` argument). You only need to set one of these two as the choice of one automatically determines the other. By default, `ggplot` will use 30 bins--but will produce a warning message that you should use a better number of bins. You can play around with your choices for either of these arguments and find the value that leads to the clearest histogram.
+
+A statistician and a mathematician worked together to form what is known as the Freedman-Diaconis rule which can help you come up with a potentially useful bin width. You can define this in R as
+
+```{r}
+#| label: fdRule
+#| echo: true
+# Freedman-Diaconis Rule ----
+fdRule <- function(x) {
   return(
     ifelse(
       test = IQR(x) == 0,
@@ -40,216 +319,219 @@ freedmanDiaconis <- function(x) {
 }
 ```
 
-Welcome to the latest installment of using R and RStudio. This guide will be looking at data visualizations. As you look through this guide, attempt to create the visualizations for yourself using the example code. Do this with both the demo data and a new data set (say from HW \#1.1). Also see what element you can customize.
+We can see this rule in action in @fig-hist3.
 
-# Getting Started
-
-
-To get started we need to do two major tasks: load the necessary packages and load our data.
-
-## Load Packages
-
-When you start a new session of R, one of the things that you should do is to load the extra packages that will bring new functions and new capabilities. If you don't load the necessary packages, your code might not work.
-
-That being said, I'm going to make use of three key packages in this guide: `ggplot2`, `car`, and `lattice`. The `ggplot2` package will produce the most professional looking graphics in the shortest amount of time.
-
-To load these packages, you'll want to make a code chunk with either of the following:
-
-```{r loadPackagesA, echo=TRUE, eval=FALSE}
-# Separate calls ----
-library(ggplot2) 
-library(car)
-library(lattice)
-
-```
-
-```{r loadPackagesB, eval=TRUE, echo=TRUE, results='hide'}
-# Using lapply to load packages ----
-packages <- c("tidyverse", "car", "lattice")
-lapply(
-  X = packages,
-  FUN = library,
-  character.only = TRUE,
-  quietly = TRUE
-)
-
-```
-
-The `tidyverse` package will load `ggplot2` along with some other packages that are useful for data cleaning and manipulation such as the pipe, `%>%`. Either of the above methods work. I often use the second method as this lets me create a single vector with all of the packages I want (and I can quickly add more packages to the list) and then apply the `library` function to all of them.
-
-## Load Data
-
-For this guide I'm going to use the class demo Oreo data set. That way you can see an example that will translate well to your Homework \#1.1.
-
-```{r loadData, echo=TRUE, eval=TRUE}
-# Load Oreo Data ----
-oreoData <- read.table(
-  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat",
-  header = TRUE,
-  sep = ","
-)
-
-```
-
-I want to point out an important feature of the code above: you'll notice that the first bit of the code was `oreoData`. This will become the name of the object in R. If I ever want to use this data in R, I will need to include the name `oreoData`. Thus, you'll want to use a name that is 1) meaningful and 2) unique. If I were to run `oreoData <- 2` right after the above code, I'll replace the data with the number 2.
-
-To help you keep track, I'll often run individual chunks as I go by pressing the play button that appears in the upper right corner of each chunk. This will load things into my Environment and allow me to see what the chunk will produce when I knit the document.
-
-The second thing that I want to point out is the assignment operator `<-`. This two character symbol says "take the output of the what's on the right and call that output what's on the left. In other words, "assign the output the name I'm pointing to". This is the preferred method for creating objects in R rather than using the equals sign.
-
-# Making Data Visualizations
-
-Now that we have loaded both the packages and our data, we can turn to making data visualizations. If you can imagine the data visualization, there is a way to make that visualization in R. (Provided you have the patience and perseverance to figure out how.)
-
-I will point out that what I have below are just a few of the many different types of data visualizations you can create using R. And for each one, there are many different ways you can go about creating the visualization. You are by no means bound to the methods I use here. However, the methods that I demonstrate create professional looking graphics. Thus, if you are preparing a report, I would recommend that you try to emulate these. If you are just wanting to make a quick visualization for yourself, you can use other methods.
-
-Before we get too far into making visualizations, now would be a good time to check the structure of our data.
-
-```{r structureCheck, echo=TRUE, eval=TRUE}
-# Check the structure of my imported data ----
-str(oreoData)
-
-```
-
-Generally speaking, **DO NOT** include the output of a `str` call in your analysis reports. This information is more or less just for you as you start EDA. In this case, I notice that I have two attributes; Filling Mass which is numeric (which I know is in grams) (with variable `Filling.Mass`) and type which is character (`chr`; with variable `Type`). Please note that R is case sensitive; thus, `type` and `Type` are treated as two *different* objects.
-
-The other thing that don't want to include in your analysis reports are raw code. You'll notice that in these guides, I'm including the raw code chunks. This is so you can see the codes that makes the resulting visualization. Raw code has only one viable place in a report--an appendix at the end. Be sure that your reports do not include raw code.
-
-## A Quick Bit of Data Cleaning
-
-For ANOVA, we often want one of our attributes to be treated as a factor by R. From the output of the `str` call, R isn't thinking about either of the attributes as a factor. In this case, we want `Type` to be a factor. Thus, let's quickly tell R that we want `Type` to be a factor:
-
-```{r typeFactor, echo=TRUE, eval=TRUE}
-# Change Type to a Factor ----
-oreoData$Type <- as.factor(oreoData$Type)
-
-```
-
-The above code says to do the following:
-
-1)  Grab the `Type` column of the `oreoData` data frame and pass that into the function `as.factor`,
-2)  use the `as.factor` function to convert the data type of factor, and then
-3)  store the output of `as.factor` in the `Type` column of the `oreoData` data frame.
-4)  save the altered data as `oreoData`.
-
-Check for yourself to see whether if `Type` has a new data type (i.e., no longer `chr`).
-
-Let's now begin to make some visualizations.
-
-## Histograms and Bar Charts
-
-Some people get very touchy about when you call a histogram a bar chart or a bar chart a histogram. I'm not one of them. The crux of the distinction (histograms are for numeric data and and bar charts are categorical data) has **nothing** to do with how we present the information nor how a person reads them. Thus, histograms are bar charts and bar charts are histograms. Sadly, software developers have enshrined the distinction without a difference into the code we use to make these kinds of visualizations.
-
-```{r histEx1}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Histogram of Oreo Créme Filling Mass",
-#| fig.height = 3
-
-## Histogram Example Code using ggplot2 ----
+```{r}
+#| label: fig-hist3
+#| fig-cap: "Histogram of Filling Mass"
+#| fig-alt: "Histogram of Oreo filling masses using the Freedman-Diaconis rule"
+#| fig-height: 3
+#| echo: true
+# Histogram of Filling Mass ----
 ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass)
-  ) + 
+) +
   geom_histogram(
-    binwidth = 0.5,
+    color = "black",
+    fill = "blue",
+    binwidth = fdRule, # <1>
     boundary = 0,
-    closed = "left",
-    na.rm = TRUE,
-    col = "black",
-    fill = "blue"
+    closed = "left"
+  ) +
+  labs(
+    # title = "Relative Frequency Histogram of Filling Mass",
+    x = "Fillng Mass (g)",
+    y = "Relative Freq."
   ) +
   theme_bw() +
-  xlab("Filling mass (g)") +
-  ylab("Frequency")
-
-```
-
-Since we aren't storing this plot as an object (like we store our data), we don't need to use the assignment operator. The first important portion is `ggplot`. This function is what initiates the entire visualization. The `data` argument is how you'll send data to the plot; the `mapping` argument says which columns are to go to which parts of the plot. You'll use the aesthetic function, `aes`, to say which variables from the data frame go where: `x` for horizontal axis, `y` for vertical, and more. The `mapping` argument exists as part of other function calls (e.g., `geom_histogram`) and will get passed along to them along with the `data`.
-
-This brings us to `geom_histogram` which says that we want to make a histogram. The arguments here are important for you think about.
-
-+ `binwidth`: how wide do you want the bins? You might need to play around with this value OR you can use the Freedman-Diaconis rule by using `binwidth = function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`.
-
-  - If I know that I'm going to be making multiple histograms and that I'll be using the Freedman-Diaconis rule, I'll define a function in my file once (`freedmanDiaconis <- function(x){ifelse(IQR(x) == 0, 0.1, 2 * IQR(x) / (length(x)^(1/3)))}`) and then in my histograms I use `binwidth = freedmanDiaconis`.
-
-+ `boundry`: this is an optional argument and will set whatever value you put here to be the edge of a bin and work from there; useful to making nice looking visualizations.
-
-+ `closed`: Most people are familiar with (and expect) histograms that include the value on the left edge in the bar, but not the value on the right. This argument allows you match that expectation. The default is the exact opposite (that is, the right value is included but not the left).
-
-+ `na.rm`: by saying `TRUE` you are saying "remove the missing values SILENTLY". The R will remove any missing values (`NA`) as the plot gets built but unless you say `na.rm = TRUE` R will be noisy and print messages in your report that should not appear.
-
-+ `col`: determines the color of the piping/edges of the bars.
-
-+ `fill`: determines the color of the bars.
-
-The last three lines set a default theme (background color, font sizes, etc.) and the labels for the axes.
-
-Here is the same data with a *relative* frequency histogram.
-
-```{r histEx2}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Histogram of Oreo Créme Filling Mass",
-#| fig.height = 3
-
-## Relative Frequency Histogram Example ----
-ggplot(
-  data = oreoData,
-  mapping = aes(x = Filling.Mass)
-) + 
-  geom_histogram(
-    mapping = aes(y = after_stat(count) / sum(after_stat(count))),
-    binwidth = freedmanDiaconis,
-    boundary = 0,
-    closed = "left",
-    na.rm = TRUE,
-    col = "black",
-    fill = "blue"
-  ) +
-  theme_bw() +
-  xlab("Filling mass (g)") +
-  ylab("Rel. frequency") +
   scale_y_continuous(
-    labels = scales::percent,
-    expand = expansion(mult = 0, add = c(0, 0.05))
+    expand = expansion(add = c(0, 2))
+  )
+
+```
+1. Notice that after we've defined the `fdRule` function, we can call the function in the `binwidth` argument instead of assigning a numeric value.
+
+As you compare @fig-hist1 and @fig-hist3, pay attention to how your descriptions change between them. In the former we might talk about the gaps between two groupings of values but in the later there are no longer any gaps. This highlights that your choice of bin width (or number of bins) is consequential. 
+
+### Pie Charts
+
+Another data visualization that people often mention are pie charts. Pie charts take the notion of a bar chart and plot things in a circular space. While in a bar chart we read the height of the bar to get the frequency value, pie charts work off of angle measures. That is, the measure of the each slices angle reflects the relative proportion of the whole. This pie charts great at relativistic comparisons between values but terrible for getting accurate amounts. A second drawback to pie charts deals with deciding which slice has a larger angle measure when they are close to each other.
+
+If you absolutely want to create a pie chart, you can. However, you will need to do a little bit of data wrangling first.
+
+```{r}
+#| label: summarizeSpecies
+#| echo: true
+# Wrangle Penguin Data for Pie Chart ----
+## We will use {dplyr} commands to help us
+pieData <- penguins %>%
+  group_by(species) %>%
+  summarize(
+    count = n()
   )
 
 ```
 
-For this second example (Figure \ref{fig:histEx2}), I created a histogram displaying the relative frequency (percentages) for each bin of values. I used the Feedman-Diaconis rule to calculate the binwidth. To make a relative frequency histogram, I needed to alter the mapping, which is what the line `mapping = aes(y = after_stat(count) / sum(after_stat(count)))` does. The `after_stat` function allows you to access some of the internal calculations that `ggplot2` does to make plots. In this case, the count of observations in each bin. 
+The above code allows us to get the counts that we will then use to make the pie chart.
 
-The last call, `scale_y_continuous` allows us to adjust the vertical axis of the plot. Here I used the `label` argument to set the axis labels to percentages via `scales::percent`. The `expand` argument allows me to control how much space to add below and above my data. The `expansion` function lets me set this space to be multiple (`mult`) of my data (as a proportion; 0.1 means add 10%) or an absolute amount of added space (`add`). Both of these can be set to a single value or you can give a two-vector. If you give a single value, that value is applied to both the lower and upper sides of your data. If you give a two-vector, the first value is the amount of space to add on the lower end (below the data) while the second is for the upper end (above the data).
-
-Let's now make a similar visualization for `Type`.
-
-```{r histEx3}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Break down of Oreo Types",
-#| fig.height = 3
-
-## Bar chart for Type ----
-
+```{r}
+#| label: fig-pie1
+#| fig-cap: "Pie Chart of Penguin Species"
+#| fig-alt: "Pie chart of penguin species"
+#| fig-height: 3
+#| echo: true
+# Pie Chart of Penguin Species ----
 ggplot(
-  data = oreoData,
-  mapping = aes(x = Type)
+  data = pieData,
+  mapping = aes(x = "", y = count, fill = species) # <1>
 ) +
   geom_bar(
-    na.rm = TRUE,
-    col = "black",
-    fill = "blue"
+    stat = "identity", # <2>
+    color = "black" # <3>
+  ) +
+  coord_polar(theta = "y", start = 0) + # <4>
+  labs(
+    # title = "Pie Chart of Penguin Species",
+    fill = "Species"
   ) + 
-  theme_bw() +
-  xlab("Type of Oreo") +
-  ylab("Frequency") +
-  scale_y_continuous(
-    expand =  expansion(mult = c(0, 0.05), add = 0)
-  )
+  theme_void() # <5>
 
 ```
+1. We need to specify both an `x` and `y` component, even though the `x` component will be fixed. To color the slices, we need to map the species attribute to the `fill` aesthetic.
+2. Given that we've already done the counting, we just need the bar geometry to make use of the values as is. This code achieves this.
+3. Just as before the `color` argument will control the edging of the slices. Omit this argument if you don't want any borders.
+4. To transform the bars into pie slices, we change to the polar coordinate system (instead of the Cartesian).
+5. When making pie charts, use `theme_void`.
 
-Pretty much the only thing that changed was that instead of `geom_histogram` we used `geom_bar`. Within `ggplot2` the `geom_*` functions control the various geometries of data visualizations.
+### Waffle Plots
+
+A possible alternative to pie charts is to make a "square pie chart" known as a waffle plot. The core idea is to attempt to overcome the shortcomings of pie charts (namely, working with angle measure). In their most basic form, a waffle plot is a grid-like organization of glyphs. Each glyph can either represent an individual case OR could represent a certain proportion of the data collection. To create a waffle plot, you will need to have the `{waffle}` package installed on your machine (this is not covered by my `checkSetup` function).
+
+```{r}
+#| label: fig-waffle1
+#| fig-cap: "Waffle Plot of Penguin Species"
+#| fig-alt: "A proportional waffle plot of penguin species"
+#| fig-height: 3
+#| echo: true
+# Create a waffle plot of penguin species ----
+# install.package(waffle)
+library(waffle)
+
+ggplot(
+  data = pieData,
+  mapping = aes(fill = species, values = count)
+) +
+  geom_waffle( # <1>
+    n_rows = 10,
+    make_proportional = TRUE
+  ) +
+  labs(
+    # title = "Waffle Plot of Penguin Species",
+    fill = "Species"
+  ) +
+  theme_void() +
+  coord_equal() # <2>
+
+```
+1. To use the waffle geometry, you must first install and load the `{waffle}` package.
+2. To ensure that glyphs look square, we use the `coord_equal` command.
+
+
+@fig-waffle1 shows a waffle plot for the penguins species data. For this visualization, I've opted to to the proportion route (via the `make_proportional = TRUE` argument). This means that each square in my 10 X 10 grid represents one percent of the data collection. If we instead wanted each square to represent an individual penguin, I'd use `make_proportional = FALSE` as shown in @fig-waffle2.
+
+```{r}
+#| label: fig-waffle2
+#| fig-cap: "Waffle Plot of Penguin Species"
+#| fig-alt: "A case-based waffle plot of penguin species"
+#| fig-height: 3
+#| echo: true
+# Create a waffle plot of penguin species ----
+# install.package(waffle)
+library(waffle)
+
+ggplot(
+  data = pieData,
+  mapping = aes(fill = species, values = count)
+) +
+  geom_waffle(
+    n_rows = 8, # <1>
+    make_proportional = FALSE
+  ) +
+  labs(
+    # title = "Waffle Plot of Penguin Species",
+    fill = "Species"
+  ) +
+  theme_void() +
+  coord_equal()
+
+```
+1. We can alter how many rows appear in the waffle plot. I changed to 8 since 344 (the sample size of the penguin data) is a multiple of 8.
+
+Waffle plots can allow us to see the break down of our data collection along the lines of qualitative/categorical attributes, much like a bar chart.
+
+## Density Based Visualizations
+
+A close cousin of the histogram is a density plot. Whereas a histogram shows the absolute/relative frequency of cases within different bins for a given sample, a density plot attempts to show the probability density for the underlying quantitative attribute. 
+
+```{r}
+#| label: fig-density1
+#| fig-cap: "Density Plot of Filling Mass"
+#| fig-alt: "Density plot of Oreo filling masses"
+#| fig-height: 3
+#| echo: true
+# Density plot of Filling Mass ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Filling.Mass)
+) +
+  geom_density( # <1>
+    color = "black",
+    fill = "blue"
+  ) +
+  labs(
+    # title = "Relative Frequency Histogram of Filling Mass",
+    x = "Fillng Mass (g)",
+    y = "Density"
+  ) +
+  theme_bw() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.05)) # <2>
+  ) 
+
+```
+1. For density plots, use the `geom_density`.
+2. Instead of adding a fixed amount of buffer you can also use a multiplier. Here, I'm expanding the upper bound by 5%.
+
+@fig-density1 shows the density plot for the Oreo filling masses. You'll notice that at the left and right edges there are hard stops to the plot. By default the density plot will stop at the lower and upper extrema in the data. If you want to have the smoothing continue on, you'll need to adjust the limits with an additional command such as `scale_x_continuous(limits = c(lb, ub))` where you replace `lb` and `ub` with the numeric values for the new lower and upper bounds, respectively.
+
+Density plots do not suffer from the same sensitivity to bin width as histograms do. However, they still limits. Inside of the `geom_density` there is an option that controls an aspect called bandwidth (`bw`). We can think about bandwidth as a way of adjusting how much of the data we look at to make the smooth curve as we move through the domain of filling masses. If we make bandwidth very large, then we use more the data making a shallow curve. If we use a small bandwidth, then we use less data, making the curve more spiked. A second important option in `geom_density` is the `kernel`. This is the function that gets used to help make the smooth curve; different kernels will result in different density plots for the same data.
+
+:::{.callout-note}
+Digging into both bandwidth and kernel choices are beyond what is necessary for Stat 461. For any instances in our class, use the defaults for these is sufficient.
+:::
+
+## Structural Visualizations
+
+### Box Plots
+
+## Visualizing Multiple Attributes
+
+### Strip Charts
+
+### Scatter Plots
+
+### 2D Histograms
+
+### Multivariate Box Plots
+
+## Using Multiple Layers
+
+## A Data Visualization Explorer
+
+# Creating Figures in Markdown-Enabled Documents
+
+# OLD
 
 ## Density Plots
 
@@ -530,9 +812,9 @@ Hopefully as you've gone through this guide, you have a better idea of how to ma
 
 This concludes this guide to data visualizations in R/RStudio.
 
-\newpage
+{{< pagebreak >}}
 
 # Code Appendix
 
-```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
