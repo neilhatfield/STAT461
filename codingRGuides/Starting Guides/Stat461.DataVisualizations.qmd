@@ -354,6 +354,10 @@ ggplot(
 
 As you compare @fig-hist1 and @fig-hist3, pay attention to how your descriptions change between them. In the former we might talk about the gaps between two groupings of values but in the later there are no longer any gaps. This highlights that your choice of bin width (or number of bins) is consequential. 
 
+:::{.callout-caution}
+A common mistake that people make with histograms is to use the histogram to justify a claim that data follow a typical distribution. For example, upon seeing a symmetric, bell-shaped histogram and declaring that the data follow a Gaussian or "Normal" distribution. Unfortunately, this is __NOT__ accurate. At best, we can use a histogram as evidence *against* our data following a particular distribution. A histogram with a strong positive skew would support our claim that the data *do not* follow a Gaussian or "Normal" distribution.
+:::
+
 ### Pie Charts
 
 Another data visualization that people often mention are pie charts. Pie charts take the notion of a bar chart and plot things in a circular space. While in a bar chart we read the height of the bar to get the frequency value, pie charts work off of angle measures. That is, the measure of the each slices angle reflects the relative proportion of the whole. This pie charts great at relativistic comparisons between values but terrible for getting accurate amounts. A second drawback to pie charts deals with deciding which slice has a larger angle measure when they are close to each other.
@@ -470,7 +474,7 @@ ggplot(
 
 Waffle plots can allow us to see the break down of our data collection along the lines of qualitative/categorical attributes, much like a bar chart.
 
-## Density Based Visualizations
+### Density Based Visualizations
 
 A close cousin of the histogram is a density plot. Whereas a histogram shows the absolute/relative frequency of cases within different bins for a given sample, a density plot attempts to show the probability density for the underlying quantitative attribute. 
 
@@ -513,231 +517,384 @@ Digging into both bandwidth and kernel choices are beyond what is necessary for 
 
 ## Structural Visualizations
 
-### Box Plots
+The preceding kinds of data visualizations draw upon frequency of case occurrence. These count-based aspects work well with attributes that are categorical/qualitative or quantitative in nature. Suppose that we wanted to draw upon the inherent ordering of the underlying case attribute to help us learn more about our data. When we used the frequency-based visualizations with quantities, the conventions of how we plot kicked in help put the values of the case attribute into numeric order. However, there is a kind of data visualization that was originally created to help highlight the ordinal structure: the box plot.
+
+Many people often think about the box plot as just a visual representation of [Tukey's] Five Number Summery. The standard box plot does show these values but the purpose is to show much, much more.
+
+### The [Standard] Box Plot
+
+```{r}
+#| label: fig-box1
+#| fig-cap: "[Standard] Box Plot for Filling Mass"
+#| fig-alt: "A standard box plot for the filling mass of oreos"
+#| fig-height: 3
+#| echo: true
+# Standard box plot of Oreo filling mass ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Filling.Mass) 
+) +
+  geom_boxplot( # <1>
+    coef = Inf, # <2>
+    staplewidth = 0.1 # <3>
+  ) +
+  labs(
+    # title = "[Standard] Box Plot for Filling Mass",
+    x = "Filling mass (g)",
+    y = NULL # <4>
+  ) +
+  theme_bw() +
+  theme( # <5>
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.line.y = element_blank()
+  )
+
+```
+1. To invoke the box plot geometry we use the `geom_boxplot` command.
+2. For a [standard] box plot set `coef = Inf`.
+3. Traditionally, whiskers end with hash marks called staples. However, more modern box plots do away with them (the default). If you want them you can use the `staplewidth` argument as shown here.
+4. For a horizontal box plot, map the case attribute to `x` and tell `y` to have no (`NULL`) label. If you want a vertical box plot, use swap `x` and `y` in the code.
+5. These command will make a cleaner box plot by getting rid of elements that don't have any meaning. For a vertical box plot, change the `.y` to `.x` as you swap the other `x` and `y` references.
+
+@fig-box1 is a standard box plot in the sense that the whiskers (the lines) extend to the values of the *Sample Minimum* ($Q_0$) and *Sample Maximum* ($Q_4$). A box plot demonstrates the structure of a data collection in multiple ways. First, we can observe how the data collection lies across the continuum of the case attribute (much like a histogram does). Second, the box plot also shows us what portions of the continuum of values are captured by each of the ordered quarters of the collection. In @fig-box1, the first quarter covers the intervals $[2.25, 3.25]$, approximately. The third quarter approximately covers $[4.55, 6.4]$. We can do the same with the second and fourth quarters. Third, we can use where the quarters lie along with the fact that they contain *roughly* the same number of cases talk about density. The first quarter is more dense than the third quarter, suggesting that the first quarter has less variation between the cases than the third quarter. Finally, we can also use the box plot to get a sense of symmetry by comparing the two halves of the plot. We can split the box plot along the the thicker black line inside of the box that represents the value of the *Sample Median*). @fig-box1 shows that the filling masses of Oreos might have a some positive skewness (we need to cover more the filling mass axis for values larger than the value of the *Sample Median*).
+
+### Outlier Box Plots (Schematic Plots)
+
+A second form of box plots is sometimes referred to as an "outlier box plot" although this name is a bit misleading. Tukey original referred to these as *Schematic Plots*. They differ from standard box plots in that the whiskers will no longer reach the values of the *Sample Minimum* and *Sample Maximum*. Rather, they will extend to the appropriate hinge. Any cases whose values are beyond the hinges are considered as *outlying cases*. Such cases are not necessarily [potential] outliers as their classification as outlying depends upon our choice for a multiplier (i.e., the `coef` argument).
+
+```{r}
+#| label: fig-box2
+#| fig-cap: "Schematic Plot for Filling Mass"
+#| fig-alt: "A schematic plot for the oreo filling mass"
+#| fig-height: 3
+#| echo: true
+# Schematic plot of Oreo filling mass ----
+## I'm going to add a fake Oreo that has 20 grams of filling
+oreoData %>%
+  tibble::add_row(Filling.Mass = 20, Type = "Extra") %>% # <1>
+ggplot( # <2>
+  mapping = aes(x = Filling.Mass) 
+) +
+  geom_boxplot(
+    coef = 1.5 # <3>
+  ) +
+  labs(
+    # title = "Schematic Plot for Penguin Body Mass",
+    x = "Filling mass (g)",
+    y = NULL
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.line.y = element_blank()
+  )
+
+```
+1. Given how I've used the `add_row` command, the extra row only exists in this one bit of code and isn't permanently added to the data.
+2. As I am piping in the data frame (via `%>%`), I do not need to list the `data` argument in the `ggplot` call.
+3. The most common multiplier is 1.5 but you can use other values if you so choose.
+
+@fig-box2 shows the schematic plot for the Oreo filling masses with the addition of a fake Oreo with 20 grams of filling. Notice that this case appears as a black dot in @fig-box2. If we omitted this fake cookie, our schematic plot would actually look just like the standard box plot of @fig-box1. Any time that there are no outlying cases under your choice of rule, the schematic plot will automatically revert to a standard box plot.
+
+### Other Variations of the Box Plot
+
+There are a number of additional variations of box plots such as variable width of the boxes, adding notches to the boxes and adding on additional cut points (e.g., the first and seventh octiles). 
 
 ## Visualizing Multiple Attributes
 
+The data visualizations that we've looked at so far have all focused on a single case attribute at a time. Much of the time, we have several case attributes and we are wanting to explore the relationship between them. The following visualizations do just that.
+
 ### Strip Charts
+
+Let's start by attempting to observe how our cases fall when we look at a quantitative attribute and a categorical/qualitative. A strip chart is a great tool for this.
+
+```{r}
+#| label: fig-strip1
+#| fig-cap: "Strip Chart of Oreo Filling Mass by Type"
+#| fig-alt: "Strip chart of oreo filling mass by type"
+#| fig-height: 3
+#| echo: true
+# Strip chart of Oreo filling mass by type ----
+ggplot(
+  data = oreoData,
+  mapping = aes(x = Type, y = Filling.Mass) # <1>
+) +
+  geom_point( # <2>
+    size = 2 # <3>
+  ) +
+  labs(
+    # title = "Strip Chart of Oreo Filling Mass by Type",
+    x = "Type",
+    y = "Filling mass (g)"
+  ) +
+  theme_bw()
+
+```
+1. We need to specify the mapping for *each* attribute we want to use.
+2. We want to plot a glyph for each case; the point geometry (`geom_point`) does just that.
+3. The `size` argument allows us to change the size of the points.
+
+@fig-strip1 shows why we call such plots strip: we get a long, narrow set of points. These plot allow us to start looking at how similar/different cases are from each other both within their groupings and across groupings. Here, a categorical/qualitative attribute such as type of Oreo is what creates the groupings. Notice that we can't see each individual point (as in a dot plot). Cookies that share the same type and have either the same or very similar amounts of filling will end up lying on top of each other.
+
+:::{.callout-tip}
+If you want to make sure that you can see each point, you can do so by adding a small amount of jitter to each point just in the plot. This can be achieved by using the jitter geometry (`geom_jitter`) instead of the point geometry OR by using the argument `position = "jitter"` in `geom_point`. Keep in mind that you might need to adjust the amount of jitter in both horizontal and vertical dimensions to match your needs.
+:::
 
 ### Scatter Plots
 
-### 2D Histograms
+While a strip chart pairs a quantitative attribute with a categorical/qualitative one, a scatter plot pairs two quantitative attributes. 
+
+```{r}
+#| label: fig-scatter1
+#| fig-cap: "Scatter plot of Bill Length by Bill Depth"
+#| fig-alt: "Scatter plot of penguin bill length and bill depth"
+#| fig-height: 3
+#| echo: true
+# Scatter plot of penguin bill length by depth ----
+ggplot(
+  data = penguins,
+  mapping = aes(x = bill_depth_mm, y = bill_length_mm)
+) +
+  geom_point( 
+    size = 2,
+    na.rm = TRUE # <1>
+  ) +
+  labs(
+    # title = ""Scatter plot of Bill Length by Bill Depth",
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)"
+  ) +
+  theme_bw()
+
+```
+1. There are two penguins who don't have a recorded bill depth and/or length; this argument will remove those cases without a printed warning. By default, `ggplot` will remove the missing cases and print a warning message that it did so.
+
+The code to create @fig-scatter1 is essentially the same as a strip chart. The only difference is that instead of mapping a one quantitative attribute and one qualitative attribute we mapped two quantitative attributes. 
+
+We can actually go further by incorporating a third attribute if we desire. Let's recreate @fig-scatter1 but add the species attribute.
+
+```{r}
+#| label: fig-scatter2
+#| fig-cap: "Scatter plot of Bill Length by Bill Depth and Species"
+#| fig-alt: "Scatter plot of penguin bill length and bill depth by species"
+#| fig-height: 3
+#| echo: true
+# Scatter plot of penguin bill length by depth and species ----
+ggplot(
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm,
+    color = species, # <1>
+    shape = species # <2>
+  )
+) +
+  geom_point( 
+    size = 1,
+    na.rm = TRUE 
+  ) +
+  labs(
+    # title = ""Scatter plot of Bill Length by Bill Depth and Species",
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)",
+    color = "Species",
+    shape = "Species"
+  ) +
+  theme_bw()
+
+```
+1. We will map the species case attribute to the color aesthetic.
+2. For accessibility, you should always try to partner color with a second aesthetic such as shape.
+
+@fig-scatter2 revels how bill length and depth relate to each other in the presence of penguin species.
 
 ### Multivariate Box Plots
 
-## Using Multiple Layers
+We can also apply additional attributes to box/schematic plots.
 
-## A Data Visualization Explorer
-
-# Creating Figures in Markdown-Enabled Documents
-
-# OLD
-
-## Density Plots
-
-A density plots are a smoothed version of a histogram that can help us think about the underlying population rather than the sample in front of us. Making one in `ggplot2` is fairly straight forward.
-
-```{r densityPlot1}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "ggplot2 density plot of Oreo créme filling mass",
-#| fig.height = 3
-
-## Density Plot Example using ggplot2 ----
+```{r}
+#| label: fig-box3
+#| fig-cap: "Side-by-Side Box Plots of Filling Mass by Type"
+#| fig-alt: "Several schematic plots for the filling mass of oreos by type"
+#| fig-height: 4
+#| echo: true
+# Side-by-side schematic plots of Oreo filling mass by type----
 ggplot(
   data = oreoData,
-  mapping = aes(x = Filling.Mass)
-) +
-  geom_density(
-    na.rm = TRUE,
-    color = "black",
-    fill = "springgreen"
-  ) +
-  theme_bw() +
-  xlab("Filling mass (g)") +
-  ylab("Density") +
-  scale_x_continuous(
-    expand = expansion(mult = 0, add = 0),
-    limits = c(0, 10)
-  ) +
-  scale_y_continuous(
-    expand = expansion(mult = 0, add = c(0, 0.025))
-  )
-
-```
-
-Again, many of the arguments do the same thing as for the histograms/bar charts. Notice that instead of `col` you can use the whole word `color` (you can also use British spellings, `colour`) for the same effect. We changed which geometry we used to `geom_density` to get the density plot.
-
-Notice that in addition to `scale_y_continuous` there's also `scale_x_continuous`. They do the same thing, just for different aspects of the plot. (There's also `scale_fill_*`, `scale_color_*` , etc.). The `limits` argument allows you to control to what extend the plot goes for each axis. These limits will then have the expansion applied to them (if any). If you omit `limits`, then R will figure out decent limits for your data.
-
-A second way to create a density plot is with the `lattice` package.
-
-```{r densityEx2}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "lattice density plot of créme filling mass",
-#| fig.height = 3
-
-## Density plot using lattice ----
-lattice::densityplot(
-  x = ~ Filling.Mass,
-  data = oreoData,
-  na.rm = TRUE,
-  xlab = "Filling mass (g)",
-  col = "black"
-)
-```
-
-The `lattice` package's density plot includes all of the data points (the circles) along the plot's bottom. There is a new argument here: `x = ~ Filling.Mass`. The tilde, \~, is R's formula notation. We will be using throughout the semester. Using the formula notation `lattice`'s is similar to `ggplot2`'s `mapping` argument.
-
-It is possible to use `ggplot2` to create a density plot like the `lattice` package. Think of this as a challenge for you to figure out how to do. Hint: you need to use two geometries.
-
-## Box plots
-
-As you might guess, making a box plot in `ggplot2` will involve using `geom_boxplot`.
-
-```{r boxEx1}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Box plot of créme filling mass by type",
-#| fig.height = 3
-
-## Box plot in ggplot2 ----
-ggplot(
-  data = oreoData,
-  mapping = aes(x = Type, y = Filling.Mass, fill = Type)
+  mapping = aes(x = Type, y = Filling.Mass, fill = Type)  # <1>
 ) +
   geom_boxplot(
-    na.rm = TRUE,
-    linewidth = 0.2
+    coef = 1.5
   ) +
-  theme_bw() +
-  xlab(NULL) +
-  ylab("Filling mass (g)") +
-  theme(
-    legend.position = "bottom"
-  )
+  labs(
+    # title = "Side-by-Side Box Plots of Filling Mass by Type",
+    x = "Type",
+    y = "Filling mass (g)"
+  ) +
+  theme_bw() 
 
 ```
+1. Here I'm mapping Oreo type to both the horizontal axis (`x`) and to the color of the boxes (`fill`).
 
-Notice that this time we defined three aesthetics: the horizontal axis (`x`) and `color` both get the Type attribute and the vertical axis (`y`) with créme filling mass. When you define the color aesthetic, R will find a color scheme for to use and create a legend to include in the plot. You can alter the color scheme used. You can also position the legend with the `legend.position` argument of the `theme` call. Notice that `xlab(NULL)` does not turn off the horizontal axis; rather just makes the label disappear.
+@fig-box3 gives an example of side-by-side box plots (technically, schematic plots) for filling mass of Oreos broken down by type.
 
-If you don't have any groups for the box plot, then you can omit the extra aesthetics. For vertical box plots, assign the attribute to `y`; for horizontal box plots, use `x` instead.
+## Using Multiple Layers
 
-I should point out that `ggplot2` did NOT produce a true box plot. Rather R created an *outlier* box plot. The whiskers only extend to 1.5 times the value of the *IQR* from the first and third quariltes. Any data values beyond that appear as solid dots. A true box plot has the whiskers extend to the values of the *sample minimum* and *sample maximum*.
+The graphics that we create using `{ggplot2}` are very customizable and can allow us to do many things. One thing that we can do is layer multiple geometries on top of one another. This can allow us to leverage the strengths of different geometries to make up for the weaknesses of others. Consider 
 
-## Strip Charts
-
-Strip charts (or dot plots) are a type of scatter plot where instead of using two numeric attributes you use one numeric and one categorical. There are two ways to make strip charts: one using base R and the other using `ggplot2`.
-
-The base R method is pretty easy to do:
-
-```{r stripEx1}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Strip chart for the Oreo data using base R",
-#| fig.height = 3
-
-## Strip chart in base R ----
-stripchart(
-  x = Filling.Mass ~ Type,
-  data = oreoData,
-  pch = 20,
-  vertical = TRUE,
-  xlab = "Type",
-  ylab = "Filling mass (g)"
-)
-```
-
-Notice that we used R's formula notation `Filling.Mass ~ Type`. The ordering is important: `Response ~ Factor` / `Numeric ~ ModelTerms`. The other new arguments here are `pch` which sets the shape for plotting the points. To see a list type `?points` in your R console. I typically use either 19 or 20.
-
-To do the same thing in `ggplot2`:
-
-```{r stripEx2}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "Strip chart for the Oreo data using ggplot2",
-#| fig.height = 3
-
-## Strip chart in ggplot2 ----
+```{r}
+#| label: fig-box4
+#| fig-cap: "Box plot of Filling Mass"
+#| fig-alt: "Box plot of Oreo filling mass with cases showing"
+#| fig-height: 3
+#| echo: true
+# Box plot of Oreo filling masses with individual cases ----
 ggplot(
   data = oreoData,
-  mapping = aes(x = Type, y = Filling.Mass, fill = Type)
-) + 
-  geom_point(size = 2) +
-  theme_bw() +
-  xlab("Type") +
-  ylab("Filling mass (g)") +
-  theme(
-    legend.position = "none"
-  )
+  mapping = aes(x = Filling.Mass) 
+) +
+  geom_boxplot( # <1>
+    coef = Inf
+  ) +
+  geom_jitter( # <2>
+    mapping = aes(y = 0), # <3>
+    width = 0, # <4>
+    height = 0.1 # <5>
+  ) +
+  labs(
+    # title = "Box plot of Filling Mass",
+    x = "Type",
+    y = "Filling mass (g)"
+  ) +
+  theme_bw() 
+
 ```
+1. The first layer to our figure will be a [standard] box plot.
+2. The second layer will place glyphs for each cookie via the jitter geometry.
+3. We need to add a second quantity for `geom_jitter` to function. A horizontal box plot is centered around `y = 0`, thus we will give all points this initial `y` value.
+4. The `width` argument controls how far to move a case horizontally. By setting this to zero, we will preserve each case's true value for the attribute on the horizontal axis (i.e., filling mass).
+5. The `height` argument controls how far to move a case vertically. Since the vertical axis does not represent any aspect of our cookies, this is the best dimension to shift the glyphs. Glyphs will be shifted a random amount up to the value we list.
 
-## QQ Plots
+@fig-box4 allow us to draw upon all of the strengths of a [standard] box plot while also getting to see where the individual cases fall. 
 
-Quantile-Quantile (QQ) plots are a useful tool to see whether or not your data follow a particular distribution. Much like density plots there are two ways you can create them; one using the `car` package and one (more complicated) using `ggplot2`.
+:::{.callout-caution}
+Layering geometries can be useful but can also be overdone. With any data visualization that you create, always to a few moments to critically examine the end result. Is the visualization useful? Too busy? Too hard to understand? If so, adjust.
+:::
 
-```{r qqEx1}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "QQ plot for Oreo créme filling mass using car",
-#| fig.height = 4
+## Quantile-Quantile Plots
 
-## QQ Plots using car ----
-car::qqPlot(
-  formula = ~ Filling.Mass,
-  data = oreoData,
-  distribution = "norm",
-  envelope = 0.90,
-  id = FALSE,
+Quantile-Quantile plots, also known as QQ Plots are an interesting type of visualization. QQ plots consist of multiple attributes that are derived from the single case attribute we use as an input. The `{car}` package has one of the best implementations of QQ plots that I've come across.
+
+```{r}
+#| label: fig-qq1
+#| fig-cap: "QQ plot for Oreo Filling Mass"
+#| fig-alt: "QQ plot of oreo filling mass"
+#| fig-height: 4
+#| echo: true
+# QQ Plots using the {car} package ----
+car::qqPlot( # <1>
+  x = oreoData$Filling.Mass, # <2>
+  distribution = "norm", # <3>
+  envelope = 0.90, # <4>
+  id = FALSE, # <5>
   pch = 19,
   ylab = "Empirical quantiles"
 )
 ```
+1. We use the `qqPlot` function to create a QQ plot.
+2. We must provide the case attribute that we want to use.
+3. The `distribution` argument is where we can specify which named distribution we want to check our data against. The default is the Gaussian (or "Normal") distribution with the value `"norm"`.
+4. The `{car}` package allows use to add a confidence envelope by setting the `envelope` argument to either a number (representing the confidence level) or to `FALSE` to turn off the envelope.
+5. The `id` argument toggles whether to show the two cases that depart the most from the reference line (`TRUE`). These points will be labelled by their row number. `FALSE` does not id the points
 
-The `car` package's method produces a scatter plot of the empirical and theoretical quantiles for each point as well as plotting the line of perfect match (solid blue) as well as a confidence envelope (dashed blue lines).
 
-Here the key arguments are the `formula` argument to specify the attribute's variable you want to explore, `data` to set which data set to use, `distribution` for which named distribution you want to reference (`"norm"` will give you the "normal" or Gaussian distribution), and `envelope` is where you specify the confidence level (if you don't want an envelope you can use `envelope = FALSE` to turn this off).
+@fig-qq1 shows a QQ plot for the Oreo filling masses (across both types) when compared to a Gaussian (or "Normal") distribution. While each dot in the QQ plot represents a cookie, neither axis represents the filling mass. The horizontal axis, labelled "norm quantiles", represents the quantile value that was assigned to each cookie based upon our chosen theoretical distribution. The vertical axis, labelled "Empirical quantiles", represents the quantile value that each cookie had given the sample. As a second layer, a solid blue comparison line is plotted. If the points all fall on this line, then we have a perfect match between what we've observed and theory. The confidence envelope helps us deal with the reality almost nothing is perfect. The envelope helps us develop some sense of how far from the comparison line is too far way; that is, outside the shaded envelope. We will discuss how to interpret QQ plots more in-depth later in the course.
 
-The `id` argument when set to `TRUE` will identify the two points with the most extreme vertical values. Often times these are not useful as the labels are the row indices. If you want to label them, set `id = TRUE` and store the plot in an object (i.e, `a <- car::qqPlot(...)`). The visualization will still get displayed but the row indices will not get printed out of context in your report.
 
-To create a similar plot in `ggplot2`, you'll need to do the following:
+## Customizations of Plots
 
-```{r qqEx2}
-#| echo = TRUE,
-#| eval = TRUE,
-#| fig.cap = "QQ plot for Oreo créme filling mass using ggplot2",
-#| fig.align = 'center',
-#| fig.height = 3,
-#| fig.width = 6,
-#| fig.pos = 'h'
+There are many ways in which you can customize plots created with the `ggplot` command. Check out the package's documentation as well as exploring examples there and online.
 
-## QQ Plot using ggplot2 ----
+One of the most common ways that people customize plots is by choosing their own colors. Always try to pick a color palette that is color-blind friendly. There are multiple packages for R that provide new color palettes. If you want a Penn State themed palette, feel free to use the following `psuPalette`.
+
+```{r}
+#| label: fig-scatter3
+#| fig-cap: "Scatter plot of Bill Length by Bill Depth and Species"
+#| fig-alt: "Scatter plot of penguin bill length and bill depth by species"
+#| fig-height: 4
+#| echo: true
+# Define the psuPalette ---- # <1>
+psuPalette <- c(
+  "#1E407C", "#BC204B", "#3EA39E", "#E98300",
+  "#999999", "#AC8DCE", "#F2665E", "#99CC00"
+) 
+
+# Scatter plot of penguin bill length by depth and species ----
 ggplot(
-  data = oreoData,
-  mapping = aes(sample = Filling.Mass)
+  data = penguins,
+  mapping = aes(
+    x = bill_depth_mm,
+    y = bill_length_mm,
+    color = species,
+    shape = species
+  )
 ) +
-  geom_qq(
-    na.rm = TRUE,
-    distribution = stats::qnorm,
-    dparams = list()
-  ) + 
-  geom_qq_line(
-    na.rm = TRUE,
-    distribution = stats::qnorm,
-    dparams = list(),
-    color = "blue"
+  geom_point( 
+    size = 2,
+    na.rm = TRUE 
+  ) +
+  labs(
+    # title = ""Scatter plot of Bill Length by Bill Depth and Species",
+    x = "Bill depth (mm)",
+    y = "Bill length (mm)",
+    color = "Species",
+    shape = "Species"
   ) +
   theme_bw() +
-  xlab("Theoretical quantiles") +
-  ylab("Empirical quantiles")
+  scale_color_manual(
+    values = psuPalette # <2>
+  )
+
 ```
+1. You just need to define this object once in your script. Then you can call the palette any where in your code after the definition.
+2. Here's how you would apply your custom palette to the color aesthetic. If you wanted to apply the palette to the fill aesthetic, you would use the `scale_fill_manual` command.
 
-You can add a confidence envelope through some data manipulation. Think of this as another challenge that you can choose to take up.
+Always balance creating glitzy visualizations with their usefulness. Visualizations that become too pretty/fancy lose much of their utility for helping people build their understandings of the underlying phenomenon.
 
-Notice that we used two geometries: `geom_qq` to plot the points and `geom_qq_line` to graph the line. For both of these we needed to define the aesthetic `sample` to house our data values we wanted to test. In addition, we need to specify which named distribution we're going to use as the theoretical reference. The `distribution` argument allows us to set this using the quantile functions built into the `stats` package that comes with all versions of R. You can see a list of the possible named distributions in the `stats` package help documentation (jump to the Q's).
+## A Data Visualization Explorer
 
-The `dparams` argument is where you can specify particular parameters. Notice that we left ours as `list()`. This says to use the defaults for the named distribution. In our case, this would be an Expected Value of 1 and a Standard Deviation of 1. Suppose that you wanted to test whether data followed a normal/Gaussian distribution with Expected Value of 50 and Standard Deviation 5, you would then set `dparams = list(mu = 50, sd = 5)`. R would then use that distribution to make the plot.
+Working with code can be challenging to get started. Luckily, the "dreamRs" (Victor Perrier and Fanny Meyer) have create a tool that allows you to use a drag-and-drop platform to create data visualizations. This tool is found in the package `{esquisse}` (French for sketch). One of the great aspects of this tool is that it will also create R code for you to be able to re-create the data visualization you make in the tool.
+
+```{r}
+#| label: esquisse1
+#| echo: true
+#| eval: false
+# Using esquisse
+# install.packages("esquisse") # <1>
+
+library(esquisse) # <2>
+esquisser(
+  data = oreoData, # <3>
+  viewer = "browser" # <4>
+)
+
+```
+1. You will need to install the `{esquisse}` package first if you don't already have it. (Not covered by the `checkSetup` function.)
+2. Load the package.
+3. The only required argument to the tool (`esquisser`) is the `data` argument. This should be the already loaded (and cleaned) data that you want to use.
+4. The `viewer` argument is optional. By default a new window will appear inside of your IDE. You can direct the tool to use a new tab in your default browser instead. If you are using the base R app, the command will go to your browser.
+
+### Cautions on `esquisser`
+
+There are a couple of things to be aware of when you use the `esquisser` tool. First, when the tool is running, you will not be able to submit any other commands to your console. You'll have to completely close the tool to regain use of the console.
+
+Second, __do not__ run the `esquisser` tool inside of a Markdown-enabled document. Too often when people do this they forget to comment out, disable, or otherwise remove the command. Then when they go to knit/render their document, the process hangs and does not finish. Essentially, the `esquisser` command disrupts the knitting/rendering process. Use this tool in either a R script or directly in the console.
+
+# Creating Figures in Markdown-Enabled Documents
+
+# OLD
 
 # Figure Options in R Markdown
 
