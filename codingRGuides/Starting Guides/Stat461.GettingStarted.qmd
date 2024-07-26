@@ -226,7 +226,7 @@ Where we first create a `packages` object that contains the name of all of the p
 When I work in a Markdown-enabled documents, I typically place my very first code chunk towards the top of the document and name this chunk "setup" or "setupFiles". This chunk is where I put my library commands.
 
 In an R Markdown document, this would look something like the following:
-````markdown
+
 ```{{r setup}}
 packages <- c("tidyverse", "knitr", "kableExtra", "psych")
 lapply(
@@ -236,10 +236,9 @@ lapply(
   quietly = TRUE
 )
 ```
-````
 
 In a Quarto document, the name of the chunk moves to the chunk option `label`:
-````markdown
+
 ```{{r}}
 #| label: setup
 packages <- c("tidyverse", "knitr", "kableExtra", "psych")
@@ -250,7 +249,6 @@ lapply(
   quietly = TRUE
 )
 ```
-````
 
 ## Loading Data
 

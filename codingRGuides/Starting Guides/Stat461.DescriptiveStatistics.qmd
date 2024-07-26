@@ -520,7 +520,7 @@ While the table does look better than the raw display's above, there is still mu
 + Add a caption/title to the table so that we can reference the table in our narrative,
 + Fix the number of digits to reign in extremely long decimals and add place commas for large numbers
 + Control the alignment of values (left, center, right, etc.)
-+ Adjust the styling of the table to improve readbility
++ Adjust the styling of the table to improve readability
 + Ensure that the table doesn't run off the page when in PDF/Word document or require scrolling in a web page.
 
 ## Improving the Summary Table
@@ -557,7 +557,6 @@ There are two elements we need for this two work: each code chunk needs a name/l
 
 If you are using R Markdown, the easiest approach is to use `kable`'s `caption` argument as shown here:
 
-````markdown
 ```{{r kableEx2b}}
 # Improving the Table, Part 2 ----
 ## (I'm just showing code in this example)
@@ -572,7 +571,6 @@ summaryOreo %>%
   )
 
 ```
-````
 
 Notice that at the top of the code chunk I've placed "kableEx2b" right after the language specifier (`r`). This sets the name of the code chunk and is how we reference this table for cross-referencing. If we want to refer to this table in our narrative text, we would simply type "Table `\ref{tab:kableEx2b}`" (without the quotation marks). The `\ref` command tells the knitting process to create a reference to the table ("tab") that has the name "kableEx2b".
 
@@ -580,7 +578,6 @@ Notice that at the top of the code chunk I've placed "kableEx2b" right after the
 
 For Quarto documents, you'll want to use two (or three) code chunk options. You'll want to use the `label` option to set the label you'll use for cross-referencing. For tables, the label __MUST__ begin with `tbl-`. You'll then use the `tbl-cap` option to define what the caption should be. Make sure to enclose the caption text in quotation marks.
 
-````markdown
 ```{{r}}
 #| label: tbl-kableEx2b
 #| tbl-cap: "Summary Statistics for Oreo Filling Masses"
@@ -596,7 +593,6 @@ summaryOreo %>%
   )
 
 ```
-````
 
 ```{r}
 #| label: tbl-kableEx2b
@@ -765,7 +761,6 @@ The `"HOLD_position"` value tells the knitting process to place the table in the
 
 If you are working in a Quarto document, we will make use of a code chunk table position option: `tbl-pos: H`. (H for "Here".)
 
-````markdown
 ```{{r}}
 #| label: kableEx2f
 #| echo: true
@@ -791,7 +786,6 @@ summaryOreo %>%
   )
 
 ```
-````
 
 ## Quarto Specific
 
@@ -799,7 +793,6 @@ If you are using Quarto, there is an additional argument that you will need to a
 
 You can tell Quarto to __*not*__ use its default approach. This can be done in different places, the most basic of which is at the individual table level. 
 
-````markdown
 ```{{r}}
 #| label: kableEx2g
 #| echo: true
@@ -826,7 +819,6 @@ summaryOreo %>%
   )
 
 ```
-````
 
 The argument `table.attr` of the `kable` call allows us to pass the `'data-quarto-disable-processing="true"` command. This will prevent Quarto for using its default process.
 
