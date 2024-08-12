@@ -1,0 +1,469 @@
+---
+title: "Statistical Inference"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    tbl-cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+Welcome! This Getting Started guide focuses on Statistical Inference. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
+
+:::{.callout-caution}
+While I will use my Oreo Demo data here, I make no claims that 1) the methods I demonstrate here are appropriate for my data, 2) that these are exactly what you need to so in HW \#1.1, or 3) that you must use these methods in HW #1.1. Feel free to use the following as spring boards/launching platforms to do the analysis you see as appropriate in HW #1.1.
+:::
+
+I will be focusing on only two elements of statistical significance in this guide: doing null hypothesis tests and confidence intervals. While not a predominate focus, I will demonstrate some data manipulation techniques. Further, while I mention both checking assumptions (which you should do) and practical significance, I will not be demonstrating either of those here. (*Note*: the prior guides provide you will all of the tools you need to evaluate assumptions.)
+
+# Getting Started
+
+Keep in mind that any time you start a new project or R script, you should start with the same two steps: 1) load any beneficial packages and 2) load your data.
+
+## Load Packages
+
+R has many functions dealing with the most common forms of statistical inference. The only times where we might want to load additional packages for statistical inference include when we are using a complicated model or are going to running a simulation.
+
+For this guide, we'll make use of base R to do hypothesis testing and confidence interval construction. We will also draw upon the `{perm}` and `{boot}` packages so you can see examples of permutation simulations and bootstrapping. Both of these packages should have been installed if you used the my [`checkSetup` function](https://github.com/neilhatfield/STAT461#check-setup). We will also load `{tidyverse}` so that we can have additional tools at our disposal.
+
+```{r}
+#| label: loadPackages
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "perm", "boot")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+```
+
+## Load and Clean Data
+
+For this guide, I'm going to just focus on the my demo Oreo data collection. I will also clean the data by telling R to treat the Type attribute as a factor.
+
+```{r}
+#| label: loadData
+#| echo: true
+# Loading data into my session ----
+## Oreo Data (HW #1.1) 
+oreoData <- read.table( 
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
+  header = TRUE,
+  sep = ","
+) 
+
+# Tell R to treat Type as a factor ----
+oreoData$Type <- as.factor(oreoData$Type)
+
+```
+
+Be sure to draw upon the lessons from the prior guides (esp. Data Visualizations and Descriptive Statistics) to throughly explore and clean your data. Statistical inference follows the adage of "Garbage In, Garbage Out".
+
+# Statistical Inference Refresher
+
+Before we delve too far into doing statistical inference with R, I believe that doing a quick refresher would be good.
+
+Whether you're doing a Null Hypothesis Significance Test (NHST) or building a confidence interval, you have to rely on some logic.
+
+1)  You pick your *estimator*.
+2)  You come up with a way to describe the long-run behavior of that estimator.
+3)  You calculate the *estimate* using your data
+4)  Depends on your approach...
+    -   NHSTs: You look to see how unusual your estimate is given the long-run behavior of the estimator under the null hypothesis
+    -   Confidence Intervals: you look to see if your estimate and null hypothesis are consistent with each other.
+
+:::{.callout-tip}
+## Estimator vs. Estimate
+Keep in mind that the estimator is always a function or pair of functions that we apply to a data collection. The estimate is the numerical result (i.e., the output) we get after applying the estimator to an observed data collection. The estimate may be either a single number (i.e., a *point estimate*) or a pair of numbers defining the bounds of an interval (the resulting interval being an *interval estimate*).
+:::
+
+You have many choices to make throughout this process. While you can't just pick any set of methods, there are multiple which are valid for any particular statistical research question (SRQ).
+
+## Describing Long-Run Behavior
+
+In my opinion, the most important step in the logic process is the second one: developing a way to describe the long-run behavior of your chosen estimator. Ultimately, you are asked to come up with the __sampling distribution for your estimator and samples of size *n*__. There are three broad approaches we can take. In order from requireing the fewest to the most assumptions, they are: 
+
+1)  __Replication:__ this is the gold standard but is almost never done. *Why?* Because this is literally where you continuously redo the experiment. And we're not talking just once or twice, but essentially infinitely many times.
+2)  __Simulations:__ this family of methods while old did not take off until the advent of computers. Doing these methods with anything larger than small data sets by hand is difficult. Computers have helped make these methods much more feasible.
+    - __Permutation Methods:__ we can permute data values between the various groups to test whether the grouping factor impacts the response. (We often use combinations rather than permutations to reduce the work load.)
+    - __Bootstrapping:__ we sample with replacement from our sample. This lets us treat our original sample as a proxy of the population and attempt to carry out the goals of Replication.
+3)  __Shortcuts:__ statisticians created these methods to greatly cut down the amount of time needed to get to sampling distributions (hence they are shortcuts). These methods rely on multiple assumptions each and tend to be less robust than other methods.
+    -   __Nonparametric Shortcuts:__ these shortcuts are some times called "distribution free" but this is misnomer. You are still assuming that there is a distribution underpinning your data, you just don't specify exactly which one. These methods often use ranks of data rather than the actual data values.
+    -   __Parametric Shortcuts:__ these are the methods that most students learn in Intro Stats. These require the most assumptions and the strongest. Here you will make assumptions about the distribution underpinning your data; the most common that your data follow a Gaussian ("normal") distribution with a particular Expected Value ($\mu$) and Variance ($\sigma^2$).
+
+I will show you how you can use the above methods with R.
+
+# Shortcut Methods
+
+Shortcut methods are by far away the most common approaches to statistical inference. Most of the inference functions in R (or other statistical software packages) all relate to shortcuts of either variety. Most people will use parametric shortcuts as if all of their assumptions are satisified, then these methods tend to be more powerful than their nonparametric alternative.
+
+For the purposes of this guide, we will be focusing on statistical inference around the "Two Sample Location Problem"---testing the diferrence between two groups. Keep in mind that shortcut methods involve the most assumptions. You will need to be sure that you check the assumptions. I'm intentionally *not* doing so in this guide. Rather I'm going to jump to conducting the inferential analysis.
+
+## Parametric Shortcut
+
+The parametric shortcut approach is one that anyone who has gone through an Introductory Statistics class should be familiar with: a two-sample *t* test. You might have also heard this referred to as Student's Pooled *t* test or Welch's *t* test. While these tests are slightly different, we apply them to our data in R using the same function, `t.test`. 
+
+Consider the following code:
+```{r}
+#| label: tTestExample
+#| echo: true
+# t Test Example ----
+tTestResults <- t.test(
+  formula = Filling.Mass ~ Type, # <1>
+  data = oreoData, # <2>
+  mu = 0, # <3>
+  alternative = "two.sided", # <4>
+  var.equal = FALSE, # <5>
+  conf.level = 0.97, # <6>
+  na.action = "na.omit" # <7>
+)
+
+```
+1. The `formula` argument allows you to use R's formula expression language to specify which columns to use in the *t* test and in which position.
+2. The `data` argument is where you'll pass the appropriate data frame to the test.
+3. The `mu` argument is your opportunity to specify what the difference under the null hypothesis should be.
+4. The `alternative` argument lets you shift between the three different types of alternative hypotheses. Use `"two.sided"` for $\mu_1\neq\mu_2$, use `"less"` for $\mu_1 < \mu2$, and use `greater` for $\mu_1 > \mu_2$.
+5. For Welch's *t* test, set the `var.equal` argument to `FALSE`; to switch to Student's Pooled *t* test, set the argument to `TRUE`.
+6. If you want a confidence interval, enter the confidence level you want to use in the `conf.level` argument.
+7. The `na.action` argument is a safety precaution and tells R what to do in the event there are any cases where we're missing data. This can be omitted if you've cleaned your data thoroughly.
+
+:::{.callout-note}
+### R's Formula Language
+R's formula language follows a particular set of conventions that you need to be aware of. As we progress through the semester, we'll cover more of them but for now keep in mind that the response/dependent variable needs to go on the left-hand side of the tilde, `~`, and the explanatory/independent variable goes on the right-hand side.
+:::
+
+You'll notice that I stored the output of the `t.test` function in an object called `tTestResults`. If you don't save the results they will get immediately printed to the console. By saving the results, I can display them when I wish as well as present the results in a professional way.
+
+```{r}
+#| label: rawTTest
+#| echo: true
+# Display Raw t Test Results ----
+tTestResults
+
+```
+
+:::{.callout-warning}
+### Raw Output
+Be careful when displaying raw output such as what I've just shown. Raw output can be useful to us to quickly look at the results but isn't not necessarily the best for clients or the public to view.
+:::
+
+As mentioned, by saving the results of the `t.test` function into an object, we can present the results in a more professional way. The key to this is knowing which elements of the results are stored where in our result object. Luckily for you, I've put together a little table to help.
+
+Here is a quick table (@tbl-tTestNames) of useful values; to call the value you'll use `tTestResults$name`.
+
+| `name` | element | example | result |
+|:------|:------|:------:|:-----:|
+| `statistic` | value of *t* | `tTestResults$statistic` | `r tTestResults$statistic`|
+| `parameter` | *Degrees of Freedom* | `tTestResults$parameter` |`r tTestResults$parameter`|
+| `p.value` | The *p*-value | `tTestResults$p.value` | `r tTestResults$p.value`|
+| `conf.int` | Your confidence interval | `tTestResults$conf.int` | `r tTestResults$conf.int` |
+| `estimate` | Group Means | `tTestResults$estimate`| `r tTestResults$estimate`|
+: Table of Result Names for *t* Test {#tbl-tTestNames}
+
+Notice that these values aren't "pretty". You'll want to use `round` and/or `prettyNum` with them. 
+
+For a Two Sample *t* test, I would just report values in my narrative and not worry about a table. For example, I might write something like this:
+
+> Using Welch's *t* test, we find that *t*(`r round(tTestResults$parameter, digits = 2)`) $\approx$ `r round(tTestResults$statistic, digits = 2)`; this yielded a *p*-value `r ifelse(test = tTestResults$p.value < 0.0001, yes = "< 0.0001", no = round(tTestResults$p.value, digits = 4))`. The 97% confidence interval is (`r round(tTestResults$conf.int, digits = 2)`).
+
+What I typed in my R Markdown file: 
+
+> Using Welch's \*t\* test, we find that \*t\*(\`r`round(tTestResults$parameter, digits = 2)`\`) \$\\approx\$ \`r`round(tTestResults$statistic, digits = 2)`\`; this yielded a \*p\*-value \`r`ifelse(test = tTestResults$p.value < 0.0001, yes = "< 0.0001", no = round(tTestResults$p.value, digits = 4))`\`. The 97% confidence interval is (\`r`round(tTestResults$conf.int, digits = 2)`\`).
+
+Notice that the above approach provides an opportunity for you to add on additional interpretation. Further, if the underlying data collection gets updated, the new results of the *t* test will automatically appear in the body of your report.
+
+:::{.callout-tip}
+### Inference Logic Summary for Parametric Shortcut
+
+1. Estimator: Welch's *t* (alternatively, Student's Pooled *t*)
+2. Sampling Distribution Approach: Parametric Shortcut
+3. Estimate:
+   - Point: `r round(tTestResults$statistic, digits = 2)`
+   - Interval: (`r round(tTestResults$conf.int, digits = 2)`)
+4. Decision: left to the student
+
+:::
+
+## Nonparametric Shortcut
+
+Sometimes the assumptions of a parametric shortcut aren't satisfied. In such situations, you might try transforming your data to see if that can resolve the violations. However, finding the best transformation can be challenging and might not lead to a fix of the underlying violation.
+
+This is where a nonparametric shortcut can be useful. The nonparametric alternatives to the *t* test are the Wilcoxon Rank Sum Test and the Mann-Whitney Test. The Wilcoxon Rank Sum and the Mann-Whitney test are equivalent to each other. To run this shortcut, we use the `wilcox.test` function in R.
+
+```{r}
+#| label: wilcoxExample
+#| echo: true
+# Wilcoxon Rank Sum Test ----
+wilcoxResults <- wilcox.test(
+  formula = Filling.Mass ~ Type, # <1>
+  data = oreoData, # <2>
+  mu = 0, # <3>
+  alternative = "two.sided", # <4>
+  exact = FALSE, # <5>
+  correct = TRUE, # <6>
+  conf.int = TRUE, # <7>
+  conf.level = 0.97, # <8>
+  na.action = "na.omit" # <9>
+)
+
+```
+1. The `formula` argument allows you to use R's formula expression language to specify which columns to use in the test and in which position.
+2. The `data` argument is where you'll pass the appropriate data frame to the test.
+3. The `mu` argument is your opportunity to specify what the difference under the null hypothesis should be.
+4. The `alternative` argument lets you shift between the three different types of alternative hypotheses. Use `"two.sided"` for $\mu_1\neq\mu_2$, use `"less"` for $\mu_1 < \mu2$, and use `greater` for $\mu_1 > \mu_2$.
+5. The `exact` logical argument controls whether an exact *p*-value should be sought (`TRUE`) or if an approximation will suffice (`FALSE`).
+6. The `correct` logical argument controls whether a continuity correction should be applied for the approximations to the Gaussian.
+7. The `conf.int` logical argument lets you specify whether a confidence interval is constructed.
+8. If you want a confidence interval, enter the confidence level you want to use in the `conf.level` argument.
+9. The `na.action` argument is a safety precaution and tells R what to do in the event there are any cases where we're missing data. This can be omitted if you've cleaned your data thoroughly.
+
+There are a lot of parallels between the `t.test` and the `wilcox.test` functions and that is intentional. Many times developers in R tried to make functions as similar to each other as possible to help out users.
+
+Just as with the *t* test example, notice that I stored the output into the `wilcoxResults` object. I can display the raw output OR build a more professional presentation of the results.
+
+```{r}
+#| label: wilcoxResults
+#| echo: true
+# Display Raw results of Wilcoxon Test ----
+wilcoxResults
+
+```
+
+Just as with the Parametric Shortcut, you'll want to store the output as an object and then call what parts you need for your narrative. Here is a quick table (@tbl-wilcoxonTestNames) of useful values; to call the value you'll use `wilcoxResults$name`.
+
+| `name` | gives | example | result |
+|:------|:------|:------:|:-----:|
+| `statistic` | value of *W* | `wilcoxResults$statistic` | `r wilcoxResults$statistic` |
+| `p.value` | The *p*-value | `wilcoxResults$p.value` | `r wilcoxResults$p.value` |
+| `conf.int` | Your confidence interval | `wilcoxResults$conf.int` | `r wilcoxResults$conf.int` |
+| `estimate` | Difference in location | `wilcoxResults$estimate`| `r wilcoxResults$estimate` |
+: Table of Result Names for Wilcoxon Rank Sum Test {#tbl-wilcoxonTestNames}
+
+What might you type in R Markdown to produce the following? 
+
+> Using the Wilcoxon/Mann-Whitney test, we find that *W*=`r round(wilcoxResults$statistic, digits = 2)`; this yielded a *p*-value `r ifelse(test = wilcoxResults$p.value < 0.0001, yes = "< 0.0001", no = round(testOutput1$p.value, digits = 4))`. The 97% confidence interval is (`r round(wilcoxResults$conf.int, digits = 3)`). There is approximately `r round(wilcoxResults$estimate, digits = 2)` grams of créme filling between the two groups' location parameters.
+
+:::{.callout-tip}
+### Inference Logic Summary for Nonparametric Shortcut
+
+1. Estimator: Wilcoxon Rank Sum, *W* (alternatively, Mann-Whitney *U*)
+2. Sampling Distribution Approach: Nonparametric Shortcut
+3. Estimate:
+   - Point: `r round(wilcoxResults$statistic, digits = 2)`
+   - Interval: (`r round(wilcoxResults$conf.int, digits = 2)`)
+4. Decision: left to the student
+
+:::
+
+# Permutation Simulations
+
+Rather than taking a shortcut to arrive at the sampling distribution for our chosen estimator, we can use a simulation approach. The first simulation approach that we'll talk about is Permutation Simulation.
+
+In general, the permutation simulation approach leans heavily into the idea of the null hypothesis. Specifically, the null hypothesis that there is no difference in the response due to the factor. Under this hypothesis, which group a particular case is a member of is arbitrary and could have been different. This leads us to the idea that we can swap cases between the various groups (i.e., permuting the cases). (Note: we will maintain the original sizes of the groups.)
+
+The `{perm}` package has several functions that will handle shuffling/swapping/permuting cases for us.
+
+```{r}
+#| label: permExample
+#| echo: true
+# Permutation Example ----
+# library(perm) # <1>
+permResults <- permTS(
+  formula = Filling.Mass ~ Type, # <2>
+  data = oreoData, # <3>
+  alternative = "two.sided", # <4>
+  exact = FALSE, # <5>
+  na.action = "na.omit" # <6>
+)
+
+```
+1. Remember that you'll need to load the `{perm}` package before you can use the the `permTS` function.
+2. We will use the `formula` argument to establish the response (left-hand side) and the factor (righ-hand side).
+3. Remember to base our data frame to the `permTS` function with the `data` argument.
+4. The `alternative` argument lets you shift between the three different types of alternative hypotheses. Use `"two.sided"` for $\mu_1\neq\mu_2$, use `"less"` for $\mu_1 < \mu2$, and use `greater` for $\mu_1 > \mu_2$.
+5. The `exact` logical argument controls whether you want R to try to build the exact permutation sampling distribution or whether to approximate the permutation sampling distribution. For our purposes, the approximate approach will work (i.e., use `FALSE` as the input value).
+6. The `na.action` argument is a safety precaution and tells R what to do in the event there are any cases where we're missing data. This can be omitted if you've cleaned your data thoroughly.
+
+```{r}
+#| label: permOut
+#| echo: true
+# Print the raw results of the permutation approach ----
+permResults
+
+```
+
+You'll notice that just like with both shortcut methods, I saved the results into an output object (`permResults`). Just as before we can look at the raw results as well as make a more professional looking statement. Besides the method of getting to the sampling distribution for the estimator (the *Z* statistic in this case), there are two additional differences between the permutation approach and the shortcuts. First, the permutation approach does not allow you specify a value under the null other than zero. Second, the `{perm}` package does not allow you to use an interval estimator (i.e., no confidence intervals).
+
+To build a more professional statement, we can reference the appropriate elements inside the `permResults` object as shown in @tbl-permNames.
+
+| `name` | element | example | result |
+|:------|:------|:------:|:-----:|
+| `statistic` | value of *Z* | `permResults$statistic` | `r permResults$statistic` |
+| `p.value` | The *p*-value | `permResults$p.value` | `r permResults$p.value` |
+| `estimate` | Difference in location | `permResults$estimate` | `r permResults$estimate` |
+: Table of Result Names for Permutation Test {#tbl-permNames}
+
+:::{.callout-tip}
+### Inference Logic Summary for Permutation Simulation
+
+1. Estimator:  Difference in values of the *SAM* (the *Z* statistic when approximating)
+2. Sampling Distribution Approach: Permutation Simulation
+3. Estimate:
+   - Point: `r round(permResults$estimate, digits = 2)`
+   - Interval: None given in the `{perm}` package
+4. Decision: left to the student
+
+:::
+
+# Bootstrapping
+
+A second simulation approach is that of bootstrapping. Bootstrapping aims for the goals of replication by substituting our sample for the population. This allows us to constantly re-sample with replacement from our sample to build new data collections. This approach generally focuses on interval estimators rather than point estimators. 
+
+Bootstrapping is very flexible and we can use just about any estimator we might wish. This flexibility means that we will need to define our estimator as a function in R. For example, suppose we wanted to look at the ratio of values of the *Sample Median* of filling mass for the two types of Oreos (i.e., $\widetilde{y}_{DS}/\widetilde{y}_{R}$).
+
+```{r}
+#| label: defineEstimator
+#| echo: true
+# Define an estimator to use in bootstrapping ----
+myEstimator <- function(data, index) {
+  ## Get Medians by Type
+  medians <- aggregate( # <1>
+    Filling.Mass ~ Type, # <2>
+    data = data,  # <3>
+    subset = index, # <4>
+    FUN = median,
+    na.action = "na.omit"
+  )
+  return(medians$Filling.Mass[1] / medians$Filling.Mass[2]) # <5>
+}
+
+
+```
+1. The `aggregate` function is part of base R that will apply the function listed in `FUN` to any data collection that you want to break into sub-collections.
+2. The `formula` argument provides a way to specify how to break the data down into sub-collections.
+3. The `data` argument here will need to stay as `data` rather than putting in our particular Oreo data (e.g., `oreoData`). This will allow us to re-use `myEstimator` with our many bootstrapped samples.
+4. The `subset` argument will also need to set to `index`. The `index` value will come from our bootstrapping.
+5. We'll end the definition of our function (estimator) with an explicit `return` call that specifies the final calculation to get to a numeric value.
+
+Now that we have an estimator defined, we can set up the bootstrapping by using the `{boot}` package.
+
+```{r}
+#| label: runBoot
+#| echo: true
+# Conduct a bootstrap on Oreo data ----
+# library(boot) # <1>
+
+set.seed(461) # <2>
+
+bootResults <- boot(
+  data = oreoData, # <3>
+  statistic = myEstimator, # <4>
+  strata = oreoData$Type, # <5>
+  R = 10000 # <6>
+)
+```
+1. If you've not already loaded the `{boot}` package, be sure to do so.
+2. To ensure that you (and others) can re-create your results, it is wise to set the seed used for the random generator.
+3. Pass your data frame to the `boot` function.
+4. For the `statistic` argument you'll need to give the name of your estimator that you've previously defined.
+5. The `strata` argument allows you specify a factor that will break your data down into sub-collections for re-sampling. This allows us to make sure that we're sampling regular Oreos we only draw from regular Oreos and not Double Stuf.
+6. The `R` argument controls the number of bootstrap replicates R will create. Each bootstrap replicate entails 1) randomly sampling with replacement from each group, and then 2) applying our estimator to the new data collection.
+
+::: {.callout-warning}
+If you get an error message such as `Warning in tapply(seq_len(n), as.numeric(strata)): NAs introduced by coercion`, you might need to double check that you've told R to treat your factor column as a factor instead of a character column.
+
+:::
+
+You will want to save the results of the bootstrapping into an object such as `bootResults`. If we want to look at the observed value of our estimator using the original sample, we can do so by calling `bootResults$t0`. This yields `r round(bootResults$t0, digits = 4)` for my Oreo data collection.
+
+:::{.callout-note}
+Since we are re-sampling from our observed sample, we will find that replicates will center around the `t0` estimate.
+
+:::
+
+To transform those results into something useful, we will pass that object to another function: `boot.ci`.
+
+```{r}
+#| label: bootCIExample
+#| echo: true
+# Create Confidence Intervals from Bootstrapping Simulation ----
+bootCIs <- boot.ci(
+  boot.out = bootResults, # <1>
+  conf = 0.97, # <2>
+  type = c("perc", "bca") # <3>
+)
+
+```
+1. Pass the results of your bootstrapping simulation via the `boot.out` argument.
+2. Use the `conf` to specify your chosen confidence level.
+3. The `type` argument allows you to control what types of bootstrap confidence intervals you want to use. The `"perc"` option gives percentile based intervals while the `"bca"` draws upon the Bias Corrected and accelerated method
+
+The `bootCIs` object will contain several sub-objects. In our case, there will be a `percent` and a `bca` object since we've asked for those two types of intervals. To get the actual values, we will need to use some indexing notation. For instance, we would need to type `bootCIs$percent[4]` and `bootCIs$percent[5]` to get the lower and upper end points of the percentile confidence interval, respectively. For the BCa method, we would replace `percent` with `bca`. Thus, we would find the following:
+
++ Percentile: (`r round(bootCIs$percent[4], digits = 4)`, `r round(bootCIs$percent[5], digits = 4)`)
++ BCa: (`r round(bootCIs$bca[4], digits = 4)`, `r round(bootCIs$bca[5], digits = 4)`)
+
+:::{.callout-tip}
+### Inference Logic Summary for Bootstrapping Simulation
+
+1. Estimator:  Ratio of Median Values
+2. Sampling Distribution Approach: Bootstrapping Simulation
+3. Estimate:
+   - Point: `r round(bootResults$t0, digits = 2)` (the `t0` element)
+   - Interval: Percentile: (`r round(bootCIs$percent[4], digits = 2)`, `r round(bootCIs$percent[5], digits = 2)`)
+4. Decision: left to the student
+
+:::
+
+# Data Transformations
+
+As mentioned earlier, if assumptions of a parametric shortcut aren't satisfied, we can try a nonparametric shortcut or a simulation method. Alternatively, we can try to transform the data. However, there might be other situations where we need to transform our data and construct new attributes (sometimes referred to as a "derived variables"). For instance, we might want to employ the following transformations
+
++ `halfMass`: divide all filling masses by 2
++ `logMass`: take the log of all filling masses (that's $\log_e$)
++ `doubleR`: double only the Regular Oreo's filling masses
+
+The `{dplyr}` package (part of `{tidyverse}`) provides several tools that make such transformations relatively easy to implement.
+
+```{r}
+#| label: transformExamples
+#| echo: true
+#| eval: false
+# Examples of applying transformations to data ----
+oreoData <- oreoData %>%
+  mutate(
+    halfMass = Filling.Mass / 2,
+    logMass = log(Filling.Mass),
+    doubleR = ifelse(
+      test = Type == "Regular",
+      yes = 2 * Filling.Mass,
+      no = Filling.Mass
+    )
+  )
+
+```
+
+The `mutate` function is the true workhorse. This allows us to draw upon the `oreoData` data frame and create three new columns: `halfMass`, `logMass` and `doubleR` that contain the transformed values of `Filling.Mass`. Notice that we can have simple mathematical transformations (as is the case for `halfMass` and `logMass`) as well as more complicated, conditional transformations (e.g., `doubleR`). In the case of the new `doubleR` column, this column will contain either the original filling mass of the cookie for Double Stuf Oreos or twice the original filling mass of the cookie for Regular Oreos.
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
