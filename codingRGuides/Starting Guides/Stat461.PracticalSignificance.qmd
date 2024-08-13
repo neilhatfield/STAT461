@@ -1,0 +1,274 @@
+---
+title: "Practical Significance"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    tbl-cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+Welcome! This Getting Started guide focuses on Practical Significance--an important but often overlooked complement to statistical significance. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
+
+# Getting Started
+
+Keep in mind that any time you start a new project or R script, you should start with the same two steps: 1) load any beneficial packages and 2) load your data.
+
+## Load Packages
+
+Getting a handle on practical significance happens through a class of statistics that focus on measuring *effect size*. Calculating the effect size can be a bit challenging to do by hand. However, there are number of functions in R that help us. 
+
+For this guide, we will need to draw upon two packages: `{psych}` and the `{effectsize}`. Both of these packages should have been installed if you used the my [`checkSetup` function](https://github.com/neilhatfield/STAT461#check-setup). Additionally we will load the `{tidyverse}` package to have data cleaning tools at the ready as well as the suite of additional tools I've created for this course.
+
+```{r}
+#| label: loadPackages
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "psych", "effectsize")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Load Stat 461 Additional Tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+## Load and Clean Data
+
+For this guide, I'm going to just focus on the my demo Oreo data collection. I will also clean the data by telling R to treat the Type attribute as a factor.
+
+```{r}
+#| label: loadData
+#| echo: true
+# Loading data into my session ----
+## Oreo Data (HW #1.1) 
+oreoData <- read.table( 
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
+  header = TRUE,
+  sep = ","
+) 
+
+# Tell R to treat Type as a factor ----
+oreoData$Type <- as.factor(oreoData$Type)
+
+```
+
+Be sure to draw upon the lessons from the prior guides (esp. Data Visualizations and Descriptive Statistics) to throughly explore and clean your data. Statistical inference follows the adage of "Garbage In, Garbage Out".
+
+# Overview of Practical Significance
+
+When doing inference, there are two kinds of significance that we have to think about: statistical inference and practical significance. Statistical significance deals with whether a particular model adequately explains what we've seen in our data; our primary tools are *p*-values and confidence intervals. Statistical significance is essentially dichotomous: either our mode does or it does not. Practical significance shifts this question away from the dichotomy by focusing on the *extent* our model explains what we've seen in our data.
+
+As an example, we might ask whether a diet high in fiber leads to lower blood pressure. Statistical significance would provide evidence for us to make a claim of either "Yes" or "No". Practical significance would provide evidence of *how much* the blood pressure measurements might have changed under the high fiber diet.
+
+:::{.callout-note}
+## Measures of Association
+
+If you have ever worked with a measure of association such as [Pearson's] Correlation Coefficient, you've worked with an effect size for practical significance. The [Pearson] correlation statistic measures the strength of a linear relationship between two quantities--the extent to which the model (a lienar function) explains the observed data.
+:::
+
+There are numerous kinds of effect sizes that we can use with practical significance. In Stat 461 we will focus on three.
+
++ Variance Explained
++ Difference Based
++ Common Language/Probability Based
+
+In this guide, we will skip over the Variance Explained type of effect sizes. We'll cover them more in depth later in the course.
+
+## Matching the Effect Size Statistics with the Context
+
+Something that is important to keep in mind is that not every effect size statistic is appropriate in every situation. We need to keep in mind both the context and our research questions. Additionally, we'll need to keep in mind what methods we've used for statistical significance. That is to say, if we used a parametric shortcut, we should look for effect sizes that work within a parametric framework. Same with nonparametric. If we used a simulation approach, we have some additional freedom and can generate a sampling distribution of our chosen effect size.
+
+If you are wanting to measure the practical significance of a model, you'll need to use Variance Explained effect sizes. If you are looking at how two groups differ from each other, then you can use either the Difference Based and/or the Common Language effect sizes.
+
+# Difference Based Effect Sizes
+
+Difference based effect sizes are statistics that focus on trying to measure how far apart two populations' location parameters are from each other. Typically the location parameters are either the Expected Value or the Distribution Median. While it is tempting to use the *Sample Arithmetic Mean* or the *Sample Median* as stand-ins for the location parameters, those statistics would be applied to the samples. We want our effect size to tell us something about the *population*.
+
+## The Parametric Setting
+
+If you used a parametric shortcut, then you should look at the statistics known as Cohen's *d* and Hedges's *g* for effect sizes. Both measure the standardized difference between the two populations' Expected Values (a.k.a. population means). Hedges's *g* provides a correction to Cohen's *d* to account for bias that comes from having small samples. As the sample size increases, the two will be approximately equivalent. Both of these statistics are upwardly biased; this means that they tend to over-estimate the actual effect size.
+
+```{r}
+#|  label: differenceEF
+#|  echo: true
+# Getting Cohen's D and Hedge's G ----
+## Via the {psych} package ----
+# library(psych) # <1>
+diffES <- cohen.d( # <2>
+  x = Filling.Mass ~ Type, # <3>
+  data = oreoData, # <4>
+  alpha = 0.03 # <5>
+)
+
+## Via the {effectsize} package ----
+# library(effectsize) # <6>
+cohenES <- cohens_d( # <7>
+  x = Filling.Mass ~ Type,
+  data = oreoData,
+  ci = 0.97 # <8>
+)
+hedgesES <- hedges_g(
+  x = Filling.Mass ~ Type,
+  data = oreoData,
+  ci = 0.97
+)
+```
+1. Remember to load the `{psych}` package if you haven't already done so.
+2. The `cohen.d` function in `{psych}` will provide estimates for both Cohen's *d* and Hedges's *g*.
+3. We can pass the same formula we used in the `t.test` function.
+4. Don't forget to pass the data frame via the `data` argument.
+5. If you want a confidence intervals for the effect sizes, be sure to specify the *level of significance* (Confidence is 1 - significance) with the `alpha` argument.
+6. Remember to load the `{effectsize}` package if you haven't already done so.
+7. You'll have to use separate functions to get Cohen's *d* and Hedges's *g* when using the `{effectsize}` package.
+8. Both functions let you specify the *confidence level* for your confidence intervals of the effect size with the `ci` argument.
+
+You'll notice that I've saved the outputs into objects. This allows us to call the elements that we want. @tbl-diffNames shows the commands (code to call) that will give us either the point estimates or the interval estimates for the two effect sizes (relative to the two packages).
+
+| Package | Effect Size | Code to Call | Example Output |
+|:----|:-----|:----------:|:--------:|
+| `{psych}` | Cohen's *d* (Point) | `diffES$cohen.d[1, "effect"]` | `r diffES$cohen.d[1, "effect"]`|
+| `{psych}` | Cohen's *d* (Interval) | (`diffES$cohen.d[1, "lower"]`, `diffES$cohen.d[1, "upper"]`) | (`r diffES$cohen.d[1, "lower"]`, `r diffES$cohen.d[1, "upper"]`)|
+| `{psych}` | Hedges's *g* (Point)| `diffES$hedges.g[1, "effect"]` | `r diffES$hedges.g[1, "effect"]`|
+| `{psych}` | Hedges's *g* (Interval) | (`diffES$hedges.g[1, "lower"]`, `diffES$hedges.g[1, "upper"]`) | (`r diffES$hedges.g[1, "lower"]`, `r diffES$hedges.g[1, "upper"]`)|
+| `{effectsize}` | Cohen's *d* (Point) | `cohenES$Cohens_d` | `r cohenES$Cohens_d` |
+| `{effectsize}` | Cohen's *d* (Interval) | (`cohenES$CI_low`, `cohenES$CI_high`) | (`r cohenES$CI_low`, `r cohenES$CI_high`) |
+| `{effectsize}` | Hedges's *g* (Point) | `hedgesES$Hedges_g` | `r hedgesES$Hedges_g` |
+| `{effectsize}` | Hedges's *g* (Interval) | (`hedgesES$CI_low`, `hedgesES$CI_high`) | (`r hedgesES$CI_low`, `r hedgesES$CI_high`) |
+: Accessing Difference Based Effect Sizes {#tbl-diffNames}
+
+:::{.callout-caution}
+### Computational Choices
+You might notice in the Example Output column of @tbl-diffNames that the values for the same statistic are equal to each other across the two packages. This reflects the different choices that the package developers made. Differences between positive/negative deal with choices in the Order of Comparison while differences in magnitude reflect calculational choices. 
+
+:::
+
+Keep in mind that the in @tbl-diffNames the example output shows a bunch of decimal places. In general, there is never a need to go beyond four decimal places, and even that many can be excessive. You'll want to use either the `round` or `prettyNum` functions to make the values look nicer. Here's a narrative example using these effect sizes:
+
+> For my Oreo data, I find that Cohen's *d* is `r round(diffES$cohen.d[1, "effect"], digits = 2)` grams and Hedges's *g* is `r round(diffES$hedges.g[1, "effect"], digits = 2)` grams. Both of these are interpreted as the standardized distance between the location parameters of the Double Stuf Oreo population and Regular Oreo population.
+
+:::{.callout-tip}
+### Order of Comparison
+Keep in mind that differences are sensitive to order of comparison. Mathematically, we say that these comparisons aren't commutative and can express this effect with statements such as $A-B\neq B-A$. __You'll need to keep track of the order of comparison.__
+
+The `t.test` function used Double Stuf -- Regular while `cohen.d` appears to have used Regular -- Double Stuf. If you need the reverse additive comparison, you can multiple the estimates by -1.
+:::
+
+## The Nonparametric Setting
+
+If you used a nonparametric shortcut, you'll need to use a different effect size. Both Cohen's *d* and Hedges's *g* draw upon the same assumptions as many parametric shortcuts. Thus, if you've ruled those shortcuts invalid, then best to avoid those effect sizes.
+
+In the nonparametric setting, the Hodges-Lehmann Estimator $\widehat{\Delta}$ works well. I've created a function, `hodgesLehmann` that will calculate this value for us. This is part of the addition tools for Stat 461 that you'll need to load.
+
+To make use of this function, we will need to first reshape our data frame so that we have one vector of just the regular Oreos and a second vector of just Double Stuf. There are many ways you can achieve this; here's one.
+
+```{r}
+#| label: unstackExample
+#| echo: true
+# Unstack the filling masses/widening the data frame ----
+twoColOreo <- unstack(
+  x = oreoData, 
+  form = Filling.Mass ~ Type
+)
+
+```
+
+We can now use the following command to get the Hodges-Lehmann Estimate.
+
+```{r}
+#| label: hlExample
+#| echo: true
+# Get Hodeges-Lehmann Estimate ----
+hlEst <- hodgesLehmann(
+  x = twoColOreo$Regular,
+  y = twoColOreo$Double.Stuf
+)
+
+```
+
+The `hlEst` object stores the estimated value and thus all we need to do to access this value is to call `hlEst`. Here's a narrative example:
+
+> For my data, the Hodges-Lehmann estimate is $\widehat{\Delta}\approx`r round(hlEst, digits = 2)`$. This value is the *sample median* créme filling mass difference of all possible pairings of one Regular Oreo and one Double Stuf Oreo.
+
+# Common Language/Probability Based
+
+Common language effect sizes are statistics that try present a consistent way of interpreting the statistic's value, regardless of the context. The way that these work is to reframe things in terms of probability. 
+
+The Probability of Superiority is a common language effect size that centers on imagining randomly selecting two cases--one from each population and comparing the cases head-to-head. In the comparison we record whether the case from Population A has the strictly larger numeric value or not. (Ties are part of the not.) Then we imagine repeating the randomly sampling and comparison. The Probability of Superiority is then the long-run relative frequency that a case from Population A has the numerically larger value than the case from Population B.
+
+To calculate this value, we can make use the `probSup` function from the additional tools for Stat 461. This function takes a value of Cohen's *d* and will return the appropriate Probability of Superiority.
+
+```{r}
+#| label: probSup1
+#| echo: true
+# # Probability of Superiority ----
+ps <- probSup(d = diffES$cohen.d[1, "effect"])
+
+```
+
+We can display the Probability of Superiority value by calling `ps` either in the console or as part of a narrative entry. Keep in mind that using the `round` function is advised. You can express the Probability of Superiority as either a decimal or as a percentage.
+
+> For my Oreo data, the Probability of Superiority that a Regular Oreo has more créme filling than a Double Stuf Oreo is essentially `r paste0(round(ps, digits = 4)*100, "%")`.
+
+:::{.callout-tip}
+## Larger Value Doesn't Mean Better
+Keep in mind that "Superior" is a context-dependent term. In Basketball, having a larger score is superior to having a lower score but in Golf, having a lower score is superior. The Probability of Superiority just looks at the numerical values, not the context. 
+:::
+
+The `{effectsize}` package offers an additional way to calculate the Probability of Superiority.
+
+```{r}
+#| label: probSup2
+#| echo: true
+# Using the {effectsize} package for the Probability of Superiority ----
+altPS <- p_superiority(
+  x = Filling.Mass ~ Type, # <1>
+  data = oreoData, # <2>
+  parametric = TRUE, # <3>
+  ci = 0.97 # <4>
+)
+
+
+```
+1. We can pass the same formula we used in `t.test` or `wilcox.test` to the `p_superiority` function via the `x` argument.
+2. Be sure to pass your data frame along with the `data` argument.
+3. The `parametric` logical argument controls whether to use a parametric method (via Cohen's *d*) or a nonparametric method (`FALSE`).
+4. If you want a confidence interval for the Probability of Superiority, you can enter the confidence level via the `ci` argument.
+
+To access the point estimate, we would need to call `altPS$p_superiority`. For the confidence interval, we would call `altPS$CI_low` and `altPS$CI_high`.
+
+> For my Oreo data, the Probability of Superiority that a Double Stuf Oreo has more créme filling than a regular Oreo is essentially `r round(altPS$p_superiority, digits = 2)` [97% CI: (`r round(altPS$CI_low, digits = 2)`, `r round(altPS$CI_high, digits = 2)`)].
+
+:::{.callout-caution}
+Did you catch that the populations were flipped between the two methods? When using `probSup` Population were regular Oreos while Population A was Double Stuf when using `p_superiority`.  
+:::
+
+:::{.callout-important}
+## Switching Populations Around
+
+There is an important hazard to be aware of with the Probability of Superiority. Suppose you wanted to report the probability that a case from Population *B* had the higher score. You might think that we can take the complement of the probability of superiority we've observed (of Population *A*). Unfortunately, this doesn't work due to the fact that we can have cases with the same value from both populations (i.e., ties). Most of the time, you don't need to switch the populations around. In the event that you absolutely need to, come see me and I'll help you.
+:::
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
