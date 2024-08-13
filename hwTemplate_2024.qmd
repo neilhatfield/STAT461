@@ -1,25 +1,26 @@
 ---
-title: "Assignment Title"
-author: "Your Name Here"
-date: "Date"
-output: pdf_document
-geometry: left=1in,right=1in,top=1in,bottom=1in
-urlcolor: blue
-header-includes:
-  - \usepackage{subfig}
+title: "Enter Title"
+author: "Enter Authors"
+date: "Enter Date"
+format: 
+  pdf: 
+    documentclass: article
+    papersize: letter
+    number-sections: false
+    fig-align: center
+    cap-location: top
+    geometry: 
+      - margin=0.75in
+    colorlinks: true
+execute: 
+  echo: false
+  warning: false
+  
 ---
 
-```{r setupFiles, include = FALSE}
-# This template file is based off of a template created by Alex Hayes
-# https://github.com/alexpghayes/rmarkdown_homework_template
-
-# Setting Document Options
-knitr::opts_chunk$set(
-  echo = FALSE,
-  warning = FALSE,
-  message = FALSE,
-  fig.align = "center"
-)
+```{r}
+#| label: setupFile
+#| include: false
 
 # Load Additional Packages ----
 packages <- c("tidyverse", "knitr", "kableExtra") 
@@ -77,12 +78,12 @@ For more complicated code such as data manipulation and cleaning, creating graph
 
 To type mathematical formulas, you will need to use LaTeX commands. For inline mathematics you'll need to enclose your mathematical expression in \\( and \\). For display math (on it's own line and centered), enclose the expression in \\[ and \\].
 
-The following code will automatically create your Code Appendix by grabbing all of your code chunks and writing that code here. Take a moment to look through the appendix and make sure that your code is fully readable. Use comments in your code to help create markers for what code does what.
+The following code will automatically create your Code Appendix by grabbing all of your code chunks and writing that code here. Take a moment to look through the appendix and make sure that your code is fully readable. Use comments in your code to help create markers for what code does what
 
-\newpage
+
+{{< pagebreak >}}
 
 # Code Appendix
 
-```{r codeAppendix, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
-
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
