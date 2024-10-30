@@ -10,7 +10,7 @@ pvalRound <- function(x, digits = 4){
     ifelse(
       test = x < checkVal,
       yes = paste("<", format(checkVal, scientific = FALSE)),
-      no = format(round(x, digits = digits), scientific = FALSE)
+      no = as.character(format(round(x, digits = digits), scientific = FALSE))
     )
   }
 
@@ -404,7 +404,7 @@ adjustPValues <- function(contrastObject, method = "bonferroni"){
 anovaScreens <- function(dataFrame, response, factor, block = NULL) {
   require(dplyr)
   require(rlang)
-  
+
   ## Error Checking
   errorMessages <- c()
   if (length(factor) <= 0 | is.na(factor) | is.null(factor)) {
@@ -421,8 +421,8 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
     stop(paste("The response you gave,", response, ", was not found in the data frame supplied."))
   } else if (!(factor %in% names(dataFrame))) {
     stop(paste("The factor you gave,", factor, ", was not found in the data frame supplied."))
-  } 
-  
+  }
+
   if (!is.null(block) && (!block %in% names(dataFrame))) {
     stop(paste("The block you gave,", block, ", was not found in the data frame supplied."))
   }
@@ -441,9 +441,9 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
         Screen1.Action = mean(!!sym(response), na.rm = TRUE)
       )
   }
-  
+
   screens <- na.omit(screens)
-  
+
   ## Get Block Means
   if (!is.null(block)) {
     blockMeans <- screens %>%
@@ -451,15 +451,15 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
       summarize(
         blockMean = mean(!!sym(response), na.rm = TRUE)
       )
-  } 
-  
+  }
+
   ## Get Factor Means
   factorMeans <- screens %>%
     group_by(!!sym(factor)) %>%
     summarize(
       factorMean = mean(!!sym(response), na.rm = TRUE)
     )
-  
+
   ## Build Resulting Data Frame
   if (is.null(block)) {
     screens <- screens %>%
@@ -472,7 +472,7 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
         Screen3.Residuals = !!sym(response) - Screen1.Action - Screen2.Factor
       ) %>%
       dplyr::select(-factorMean)
-    
+
     return(screens)
   } else {
     screens <- screens %>%
@@ -492,7 +492,7 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
         Screen4.Residuals = !!sym(response) - Screen1.Action - Screen2.Block - Screen3.Factor
       ) %>%
       dplyr::select(-factorMean, -blockMean)
-    
+
     return(screens)
   }
 }
@@ -506,7 +506,7 @@ perActRisk <- function(type1Risk, numActs, method = "Bonferroni", outType = "num
     "Specify an overall Type I Risk between 0 and 1" = type1Risk > 0,
     "Specify a positive integer for the number of inference acts" = all(numActs > 0)
   )
-  
+
   if (method %in% c("Bonferroni", "bonferroni", "Bon", "bon")) {
     ind <- type1Risk / numActs
     reportMethod <- "Bonferroni"
@@ -514,7 +514,7 @@ perActRisk <- function(type1Risk, numActs, method = "Bonferroni", outType = "num
     ind <- 1 - (1 - type1Risk)^(1 / numActs)
     reportMethod <- "Sidak"
   }
-  
+
   if (outType %in% c("words")) {
     return(paste("The individual Type 1 Risk using the", reportMethod, "method is", round(ind, digits = 4)))
   } else if (outType %in% c("num", "number", "numbers", "Num", "Number")) {
