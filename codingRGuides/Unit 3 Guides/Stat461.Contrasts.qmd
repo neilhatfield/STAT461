@@ -1,0 +1,69 @@
+---
+title: "Contrasts and ANOVA"
+subtitle: "Parametric Shortcut"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+In this guide, we are going to explore setting up and testing (simple) linear contrasts in the context of [one-way] ANOVA models using parametric shortcuts.
+
+# Getting Ready
+
+## Load Packages, Set Options, Load Additional Tools
+
+## Load Data
+
+# Key Decisions for Post Hoc Analysis
+
+# Testing Contrasts via Base R
+
+## Check Order of Levels
+
+## Save the Weights
+
+## Check Contrasts
+
+### Weights Sum to Zero
+
+### Orthogonality
+
+## Contrast Test Results
+
+# Testing Contrasts via `{emmeans}`
+
+## Get the Marginal Means
+
+## Fit the Contrasts
+
+## Contrast Test Results
+
+# Testing Contrasts via `{DescTools}` and Scheffé
+
+## Fit the Contrasts
+
+## Contrast Test Results
+
+# Reporting and Interpreting Results
+
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
