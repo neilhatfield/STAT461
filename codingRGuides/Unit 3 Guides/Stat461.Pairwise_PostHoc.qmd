@@ -1,0 +1,584 @@
+---
+title: "Pairwise Post Hoc Analysis"
+subtitle: "Parametric Shortcut"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+In this guide, we are going to explore doing Pairwise Post Hoc analysis in the context of One-way ANOVA models. We will use parametric shortcuts for our inferences.
+
+Keep in mind that Post Hoc analysis refers to the additional tests that we conduct after we complete an *omnibus* test (e.g., the parametric ANOVA *F* Test).
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will use the following packages: `{tidyverse}`, `{knitr}`, `{kableExtra}`, `{parameters}`, `{emmeans}`, `{DescTools}`, `{dunn.test}`, and `{multcompView}`.
+
+:::{.callout-tip}
+## Missing Packages?
+
+If you get an error message when you use the `library` function along the lines of "there is no package called ...", that is a good sign that you might need to install the package. You can use the `install.packages` function to get that package. Alternatively, you can use the `checkSetup` function I've listed at the top of the R/RStudio Resources page in Canvas. This will run a check for packages for this class and install any that are missing from your computer.
+:::
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "parameters", "emmeans", "DescTools",
+              "dunn.test", "multcompView")
+lapply(packages, library, character.only = TRUE)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
+
+## Load Data
+
+To explore Pairwise Post Hoc analysis, we are going to primarily draw upon the "Cheese Study" which deals with the level of free amino acids found in a certain type of cheese. For more information on this study, look at Table 5.2 and Example 5.5 from the Oehlert textbook. I'll also load the Fall 2023 Song Knowledge data, which will be primarily for you to try things out.
+
+Take a moment to think about how you would read in the data then compare your code with the following:
+
+```{r loadData, echo=TRUE}
+#| label: loadData
+#| echo: true
+# Demo Code for Loading Data ----
+## Cheese study via manual entry
+cheeseData <- data.frame(
+  strain = as.factor( # <1>
+    c("None", "None", "A", "A",
+      "B", "B", "AB", "AB")
+  ),
+  acids = c(
+    4.195, 4.175, 4.125, 4.735,
+    4.865, 5.745, 6.155, 6.488
+  )
+)
+
+## Song Data
+songData <- read.table(
+  file = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/songKnowledge_Fa23.csv",
+  header = TRUE,
+  sep = ","
+)
+
+songData$Year <- factor( # <2>
+  x = songData$Year,
+  levels = c("Junior", "Senior", "Other")
+)
+
+```
+1. You can use the `as.factor` call inside of the `data.frame` when you are manually entering your data.
+2. The `factor` command will turn a column to the factor data type *according to* the values you list in the `levels` argument. Be careful with how you list the values here.
+
+:::{.callout-warning}
+### `factor` vs. `as.factor`
+The difference between `factor` and `as.factor` might seem small but the consequences can be great. They both convert a column from some data type to the factor data type. The `as.factor` function only takes one input (the data vector) and will use the values found inside to make the levels of the factor. The `factor` function takes several arguments including the data vector and the `levels` argument where you specify the levels. Any observed values in the data vector that do not match an entry in the `levels` argument will be set to missing.
+:::
+
+# Key Decisions for Post Hoc Analysis
+
+When we think about Post Hoc Analysis (either the pairwise explorations of this guide or contrasts/linear combinations in aother guide), there are some steps that we need to take first.
+
+## Study Design Decisions
+
+Our first steps for Post Hoc Analysis actually relate to our study design. Post Hoc analyses are different from our initial approach in that we engage in these analyses __*after*__ we've seen the data. In fact, we only engage in Post Hoc analyses when we have a statistical discovery (i.e., reject the null hypothesis) for the (One-way) ANOVA model. To help guard ourselves against any claims that we might be up to problematic behaviors, we often add a couple of sentences to our study design such as the following:
+
+> After getting and cleaning the data, we'll use the parametric ANOVA *F* test to answer the research question at a 5% level of significance. For Post Hoc analysis, we'll use an overall Type I Error Rate of 5% using Tukey's HSD.
+
+*Note:* if you want a high quality set of sentences, you can start with the above example and then add on a few more sentences that explain/justify your choice of method and level.
+
+Some of the above example statement should feel familiar: 1) choice of the parametric shortcut, 2) statement of our Unusualness Threshold (level of significance), and 3) a statement of our overall Type I Risk. However, this third element has slightly different language--"Error Rate" vs. "Risk". There is an additional element of method ("Tukey's HSD").
+
+There are several different ways in which we can operationalize or quantify Type I Risk. We refer to these ways as "Type I Error Rates" and there are five common types. We have to pick one of these types of error rates to then select a method.
+
+### Testing Families
+
+To help us pick a method, we need to conceptualize our post hoc *testing family*; that is, if we reject the null hypothesis from the omnibus ANOVA test (via shortcut, permutation, bootstrapping, etc.), what combinations of groups/treatments do we want to test? Here are few examples of testing families:
+
++ Pairwise Combinations
+  - All possible pairs
+      - Ex: Seniors vs. Juniors, Seniors vs. Others, and Juniors vs. Others
+  - Special Pairs
+    - Compare to Null Treatment
+      - Ex: Strain A vs. No starting strain, Strain B vs. No starting Strain, Straings A & B vs. No starting strain
+    - Comparing to Standard Care
+      - Ex: New Drug 1 vs. Current, New Drug 2 vs. Current, New Drug 3 vs. Current
+    - Comparing to "Best" Treatment
+      - Ex: Replace "Current" with what we've previously identified as "best"
++ (Linear) Combinations ("Contrasts")
+  - Ex: Graduating vs. Not Yet Graduating
+  - Ex: Oral Medication (aspirin, acetaminophen, ibuprofen) vs. Topical Medications (lidocaine, capsaicin, benzocaine) for pain relief
+
+In this guide, we'll focus on pairwise families. (There's a separate guide for the combinations/contrasts.) One of the key aspects of conceptualizing your post hoc testing family is to count the number of comparisons, *m*, that make up the family.
+
+### Choose Your Type I Error Rate and Method
+
+Once you conceptualize your testing family, you can ask yourself "Which Type I Error Rate do I want to control?" @tbl-T1ErrRates shows the five different Type I Error Rates we can choose from. I've ordered the table from the most conservative (top) to the least conservative (bottom). This order also reflects moving from the strongest guards against Type I Errors (top) to the weakest guards against Type I Errors (bottom).
+
+| Selected Type I Error Rate        | Possible Adjustment Methods |
+|---------------------|--------------------------------|
+| Simultaneous Confidence Intervals | Bonferroni, Šidák, Tukey HSD, Tukey-Kramer HSD, Scheffé, Dunnett |
+| Strong Familywise/Maximum Experimentwise | Hochberg, Holm, REGWR, Gabriel, DSCF |
+| False Discovery Rate | Benjamini-Hochberg, Student-Newman-Keuls |
+| Experimentwise Error Rate | [ANOVA Omnibus Tests,] Protected LSD |
+| Comparisonwise Error Rate | Most Two Sample Tests, Unprotected LSD |
+
+: Type I Error Rates and Methods {#tbl-T1ErrRates}
+
+After picking which Error Rate you want to control, you choose an appropriate method. There are some pieces of guidance you can follow for choosing the particular method. However, a lot comes down to personal preference.
+
+If you aren't sure what method to pick, ask yourself the following questions:
+
++ Am I looking at all possible pairwise comparisons?
+  - __Yes__: Use Tukey (-Kramer) HSD
+  - __No__: Are all the tests independent of each other?
+    - __Yes__: Use Šidák
+    - __No__ (or __Unsure__): Use Bonferroni
++ Did someone data snoop?
+  - __Yes__: Must use Scheffé
++ Want to use middle ground?
+  - __Yes__: Use Benjamini-Hochberg, provided you have independent tests
++ Have no idea?
+  - __Yes__: Tukey(-Kramer) makes a good default
+
+## Checking Appropriateness and Assumptions
+
+Post Hoc analyses involve hypothesis tests and just like any other hypothesis test, these all have their own set of conditions for whether they are appropriate and whether we've met their assumptions. However, we have a useful advantage on this front when we are doing post hoc analysis in ANOVA settings.
+
+Since we're conducting these post hoc tests in a *planned* fashion, __*after*__ we check the appropriateness of (One-way) ANOVA methods and assess the assumptions of the omnibus shortcut, our lives become easy. If ANOVA is appropriate, then we know that our Post Hoc methods are appropriate. 
+If we have satisfied the assumptions for the omnibus shortcut, then we have satisfied the assumptions for the Post Hoc tests. Thus, taking the time to carefully check appropriateness AND assumptions for the omnibus test pays dividends for us.
+
+### Consistency of Approach
+
+There is a subtle catch to being able to rely upon the appropriateness of ANOVA and satisfying the assumptions and that comes down to whether we're being consistent in our approach. If we use a parametric shortcut for the omnibus test, then for the post hoc analyses should also make use of parametric shortcuts. If instead we used a nonparametric shortcut or a simulation method (e.g., permutation or bootstrapping) for the omnibus test, then we do not get to claim that we've satisfied the assumptions for the parametric shortcuts for the post hoc tests. We need to be consistent in our approaches to both the omnibus and post hoc tests.
+
+Generally speaking, we want to use parametric shortcuts whenever possible. This is due to the fact that they are more powerful (i.e., offer better Type II error control) than other methods *provided* their assumptions are satisfied. 
+
+# Quick Omnibus Test for One-way ANOVA
+
+We generally engage in post hoc analysis *after* we've made a statistical discovery through the omnibus test. Since we've not previously worked with the Cheese study, I'm going to present omnibus test results using a parametric shortcut. (We'll operate under the assumptions being satisfied.)
+
+For this example, I'm going to work with an overall Type I Error Rate of 0.1 and set my Unsualness Threshold at 0.1.
+
+```{r}
+#| label: tbl-cheeseANOVA
+#| tbl-cap: "ANOVA Table for Free Amino Acids in Cheese Study"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Fitting a One-way ANOVA Model ----
+cheeseModel <- aov(
+  formula = acids ~ strain,
+  data = cheeseData,
+  na.action = "na.omit"
+)
+
+parameters::model_parameters(
+  model = cheeseModel,
+  es_type = c("eta", "omega", "epsilon")
+) %>%
+  knitr::kable(
+  digits = 4,
+  col.names = c(
+    "Source", "SS", "df", "MS", "F", "p-value",
+    "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
+  # caption = "ANOVA Table for Free Amino Acids in Cheese Study", # <1>
+  booktabs = TRUE,
+  align = c("l", rep("c", 8))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+1. Remember that you'll need to uncomment these `caption` lines when you are working in R scripts or R Markdown files.
+
+From @tbl-cheeseANOVA we can see that our *F* ratio is almost 12 with a *p*-value of 0.018. We will reject the null hypothesis in the Cheese Study and decide to act as if the strain of starter bacteria has an impact on the amount of free amino acids in the cheese. This now positions us for conducting Post Hoc analysis for this study.
+
+# Pairwise Comparisons for Post Hoc Analysis
+
+I'm now going to go through four different tools that will allow you to do pairwise comparisons in ANOVA contexts. I'll start with the most broadly useful tool: the `{emmeans}` package.
+
+## The Statistical Research Questions
+
+For pairwise comparisons in the post hoc ANOVA setting, the statistical research questions take on the general form "Does [Factor Level A] statistically differ from [Factor Level B]?" Questions of this type are like what you might have encountered in an introductory statistics class for the difference of two means. The most common null hypothesis is that the two levels are statistically similar (no statistically significant difference) while the alternative is that the two levels are statistically different from one another.
+
+While the two-tailed form of the questions are most common, we can ask directional questions such as testing whether the responses connected to [Factor Level A] are statistically greater than those connected to [Factor Level B].
+
+## Using `{emmeans}`
+
+We saw the `{emmeans}` package in the One-way ANOVA guide for the omnibus test. There we used it to get interval estimates for the marginal means (a.k.a. cell means). However, the utility of this package does not stop with that. This package can also be used for Post Hoc analysis. Consider the following code
+
+```{r}
+#| label: emmeans1
+#| echo: true
+# Demo Code for emmeans Post Hoc ----
+cheeseEMPairs <- emmeans::emmeans(
+  object = cheeseModel, # <1>
+  specs = pairwise ~ strain, # <2> 
+  adjust = "sidak", # <3> 
+  level = 0.9 # <4>
+)
+
+```
+1. Pass your saved output from `aov` (i.e., your model object) to the `object` argument.
+2. The `specs` argument allows you to ask for pairwise comparison using your factor's levels to make the pairs. Notice the use of formula notation here.
+3. The `adjust` argument is how you inform R which method you want to use to control your Type I error rate. See below for choices.
+4. The `level` argument stems from your overall Type I risk, $\mathcal{E}_I$. You find this value through $1-\mathcal{E}_I$.
+
+Using the `emmeans` function to conduct post hoc analysis is powerful. We can take the output, `cheeseEMPairs`, and pass that along to other functions to create professional looking tables as well as get estimates for practical significance (i.e., effect sizes). Further, this code allows us to use the same basic set up with ten different adjustment methods; all we have to do is change the value we pass to the `adjust` argument. Finally, the `specs` argument gives us some great flexibility that we'll explore more in Unit 4.
+
+The `emmeans` function understands the following Type I Error Rate adjustment methods: `"bonferroni"`, `"tukey"`, `"sidak"`, `"scheffe"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` or `"fdr"`, `"BY"`, or `"none"` (for no Type I Error Rate adjustment).
+
+```{r}
+#| label: tbl-emmeans2
+#| tbl-cap: "Pairwise Post Hoc Comparison via Sidak's Adjustment"
+#| echo: true
+# Demo code for a professional looking table ----
+## Emmeans Object
+knitr::kable(
+  x = cheeseEMPairs$contrasts, # <1> 
+  digits = 3,
+  # caption = "Pairwise Post Hoc Comparison via Sidak's Adjustment",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value"),
+  align = "lccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+1. We need to extract the `constrasts` object out of our output from `emmeans` as this is the object that contains our pairwise comparisons.
+
+You can directly compare the *p*-values shown in @tbl-emmeans2 to your chosen Unusualness Threshold to decide whether to reject the null hypothesis that there is no statistically significant difference between the pair of levels.
+
+As you work with @tbl-emmeans2, one column that you'll want to pay careful attention to is the Pair column. This column tells you not only which pair we're examining but the *order of subtraction* for that comparison. Each tool has their own internal rules for establishing the order of subtraction. While `emmeans` ended up using A -- AB, another tool might report AB -- A (reversing the order of subtraction). *You will get consistent results in either case,* but the values of your estimates will be different. While these will result in different differences, there is a relationship between them. They are opposites of one another: $(A-B)=-1*(B-A)$. If you need to express the pairwise comparison in the other order, all you need to do is multiple the difference (or the limits of a confidence interval) by --1.
+
+## Using `tukeyHSD`
+
+The `tukeyHSD` function from base R will allow you to use the Tukey Honest Significant Difference method. Tukey's HSD is a decent default method to use to control the SCI Type I Error Rate when you are looking at all possible pairwise comparisons.
+
+:::{.callout-note}
+### Tukey-Kramer's Adjustment
+The Tukey HSD adjustment works for balanced designs. However, Tukey and another statistician expanded the HSD to work for imbalanced designs through the Tukey-Kramer adjustment. The `tukeyHSD` function as well as all other functions listed in this guide will automatically adjust to Tukey-Kramer if they detect an imbalanced design.
+:::
+
+Using `tukeyHSD` is straightforward.
+```{r}
+#| label: tukeyHSD1
+#| echo: true
+# Demo Code for Using Tukey HSD Post Hoc ----
+cheeseHSD <- TukeyHSD(
+  x = cheeseModel, # <1>
+  conf.level = 0.9 # <2>
+)
+
+```
+1. Pass your saved output from `aov` (i.e., your model object) to the `x` argument.
+2. The `level` argument stems from your overall Type I risk, $\mathcal{E}_I$. You find this value through $1-\mathcal{E}_I$.
+
+We can then pass the object `cheeseHSD` on to `knitr` to make a professional looking table.
+
+```{r}
+#| label: tbl-tukeyHSD2
+#| tbl-cap: "Post Hoc Tukey HSD Comparisons"
+#| echo: true
+# Demo code for making a professional lookign table ----
+## Tukey HSD
+as.data.frame(cheeseHSD$strain) %>% # <1>
+  tibble::rownames_to_column(var = "Pair") %>% # <2>
+  knitr::kable(
+    digits = 3,
+    # caption = "Post Hoc Tukey HSD Comparisons",
+    col.names = c("Pair", "Difference", "Lower Bound",
+                  "Upper Bound", "Adj. p-Value"),
+    align = 'lcccc',
+    booktabs = TRUE,
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+1. We need to extract the comparisons from the output of `tukeyHSD` by using the factor's name (exactly as typed in the `aov` formula). This all needs to be wrapped in `as.data.frame`.
+2. We do a bit of clean up to take the row names and make them an actual column. This will allow `kable` to ensure that they get a meaningful column header.
+
+You have confidence intervals (Lower Bound, Upper Bound) as well as *p*-values that are adjusted for the HSD in @tbl-tukeyHSD2. You can directly compare these to your Unusualness Threshold, $UT \leq \mathcal{E}_I$.
+
+The `TukeyHSD` is part of the base build of R and does not require any special packages.
+
+## Using `{DescTools}`
+
+The `{DescTools}` package has a useful function for post hoc pairwise comparisons: `PostHocTest`. While not as a rich of a tool as `emmeans`, the `PostHocTest` does have a couple of methods such as the Least Signficant Differences that are not in `emmeans`.
+
+```{r}
+#| label: desctools1
+#| echo: true
+# Demo Code for DescTool Pairwise Post Hoc ----
+cheeseDesc <- DescTools::PostHocTest(
+  x = cheeseModel, # <1> 
+  method = "lsd", # <2>
+  conf.level = 0.9 # <3>
+)
+
+```
+1. Pass your saved output from `aov` (i.e., your model object) to the `x` argument.
+2. The `method` argument is how you inform R which method you want to use to control your Type I error rate. See below for choices.
+3. The `conf.level` argument stems from your overall Type I risk, $\mathcal{E}_I$. You find this value through $1-\mathcal{E}_I$.
+
+For `PostHocTest`, we can use the following adjustment methods:
+
++ Tukey's HSD via `"hsd"`
++ Bonferroni via `"bonf"`
++ Least Significant Difference via `"lsd"`
++ Scheffé via `"scheffe"`
++ [Student-] Newman-Keuls via `"newmankeuls"`
+
+Again, we can take the output of `PostHocTest` and pass that along to make a nice looking table of results.
+
+```{r}
+#| label: tbl-desctools2
+#| tbl-cap: !expr 'paste("Post Hoc", attr(cheeseDesc, "method"), "Comparisons")'
+#| echo: true
+# Demo Code for professional looking table ----
+## DescTools
+as.data.frame(cheeseDesc$strain) %>% # <1>
+  tibble::rownames_to_column(var = "Pair") %>% # <2>
+  knitr::kable(
+    digits = 3,
+    # caption = paste( # <3>
+    #   "Post Hoc",
+    #   attr(cheeseDesc, "method"), 
+    #   "Comparisons"
+    # ),
+    col.names = c("Pair", "Difference", "Lower Bound",
+                  "Upper Bound", "Adj. p-Value"),
+    align = 'lcccc',
+    booktabs = TRUE,
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. We need to extract the comparisons from the output of `PostHocTest` by using the factor's name (exactly as typed in the `aov` formula). This all needs to be wrapped in `as.data.frame`.
+2. We do a bit of clean up to take the row names and make them an actual column. This will allow `kable` to ensure that they get a meaningful column header.
+3. The code that I have listed here for the `caption` argument will extract out what method you used in `PostHocTest` and incorporate that into your table's title for you.
+
+:::{.callout-warning}
+### The Impact of Type I Error Rate Adjustments
+Look back at @tbl-emmeans2, @tbl-tukeyHSD2, and @tbl-desctools2. Notice that the *p*-values are different for the same pairwise comparison. Depending on what your chosen Unsualness Threshold is, you might end up making different decisions. This is a natural consequence of the fact each of these tables used a different method to control a (potentially) different Type I Error Rate. You need to select your method before looking at the data and stick with that method.
+:::
+
+## Special Comparisons
+
+There are situations where we do not want to look at all possible pairwise comparison. Rather, we might only want to compare a set of treatments to a single, special treatment (e.g., a null treatment, a standard care treatment, or the current "gold standard"). To make such comparisons, we will need to use the `{DescTools}` package and Dunnett's Test (`DunnettTest`).
+
+```{r}
+#| label: dunnett1
+#| echo: true
+# Demo Code for Special Pairwise Comparisons ----
+## Dunnett's Test via DescTools
+cheeseDunnett <- DescTools::DunnettTest(
+  formula = acids ~ strain, # <1>
+  data = cheeseData, # <2>
+  control = "None", #  <3>
+  conf.level = 0.9 # <4>
+)
+
+```
+1. Enter the model using formula notation just like you would in the `aov` call.
+2. Don't forget to pass long your data frame.
+3. We use the `control` argument to specify which level of the factor is the special level (e.g., null, standard care, "gold standard"). This needs to perfectly match the character text used in the data for that level.
+4. The `conf.level` argument stems from your overall Type I risk, $\mathcal{E}_I$. You find this value through $1-\mathcal{E}_I$.
+
+Keep in mind the Dunnett's test contains its own adjustments for the Multiple Comparison Problem. Once we have the results, we can make a professional looking table.
+
+```{r}
+#| label: tbl-dunnett2
+#| tbl-cap: "Post Hoc Comparisons--Dunnett's Test"
+#| echo: true
+# Demo Code for Professional Looking Table ----
+## Dunnett's Test
+as.data.frame(cheeseDunnett$`None`) %>% # <1>
+  tibble::rownames_to_column(var = "Pair") %>%  # <2>
+  knitr::kable(
+    digits = 3,
+    # caption = paste("Post Hoc Comparisons--Dunnett's Test"),
+    col.names = c("Pair", "Difference", "Lower Bound",
+                  "Upper Bound", "Adj. p-Value"),
+    align = 'lcccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. We need to extract the comparisons from the output of `DunnettTest` by using name of the special factor level--notice that it is enclosed in backticks-- (exactly as typed in the `DunnettTest` call). This all needs to be wrapped in `as.data.frame`.
+2. We do a bit of clean up to take the row names and make them an actual column. This will allow `kable` to ensure that they get a meaningful column header.
+
+# Effect Sizes for Pairwise Comparisons
+
+When you have used the parametric shortcuts, you'll want to use the `anova.PostHoc` function from my ANOVATools suite. You'll pass your model object (the result of calling `aov` or `lm`) as the input to this function. There are two things to keep in mind when using this tool:
+
+1) This will generate ALL pairwise comparisons. If you only did a subset of pairwise comparisons, you'll want to remove the extra rows. (The `anova.PostHoc` function returns a data table.)
+2) some special characters that might appear in the names of factor levels (e.g., "&") will get replaced with periods. I am working on fixing this.
+
+```{r}
+#| label: tbl-postHocEffects
+#| tbl-cap: "Post Hoc Comparison Effect Sizes"
+#| echo: true
+# Demo Code for Post Hoc Effect Sizes ----
+anova.PostHoc(cheeseModel) %>%
+  knitr::kable(
+    digits = 3,
+    # caption = "Post Hoc Comparison Effect Sizes",
+    col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
+                  "Prob. Superiority"),
+    align = 'lccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+Cohen's *d* and Hedge's *g* are both measures of the distance between the *Sample Arithmetic Mean* values for the two groups scaled by pooled standard deviations (Hedge's *g* uses a weighted pooling). Thus, you can think of these as saying that there are 5.443 standard deviations between the performance for using both A & B strains and just the A strain in terms of free amino acid levels. Cohen's *d* and Hedge's *g* are also sensitive to the order of comparison. Just like the pairwise differences, you can multiply these values by --1 to get reverse the order of subtraction.
+
+The Probability of Superiority measure the percent of the time a randomly selected member of the first group will have the higher numeric value of the response than a randomly selected member of the second group. Thus, we can say that only 12% of the time we randomly select a cheese given just the A strain will that cheese have more free amino acids than a randomly selected cheese given just the B strain. 
+
+Just like the pairwise differences and the other effects sizes, Probability of Superiority is sensitive to the order of comparison (subtraction). However, __unlike__ the pairwise differences and the other effect sizes, Probabilities of Superiority *can not* be multiplied by --1 to change the order of comparison. Further, you also *can not* just take the complement. If we wanted the Probability that B was greater than A, we would need to re-calculate the effect sizes. We are given \(P\left[A>B\right]\) whose complement is \(1-P\left[A>B\right] = P\left[B\geq A\right]= P\left[B > A\right]+P\left[B=A\right]\). The `probSup` function in my toolkit will return the appropriate probability of superiority given a value of Cohen's *d*.
+
+
+# Visualizaing Pairwise Comparisons
+
+There are a number of ways that you can visualize your pairwise comparisons. A couple of useful tools for this come from the `{multcompView}` ("Visualizations of Paired Comparisons) package.
+
+## Connecting Letters Report
+
+One of the most common visualizations is called a *Connecting Letters Report* and is similar to Oehlert's Underline diagrams (p. 88 of the textbook). Rather than using lines, we use lowercase letters. If different levels of the factor share the same letter, then they are statistically indistinguishable from one other. If they have different letters, then there is a statistically detectable difference between those levels
+
+```{r}
+#| label: clr1
+#| echo: true
+# Demo Code for Connecting Letters Report ----
+multcompView::multcompLetters4(
+  object = cheeseModel, # <1> 
+  comp = cheeseHSD, # <2> 
+  threshold = 0.1 # <3>
+)
+```
+1. Pass your saved output from `aov` (i.e., your model object) to the `object` argument.
+2. Pass your pairwise comparisons object here. NOTE: you cannot use `emmeans` objects in this function.
+3. Use your overall Type I Error Rate, $\mathcal{E}_I$ here.
+
+Important to note here is the that Connecting Letters Report will be printed as raw output as shown. However, we can improve upon this by joining the Connecting Letters Report with box plots.
+
+## Box Plots and Connecting Letter Reports
+
+We can combine a box plot of the response values for each factor level/grouping with our connecting letter report. The downside is that this *only* works with Tukey adjustments and only for an overall Type I Error Rate of 5% (i.e., $\mathcal{E}_I=0.05$).
+
+```{r}
+#| label: fig-boxCLR
+#| fig-cap: "Box Plot and Connecting Letters Report"
+#| fig-height: 4
+#| aria-describedby: "boxCLRLD"
+#| echo: true
+# Demo Code for a Box Plot with Connecting Letters ----
+multcompView::multcompBoxplot(
+  formula = acids ~ strain, # <1>
+  data = cheeseData, # <2>
+  compFn = "TukeyHSD", # <3>
+  plotList = list(
+    boxplot = list(fig = c(0, 0.85, 0, 1)), # <4>
+    multcompLetters = list(
+      fig = c(0.8, 0.9, 0.1, 0.9), # <5>
+      fontsize = 12,
+      fontface = "bold"
+    )
+  )
+)
+```
+1. Enter the model using formula notation just like you would in the `aov` call.
+2. Don't forget to pass long your data frame.
+3. Use `"TukeyHSD"` so that the pairwise comparisons can get created.
+4. Within the `boxplot` argument you can set the bounds of where the box plots get drawn. The values represent proportions of the total space available. In order they are horizontal start, horizontal end, vertical start, and vertical end.
+5. Similarly, the `fig` argument within `multcompLetters` lists of th proportions for where to draw the letters. The ordering of the values is the same as for `boxplot`.
+
+```{=html}
+<details id=boxCLRLD>
+  <summary>Long Description</summary>
+  <p>The plot is titled "Figure 1: Box Plot and Connecting Letters Report".</p>
+  <p>The horizontal axis is labelled "acids" and goes from about 4 to a bit above 6.5 with labels 4.5, 5.0, 5.5, 6.0, and 6.5.</p>
+  <p>The vertical axis is labelled "strain" and contains labels "None", "A", "B", and "AB" moving from the top down.</p>
+  <p>The plot contains four box plots stacked one above the other and in line with the labels of the vertical axis."</p>
+  <ul>
+  <li>The "None" box plot is very narrow with no visible whiskers, looking more like a thick line centered around 4.25.</li>
+  <li>The "A" box plot is wider with no visible whiskers. The box goes from about 4.2 to 4.75 with the middle of the box at about 4.49.</li>
+  <li>The "B" box plot is the widest with no visible whiskers. The box goes from about 4.9 to 5.75 with the middle of the box at about 5.4.</li>
+  <li>The "AB" box is narrow with no visible whiskers. The box goes from about 6.15 to 6.5 with the middle of the box at about 6.4.</li>
+  </ul>
+  <p>Along the right-hand edge of the plot is a sequence of letters that are in line with the box plots and the strain labels of the vertical axis. Moving from the top down, these labels are "a", "a", "ab", "b".</p>
+</details>
+```
+
+@fig-boxCLR shows the resulting box plot and Connecting Letter Reports. This allows us to visually see the overlaps between the factor level/groupings as well as whether those overlaps are statistically significant. Here we can see that using Tukey's HSD and an overall Type I Error Rate of 5%, that the AB strain is statistically different from both the None condition and the A strain condition. However, there is not a statistically significant difference between the AB strain and the B strain. Further there are no statistically significant differences between the None condition, the A strain, or the B strain.
+
+:::{.callout-tip}
+### Play with Proportions
+When making a box plot and connecting letters report, you will need to play with the proportion values of the two `fig` arguments found in `boxplot` and `multcompLetters`. This will allow you find a set of values that lead to a good looking image.
+:::
+
+# Putting Things Together--Your Turn
+
+Use the above examples to explore the Song Knowledge study in terms of Post Hoc Analysis. Generate not only which years in school are significantly different from each other, but what are the effect sizes.
+
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
