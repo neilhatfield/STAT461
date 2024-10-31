@@ -30,7 +30,7 @@ As always, we need to ensure that we have get R set up for us to have success. T
 
 ## Loading Packages, Setting Options, Loading Additional Tools
 
-In this guide, we will use the following packages: `{tidyverse}`, `{knitr}`, `{kableExtra}`, `{parameters}`, `{emmeans}`, `{DescTools}`, `{dunn.test}`, and `{multcompView}`.
+In this guide, we will use the following packages: `{tidyverse}`, `{knitr}`, `{kableExtra}`, `{parameters}`, `{emmeans}`, `{DescTools}`, and `{multcompView}`.
 
 :::{.callout-tip}
 ## Missing Packages?
@@ -49,7 +49,7 @@ We also need to specify that we're using the [factor] effects sum to zero constr
 # Load useful packages ----
 packages <- c("tidyverse", "knitr", "kableExtra",
               "parameters", "emmeans", "DescTools",
-              "dunn.test", "multcompView")
+              "multcompView")
 lapply(packages, library, character.only = TRUE)
 
 # Set options ----
@@ -523,6 +523,7 @@ We can combine a box plot of the response values for each factor level/grouping 
 ```{r}
 #| label: fig-boxCLR
 #| fig-cap: "Box Plot and Connecting Letters Report"
+#| fig-alt: "Box plot with a connecting letters report"
 #| fig-height: 4
 #| aria-describedby: "boxCLRLD"
 #| echo: true

@@ -190,9 +190,9 @@ In investigating the effect of the type of varietal (species of flower) has on t
 
 ```{r honeyHD}
 #| label: fig-honeyHD
-#| fig.cap: "Hasse Diagram for Honey Study"
-#| fig.alt: "Hasse diagram for Honey Study"
-#| fig.height: 2
+#| fig-cap: "Hasse Diagram for Honey Study"
+#| fig-alt: "Hasse diagram for Honey Study"
+#| fig-height: 2
 #| aria-describedby: honeyHDLD
 #| echo: true
 # Demo Code for a Hasse Diagram ----
@@ -308,6 +308,7 @@ There are multiple functions that will produce QQ plots in R; one of the better 
 ```{r}
 #| label: fig-songQQ
 #| fig-cap: "Residuals QQ Plot for Song Knowledge Study"
+#| fig-alt: "QQ plot for Song Knowledge study"
 #| aria-describedby: songQQLD
 #| fig-height: 4
 #| echo: true
@@ -359,6 +360,7 @@ Try replicating the QQ plot for the Honey Study. When you are ready, take a look
 ```{r}
 #| label: fig-honeyQQ
 #| fig-cap: "Residuals QQ Plot for Honey Study"
+#| fig-alt: "QQ plot for Honey study"
 #| aria-describedby: honeyQQLD
 #| fig-height: 4
 #| echo: true
@@ -438,6 +440,7 @@ A strip chart is a variation on a scatter plot. If you have done regression, you
 ```{r}
 #| label: fig-songSC
 #| fig-cap: "Strip Chart for Song Knowledge Study"
+#| fig-alt: "Strip chart for song knowledge study"
 #| aria-describedby: songSCLD
 #| fig-height: 4
 #| echo: true
@@ -491,6 +494,7 @@ Build a strip chart for the Honey Study. When you're ready check your answer bel
 ```{r}
 #| label: fig-honeySC
 #| fig-cap: "Strip Chart for Honey Study"
+#| fig-alt: "Strip chart for honey study"
 #| aria-describedby: honeySCLD
 #| fig-height: 4
 #| echo: true
@@ -560,8 +564,9 @@ Since I knew measurement order when I created the data frame and placed the data
 ```{r}
 #| label: fig-honeyIP
 #| fig-cap: "Index Plot for Honey Study"
+#| fig-alt: "Index plot for honey study"
 #| aria-describedby: honeyIPLD
-#| fig.height: 3
+#| fig-height: 3
 #| echo: true
 # Demo Code for Index Plots ----
 ## Honey Study
