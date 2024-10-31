@@ -20,7 +20,11 @@ execute:
   warning: false
 ---
 
-In this guide, we are going to explore setting up and testing (simple) linear contrasts in the context of [one-way] ANOVA models using parametric shortcuts.
+In this guide, we are going to explore setting up and testing (simple) linear contrasts in the context of [one-way] ANOVA models using parametric shortcuts. 
+
+Contrasts
+
+Keep in mind that Post Hoc analysis refers to the additional tests that we conduct after we complete an *omnibus* test (e.g., the parametric ANOVA *F* Test).
 
 # Getting Ready
 
