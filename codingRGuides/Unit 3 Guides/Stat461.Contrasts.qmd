@@ -22,48 +22,561 @@ execute:
 
 In this guide, we are going to explore setting up and testing (simple) linear contrasts in the context of [one-way] ANOVA models using parametric shortcuts. 
 
-Contrasts
-
-Keep in mind that Post Hoc analysis refers to the additional tests that we conduct after we complete an *omnibus* test (e.g., the parametric ANOVA *F* Test).
+Contrasts are a technique that we can use within Post Hoc settings. In these settings, we generally look at contrasts after we complete an omnibus ANOVA *F* test and make a statistical discovery (i.e., reject the null hypothesis). However, there are some situations where we might proceed with a pre-planned contrast even when the we fail to reject the null hypothesis for the omnibus test.
 
 # Getting Ready
 
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
 ## Load Packages, Set Options, Load Additional Tools
+
+For this particular guide/tutorial, we will load (most) of our usual packages: `{tidyverse}`, `{knitr}`, and `{kableExtra}`. We will also load `{emmeans}`, `{DescTools}`, and the `{effectsize}` packages.
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "knitr", "kableExtra",
+              "emmeans", "DescTools", "effectsize")
+lapply(packages, library, character.only = TRUE)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+```
 
 ## Load Data
 
+To explore Pairwise Post Hoc analysis, we are going to primarily draw upon the "Cheese Study" which deals with the level of free amino acids found in a certain type of cheese. For more information on this study, look at Table 5.2 and Example 5.5 from the Oehlert textbook. I'll also load the Fall 2023 Song Knowledge data, which will be primarily for you to try things out.
+
+Take a moment to think about how you would read in the data then compare your code with the following:
+
+```{r loadData, echo=TRUE}
+#| label: loadData
+#| echo: true
+# Demo Code for Loading Data ----
+## Cheese study via manual entry
+cheeseData <- data.frame(
+  strain = as.factor(
+    c("None", "None", "A", "A",
+      "B", "B", "AB", "AB")
+  ),
+  acids = c(
+    4.195, 4.175, 4.125, 4.735,
+    4.865, 5.745, 6.155, 6.488
+  )
+)
+
+## Song Data
+songData <- read.table(
+  file = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/songKnowledge_Fa23.csv",
+  header = TRUE,
+  sep = ","
+)
+
+songData$Year <- factor(
+  x = songData$Year,
+  levels = c("Junior", "Senior", "Other")
+)
+
+```
+
 # Key Decisions for Post Hoc Analysis
 
-# Testing Contrasts via Base R
+Just as with pairwise approaches to Post Hoc analysis, we take similar steps for contrasts.
 
-## Check Order of Levels
+## Study Design Decisions
 
-## Save the Weights
+Our first step when using contrasts is to make sure that contrasts are actually warranted by our research questions. One way in which pairwise comparisons differ from contrasts for post hoc analysis is that the pairwise statistical research questions are essentially implied by our main statistical research question from the omnibus test. However, that is not true for contrasts. Since contrasts allow us to compare combinations of factor levels, we need to make sure that we explicitly articulate research questions that connect to contrasts. Consider the following example:
 
-## Check Contrasts
+> In addition to investigating whether the strain of starting bacteria has an impact on the amount of free amino acids in the cheese, we have two additional research questions. First, we want to know whether having any of the two starter strains leads to a difference in free amino acids as compared to not having either starter strains. Second, we want to also investigate if getting both strains is statistically different from getting one of the two strains.
 
-### Weights Sum to Zero
+The above paragraph lays out the statistical research questions (written as statements) for two contrasts. The first contrast proposes combining three of the levels of our factor (i.e., A, B, and both--AB) together and comparing them to the fourth level (i.e., none). The second question has us compare the level of both strains (i.e., AB) against the combination of individual strains (i.e., A and B). (Yes, the wording for this second question is rather close to what we might anticipate for pairwise comparisons.)
 
-### Orthogonality
+As an example for an algebraic form of the hypotheses for contrasts, consider the following for the first Cheese study contrasts:
 
-## Contrast Test Results
+\begin{align*}
+H_0:\;\;\frac{\mu_A+\mu_B+\mu_{AB}}{3} &=\mu_{N}\\
+H_1:\;\;\frac{\mu_A+\mu_B+\mu_{AB}}{3} &\neq\mu_{N}
+\end{align*}
 
-# Testing Contrasts via `{emmeans}`
+### Your Turn
 
-## Get the Marginal Means
+Write the algebraic form of the hypotheses for the second contrast research question I've posed for the Cheese Study. When you're ready to check your work, look at the answer below.
+
+:::{.callout-note collapse="true"}
+#### Second Contrast Hypotheses in Algebraic Form
+\begin{align*}
+H_0:\;\;\frac{\mu_A+\mu_B}{2} &=\mu_{AB}\\
+H_1:\;\;\frac{\mu_A+\mu_B}{2} &\neq\mu_{AB}
+\end{align*}
+:::
+
+### Testing Families
+
+Just as with pairwise comparison based Post Hoc analysis, we still need to conceptualize a testing family for contrasts. One approach you can take is to simply imagine all of your contrasts belonging to one testing family. This can give you two testing families for Post Hoc analysis: one for (all) the pairwise comparisons and one for contrasts. Once you conceptualize your testing family of contrasts, be sure you record the number of comparisons, *m*. For the our Cheese Study example, $m=2$.
+
+### Choose Your Type I Error Rate and Method
+
+Just as with pairwise Post Hoc analysis, we still have to select a Type I Error Rate and method. The @tbl-T1ErrRates from the Post Hoc guide appears below. I've placed the Scheffé method in bold face as this method is built especially for contrasts and guards against any data snooping that might have occurred. 
+
+| Selected Type I Error Rate        | Possible Parametric Methods |
+|---------------------|--------------------------------|
+| Simultaneous Confidence Intervals | Bonferroni, Šidák, Tukey HSD, Tukey-Kramer HSD, __Scheffé__ |
+| Strong Familywise/Maximum Experimentwise | Hochberg, Holm, REGWR, Gabriel, Dunnett, DSCF |
+| False Discovery Rate | Benjamini-Hochberg, Student-Newman-Keuls |
+| Experimentwise Error Rate | ANOVA Omnibus Tests, Protected LSD |
+| Comparisonwise Error Rate | Most Two Sample Tests, Unprotected LSD |
+: Type I Error Rates and Methods {#tbl-T1ErrRates}
+
+After picking which Error Rate you want to control, you choose an appropriate method. There are some pieces of guidance you can follow for choosing the particular method. However, a lot comes down to personal preference.
+
+## Checking Appropriateness and Assumptions
+
+Again, we'll bank upon the appropriateness checks and your assessment of assumptions for the omnibus test (i.e., the ANOVA *F* test) for our contrasts.
+
+There are two additional pieces that we need to check about our contrasts that I'll discuss in the next section. 
+
+# Creating Contrasts
+
+Before we can test our contrasts, we have to first set them up. In several of the methods I'll show later in this guide, you can directly define the contrasts inside the calls. However, I'll encourage you to set up the contrasts as vectors outside of any particular function call. This will allow you to more easily double check the full set of your contrasts.
+
+## Defining Our Contrasts
+
+To define our contrasts we need to know two things: the order of the factor levels and the weights for each level. Almost universally, contrasts are expressed as a vector of weights where the ordering of that vector directly follows the order of the factor levels. To check the order of our factor levels, we can use the `level` function in R:
+
+```{r}
+#| label: checkLevels
+#| echo: true
+# Demo Code for Checking Order of Factor Levels ----
+levels(cheeseData$strain)
+
+```
+
+The `levels` function's output is not something that we need to report so we can work with just the raw output. What we can see from the above raw output is that the order that R sees for our factor levels is "A", "AB", "B", and "None". Thus, when we make our vector of weights, we need to list the weights in that order.
+
+To create a weight vector, we can use the combine function (`c`) to make a vector. The following code shows an example for making the weight vector for our first contrast--the three levels involving starter bacteria versus having no starter bacteria, using equal weighting.
+
+```{r}
+#| label: makeContrasts1
+#| echo: true
+# Demo Code for Making a Weight Vector ----
+contrast1 <- c(1/3, 1/3, 1/3, -1)
+
+```
+
+### Your Turn
+
+Come up with the code that would make a weight vector for our second contrast: having both bacteria strains versus having either strain. Assume equal weights. When ready, check the answer below.
+
+:::{.callout-note collapse="true"}
+#### Second Contrast Weight Vector
+```{r}
+#| label: makeContrasts2
+#| echo: true
+# Demo Code for Making a Weight Vector ----
+contrast2 <- c(1/2, -1, 1/2, 0)
+
+```
+:::
+
+## Checking Our Contrasts
+
+There are two checks that we can run on our contrasts' weight vectors. The first is to make sure that the weights sum to zero. The second, is to check that we have *orthogonal* contrasts. This is a requirement for several adjustment methods.
+
+### Sum to Zero
+
+Checking that our weight vectors sum to zero is quite straight forward: we just need to apply the `sum` function to our vectors.
+
+```{r}
+#| label: sumContrasts
+#| echo: true
+# Demo Code for Checking Weight Vectors Add to Zero ----
+sum(contrast1)
+sum(contrast2)
+
+```
+
+Again, we don't need to report the output of these calls as this is more for our benefit. You might notice that `sum(contrast1)` has a non-zero value of `r sum(contrast1)`. This is an example of computer arithmetic and this value is essentially zero (notice the --17 exponent). If you were to see a non-zero value such as 0.01, then that would be a sign that there is a problem with our weights.
+
+### Checking Orthogonality
+
+When we have multiple contrasts, we often like to have "orthogonal contrasts". We like orthogonal contrasts for two reasons. First, this means that they are independent from each other. Second, orthogonal contrasts will perfectly partition the sums of squares for the factor they are applied to. This fact is especially useful in situations where we want to compare a set of new treatments to a standard care or null treatment. 
+
+Two contrasts, $w_i$ and $w_i^{\star}$, are said to be orthogonal if the weighted sum of their *i*-th components add to zero (the weighted dot product of the two contrast vectors). That is,
+$$\sum_{i=1}^g\frac{w_i\cdot w_i^{\star}}{n_i}$$
+
+In this formula, the weighting of the weights comes from the sample size for each component, $n_i$. For our two Cheese study contrasts, we have $w_i= \langle 1/3, 1/3, 1/3, -1\rangle$, $w_i^{\star}=\langle -1/2, 1, -1/2, 0\rangle$ and $n_i=\langle 2, 2, 2, 2\rangle$, yielding
+
+\begin{align*}
+\sum_{i=1}^4\frac{w_i\cdot w_i^{\star}}{n_i}&\Rightarrow\frac{1/3*-1/2}{2}+\frac{1/3*1}{2}+\frac{1/3*-1/2}{2}+\frac{-1*0}{2}\\
+&=\frac{-1}{12}+\frac{1}{6}+\frac{-1}{12}+0\\
+&=0
+\end{align*}
+
+Thus our two contrasts, `contrast1` and `contrast2`, are orthogonal to each other.
+
+We can use R to help us check orthogonality of our contrasts:
+
+```{r}
+#| label: orthoCheck
+#| echo: true
+# Demo code for checking orthogonality of two contrasts ----
+n <- c(2,2,2,2) # <1>
+
+## Approach 1
+sum((contrast1*contrast2)/n) # <2>
+
+## Approach 2 
+(contrast1/n) %*% (contrast2 / n) # <3>
+
+```
+1. Make a vector of sample sizes for each level of the factor. Watch out of imbalanced designs.
+2. Approach 1 uses the definition and will return a number.
+3. Approach 2 uses the weighted dot product of the vectors and returns a 1x1 matrix.
+
+The above code shows two methods you can use to check the orthogonality of two contrasts' weight vectors. Either one works. Keep in mind that you'll need to apply this check to *every pairing* of weight vectors for contrasts in the same testing family.
+
+# Testing Contrasts
+
+Once you have set up your contrasts, you have three routes to take for testing them: use the `{emmeans}` package, use base R, or use the `{DescTools}` package. Regardless of which approach you use, the general steps are still the same:
+
+1) Check the order of your factor levels.
+2) Construct your contrast weight vectors.
+3) Check your weight vectors.
+3) Test your contrasts.
+4) Report the results.
+
+## Testing Contrasts via `{emmeans}`
+
+The `{emmeans}` package's approach to contrasts comes with several benefits:
+
+1) We may apply any of the MC/SI Problem adjustment methods that we would use for pairwise post hoc analysis.
+2) The approach is extendable to *k*-way ANOVA (more complicated designs) as well as doing contrasts on interaction terms or with conditions.
+3) We can add on measures of effect size to each contrast.
+
+However, these benefits come with us needing to take a few extra steps to use this approach.
+
+### Get the Marginal Means
+
+The first tasks that we need to do before we can test the contrasts is to fit the ANOVA model with the `aov` call and then use the `emmeans` function to get the marginal means from our model.
+
+```{r}
+#| label: emmeans1
+#| echo: true
+# Demo Code for using the {emmeans} package for contrasts ----
+## Initial Steps 
+cheeseModel <- aov(
+  formula = acids ~ strain,
+  data = cheeseData
+)
+
+cheeseMeans <- emmeans::emmeans(
+  object = cheeseModel, # <1>
+  specs = ~ strain # <2>
+)
+
+```
+1. Pass the output of our `aov` call to the `object` argument.
+2. Nothing goes to left of the `~` in the `specs` argument. Make sure that the factor's name exactly matches what appears in the data and your `aov` call.
+
+Once we've run these two commands, we can proceed to fit and test the contrasts.
+
+### Fit the Contrasts
+
+The `{emmeans}` package contains a function called `contrast` that does exactly what we want. The following code demonstrates how to use this function.
+
+```{r}
+#| label: emmeans2
+#| echo: true
+# Demo Code for using the {emmeans} package for contrasts ----
+## Test the Contrasts 
+cheeseContrasts1 <- emmeans::contrast(
+  object = cheeseMeans, # <1>
+  method = list( # <2>
+    "Starter Bacteria vs. None" = contrast1, # <3>
+    "One Strain vs. Both Strains" = contrast2 # <3>
+  ),
+  adjust = "fdr" # <4>
+)
+
+```
+1. Notice that for the `object` argument we pass along the output of the `emmeans` call, *not* the `aov` call.
+2. The `method` argument allows us to use a list to specify all of the contrasts that we want to run.
+3. Notice that we can name each contrast weight vector with a meaningful name that explains the contrast. This is __strongly__ recommended.
+4. We can use the `adjust` argument to set a MC/SI adjustment method. Here, I used `"fdr"` which is another way to call Benjamini-Hochberg.
+
+The `method` argument of `emmeans::contrast` is critical. This is not only where you apply your contrasts but also where you can give them meaningful names. 
+
+:::{.callout-tip}
+#### Adjustment Methods
+The `{emmeans}` package has the following adjustment methods built into it which are applicable to both *p*-values and confidence intervals: `"tukey"`, `"scheffe"`, `"sidak"`, `"bonferroni"`, `"dunnettx"`, `"mvt"`, and `"none"` (for no adjustment). For just *p*-values, you can also use `"holm"`, `"hochberg"`, `"hommel"`, `"BH"`, `"BY"`, and `"fdr"`.
+:::
+
+### Report Test Results
+
+At this point we can print the results to our console by just typing `cheeseContrasts1` in the console and hitting return. However, we can also set up those results in a professional table that includes measures of practical significance.
+
+```{r}
+#| label: tbl-emmeans3
+#| tbl-cap: "Cheese Study Contrasts Using {emmeans} Package"
+#| echo: true
+#| html-table-processing: none
+# Demo Code for using the {emmeans} package for contrasts ----
+## Professional Table 
+
+as.data.frame(cheeseContrasts1) %>%
+  dplyr::mutate( # <1>
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # <2>
+    ps = probSup(cohen) # <3>
+  ) %>%
+  kable(
+    digits = 3,
+    # caption = "Cheese Study Contrasts Using {emmeans} Package", # <4>
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  paste0("p-value", footnote_marker_symbol(1)),
+                  "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE,
+    escape = FALSE # <5> 
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) %>%
+  kableExtra::footnote(
+    symbol = "Adjusted via Benjamini-Hochberg method for controlling the False Discovery Rate.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+1. The `mutate` call allows us to add on effect sizes.
+2. This line adds Cohen's *d* and comes from the `{effectsize}` package.
+3. This line add the Probability of Superiority; the `probSup` function is part of my ANOVA Tools.
+4. Don't forget to uncomment the `caption` argument if you're not using Quarto.
+5. Needed for footnote_marker
+
+In @tbl-emmeans3, we can see several columns worth note. The Difference column reports the difference between the two meta-groups (meta-treatments). For example, there were 1.167 more units of free amino acids per cheese when we used at least one of the starter bacteria than when we didn't. The next three columns provide information about the hypothesis test (*standard error* (of the difference), *degrees of freedom*, and the *t* statistic). We can then see the *adjusted* *p*-value. (Remember that the null hypothesis for of our linear contrasts is that there is no statistically significant difference between the meta-groups.)
+
+The last two columns provide us with the effect sizes with Cohen's *d* and the Probability of Superiority. Keep in mind that we set the order of comparison with the positive/negative signs in our contrasts vectors. Since we used `(1/3, 1/3, 1/3, -1)`, then 99.5% of the time we repeatedly sample a cheese that got a starter bacteria and cheese that did not get any starter bacteria, the cheese with the starter will have more free amino acids. 
+
+## Testing Contrasts via Base R
+
+As an alternative to using the `{emmeans}` package, we can test our contrasts with base R. One benefit for this approach is that we can place the contrast results directly into our ANVOA table. While we do not need to we don't need to fit our model and get the marginal means first, we do need to take one additional step after we make our weight vectors.
+
+### Fit the Contrasts
+
+Before we run our ANOVA model with the `aov` function, we must first apply our weight vectors to our factor with the `contrasts` function.
+
+```{r}
+#| label: rContrast1
+#| echo: true
+# Demo code for setting contrasts in the Cheese study ----
+## Base R Approach
+contrasts(cheeseData$strain) <- cbind(contrast1, contrast2) # <1>
+
+```
+1. The `cbind` function will make a matrix out of our weight vectors.
+
+Notice that we assign a matrix of our contrast weights to the `contrasts` call on our factor column in the data. This adds the contrasts to the meta-data for our data. When we use the `aov` function now, that meta-data will be accessed and we'll get tests on our contrasts. Now is the time that we fit out ANOVA model.
+
+```{r}
+#| label: rContrasts2
+#| echo: true
+# Demo code for setting contrasts in the Cheese study ----
+## Base R Approach
+cheeseModel2 <- aov(
+  formula = acids ~ strain,
+  data = cheeseData
+)
+
+```
+
+Notice that the `aov` call is the same as we have used previously. However, the presence of the weight vectors in the meta-data has changed the results.
+
+### Report Test Results
+
+Now we get to a bit of a tricky point: we need to isolate the appropriate portion of the model results. For quick examinations we would use the `summary` or `anova` to do this. However, neither of these methods will display the tests for the contrasts. Thus, we need to make use of a new argument (`split`) that is part of the `summary` command.
+
+```{r}
+#| label: rContrasts3
+#| echo: true
+# Demo code for setting contrasts in the Cheese study ----
+## Base R Approach
+cheeseContrasts2 <- summary(
+  object = cheeseModel2,
+  split = list( # <1> 
+    strain = list( # <2>
+      "Starter Bacteria vs. None" = 1, # <3> 
+      "One Strain vs. Both Strains" = 2 # <4> 
+    )
+  )
+)
+```
+1. The `split` argument allows us to access the contrast results.
+2. Notice the factor's name here.
+3. We can assign a meaningful name to the contrast. The `1` means the first position in the contrast matrix.
+4. Similarly, the `2` means the second position in the contrast matrix.
+
+The `split` argument allows us to call the contrasts we want to explore. The structure of the `split` argument is a list of lists. The outer list has elements which start with the name of the factor; `stain = list(`. The inner lists begin with the meaningful labels (e.g., `"Starter Bacteria vs. None"`) and then a number which corresponds to order in which you listed the weight vectors in the `cbind` call.
+
+Now that we have stored the output that we need, `cheeseContrasts2`, we can impose our adjustments for the multiple comparison problem and create a professional looking table.
+
+```{r}
+#| label: tbl-rContrasts4
+#| tbl-cap: "ANOVA Table for Free Amino Acids in Cheese Study"
+#| echo: true
+#| html-table-processing: none
+# Demo code for adjusting p-values and making a professional table ----
+## Base R Approach
+adjustPValues( # <1>
+  contrastObject = cheeseContrasts2, # <2>
+  method = "fdr" # <3>
+) %>%
+  knitr::kable(
+    digits = 3,
+    col.names = c(
+      "DF", "SS", "MS", "F", "Raw p-value", "Adj. p-value"), 
+    # caption = "ANOVA Table for Free Amino Acids in Cheese Study",
+    booktabs = TRUE,
+    align = rep("c", 5)
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+1. The `adjustPValues` function comes from my ANOVA Tools.
+2. Pass along the results of testing and splitting your results.
+3. The `method` argument allows you to specify an adjustment method for the MC/SI problem.
+
+There are few important notes with this approach. Since this approach places the contrasts inside a (classical) ANOVA table, R has used an *F* test while `{emmeans}` approach used a *t* test. If you take the square root of *F*, you'll get the equivalent value of the *t* statistic for the contrasts.
+
+The `adjustPValues` function comes from my set of helper tools (`ANOVATools`). You need to pass this function the output of the `summary` call with the `split` argument and you need to state which method you want to use. The `method` argument supports all of the following methods (@tbl-Methods).
+
+| Chosen Method | Set `method =` |
+|:--------------|:-----------------------:|
+| Bonferroni | `"bonferroni"` |
+| Holm | `"holm"` |
+| Hochberg | `"hochberg"` |
+| Benjamini & Hochberg | `"BH"` OR `"fdr"` |
+: Adjustment Methods for `adjustPValues {#tbl-Methods}
+
+We can pipe the output of `adjustPValues` into a `kable` call to make our professional table. In @tbl-rContrasts4, the two contrasts appear as the second and third rows of our table. 
+
+:::{.callout-warning}
+### Important Limitation
+
+Notice that @tbl-rContrasts4 does not show any effect sizes. If you look at the generating code above the table, you'll notice that there was no call to the `parameters::model_parameters` function. When we created the `cheeseContrasts2` object, we ended up making an object that isn't compatible with the `{parameters}` package. Thus, if you want to add in appropriate effect sizes, you would want to create a new custom data frame.
+:::
+
+# Testing Contrasts via `{DescTools}`
+
+The `{DescTools}` package includes the `ScheffeTest` function that will allow you test your contrasts using the Scheffé method to control the SCI Type I Error Rate, or to account for data snooping.
+
+Unlike the base R approach, you will not get an ANOVA table, but rather, you'll get a table like what you would see when doing pairwise post hoc analysis. The process here has three steps:
+
+1) Fit your ANOVA model just as you typically would.
+    + You do not need to bind your contrasts to your factor beforehand.
+2) Save the output of the `DescTools::ScheffeTest` to an object.
+3) Make a professional looking table.
 
 ## Fit the Contrasts
 
-## Contrast Test Results
+To use the `ScheffeTest` we must first fit our ANVOA model via the `aov` function.
 
-# Testing Contrasts via `{DescTools}` and Scheffé
+```{r}
+#| label: descTools1
+#| echo: true
+# Demo code for Scheffe Testing Contrasts ----
+## DescTools Scheffe Test Approach
+cheeseModel3 <- aov(
+  formula = acids ~ strain,
+  data = cheeseData,
+  na.action = "na.omit"
+)
+```
 
-## Fit the Contrasts
+Once we have done that we can then use the `ScheffeTest` function along with our contrasts' weight vectors.
 
-## Contrast Test Results
+```{r}
+#| label: descTools2
+#| echo: true
+# Demo code for Scheffe Testing Contrasts ----
+## DescTools Scheffe Test Approach
+cheeseContrasts3 <- DescTools::ScheffeTest(
+  x = cheeseModel, # <1>
+  contrasts = cbind(contrast1, contrast2), # <2>
+  conf.level = 0.9, # <3>
+)
+```
+1. Notice that we pass our ANOVA model object to the `x` argument.
+2. The `contrasts` argument is where we'll pass a matrix of our weight vectors.
+3. You'll need specify the confidence level that goes with your Overall Type I Error Rate: $1-\mathcal{E}_I$.
+
+Notice that there is not an opportunity to apply meaningful names to our contrasts. The `ScheffeTest` will generate names for us.
+
+## Report Test Results
+
+Here is code for creating a professional looking table:
+
+```{r}
+#| label: tbl-descTools3
+#| tbl-cap: "Scheffe Test Results"
+#| echo: true
+#| html-table-processing: none
+# Demo code for Scheffe Testing Contrasts ----
+## DescTools Scheffe Test Approach
+as.data.frame(cheeseContrasts3[[1]]) %>% # <1>
+  tibble::rownames_to_column(var = "Contrast") %>% # <2>
+  knitr::kable(
+    digits = 4,
+    col.names = c("Contrast", "Difference", "Lower Bound", "Upper Bound", "p-value"), 
+    # caption = "Scheffe Test Results",
+    booktabs = TRUE,
+    align = c("l", rep("c", 4))
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+```
+1. We need to extract the appropriate element from the `cheeseContrasts3` output. This should be done with `[[1]]` for other contexts.
+2. As in the Pairwise, we'll change the row names into a column so that we can give them a proper header.
+
+Notice that the "names" for the contrasts were automatically appended to the left side of @tbl-descTools3. The `ScheffeTest` function automatically used the contrast vectors to figure out the the appropriate "names".
+
+A second thing to notice in @tbl-descTools3 is the presence of confidence intervals for the difference. These are simultaneous 90% confidence intervals for the two differences between meta-groups. 
+
+:::{.callout-warning}
+### Important Limitation
+Just as with the base R approach, notice that there are no effect sizes listed here. If you want effect sizes for contrasts, you'd either need to make a custom object here or use the `{emmeans}` approach.
+:::
 
 # Reporting and Interpreting Results
 
+For this example, I'm going to suppose that we choose to use the Scheffé method to control our Type I Error rate at no more than 10%. 
+
+Given the results in @tbl-descTools3, we can see that for our first contrast, adding either Strain A, Strain B, or both strains of starting bacteria, appear to lead to higher levels of free amino acids in the cheese than the naturally occurring cultures (i.e., "none" for additional strains). We would anticipate getting a difference at least as large (magnitude) around 9.5% of the time when there is no difference between the three-way combination and no additional bacteria.
+
+For our second question, we see a slight more unusual result. Comparing the joint treatment of both strains with the combination of the individual inoculations, we anticipate observing a difference at least as large (in magnitude) as 1.45 units/cheese around 6% of the time if there actually was no difference. This suggests that if we want more umami-rich and firmer cheese (the result of higher free amino acids), then we should use both Strain and Strain B in the cheese making process rather than just one or the other.
+
+# Putting Things Together--Your Turn
+
+Use what you've seen here in the context of the Song Knowledge study to test the contrast of graduating students (seniors) vs. non-graduating students (juniors, others).
+
+:::{.callout-note}
+Since there is just one contrast in this family, you won't have to worry about adjustments to *p*-values.
+:::
 
 {{< pagebreak >}}
 

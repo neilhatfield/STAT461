@@ -149,7 +149,7 @@ Once you conceptualize your testing family, you can ask yourself "Which Type I E
 | Simultaneous Confidence Intervals | Bonferroni, Šidák, Tukey HSD, Tukey-Kramer HSD, Scheffé, Dunnett |
 | Strong Familywise/Maximum Experimentwise | Hochberg, Holm, REGWR, Gabriel, DSCF |
 | False Discovery Rate | Benjamini-Hochberg, Student-Newman-Keuls |
-| Experimentwise Error Rate | [ANOVA Omnibus Tests,] Protected LSD |
+| Experimentwise Error Rate | ANOVA Omnibus Tests Protected LSD |
 | Comparisonwise Error Rate | Most Two Sample Tests, Unprotected LSD |
 
 : Type I Error Rates and Methods {#tbl-T1ErrRates}
