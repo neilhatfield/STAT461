@@ -319,13 +319,20 @@ car::qqPlot(
 ```{=html}
 <details id=barleyQQLD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from –2 to +2 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from about –14 to 14 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2, –9) to (+2, +9).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 16 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.9, –13.9) while the last point is roughly at (1.9, 13.9).</li>
+  <li>Most of the points follow the perfect match line with some slight wiggling to either side.</li>
+  <li>Only the first and last points are just outside of the lower and upper edges of envelop (respectively). All other points are inside the envelope.
+The plot is not accompanied by values of any statistics.</li>
+  </ul>
+  </ul>
 </details>
 ```
 
@@ -354,7 +361,7 @@ car::qqPlot(
   envelope = 0.90,
   id = FALSE,
   pch = 20,
-  ylab = "Residuals (ft)"
+  ylab = "Residuals"
 )
 
 ```
@@ -362,13 +369,19 @@ car::qqPlot(
 ```{=html}
 <details id=dentalQQLD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from –2.25 to +2.2. with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals” and goes from about –0.19 to 0.25 with labels of –0.1, 0, 0.1, and 0.2.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.25, –0.19) to (+2.25, +0.18).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 32 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2.1, –0.19) while the last point is roughly at (2.1, 0.24).</li>
+  <li>Most of the points follow the perfect match line with some slight wiggling to either side.</li>
+  <li>There is only one point outside of the envelope, (1.6, 0.22) and there is one point on the edge of the envelope, (2.1, 0.24).</li>
+  </ul>
+  </ul>
 </details>
 ```
 
@@ -425,13 +438,25 @@ ggplot(
 ```{=html}
 <details id=barleyVarLD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “Fitted values (BPA)” and goes from about 34 to 93 with labels of 40, 50, 60, 70, 80, and 90.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from about –14 to 14 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 16 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are 8 points above and 8 points above the dashed line.</li>
+  <li>The points are not arranged in strips but are generally found between residual values of –5 and +7.5.</li>
+  <li>There are three points with larger residuals (in magnitude): (61, –7.75), (81, –13), and (89, 13).</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (37, 4.9) and goes to (91, 2).
+  <li>The curve is smoother line and dips down towards the dashed line and crosses the dashed line at (47.5, 0).</li>
+  <li>The curve continues down to the point (55, –1) and then begins a gentle increase back towards the dashed line.</li>
+  <li>The curve crosses at (76, 0) and continues the increase to the end point.</li>
+  </ul>
+  </ul>
 </details>
 ```
 
@@ -485,13 +510,26 @@ ggplot(
 ```{=html}
 <details id=dentalVarLD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+    <p>The horizontal axis is labelled “Fitted values” and goes from about -0.05 to 2.4 with labels of 0.0, 0.5, 1.0, 1.5, and 2.0.</p>
+  <p>The vertical axis is labelled “Residuals” and goes from about –0.2 to 0.25 with labels of -0.2, –0.1, 0.0, 0.1, and 0.2.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 32 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are 16 points above and 16 points above the dashed line.</li>
+  <li>The points are not arranged in strips but are generally found between residual values of –0.1 and +0.1.</li>
+  <li>There are eight points with larger residuals (in magnitude): (0.2, 0.14), (0.8, –0.12), (1.2, –0.16), (1.26, 0.23), (1.6, 0.24), (1.75, –0.14), (2.2, 0.12), and (2.26, –0.18).</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (0.1, 0.06) and goes to (2.27, –0.01).
+  <li>The curve is smoother line and dips down towards the dashed line and crosses the dashed line at (0.6, 0).</li>
+  <li>The curve continues down to the point (0.8, –0.4) and then begins to increase back towards the dashed line.</li>
+  <li>The curve crosses at (1.3, 0) and continues the increase to the point (1.55, 0.025).</li>
+  <li>The curve then decreases towards the end point.</li>
+  </ul>
+  </ul>
 </details>
 ```
 @fig-dentalVar is the Tukey-Anscombe plot for our Dental Pain study. 
@@ -538,13 +576,18 @@ ggplot(
 ```{=html}
 <details id=barleyIO1LD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “Measurement order” and goes from 0 to 17 with labels of 4, 8, 12, and 16.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from –19 to +19 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>The plot contains two sets of elements.</p>
+  <ul>
+  <li>A dashed horizontal red line at a residual value of 0.</li>
+  <li>A set of 16 points where each point represents a case in the data set. The points positions are determined by the case’s order of measurement and the case’s residual value.</li>
+  <ul>
+  <li>The points are roughly centered around the dashed red horizontal line with eight points below the line and eight points above the line.</li>
+  <li>Most points are located within a vertical band of –7.5 to +7.5. Three points are beyond these bounds: (5, 13), (6, 7.75), and (9, –13).</li>
+  <li>The points are sequentially connected by line segments. There is no discernable pattern to the line segments.</li>
+  </ul>
+  </ul>
 </details>
 ```
 
@@ -586,13 +629,13 @@ ggplot(
 ```{=html}
 <details id=barleyIO2LD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “Planting/Harvesting order” and goes from 0 to 16 with labels of 4, 8, 12, and 16.</p>
+  <p>The vertical axis is labelled “Yield (bushels per acre)” and goes from about 38 to +108 with labels of 40, 60, 80, and 100.</p>
+  <p>The plot contains a set of 16 points that are divided up into four groups showing color and shape. Color encodes which field was used and points are only connected by line segments within the same field. Shape encodes variety. Circle for Variety 1, Triangle for Variety 2, Square for Variety 3, and plus-sign for Variety 4.</p>
+  <p>Field 1 (dark blue): circle at (1, 93.5), triangle at (2, 66.6), square at (3, 50.5), plus-sign at (4, 42.4).</p>
+  <p>Field 2 (red): circle at (5, 102.9), triangle at (6, 53.2), square at (7, 47.4), plus-sign at (8, 43.8).</p>
+  <p>Field 3 (teal): circle at (9, 67), triangle at (10, 54.7), square at (11, 50), plus-sign at (12, 40.1).</p>
+  <p>Field 4 (goldenrod): circle at (13, 86.3), triangle at (14, 61.3), square at (15, 50,7), plus-sign at (16, 46.4).</p>
 </details>
 ```
 
@@ -657,19 +700,167 @@ ggplot2::ggplot(
 ```{=html}
 <details id=barleyInteractionLD>
   <summary>Long Description</summary>
-  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
-  <p>The first node at the top level says "1 Relieve Pain 1".</p>
-  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
-  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
-  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
-  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
-  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+  <p>The horizontal axis is labelled “Variety” and displays the levels of the Variety factor. The labels are Variety 1, Variety 2, Variety 3, and Variety 4.</p>
+  <p>The vertical axis is labelled “Yield (BPA)” and goes from 38 to 105 with labels of 40, 60, 80, and 100.</p>
+  <p>The plot consists of four sets of points, each connected by line segments. Each set corresponds to a different field.</p>
+  <p>Field 1, in a dark blue color, has the points (Variety 1, 93.5), (Variety 2, 66.6), (Variety 3, 50.5), and (Variety 4, 42.4).</p>
+  <p>Field 2, in a red color, has the points (Variety 1, 102.9), (Variety 2, 53.2), (Variety 3, 47.4), and (Variety 4, 43.8).</p>
+  <p>Field 3, in a teal color, has the points (Variety 1, 67), (Variety 2, 54.7), (Variety 3, 50), and (Variety 4, 40.1).</p>
+  <p>Field 4, in a goldenrod color, has the points (Variety 1, 86.3), (Variety 2, 61.3), (Variety 3, 50.7), and (Variety 4, 46.4).</p>
 </details>
 ```
 
 In the interaction plot (@fig-barleyInteraction), we see essentially the same behavior of barley variety in each field. This indicates that there is not any type of interaction between field and barley varietal. While the lines are not perfectly parallel, they all reflect the same general behavior. An interaction to be concerned about would be if for Variety 2, Field 4 had a yield higher than Variety 1, Field 2's yield.
 
+### Multiple Factors and a Block
+
+When our base ANOVA model involves multiple factors, the assumption of no interaction between the block and the factor expands to cover each factor as well as combinations of factors. In the Dental Pain study, this means that we will need to look at *three* interaction plots: Pain Tolerance vs. Drug, Pain Tolerance vs. Acupuncture, and Pain Tolerance vs. the treatments (combinations of Drug and Acupuncture). 
+
+```{r}
+#| label: fig-dentalInteractions
+#| fig-cap: "Interaction Plots for Dental Pain Study"
+#| fig-alt: "Three interaction plots for dental pain study"
+#| aria-describedby: "dentalInteractionLD"
+#| fig-subcap: 
+#|   - "Pain Tolerance vs. Drug"
+#|   - "Pain Tolerance vs. Acupuncture"
+#|   - "Pain Tolerance vs. Treatments"
+#| layout-ncol: 2
+#| layout-align: center
+#| echo: true
+# Demo code for an interaction plots ----
+## Interaction Plot for Tolerance and Drug
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = drug,
+    shape = drug,
+    linetype = drug,
+    group = drug
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+  labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Drug",
+    linetype = "Drug",
+    shape = "Drug"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+## Interaction Plot for Tolerance and Acupuncture
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = acupuncture,
+    shape = acupuncture,
+    linetype = acupuncture,
+    group = acupuncture
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+    labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Acupuncture",
+    linetype = "Acupuncture",
+    shape = "Acupuncture"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+## Interaction Plot for Tolerance and Treatments
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = acupuncture:drug,
+    shape = acupuncture:drug,
+    linetype = acupuncture:drug,
+    group = acupuncture:drug
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+    labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Treatment",
+    linetype = "Treatment",
+    shape = "Treatment"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+```
+
+```{=html}
+<details id=dentalInteractionLD>
+  <summary>Long Description</summary>
+  <p>There are three plots. The upper left, (a), is for Pain Tolerance vs. Drug. The upper right, (b), is for Pain Tolerance vs. Acupuncture. The lower left, (c), is for Pain Tolerance vs. Treatments.</p>
+  <h4>Plot (a)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Drug, with 2 levels. The placebo level is shown as vivid purplish blue colour, with a solid line, and solid circles. The codeine level is shown as strong red colour, a dotted line, and solid triangles.</p>
+  <p>There are two lines of eight points each in the plot corresponding to the two levels of Drug.</p>
+  <p>The two lines generally increase as we move from left to right.</p>
+  <p>There is a point of discrepency as pain tolerance goes from 3 to 4. The placebo level decreases in relief while the codiene level increases in relief.</p>
+  <p>The first line, for the placebo level, connects (1, 0.3), (2, 0.5), (3, 0.6), (4, 0.65), (5, 1.05), (6, 1.25), (7, 1.35) and (8, 1.4).</p>
+  <p>The second line, for the codeine level, connects (1, 0.85), (2, 0.95), (3, 1.2), (4, 1.1), (5, 1.45), (6, 1.85), (7, 1.95) and (8, 2.05).</p>
+  <h4>Plot (b)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Acupuncture, with 2 levels. The inactive level is shown as vivid purplish blue colour, with a solid line, and solid circles. The active level is shown as strong red colour, a dotted line, and solid triangles.</p>
+  <p>There are two lines of eight points each in the plot corresponding to the two levels of Acupuncture.</p>
+  <p>The two lines generally increase as we move from left to right.</p>
+  <p>There are two places of discrepency. As pain tolerance goes from 3 to 4, the active line stays relatively flat with the inactive line decreases in relief. Then as pain tolerance goes from 6 to 7, the active line decreases in relief while the inactive line increases.</p>
+  <p>The first line, for inactive, connects (1, 0.25), (2, 0.45), (3, 0.6), (4, 0.55), (5, 0.8), (6, 1.15), (7, 1.4) and (8, 1.45).</p>
+  <p>The second line, for active, connects (1, 0.9), (2, 1), (3, 1.2), (4, 1.2), (5, 1.7), (6, 1.95), (7, 1.9) and (8, 2).</p>
+  <h4>Plot (c)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Treatments, with 4 levels. The inactive & placebo level is shown as vivid purplish blue colour, with a solid line, and solid circles. The inactive & codeine level is shown as strong red colour, a dotted line, and solid triangles. The active & placebo level is shown as a teal colour, with large dashed line, and as solid squares. The active & codeine level is shown as goldenrod color, with a short dashed line, and plus-signs.</p>
+  <p>There are four lines of eight points each in the plot corresponding to the four levels of Treatment.</p>
+  <p>All four lines generally increase as we move from left to right.</p>
+  <p>There are three descrepencies in the plot.</p>
+  <ul>
+  <li>As pain tolerance goes from 3 to 4, the active & placebo line increases in relief while inactive and placebo stays relatively flat, and the active & codeine and inactive & codeine lines decrease in relief.</li>
+  <li>As pain tolerance goes from 6 to 7, the active & codeine line decreases in relief while the other three increase in relief.</li>
+  <li>As pain tolerance goes from 7 to 8, the active & codeine and the inactive & placebo lines increase in relief while the inactive & codeine and active & placebo lines decrease in relief.</li>
+  </ul>
+  <p>The first line, for inactive & placebo, connects (1, 0), (2, 0.3), (3, 0.4), (4, 0.4), (5, 0.6), (6, 0.9), (7, 1) and (8, 1.2).</p>
+  <p>The second line, for inactive & codeine, connects (1, 0.5), (2, 0.6), (3, 0.8), (4, 0.7), (5, 1), (6, 1.4), (7, 1.8) and (8, 1.7).</p>
+  <p>The third line, for active & placebo, connects (1, 0.6), (2, 0.7), (3, 0.8), (4, 0.9), (5, 1.5), (6, 1.6), (7, 1.7) and (8, 1.6).</p>
+  <p>The fourth line, for active & codeine, connects (1, 1.2), (2, 1.3), (3, 1.6), (4, 1.5), (5, 1.9), (6, 2.3), (7, 2.1) and (8, 2.4).</p>
+</details>
+```
+
 ### Your Turn
+
+Using the plots in @fig-dentalInteractions, make a decision about whether we have worrisome interactions between our block (pain tolerance) and our factors for the Dental Pain study. When ready, you can check your answer.
+
+:::{.callout-note collapse="true"}
+#### Worrisome Dental Pain Interactions?
+When we look at @fig-dentalInteractions-1, we can have a point of concern between levels 3 and 4 of pain tolerance when looking at the impact of Drug. The general pattern of behavior appears to change at these levels. Similarly, the 3 to 4 and 6 to 7 sections of @fig-dentalInteractions-2 are also somewhat concerning when we explore the impact of Acupuncture. When we look at the interaction term (i.e., treatments) by pain tolerance in @fig-dentalInteractions-3, the 3 to 4 sections echo what we've previously seen, as well as for 6 to 7 sections. There is a new potential issue in the 7 to 8 sections. 
+:::
 
 ## Assumption Decisions
 
@@ -820,9 +1011,9 @@ data.frame("Estimate" = pEst) %>%
 
 Just as with One-way (and Factorial Designs), we can do Post Hoc analyses in several ways. Generally speaking, we will __only__ do pairwise comparisons on main effects and/or interaction terms. Remember, our goal for the block is to use up/explain variation, *we are not interested in inferences about the block*.
 
-### `emmeans` Approach
+### `{emmeans}` Approach
 
-We can use the `emmeans` package with out block models. This package gives some some pretty decent flexibility. Let's look at a testing family for the pairwise comparisons of varietal, controlling SCI at 0.1 via Tukey's HSD.
+We can use the `{emmeans}` package with out block models. This package gives some some pretty decent flexibility. Let's look at a testing family for the pairwise comparisons of varietal, controlling SCI at 0.1 via Tukey's HSD.
 
 ```{r}
 #| label: tbl-barleyEMMeans
@@ -915,7 +1106,7 @@ Notice that we added on the `which` argument to the `TukeyHSD` call. This isolat
 
 We still interpret the results of @tbl-barleyTukey in the exact same way as we did in Unit 3.
 
-### `DescTools` Approach
+### `{DescTools}` Approach
 
 You can make similar adjustments in the `DescTools::PostHocTest` if you are wanting to control a different Type I Error Rate and/or use a different method. @tbl-secondPairwise provides an example using Bonferroni's method for controlling SCI.
 
@@ -929,6 +1120,7 @@ dtPH <- DescTools::PostHocTest(
   method = "bonf", # <3>
   conf.level = 0.9 # <4> 
 )
+
 ```
 1. Your model object.
 2. Specify which factor you want to do pairwise comparisons on.
@@ -940,7 +1132,6 @@ dtPH <- DescTools::PostHocTest(
 #| tbl-cap: !expr 'paste("Post Hoc", attr(dtPH, "method"), "Comparisons")'
 #| html-table-processing: none
 #| echo: true
-
 # Making a nice table ----
 knitr::kable(
   x = dtPH$Varietal, # <1>
@@ -975,7 +1166,7 @@ The Dunnett Test approach we covered in Unit 3 for special pairwise comparisons 
 
 ### Effect Sizes
 
-Regardless of which method you use for pairwise comparisons (`emmeans`, `tukeyHSD`, or `DescTools`), you can opt to give your pairwise effect sizes as a separate table. To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function.
+Regardless of which method you use for pairwise comparisons (`{emmeans}`, `tukeyHSD`, or `{DescTools}`), you can opt to give your pairwise effect sizes as a separate table. To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function.
 
 ```{r}
 #| label: tbl-effectSizes
@@ -1013,38 +1204,42 @@ We need to make an important note here: suppose that our overall Unusualness Thr
 
 Even with a block, we can still use make use of the idea of contrasts. For example, let's say that barley varieties 1 and 2 are from one company while 3 and 4 are from a second company. We can test the contrast of companies, even in this blocking design.
 
-### `emmeans` Approach
+### `{emmeans}` Approach
 
-The `emmeans` approach will let us incorporate effect sizes into our results (Table \ref{tab:barleyContrast1}).
+The `{emmeans}` approach will let us incorporate effect sizes into our results (@tbl-barleyContrast1).
 
 ```{r barleyContrast1, echo=TRUE}
+#| label: tbl-barleyContrast1
+#| tbl-cap: "Barley Study Main Effects Contrast on Varietal Company"
+#| html-table-processing: none
+#| echo: true
 # Demo Code for Contrasts using emmeans ----
 ## Get the means
 barleyMeans <- emmeans::emmeans(
   object = barleyModel,
-  specs = ~ Varietal # Nothing goes on the left of ~; list what term you want
+  specs = ~ Varietal # <1>
 )
 
-# barleyMeans # Look at the output object to double check the order of levels
+# barleyMeans # <2>
 
 ## Apply the contrasts
 barleyContrasts1 <- emmeans::contrast(
-  object = barleyMeans, # Notice that this is the means object
+  object = barleyMeans, # <3> 
   method = list(
     "Company A vs. Company B" = c(1/2, 1/2, -1/2, -1/2)
   ),
-  adjust = "none" # No MC/SI adjustment
+  adjust = "none" # <4> 
 )
 
 ## Add effect sizes and make a nice looking table
 as.data.frame(barleyContrasts1) %>%
   dplyr::mutate(
-    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # Effect Sizes
-    ps = probSup(cohen) # Effect sizes; this comes from Neil's ANOVA toolkit
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # <5>
+    ps = probSup(cohen) # <5>
   ) %>%
   kable(
     digits = 3,
-    caption = "Barley Study Main Effects Contrast on Varietal Company",
+    # caption = "Barley Study Main Effects Contrast on Varietal Company",
     col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
                   "p-value", "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
@@ -1057,12 +1252,21 @@ as.data.frame(barleyContrasts1) %>%
   )
 
 ```
+1. Nothing goes on the left of `~`; list what variable that matches the factor you want to build a contrast on.
+2. Look at the output object to double check the order of levels.
+3. Notice that this is the means object.
+4. Since the testing family only consists of one test, we don't need a MC/SI adjustment.
+5. Add effect sizes; the `probSup` function comes from Neil's ANOVA toolkit
 
 ### Base `R` Approach
 
-We can also use the base `R` approach will let us incorporate our contrast directly into a classical ANOVA table (Table \ref{tab:barleyContrast2}).
+We can also use the base `R` approach will let us incorporate our contrast directly into a classical ANOVA table (@tbl-barleyContrast2).
 
-```{r barleyContrast2, echo=TRUE}
+```{r}
+#| label: tbl-barleyContrast2
+#| tbl-cap: "ANOVA Table for Barley Crop Yield Contrasts"
+#| html-table-processing: none
+#| echo: true
 # Demo Code for Contrasts via base R ----
 ## Define the contrast
 company <- c(1/2, 1/2, -1/2, -1/2)
@@ -1093,7 +1297,7 @@ knitr::kable(
   digits = 4,
   col.names = c(
     "DF", "SS", "MS", "F", "p-value"), 
-  caption = "ANOVA Table for Barley Crop Yield Contrasts",
+  # caption = "ANOVA Table for Barley Crop Yield Contrasts",
   booktabs = TRUE,
   align = rep("c", 5)
 ) %>%
