@@ -1,0 +1,1321 @@
+---
+title: "ANOVA Models with a Block"
+subtitle: "Parametric Shortcut"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+This guide focuses on exploring ANOVA models that incorporate a block. We will specifically look at Randomized Complete Block Designs. Keep in mind that we can add a block to pretty much any ANOVA model.
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, and `{DescTols}`. 
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
+              "car", "psych", "parameters", "emmeans", "DescTools")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+# Custom Color Palette ----
+psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+
+```
+
+## Load Data
+
+For this tutorial, we're going to look at two contexts: __Farming Barley__ and __Dental Pain__. I'll give a brief description of each context and then show how to load the data.
+
+### Farming Barley
+
+A farmer wants to test out four varieties of barley and see if there is any difference in yield (bussels per acre). He has four fields in which he can plant the barley. However, the farmer is aware of differences between each field. For example,
+
++ One field has a higher clay content in the soil than the others
++ One field has rockier soil than the others
++ Two fields have loose soil while another field has much more compacted soil.
++ The irrigation systems are different: one uses a drip system, another sprinklers, a third a center pivot system, and the fourth is a furrow surface system.
+
+Given that the fields will be our measurement units, there is quite a bit of variation between them. This variation could easily become confounded with the impact of barley variety on crop yield. Thus, we're in a perfect situation to make use a block of field.
+
+We can access and clean the data through the following code:
+
+```{r }
+#| label: loadData1
+#| echo: true
+# Load Barley Data ----
+barleyData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/barley.dat",
+  header = TRUE,
+  sep = ","
+)
+
+# View(barleyData) # <1>
+# str(barleyData) # <1>
+
+# Clean Up Variables ----
+names(barleyData)[which(names(barleyData) == "Treatment")] <- "Varietal" # <2>
+names(barleyData)[which(names(barleyData) == "Planting.Harvesting.Order")] <- "Order" # <2>
+
+# Clean Data ----
+barleyData$Varietal <- as.factor(barleyData$Varietal) # <3>
+barleyData$Field <- as.factor(barleyData$Field) # <4>
+
+```
+1. I've left two lines of code commented out as these commands are useful for checking the data upon loading: `View` and `str` (structure). These let me detect two things: problematic variables (poor names of columns) and that R isn't thinking about two attributes (varietal and field) in beneficial ways.
+2. These commands allow me to have R search through the column names (i.e., variables) and find the specified ones and then change the name.
+3. The `as.factor` function is key to making sure that R treats our factor as a factor.
+4. Somewhat counter intuitively, we also need to tell R to treat our block as if it was a factor. This helps R do the appropriate decomposition.
+
+### Dental Pain
+
+In a study reported by Kutner et al. (2005)^[Kutner, M. H., Nachtsheim, C. J., Neter, J., & Li, W. (2005). Applied linear statistical models. McGraw-Hill Irwin.], an anesthesiologist did a comparative study on the effects of acupuncture and codeine on the amount of pain experienced by male participants after a dental procedure. The two factors in the study were the drug (two levels--codeine and a placebo sugar pill) and acupuncture points (two levels--active points and inactive points). The 32 participants were divided into eight blocks based upon a pre-assessment of their pain tolerance. Within each of these eight blocks, the anesthesiologist randomly assigned treatments; double blinding was used in the study.
+
+We may access this date with the following code:
+```{r}
+#| label: loadData2
+#| echo: true
+# Load Dental Pain Data ----
+dentalData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/dentalPain.txt",
+  header = TRUE,
+  sep = ""
+)
+
+# View(dentalData)
+# str(dentalData)
+
+# Clean Data ----
+dentalData$tolerance <- as.factor(dentalData$tolerance) # <1>
+
+dentalData$drug <- dplyr::case_match( # <2>
+  .x = dentalData$drug,
+  1 ~ "placebo",
+  2 ~ "codeine",
+  .ptype = factor(levels = c("placebo", "codeine"))
+)
+
+dentalData$acupuncture <- dplyr::case_match( # <3>
+  .x = dentalData$acupuncture,
+  1 ~ "inactive",
+  2 ~ "active",
+  .ptype = factor(levels = c("inactive", "active"))
+)
+
+```
+1. Again, we need to tell R to treat our block as a factor to get the appropriate decomposition.
+2. The levels of our drug factor were coded as numbers. Instead of leaving them as numeric codes, let's swap in meaningful words.
+3. Similarly, we'll recode our acupuncture factor.
+
+# Checking the Appropriateness of ANOVA + Block
+
+Just as with One-way ANOVA, one of the first things that we should do is check whether ANOVA + Block is even appropriate. One of the great things with an ANOVA + Block model is that they build off of one-way ANOVA. Thus, we use the same questions as our starting point.
+
+:::{.callout-note}
+## Not Assumption Checking
+Keep in mind that when we are checking whether ANOVA + Block is appropriate, we are *not* talking about whether the assumptions are satisfied. Rather, we're talking about whether the situation in front of us is even amenable to this approach.
+:::
+
+From one-way ANOVA, we had the following requirements:
+
++ We have a qualitative/categorical factor.
++ We have a quantitative response.
++ We are working with an additive model.
++ We have estimable effects.
++ We have estimable errors/residuals.
+
+To this list we will add two more requirements:
+
++ We have a categorical attribute (i.e., the block) that creates sets sets of units that are similar to each other in some way.
++ For a *complete block design*, each block must contain all possible treatments (for experiments) or all possible groupings (for quasi-experiments and observational studies).
+
+We can go about checking these requirements in much the same way. Use the structure function (`str`) to check that R is thinking about your response numerically and your factor as a factor. You can also use `str` to make sure that R is also thinking about your block like a factor.
+
+## Hasse Diagrams
+
+Additionally, we can use Hasse diagrams to check whether ANOVA + Block is appropriate. The following code produces the Hasse diagram for the Farming Barley study.
+
+```{r}
+#| label: fig-barleyHD
+#| fig-cap: "Hasse Diagram for Barley Crop Yield Study"
+#| fig-alt: "Hasse Diagram for Barley Crop Yield Study"
+#| fig-height: 2
+#| aria-describedby: "barleyHDLD"
+#| echo: true
+# Demo code of Barley Hasse Diagram ----
+modelLabels <- c("1 Grow Barley 1", "4 Field 3", "4 Variety 3", "16 (Field Sections) 9")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+```{=html}
+<details id=barleyHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has four nodes in three levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Grow Barley 1".</p>
+  <p>The second node is to the left of the middle level and says "4 Field 3".</p>
+  <p>The third node is to the right of the middle level and says "4 Variety 3".</p>
+  <p>The fourth node is at the bottom level says "16 (Field Sections) 9".</p>
+</details>
+```
+
+In @fig-barleyHD we can see the classical layout for a One-way ANOVA with a block: a diamond shape with four nodes on three levels. As always, the main action that leads to our response is at the top. In the middle we have two nodes: one for our block on the left and one for our factor to the right. There should be no arrow connecting these two nodes to each other. At the bottom we have our measurement units node.
+
+Just as in Unit 3, we can use the degrees of freedom in the nodes to ensure that we can estimate our effects (check both factor and block nodes) as well as the residuals. In the case of the Farming Barley study, we can state that one-way ANOVA + block is appropriate.
+
+### Your Turn
+
+The following code and image (@fig-dentalHD) are the Hasse diagram for the Dental Pain Study. In this study there are *two* factors. Is ANOVA + Block appropriate here? Check your answer below.
+
+```{r}
+#| label: fig-dentalHD
+#| fig-cap: "Hasse Diagram for Dental Pain Study"
+#| fig-alt: "Hasse diagram for dental pain study"
+#| fig-height: 3
+#| aria-describedby: "dentalHDLD"
+#| echo: true
+# Demo code for Dental Pain Hasse Diagram ----
+modelLabels <- c("1 Relieve Pain 1", "8 Pain Tolerance 7", "2 Drug 1", "2 Acupuncture 1",
+                 "4 Drug × Acupuncture 1", "32 (Patients) 21")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE,
+           FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE,
+           FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE,
+           TRUE, TRUE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 6,
+  ncol = 6,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+
+```{=html}
+<details id=dentalHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Relieve Pain 1".</p>
+  <p>The second node is to the left of the second level and says "8 Pain Tolerance 7". This node is only connected to the first and last nodes of the diagram.</p>
+  <p>The third node is in the middle of the second level and says "2 Drug 1".</p>
+  <p>The fourth node is to the right of the second level and says "2 Acupuncture 1".</p>
+  <p>The fifth node is on the third level and is connected to the nodes with Drug and Acupuncture in their labels. The fifth node says "4 Drug x Acupuncture 1".</p>
+  <p>The sixth and last node is at the bottom level and says "32 (Patients) 21".</p>
+</details>
+```
+
+:::{.callout-note collapse="true"}
+#### Dental Pain Appropriate?
+Yes, an ANOVA + Block approach is appropriate for the Dental Pain study. We have a quantitative response, two categorical factors, and a block. Further we have the additive model and positive degrees of freedom for all effects and the residuals.
+:::
+
+# Fit the Models
+
+ANOVA models with a block are set up *almost* like you would set up a factorial model. There are two important differences:
+
+1) We typically want to put the block into our model __first__, and then the rest of our factors.
+2) Our block should not be interacting with any of our other factors so we should not include the block in any interactions.
+
+```{r}
+#| label: fitModels
+#| echo: true
+# Demo code for fitting models ----
+
+## Farming Barley Study ----
+barleyModel <- aov(
+  formula = Yield ~ Field + Varietal,
+  data = barleyData
+)
+
+## Dental Pain Study ----
+dentalModel <- aov(
+  formula = relief ~ tolerance + drug*acupuncture, # <1>
+  data = dentalData
+)
+
+```
+1. We'll talk more about models like the Dental Pain study in another guide.
+
+I will continue to recommend that you save the output of the `aov` function into an object (i.e., your "model object") so that you can access and re-use the information stored inside.
+
+# Assessing Our Assumptions
+
+As with any parametric shortcut, we need to assess the assumptions to make sure they have been satisfied. Whenever we are working with an ANOVA + Block model, we will always have the assumptions that pertain to the base ANOVA Model. We will also add on that the block and the factor should not interact with each other.
+
+For both of our examples, the base ANOVA model entail our core three assumptions for the parametric shortcut: Gaussian distribution of residuals, homoscedasticity, and independent observations.
+
+## Gaussian Residuals
+
+Just as with one-way ANOVA, we can make use of a QQ plot of our residuals as well as the values of the *Sample Skewness* and *Sample Excess Kurtosis* statistics to help us.
+
+```{r}
+#| label: fig-barleyQQ
+#| fig-cap: "QQ Plot for the Farming Barley Study with 90% CE"
+#| fig-alt: "QQ plot for farming barley study"
+#| fig-height: 4
+#| aria-describedby: "barleyQQLD"
+#| echo: true
+# Demo Code for QQ Plot ----
+## Barley Study
+car::qqPlot(
+  x = residuals(barleyModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (BPA)"
+)
+
+```
+
+```{=html}
+<details id=barleyQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from –2 to +2 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from about –14 to 14 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2, –9) to (+2, +9).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 16 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.9, –13.9) while the last point is roughly at (1.9, 13.9).</li>
+  <li>Most of the points follow the perfect match line with some slight wiggling to either side.</li>
+  <li>Only the first and last points are just outside of the lower and upper edges of envelop (respectively). All other points are inside the envelope.
+The plot is not accompanied by values of any statistics.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+Remember that we can get the values of the two statistics by using commands from the `{psych}` package. For *Sample Skewness* we would use `psych::skew(barleyModel$residuals)` and find a value of `r round(psych::skew(barleyModel$residuals), 2)`. For *Sample Excess Kurtosis* we would use `psych::kurtosi(barleyModel$residuals)` and get a value of `r round(psych::kurtosi(barleyModel$residuals), 2)`.
+
+As discussed in class, I would say that this assumption is satisfied for the Farming Barley study.
+
+### Your Turn
+
+Assess this assumption for the Dental Pain study; when ready check your work.
+
+:::{.callout-note collapse="true"}
+#### Gaussian Residuals for Dental Pain?
+```{r}
+#| label: fig-dentalQQ
+#| fig-cap: "QQ Plot for the Dental Pain Study with 90% CE"
+#| fig-alt: "QQ plot for dental pain study"
+#| fig-height: 4
+#| aria-describedby: "dentalQQLD"
+#| echo: true
+# Demo Code for QQ Plot ----
+## Dental Pain Study
+car::qqPlot(
+  x = residuals(dentalModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals"
+)
+
+```
+
+```{=html}
+<details id=dentalQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from –2.25 to +2.2. with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals” and goes from about –0.19 to 0.25 with labels of –0.1, 0, 0.1, and 0.2.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.25, –0.19) to (+2.25, +0.18).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 32 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2.1, –0.19) while the last point is roughly at (2.1, 0.24).</li>
+  <li>Most of the points follow the perfect match line with some slight wiggling to either side.</li>
+  <li>There is only one point outside of the envelope, (1.6, 0.22) and there is one point on the edge of the envelope, (2.1, 0.24).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+*Sample Skewness*: `r round(psych::skew(dentalModel$residuals), 2)`  
+*Sample Excess Kurtosis*: `r round(psych::kurtosi(dentalModel$residuals), 2)`
+:::
+
+## Homoscedasticity
+
+Depending on the number of replicates you have in each grouping, we may not always get the nice strips that we saw in the strip charts. However, we can use the more general form of the strip chart known as the Tukey-Anscombe plot to assess the homoscedasticity assumption.
+
+The code to make a Tukey-Anscombe plot is very similar to that for the strip chart. The major difference is that we'll add a smoothing curve to the plot.
+
+```{r}
+#| label: fig-barleyVar
+#| fig-cap: "Tukey-Anscombe Plot for Farming Barley Study"
+#| fig-alt: "Tukey-Anscombe plot for Farming Barley Study"
+#| fig-width: 5
+#| fig-height: 3
+#| aria-describedby: "barleyVarLD"
+#| echo: true
+# Demo code for making Tukey-Anscombe plot ----
+## Farming Barley Study
+ggplot(
+  data = data.frame(
+    residuals = residuals(barleyModel),
+    fitted = fitted.values(barleyModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline( # <1>
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth( # <2>
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (BPA)",
+    y = "Residuals (BPA)"
+  )
+
+```
+1. We will keep the dashed reference line for a 0 value residual.
+2. This `geom_smooth` code can be re-used in almost every situation to add the smoother. You don't need to change any of the arguments.
+
+```{=html}
+<details id=barleyVarLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Fitted values (BPA)” and goes from about 34 to 93 with labels of 40, 50, 60, 70, 80, and 90.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from about –14 to 14 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 16 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are 8 points above and 8 points above the dashed line.</li>
+  <li>The points are not arranged in strips but are generally found between residual values of –5 and +7.5.</li>
+  <li>There are three points with larger residuals (in magnitude): (61, –7.75), (81, –13), and (89, 13).</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (37, 4.9) and goes to (91, 2).
+  <li>The curve is smoother line and dips down towards the dashed line and crosses the dashed line at (47.5, 0).</li>
+  <li>The curve continues down to the point (55, –1) and then begins a gentle increase back towards the dashed line.</li>
+  <li>The curve crosses at (76, 0) and continues the increase to the end point.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+We don't see any patterns to the plot (@fig-barleyVar), which is a good sign. While there does appear to be more variation on the high end of the fitted values, the smoothed line is fairly flat. The upticks at the ends might be the result of the small sample size. In all, we will take the homoscedasticity assumption to be satisfied.
+
+### Your Turn
+
+Assess this assumption for the Dental Pain study; when ready check your work.
+
+:::{.callout-note collapse="true"}
+#### Homoscedasiticty for Dental Pain?
+```{r}
+#| label: fig-dentalVar
+#| fig-cap: "Tukey-Anscombe Plot for Dental Pain Study"
+#| fig-alt: "Tukey-Anscombe plot for Dental Pain Study"
+#| fig-width: 5
+#| fig-height: 3
+#| aria-describedby: "dentalVarLD"
+#| echo: true
+# Demo code for making Tukey-Anscombe plot ----
+## Farming Barley Study
+## Dental Pain Study
+ggplot(
+  data = data.frame(
+    residuals = residuals(dentalModel),
+    fitted = fitted.values(dentalModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values",
+    y = "Residuals"
+  )
+
+```
+
+```{=html}
+<details id=dentalVarLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled “Fitted values” and goes from about -0.05 to 2.4 with labels of 0.0, 0.5, 1.0, 1.5, and 2.0.</p>
+  <p>The vertical axis is labelled “Residuals” and goes from about –0.2 to 0.25 with labels of -0.2, –0.1, 0.0, 0.1, and 0.2.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 32 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are 16 points above and 16 points above the dashed line.</li>
+  <li>The points are not arranged in strips but are generally found between residual values of –0.1 and +0.1.</li>
+  <li>There are eight points with larger residuals (in magnitude): (0.2, 0.14), (0.8, –0.12), (1.2, –0.16), (1.26, 0.23), (1.6, 0.24), (1.75, –0.14), (2.2, 0.12), and (2.26, –0.18).</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (0.1, 0.06) and goes to (2.27, –0.01).
+  <li>The curve is smoother line and dips down towards the dashed line and crosses the dashed line at (0.6, 0).</li>
+  <li>The curve continues down to the point (0.8, –0.4) and then begins to increase back towards the dashed line.</li>
+  <li>The curve crosses at (1.3, 0) and continues the increase to the point (1.55, 0.025).</li>
+  <li>The curve then decreases towards the end point.</li>
+  </ul>
+  </ul>
+</details>
+```
+@fig-dentalVar is the Tukey-Anscombe plot for our Dental Pain study. 
+:::
+
+## Independent Observations
+
+We can assess the Independence of Observations in the same ways as from Unit 3: making use of our knowledge of the study design, and, IF we know measurement order, index plots.
+
+In the Farming Barley study, we happen to know measurement order as the farmer provided planting and harvesting order information. Thus, we can use our knowledge the study design plus an Index plot (and Durbin-Watson).
+
+```{r}
+#| label: fig-barleyIO1
+#| fig-cap: "Index Plot for Farming Barley Residuals"
+#| fig-alt: "Index plot for Farming Barley Study"
+#| fig-width: 4
+#| fig-height: 2
+#| aria-describedby: "barleyIO1LD"
+#| echo: true
+# Demo code for index plots ----
+## Farming Barley Study
+ggplot(
+  data = data.frame(
+    residuals = barleyModel$residuals,
+    index = 1:length(barleyModel$residuals)
+  ),
+  mapping = aes(x = index, y = residuals)
+) +
+  geom_point(size = 1.5) +
+  geom_line() +
+  theme_bw() +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "red"
+  ) +
+  labs(
+    x = "Measurement order",
+    y = "Residuals (BPA)"
+  )
+
+```
+
+```{=html}
+<details id=barleyIO1LD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Measurement order” and goes from 0 to 17 with labels of 4, 8, 12, and 16.</p>
+  <p>The vertical axis is labelled “Residuals (BPA)” and goes from –19 to +19 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>The plot contains two sets of elements.</p>
+  <ul>
+  <li>A dashed horizontal red line at a residual value of 0.</li>
+  <li>A set of 16 points where each point represents a case in the data set. The points positions are determined by the case’s order of measurement and the case’s residual value.</li>
+  <ul>
+  <li>The points are roughly centered around the dashed red horizontal line with eight points below the line and eight points above the line.</li>
+  <li>Most points are located within a vertical band of –7.5 to +7.5. Three points are beyond these bounds: (5, 13), (6, 7.75), and (9, –13).</li>
+  <li>The points are sequentially connected by line segments. There is no discernable pattern to the line segments.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+From @fig-barleyIO1, we don't necessarily see any patterns which would indicate a threat of the assumption of independent observations.
+
+As shown in class, we can also look at an alternative form of the index plots. Rather than looking at the residuals, we can also plot the actual response values. However, if we go this route, we will want to incorporate our block into the Index Plot.
+
+```{r}
+#| label: fig-barleyIO2
+#| fig-cap: "Alternative Index Plot for Farming Barley Study"
+#| fig-width: 6
+#| fig-height: 3
+#| aria-describedby: "barleyIO2LD"
+#| echo: true
+# Demo code for Alternative Index Plot for Barley Yields ----
+ggplot(
+  data = barleyData,
+  mapping = aes(
+    x = Order,
+    y = Yield,
+    color = Field,
+    shape = Varietal,
+    linetype = Field
+  )
+) +
+  geom_point(size = 2) +
+  geom_path(
+    mapping = aes(group = Field)
+  ) +
+  theme_bw() +
+  labs(
+    x = "Planting/Havesting Order",
+    y = "Yield (BPA)"
+  ) + 
+  scale_color_manual(values = psuPalette)
+
+```
+
+```{=html}
+<details id=barleyIO2LD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Planting/Harvesting order” and goes from 0 to 16 with labels of 4, 8, 12, and 16.</p>
+  <p>The vertical axis is labelled “Yield (bushels per acre)” and goes from about 38 to +108 with labels of 40, 60, 80, and 100.</p>
+  <p>The plot contains a set of 16 points that are divided up into four groups showing color and shape. Color encodes which field was used and points are only connected by line segments within the same field. Shape encodes variety. Circle for Variety 1, Triangle for Variety 2, Square for Variety 3, and plus-sign for Variety 4.</p>
+  <p>Field 1 (dark blue): circle at (1, 93.5), triangle at (2, 66.6), square at (3, 50.5), plus-sign at (4, 42.4).</p>
+  <p>Field 2 (red): circle at (5, 102.9), triangle at (6, 53.2), square at (7, 47.4), plus-sign at (8, 43.8).</p>
+  <p>Field 3 (teal): circle at (9, 67), triangle at (10, 54.7), square at (11, 50), plus-sign at (12, 40.1).</p>
+  <p>Field 4 (goldenrod): circle at (13, 86.3), triangle at (14, 61.3), square at (15, 50,7), plus-sign at (16, 46.4).</p>
+</details>
+```
+
+While at first glance of @fig-barleyIO2, there appears to be a pattern to the response (a repeating downward line), we can see that this is an artifact of the block and treatments.
+
+In either case we can supplement these plots with the Durbin-Watson statistic. We can get this value using the command `car::durbinWatsonTest(barleyModel)$dw`. Doing so yields the value `r round(car::durbinWatsonTest(barleyModel)$dw, 2)`.
+
+### Your Turn
+
+Assess this assumption for the Dental Pain study; when ready check your work.
+
+:::{.callout-note collapse="true"}
+#### Independent Observations for Dental Pain?
+We do not have an accurate accounting of measurement order for the Dental Pain study. Thus, we will only have to go off of our knowledge of the study design and how we carried out the study. 
+
+:::
+
+## Interaction of Block and Factor
+
+The new assumption that we need to assess is whether there is a worrisome interaction between our block and our factor. If there is such an interaction, then our model (response ~ block + factor) is not valid. We will make an interaction plot to assess this issue.
+
+For an interaction plot, we will plot the values of the *Sample Arithmetic Mean* across all combinations of blocks and factors look for consistency in performance. If there is no interaction, then we should see consistent behaviors (essentially parallel lines). If there is interaction, then we should switches in behavior such as non-parallel lines moving in opposite directions.
+
+```{r}
+#| label: fig-barleyInteraction
+#| fig-cap: "Interaction Plot for Barley Varietal and Field"
+#| fig-alt: "Interaction plot for barley varietal and field"
+#| fig-height: 4
+#| fig-width: 5
+#| aria-describedby: "barleyInteractionLD"
+#| echo: true
+# Demo code for an interaction plot ----
+## Farming Barley Study
+ggplot2::ggplot(
+  data = barleyData,
+  mapping = aes(
+    x = Varietal,
+    y = Yield,
+    color = Field, # <1>
+    shape = Field, # <1>
+    linetype = Field, # <1>
+    group = Field # <2>
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") + # <3>
+  stat_summary(fun = "mean", geom = "line") + # <3>
+  theme_bw() +
+  labs(
+    x = "Variety",
+    y = "Yield (BPA)"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette) # <4>
+```
+1. Here I chose to set the block to color, shape, and line type. This helps to distinguish the fields from one another. You should avoid using color alone to encode important information.
+2. The grouping argument is vital to ensure that the line segments get drawn correctly and that the values are calculated in the appropriate ways.
+3. These two commands will transform our data to the values of the *SAM* within the groups.
+4. I chose to use a custom color palette that I defined up at the top of this guide.
+
+```{=html}
+<details id=barleyInteractionLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Variety” and displays the levels of the Variety factor. The labels are Variety 1, Variety 2, Variety 3, and Variety 4.</p>
+  <p>The vertical axis is labelled “Yield (BPA)” and goes from 38 to 105 with labels of 40, 60, 80, and 100.</p>
+  <p>The plot consists of four sets of points, each connected by line segments. Each set corresponds to a different field.</p>
+  <p>Field 1, in a dark blue color, has the points (Variety 1, 93.5), (Variety 2, 66.6), (Variety 3, 50.5), and (Variety 4, 42.4).</p>
+  <p>Field 2, in a red color, has the points (Variety 1, 102.9), (Variety 2, 53.2), (Variety 3, 47.4), and (Variety 4, 43.8).</p>
+  <p>Field 3, in a teal color, has the points (Variety 1, 67), (Variety 2, 54.7), (Variety 3, 50), and (Variety 4, 40.1).</p>
+  <p>Field 4, in a goldenrod color, has the points (Variety 1, 86.3), (Variety 2, 61.3), (Variety 3, 50.7), and (Variety 4, 46.4).</p>
+</details>
+```
+
+In the interaction plot (@fig-barleyInteraction), we see essentially the same behavior of barley variety in each field. This indicates that there is not any type of interaction between field and barley varietal. While the lines are not perfectly parallel, they all reflect the same general behavior. An interaction to be concerned about would be if for Variety 2, Field 4 had a yield higher than Variety 1, Field 2's yield.
+
+### Multiple Factors and a Block
+
+When our base ANOVA model involves multiple factors, the assumption of no interaction between the block and the factor expands to cover each factor as well as combinations of factors. In the Dental Pain study, this means that we will need to look at *three* interaction plots: Pain Tolerance vs. Drug, Pain Tolerance vs. Acupuncture, and Pain Tolerance vs. the treatments (combinations of Drug and Acupuncture). 
+
+```{r}
+#| label: fig-dentalInteractions
+#| fig-cap: "Interaction Plots for Dental Pain Study"
+#| fig-alt: "Three interaction plots for dental pain study"
+#| aria-describedby: "dentalInteractionLD"
+#| fig-subcap: 
+#|   - "Pain Tolerance vs. Drug"
+#|   - "Pain Tolerance vs. Acupuncture"
+#|   - "Pain Tolerance vs. Treatments"
+#| layout-ncol: 2
+#| layout-align: center
+#| echo: true
+# Demo code for an interaction plots ----
+## Interaction Plot for Tolerance and Drug
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = drug,
+    shape = drug,
+    linetype = drug,
+    group = drug
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+  labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Drug",
+    linetype = "Drug",
+    shape = "Drug"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+## Interaction Plot for Tolerance and Acupuncture
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = acupuncture,
+    shape = acupuncture,
+    linetype = acupuncture,
+    group = acupuncture
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+    labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Acupuncture",
+    linetype = "Acupuncture",
+    shape = "Acupuncture"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+## Interaction Plot for Tolerance and Treatments
+ggplot2::ggplot(
+  data = dentalData,
+  mapping = aes(
+    x = tolerance,
+    y = relief,
+    color = acupuncture:drug,
+    shape = acupuncture:drug,
+    linetype = acupuncture:drug,
+    group = acupuncture:drug
+  )
+) +
+  stat_summary(fun = "mean", geom = "point") +
+  stat_summary(fun = "mean", geom = "line") +
+  ggplot2::theme_bw() +
+    labs(
+    x = "Pain Tolerance",
+    y = "Relief",
+    color = "Treatment",
+    linetype = "Treatment",
+    shape = "Treatment"
+  ) +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+```
+
+```{=html}
+<details id=dentalInteractionLD>
+  <summary>Long Description</summary>
+  <p>There are three plots. The upper left, (a), is for Pain Tolerance vs. Drug. The upper right, (b), is for Pain Tolerance vs. Acupuncture. The lower left, (c), is for Pain Tolerance vs. Treatments.</p>
+  <h4>Plot (a)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Drug, with 2 levels. The placebo level is shown as vivid purplish blue colour, with a solid line, and solid circles. The codeine level is shown as strong red colour, a dotted line, and solid triangles.</p>
+  <p>There are two lines of eight points each in the plot corresponding to the two levels of Drug.</p>
+  <p>The two lines generally increase as we move from left to right.</p>
+  <p>There is a point of discrepency as pain tolerance goes from 3 to 4. The placebo level decreases in relief while the codiene level increases in relief.</p>
+  <p>The first line, for the placebo level, connects (1, 0.3), (2, 0.5), (3, 0.6), (4, 0.65), (5, 1.05), (6, 1.25), (7, 1.35) and (8, 1.4).</p>
+  <p>The second line, for the codeine level, connects (1, 0.85), (2, 0.95), (3, 1.2), (4, 1.1), (5, 1.45), (6, 1.85), (7, 1.95) and (8, 2.05).</p>
+  <h4>Plot (b)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Acupuncture, with 2 levels. The inactive level is shown as vivid purplish blue colour, with a solid line, and solid circles. The active level is shown as strong red colour, a dotted line, and solid triangles.</p>
+  <p>There are two lines of eight points each in the plot corresponding to the two levels of Acupuncture.</p>
+  <p>The two lines generally increase as we move from left to right.</p>
+  <p>There are two places of discrepency. As pain tolerance goes from 3 to 4, the active line stays relatively flat with the inactive line decreases in relief. Then as pain tolerance goes from 6 to 7, the active line decreases in relief while the inactive line increases.</p>
+  <p>The first line, for inactive, connects (1, 0.25), (2, 0.45), (3, 0.6), (4, 0.55), (5, 0.8), (6, 1.15), (7, 1.4) and (8, 1.45).</p>
+  <p>The second line, for active, connects (1, 0.9), (2, 1), (3, 1.2), (4, 1.2), (5, 1.7), (6, 1.95), (7, 1.9) and (8, 2).</p>
+  <h4>Plot (c)</h4>
+  <p>The horizontal axis is labelled 'Pain Tolerance' with labels 1, 2, 3, 4, 5, 6, 7 and 8.</p>
+  <p>The vertical axis is labelled 'Relief' with labels 0.5, 1.0, 1.5 and 2.0.</p>
+  <p>There is a legend indicating color, linetype, and point shape are used to show Treatments, with 4 levels. The inactive & placebo level is shown as vivid purplish blue colour, with a solid line, and solid circles. The inactive & codeine level is shown as strong red colour, a dotted line, and solid triangles. The active & placebo level is shown as a teal colour, with large dashed line, and as solid squares. The active & codeine level is shown as goldenrod color, with a short dashed line, and plus-signs.</p>
+  <p>There are four lines of eight points each in the plot corresponding to the four levels of Treatment.</p>
+  <p>All four lines generally increase as we move from left to right.</p>
+  <p>There are three descrepencies in the plot.</p>
+  <ul>
+  <li>As pain tolerance goes from 3 to 4, the active & placebo line increases in relief while inactive and placebo stays relatively flat, and the active & codeine and inactive & codeine lines decrease in relief.</li>
+  <li>As pain tolerance goes from 6 to 7, the active & codeine line decreases in relief while the other three increase in relief.</li>
+  <li>As pain tolerance goes from 7 to 8, the active & codeine and the inactive & placebo lines increase in relief while the inactive & codeine and active & placebo lines decrease in relief.</li>
+  </ul>
+  <p>The first line, for inactive & placebo, connects (1, 0), (2, 0.3), (3, 0.4), (4, 0.4), (5, 0.6), (6, 0.9), (7, 1) and (8, 1.2).</p>
+  <p>The second line, for inactive & codeine, connects (1, 0.5), (2, 0.6), (3, 0.8), (4, 0.7), (5, 1), (6, 1.4), (7, 1.8) and (8, 1.7).</p>
+  <p>The third line, for active & placebo, connects (1, 0.6), (2, 0.7), (3, 0.8), (4, 0.9), (5, 1.5), (6, 1.6), (7, 1.7) and (8, 1.6).</p>
+  <p>The fourth line, for active & codeine, connects (1, 1.2), (2, 1.3), (3, 1.6), (4, 1.5), (5, 1.9), (6, 2.3), (7, 2.1) and (8, 2.4).</p>
+</details>
+```
+
+### Your Turn
+
+Using the plots in @fig-dentalInteractions, make a decision about whether we have worrisome interactions between our block (pain tolerance) and our factors for the Dental Pain study. When ready, you can check your answer.
+
+:::{.callout-note collapse="true"}
+#### Worrisome Dental Pain Interactions?
+When we look at @fig-dentalInteractions-1, we can have a point of concern between levels 3 and 4 of pain tolerance when looking at the impact of Drug. The general pattern of behavior appears to change at these levels. Similarly, the 3 to 4 and 6 to 7 sections of @fig-dentalInteractions-2 are also somewhat concerning when we explore the impact of Acupuncture. When we look at the interaction term (i.e., treatments) by pain tolerance in @fig-dentalInteractions-3, the 3 to 4 sections echo what we've previously seen, as well as for 6 to 7 sections. There is a new potential issue in the 7 to 8 sections. 
+:::
+
+## Assumption Decisions
+
+For the Farming Barley study, I'm going to say that all four of the assumptions are satisfied.
+
+For the most part, our data appear to satisfy the assumptions. However, before we make our final determination, we might want to explore whether we have any potential outliers that might be driving the concern we saw in the Tukey-Anscombe plot for assessing homoscedasticity.
+
+### Your Turn--Explore the Dental Pain Data
+
+Decide whether there are any potential outliers that we might need to handle and then how to handle them. If you opt to remove or change any observations, re-check all of the assumptions.
+
+# ANOVA Results
+
+For the Results portion of this guide/tutorial, I'm going to focus on the Farming Barley study. I'll leave the Dental Pain study to you as an exercise.
+
+Remember, for any results section for a parametric shortcut, we have several parts: the omnibus tests and effect sizes, point estimates, and Post Hoc (pairwise and/or contrasts).
+
+## Omnibus Results
+
+We generate our omnibus results *almost* exactly like we would for a one-way ANOVA model. The only change is in the Modern ANOVA table for the effect size estimates. Rather than using `"raw"`, we will use `"partial"` to reflect the fact that we now have multiple terms in our model
+
+```{r}
+#| label: tbl-barleyTable
+#| tbl-cap: "ANOVA Table for Farming Barley Study"
+#| html-table-processing: none
+#| echo: true
+# Omnibus Test/Modern ANOVA Table ----
+## Farming Barley Study
+parameters::model_parameters(
+  model = barleyModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 3, # <1> 
+  drop = "(Intercept)",
+  verbose = FALSE
+) %>%
+  knitr::kable(
+    digits = 4,
+    row.names = FALSE,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    # caption = "ANOVA Table for Farming Barley Study",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+1. You will want to use these `type = 3`, esp. for imbalanced designs.
+
+We still interpret all values just as we did in Unit 3. The biggest catch is how we treat the row of @tbl-barleyTable connected to our block, Field. That is to say, we don't actually care about this row. This means that we won't interpret the *F* ratio, the *p*-value, or the effect sizes for Field. After all, we didn't want to test the impact of field on the barley yield; we just didn't want field to become confounded with the kind of barley planted (varietal).
+
+We would still point out that the varietal planted accounted for nearly 24 times as much variation as what was left unexplained/accounted for by our model. This translates to varietal explaining around 85% of the total variation in yield. Under the null hypothesis, we would only anticipate this extreme of a result 1/100th of a percent of the time.
+
+## Relative Efficiency
+
+One of the things that Randomized Complete Block Designs can help with is design efficiency. By this we mean, how much we can save in terms of sample size by using a block design versus a completely randomized design. To help us get this measure, I've written the `block.RelEff` function to help us.
+
+```{r}
+#| label: barleyRE
+#| echo: true
+# Demo code for Relative Efficiency of the Block ----
+## Farming Barley Study
+block.RelEff(
+  aov.obj = barleyModel,
+  blockName = "Field",
+  trtName = "Varietal"
+)
+
+```
+
+You can also run this code inline to have the resulting sentence appear as part of your narrative. For example, "`r block.RelEff(aov.obj = barleyModel, blockName = "Field", trtName = "Varietal")`"
+
+We can interpret this relative efficiency as telling us how many times larger we would need the per group sample size to be if we didn't use the block. Sometimes using a block will yield a decent efficiency, sometimes not so much. My general recommendation is that if your block's relative efficiency is at least 1, that's good enough.
+
+__NOTE:__ The `block.RelEff` function currently only works for One-way ANOVA + Block models.
+
+## Point Estimates
+
+If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can. We use the same methods as before. I recommend that you first run `dummy.coef(anovaModel)` (replacing `anovaModel` with your model object's name) in your console so you can see the order of terms.
+
+```{r}
+#| label: tbl-barleyPoint
+#| tbl-cap: "Point Estimates from the Farming Barley Study"
+#| html-table-processing: none
+#| echo: true
+# Point Estimates for Farming Barley
+pEst <- dummy.coef(barleyModel)
+pEst <- unlist(pEst)
+names(pEst) <- c(
+  "Grand Mean",
+  levels(barleyData$Field), # <1> 
+  levels(barleyData$Varietal) # <1>
+  )
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 3,
+  # caption = "Point Estimates from the Farming Barley Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+1. I know that this is the correct order because I ran `dummy.coef(barleyModel)` in my console first.
+
+Again, we interpret the values in @tbl-barleyPoint as rates: "bushels per acre per test plot" or more simply, "yield per plot" (where we're using [test] plot to mean a quarter-subsection of a field).
+
+If you don't want the estimates for the block, you can do the following:
+
+```{r}
+#| label: tbl-noBlockEstimates
+#| tbl-cap: "Point Estimates from the Farming Barley Study"
+#| html-table-processing: none
+#| echo: true
+pEst <- dummy.coef(barleyModel)
+pEst <- unlist(pEst[which(names(pEst) != "Field")]) # <1>
+names(pEst) <- c(
+  "Grand Mean",
+  levels(barleyData$Varietal) # <2>
+  )
+
+data.frame("Estimate" = pEst) %>%
+  knitr::kable(
+  digits = 3,
+  # caption = "Point Estimates from the Farming Barley Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+1. This command will get rid of the Field estimates.
+2. Using `levels` here will help stop the accidental mislabeling of estimates.
+
+
+## Post Hoc--Pairwise
+
+Just as with One-way (and Factorial Designs), we can do Post Hoc analyses in several ways. Generally speaking, we will __only__ do pairwise comparisons on main effects and/or interaction terms. Remember, our goal for the block is to use up/explain variation, *we are not interested in inferences about the block*.
+
+### `{emmeans}` Approach
+
+We can use the `{emmeans}` package with out block models. This package gives some some pretty decent flexibility. Let's look at a testing family for the pairwise comparisons of varietal, controlling SCI at 0.1 via Tukey's HSD.
+
+```{r}
+#| label: tbl-barleyEMMeans
+#| tbl-cap: "Post Hoc Comparisons for Barley Varietal"
+#| html-table-processing: none
+#| echo: true
+# Demo code for post hoc pairwise via emmeans ----
+## Barley Study
+barleyPostHoc1 <- emmeans::emmeans(
+  object = barleyModel,
+  specs = pairwise ~ Varietal,
+  adjust = "tukey",
+  level = 0.9
+)
+
+barleyEffects1 <- as.data.frame(
+  eff_size(
+    object = barleyPostHoc1,
+    sigma = sigma(barleyModel),
+    edf = df.residual(barleyModel)
+  ) 
+) %>%
+  dplyr::mutate( # <1>
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps)
+
+### Build table
+as.data.frame(barleyPostHoc1$contrasts) %>%
+  left_join(
+    y = barleyEffects1,
+    by = join_by(contrast == contrast)
+  ) %>%
+  knitr::kable(
+  digits = 3,
+  # caption = "Post Hoc Comparisons for Barley Varietal",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
+                "Prob. of Superiority"),
+  align = "lccccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+1. The `eff_size` command places the pairs inside parentheses
+
+@tbl-barleyEMMeans provides the pairwise comparisons for the different varietals in our Barley Study along with estimates of effect sizes. Even though we used a One-way ANOVA + Block model, we still interpret all of these values in the same ways that we have been.
+
+### `tukeyHSD` Approach
+
+One catch with the `emmeans` approach is that you don't necessarily get confidence intervals. If you want intervals (and don't want to write the code to construct them yourself), you can turn to the `tukeyHSD` function instead. Since we are using a model beyond a classic One-way ANOVA, we need to add an additional argument to our call, `which`.
+
+```{r barleyTukey, echo=TRUE}
+#| label: tbl-barleyTukey
+#| tbl-cap: "Post Hoc Tukey HSD Comparisons"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Post Hoc Pairwise Comparisons via tukeyHSD ----
+barleyPH <- TukeyHSD(
+  x = barleyModel,
+  which = "Varietal", # <1> 
+  conf.level = 0.9
+)
+
+knitr::kable(
+  barleyPH$Varietal,
+  digits = 4,
+  # caption = "Post Hoc Tukey HSD Comparisons",
+  col.names = c("Difference", "Lower Bound",
+                "Upper Bound", "Adj. p-Value"),
+  align = 'cccc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. We need to specify which model term we want with the `which` argument.
+
+Notice that we added on the `which` argument to the `TukeyHSD` call. This isolates the appropriate portion of the Tukey HSD output related to our factor of interest. If you omit this, you'll get Tukey HSD reports for every term in the model. In the Farming Barley situation, one for Field and one for Varietal.
+
+We still interpret the results of @tbl-barleyTukey in the exact same way as we did in Unit 3.
+
+### `{DescTools}` Approach
+
+You can make similar adjustments in the `DescTools::PostHocTest` if you are wanting to control a different Type I Error Rate and/or use a different method. @tbl-secondPairwise provides an example using Bonferroni's method for controlling SCI.
+
+```{r}
+#| label: descToolsApproach
+#| echo: true
+## DescTools Pairwise Method ----
+dtPH <- DescTools::PostHocTest(
+  x = barleyModel, # <1> 
+  which = "Varietal", # <2>
+  method = "bonf", # <3>
+  conf.level = 0.9 # <4> 
+)
+
+```
+1. Your model object.
+2. Specify which factor you want to do pairwise comparisons on.
+3. Your chosen method for control the MC/SI Problem.
+4. This is equivalent to $1 - \mathcal{E}_I$.
+
+```{r}
+#| label: tbl-secondPairwise
+#| tbl-cap: !expr 'paste("Post Hoc", attr(dtPH, "method"), "Comparisons")'
+#| html-table-processing: none
+#| echo: true
+# Making a nice table ----
+knitr::kable(
+  x = dtPH$Varietal, # <1>
+  digits = 3,
+  # caption = paste( # <2> 
+  #   "Post Hoc",
+  #   attr(dtPH, "method"), 
+  #   "Comparisons"
+  # ),
+  col.names = c("Difference", "Lower Bound",
+                "Upper Bound", "Adj. p-Value"),
+  align = 'lcccc',
+  booktabs = TRUE,
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. Notice the use of the factor name
+2. Creates a nice title; copy at will.
+
+As before, we interpret the information shown in @tbl-secondPairwise just as we would in Unit 3.
+
+
+:::{.callout-caution}
+#### Dunnett's Test
+The Dunnett Test approach we covered in Unit 3 for special pairwise comparisons does not currently allow for blocks.
+:::
+
+### Effect Sizes
+
+Regardless of which method you use for pairwise comparisons (`{emmeans}`, `tukeyHSD`, or `{DescTools}`), you can opt to give your pairwise effect sizes as a separate table. To get the effect sizes for our desired pairwise comparisons, we will turn to the `anova.PostHoc` function. However, we need to take care with the arguments of this function.
+
+```{r}
+#| label: tbl-effectSizes
+#| tbl-cap: "Post Hoc Comparison Effect Sizes"
+#| html-table-processing: none
+#| echo: true
+anova.PostHoc(
+  aov.obj = barleyModel, # <1>
+  response = "Yield", # <2>
+  mainEffect = "Varietal" # <3>
+) %>%
+  knitr::kable(
+    digits = 3,
+    # caption = "Post Hoc Comparison Effect Sizes",
+    col.names = c("Pairwise Comparison","Cohen's d", "Hedge's g",
+                  "Prob. of Superiority"),
+    align = 'lccc',
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. The `aov.obj` is the primary argument and is where we pass the `aov` (or `lm`) output to.
+2. The `response` argument takes a character string as the name of the response attribute.
+3. The `mainEffect` argument takes a character string that names the factor you are wanting to do pairwise comparisons on.
+
+
+We need to make an important note here: suppose that our overall Unusualness Threshold was 0.1. From the Tukey HSD results (@tbl-barleyTukey), Variety 3 vs 2, 4 vs 2, and 4 vs 3 would NOT be statistically significant. From the effect size table (@tbl-effectSizes), we would say that there are rather large effects as Cohen's *d* and Hedge's *g* are all quite large. Further, the probability of superiority for each pairing is far from 0.5 (no practical effect). Just as effect sizes temper statistical significance, statistical significance moderates effect sizes. In these three cases, while there appears to be a large effect, there is enough variation in those groups that the effect is not statistically large enough to escape through the noise of the group.
+
+## Post Hoc--Contrasts
+
+Even with a block, we can still use make use of the idea of contrasts. For example, let's say that barley varieties 1 and 2 are from one company while 3 and 4 are from a second company. We can test the contrast of companies, even in this blocking design.
+
+### `{emmeans}` Approach
+
+The `{emmeans}` approach will let us incorporate effect sizes into our results (@tbl-barleyContrast1).
+
+```{r barleyContrast1, echo=TRUE}
+#| label: tbl-barleyContrast1
+#| tbl-cap: "Barley Study Main Effects Contrast on Varietal Company"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Contrasts using emmeans ----
+## Get the means
+barleyMeans <- emmeans::emmeans(
+  object = barleyModel,
+  specs = ~ Varietal # <1>
+)
+
+# barleyMeans # <2>
+
+## Apply the contrasts
+barleyContrasts1 <- emmeans::contrast(
+  object = barleyMeans, # <3> 
+  method = list(
+    "Company A vs. Company B" = c(1/2, 1/2, -1/2, -1/2)
+  ),
+  adjust = "none" # <4> 
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(barleyContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # <5>
+    ps = probSup(cohen) # <5>
+  ) %>%
+  kable(
+    digits = 3,
+    # caption = "Barley Study Main Effects Contrast on Varietal Company",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  )
+
+```
+1. Nothing goes on the left of `~`; list what variable that matches the factor you want to build a contrast on.
+2. Look at the output object to double check the order of levels.
+3. Notice that this is the means object.
+4. Since the testing family only consists of one test, we don't need a MC/SI adjustment.
+5. Add effect sizes; the `probSup` function comes from Neil's ANOVA toolkit
+
+### Base `R` Approach
+
+We can also use the base `R` approach will let us incorporate our contrast directly into a classical ANOVA table (@tbl-barleyContrast2).
+
+```{r}
+#| label: tbl-barleyContrast2
+#| tbl-cap: "ANOVA Table for Barley Crop Yield Contrasts"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Contrasts via base R ----
+## Define the contrast
+company <- c(1/2, 1/2, -1/2, -1/2)
+
+## Bind the contrast to our factor
+contrasts(barleyData$Varietal) <- company
+
+## Refit our model so that our contrast gets tested
+barleyContrast <- aov(
+  formula = Yield ~ Varietal + Field,
+  data = barleyData
+)
+
+## Get the updated ANOVA Table
+### Remember, you could also use the DescTools package for Scheffé here
+conOut <- summary.aov(
+  object = barleyContrast,
+  split = list( 
+    Varietal = list(
+      "Company A vs. Company B" = 1
+    )
+  )
+)
+
+## Make a nice table
+knitr::kable(
+  x = conOut[[1]], 
+  digits = 4,
+  col.names = c(
+    "DF", "SS", "MS", "F", "p-value"), 
+  # caption = "ANOVA Table for Barley Crop Yield Contrasts",
+  booktabs = TRUE,
+  align = rep("c", 5)
+) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+# Your Turn
+
+Using your transformed Dental Pain data, attempt to create the omnibus ANOVA table, get the relative efficiency for the block design, point estimates, and the pairwise comparisons.
+
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
