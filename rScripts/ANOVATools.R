@@ -488,7 +488,7 @@ anovaScreens <- function(dataFrame, response, factor, block = NULL) {
         by = dplyr::join_by(!!sym(factor))
       ) %>%
       mutate(
-        Screen3.Factor = factorMean - Screen1.Action - Screen2.Block,
+        Screen3.Factor = factorMean - Screen1.Action,
         Screen4.Residuals = !!sym(response) - Screen1.Action - Screen2.Block - Screen3.Factor
       ) %>%
       dplyr::select(-factorMean, -blockMean)
