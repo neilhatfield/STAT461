@@ -1,0 +1,1848 @@
+---
+title: "Analysis of Covariance (ANCOVA)"
+subtitle: "Parametric Shortcut"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+This guide focuses on the Analysis of Covariance (ANCOVA). For our purposes, we will focus on  *Parallel Lines/Separate Intercept* ANCOVA models with fixed effects (except for measurement units). Keep in mind that we can include a covariate (or several) in all of our prior models (One-way, [full] factorial, with/without a block). At the end of this guide, I'll detail other kinds of ANCOVA models.
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`,  and `{rstatix}`. Almost all of the listed packages are ones that we've used before. The `{rstatix}` package is new and will help us with detecting any potential multivariate outliers.
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
+              "car", "psych", "parameters", "emmeans", "rstatix")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+# Custom Color Palette ----
+psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+
+```
+
+## Load Data
+
+For this guide, we're going to draw upon two contexts: __Keyboarding Pain__ and __Lego Set Prices__.
+
+### Keyboarding Pain
+
+When people engage in repetitive motion, they can suffer from any one of a set of Repetitive Motion Disorders such as carpal tunnel syndrome, trigger finger, or tendinitis. We are wanting to understand the impact of the type of keyboard on how many hours of pain a person experiences in their hands, wrists, and forearms. We suspect that the number of hours a person spends keyboarding is related to the number of hours of pain that they feel. We have 12 volunteers who will use a specific keyboard we assign them for 2 weeks. During that time, they will record the number of hours they use the keyboard and the number of hours of repetitive motion pain during the study period.
+
+We can import the keyboarding data using the following code. It is worth noting that `hrs.pain` is our response (hours a person experienced pain), `kbd.type` is our factor and codes which of three types of keyboard the person used, and `hrs.kbd` is a covariate and is the number of hours a person spent keyboarding. We need both `hrs.pain` and `hrs.kbd` to be numeric data type (either `int` or `num`) in R and `kbd.type` to be the `factor` data type.
+
+```{r }
+#| label: loadData1
+#| echo: true
+# Load Original Data ----
+# Demo Code for loading Keyboarding Data ----
+keyboardingData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/keyboarding.dat",
+  header = TRUE,
+  sep = ""
+)
+
+keyboardingData$kbd.type <- as.factor(keyboardingData$kbd.type)
+
+```
+
+### Lego Set Prices
+
+This study stems from the Unit 2 Study Design packet. In essence, we want to answer the question of how a Lego set's theme/collection impacts the price after accounting for the number of pieces in the set? In this study, we are looking at five particular themes/collections chosen by Neil and friends (i.e., their favorites): Architecture, Botanical, Harry Potter, Modular Buildings, and Star Wars. 
+
+One of Neil's friends scrapped two online databases to build a data file covering nearly the entire Lego catalog. Neil wrangled this data file and used the `slice_sample` function from the `dplyr` package to conduct a stratified random sample of sets based upon the theme/collection used in the study. The total sample size in our balanced study is 50.
+
+```{r}
+#| label: loadLegoData
+#| echo: true
+# Demo code for loading the Lego data ----
+legoData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/legoData.csv",
+  header = TRUE,
+  sep = ","
+)
+
+legoData$collection <- as.factor(legoData$collection)
+
+```
+The key variables that we need here are `price` representing the price of the Lego set (in US dollars), `collection` representing our factor of the set's collection/theme, and `numParts` representing the covariate of the number of pieces in the set. We need R to view both the response and covariate as numeric data types.
+
+# Omnibus SRQs and Hypotheses
+
+The SRQs and hypotheses for ANCOVA models tend to function just like that of any other model we've explored. The only difference is that we have a covariate that helps to refine our model. For instance we might pose the question "Does the type of keyboard being used impact how many hours of pain a person experiences after accounting for how many hours they used the keyboard?"
+
+This would lead us to form the algebraic model of $$y_{ij}=\mu_{\bullet\bullet}+\alpha_i+\beta x_{ij} +\epsilon_{ij}$$
+where $y_{ij}$ is the response value (hours of pain) for person *j* using keyboard *i*, $\mu_{\bullet\bullet}$ is the *GSAM*, $\alpha_i$ is the impact of keyboard *i*, $x_{ij}$ is how long person *j* used keyboard *i*, $\beta$ is the rate-of-change of hours of pain with respect to hours spent keyboarding, and $\epsilon_{ij}$ is the residuals for person *j* using keyboard *i*.
+
+We could then pose the following hypotheses:
+
++ There is no statistically significant impact of keyboard type on the hours of pain a person experiences after accounting for how long they spend keyboarding. ($H_0: \alpha_i=0$ for all *i*)
++ There is a statistically significant impact of keyboard type on the hours of pain a person experiences after accounting for how long they spend keyboarding. ($H_A: \alpha_i\neq0$ for some *i*)
+
+## Your Turn
+
+Take a moment and write out the hypotheses and algebraic models for the Lego Set Price study. When you're ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+### Lego Set Price Study
+Does a set's collection/theme impact the price of the set after account for the number of pieces in the set?
++ There is no statistically significant impact of a set's collection/theme impact the price of the set after account for the number of pieces in the set. ($H_0: \alpha_i=0$ for all *i*)
++ There is a statistically significant impact of a set's collection/theme impact the price of the set after account for the number of pieces in the set. ($H_A: \alpha_i\neq0$ for some *i*)
+:::
+
+# Checking the Appropriateness of ANCOVA
+
+To assess whether an ANCOVA model is even appropriate, we need to ensure that a general ANOVA model is appropriate plus the two extra conditions for ANCOVA. That is,
+
+1) Do we have a quantitative (ideally, continuous) response?
+2) Do we have at least one qualitative/categorical factor of interest?
+3) Do we have enough *Degrees of Freedom* to estimate all effects of interest?
+4) Do we have enough *Degrees of Freedom* to estimate residuals/errors?
+5) Are we aiming for an additive model (up to interaction terms)?
+6) Do we have a quantitative attribute (i.e., a covariate) that we believe is related to our response?
+7) Is there a linear relationship between our response and our covariate?
+
+Just as you might suspect, we check all of these base requirements just as we have been: run through the study design, looking for and verifying the elements. The Hasse diagram is our friend.
+
+## Hasse Diagrams
+
+Speaking of Hasse diagrams, there is not an agreed upon convention for how to incorporate covariates into the diagram. I think of the covariate as being similar to a block and thus place a new node at the second highest level of the diagram; next to our main effects and block. Since there are many (in some cases, infinitely) levels to a covariate, we don't put a number of levels out front (to the left). Rather, we'll put the label "cov" for covariate. The number of *Degrees of Freedom* will depend upon which which type of ANCOVA model you fit. However, if you are fitting the standard ANCOVA model ("parallel lines"/"separate intercepts"), then the covariate will use 1 *Degree of Freedom*.
+
+@fig-keyboardHD1 shows the Hasse diagram for the Keyboarding study. Notice that our covariate is labelled and uses one *Degree of Freedom*. We still have positive values for the rest of the nodes' *Degrees of Freedom* thus we should be able to estimate the effects and errors.
+
+```{r}
+#| label: fig-keyboardHD1
+#| fig-cap: "Hasse Diagram for Keyboarding Study"
+#| fig-alt: "Hasse diagram for keyboarding study"
+#| aria-describedby: "keyboardHD1LD"
+#| echo: true
+# Demo Code for Hasse diagram ----
+## Keyboarding Study
+modelLabels <- c("1 Relieve Pain 1", "cov Usage Time 1",
+                 "3 Keyboard 2", "12 (Volunteers) 8")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE,
+           TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=keyboardHD1LD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has four nodes in three levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Relieve Pain 1".</p>
+  <p>The second node is to the left of the second level and says "cov Usage Time 1".</p>
+  <p>The third node is to the right of the second level and says "3 Keyboard 2".</p>
+  <p>The fourth and final node is on the lowest level and says "12 (Volunteers) 8".</p>
+</details>
+```
+
+At this point in time, we can state that we have the first six necessary conditions for ANCOVA to be appropriate; only one remains.
+
+### Your Turn
+
+Use the information provided to create the Hasse diagram for the Lego Set Prices Study. Check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Lego Price Hasse Diagram
+Code is available in the [Code Appendix](#codeAppendix) under the heading Lego Set Price Study Hasse Diagram.
+```{r}
+#| label: fig-legoHD
+#| fig-cap: "Hasse Diagram for Lego Set Price Study"
+#| fig-alt: "Hasse diagram for Lego Set Price study"
+#| aria-describedby: "legoHDLD"
+#| echo: false
+# Lego Set Price Study Hasse Diagram ----
+modelLabels <- c("1 Buy Lego 1", "cov Number of Pieces 1",
+                 "5 Collections 4", "50 (Lego sets) 44")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
+           FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE,
+           TRUE, FALSE),
+  nrow = 4,
+  ncol = 4,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=legoHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has four nodes in three levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Buy Lego 1".</p>
+  <p>The second node is to the left of the second level and says "cov Number of Pieces 1".</p>
+  <p>The third node is to the right of the second level and says "5 Collections 4".</p>
+  <p>The fourth and final node is on the lowest level and says "50 (Lego sets) 44".</p>
+</details>
+```
+:::
+
+## Linear Relationship
+
+The last requirement for the ANCOVA is that there is a linear relationship between the response on the covariate. This requirement (necessary condition) is special in that this is also an assumption for the ANCOVA parametric shortcut. 
+
+In general, we will look at a scatter plot to decide whether there is a linear relationship between the response and the covariate. We'll look at this more in the assumption section of the guide.
+
+# Exploring the Data
+
+I want to leave a quick note as a reminder that just as we've discussed all course, you should explore your data as thoroughly as possible at this junction. Look at multiple data visualizations and at various values of descriptive statistics. This will not only help you build your understanding of the data (think, EDA) but will also set the stage for assessing several of our assumptions.
+
+# Fit the ANCOVA Model
+
+Fitting an ANCOVA model is both similar to and different from the other ANOVA models we've worked with. It is similar in that we are going to use the `aov` function that we've been working with all semester. The difference is that we are going to fit __*two*__ models, not just one. One of the models will the *the* model for our inferences; the second will be a model for assessing one of our assumptions (homogeneity of slopes).
+
+```{r}
+#| label: ancovaModels
+#| echo: true
+# Demo code for fitting ANCOVA models ----
+## Keyboarding Pain Study
+## Keyboarding Study
+### Our core model
+keyboardModel <- aov(
+  formula = hrs.pain ~ hrs.kbd + kbd.type, # <1>
+  data = keyboardingData
+)
+
+### Model for checking covariate's homogeneity
+interactionCheckKB <- aov(
+  formula = hrs.pain ~ hrs.kbd + kbd.type + hrs.kbd:kbd.type, # <2>
+  data = keyboardingData
+)
+
+```
+1. Notice that we've listed the covariate *before* the factor, just like a block.
+2. The term `hrs.kbd:kbd.type` is the interaction of our covariate and factor and allows us to assess whether there are different slopes for different keyboards.
+
+## Your Turn
+
+Write the code for fitting ANCOVA models for the Lego Set Price Study. When ready, check your answers below.
+
+:::{.callout-note collapse="true"}
+### Lego Set Price ANCOVA Model
+```{r}
+#| label: legoANCOVA
+#| echo: true
+# Demo Code for ANCOVA Models ----
+## Lego Set Price Study
+### Core model
+legoModel <- aov(
+  formula = price ~ numParts + collection,
+  data = legoData
+)
+
+### Interacting check
+legoCheck <- aov(
+  formula = price ~ numParts + collection + numParts:collection,
+  data = legoData
+)
+```
+:::
+
+# Assessing Assumptions
+
+For ANCOVA models, we have __six__ assumptions we need to check before using the parametric shortcut: our core three (Gaussian Residuals, Homoscedasticity, and Independent Observations) plus Linear Relationship between Response and Covariate, No Potential Outliers, and Homogeneity of Slopes.
+
+For ANCOVA models, a good practice would be to start with the three ANCOVA-specific assumptions. These assumptions, if violated, are more easily fixed BUT fixing them will change the model and therefore the residuals, impacting the assumptions dealing with the residuals. Thus, by checking the ANCOVA specific assumptions first, we can save time in the long run.
+
+## Linear Relationship between Response and Covariate
+
+The first assumption that I like to check in ANCOVA is that of the linear relationship between the covariate and the response. This assumption is also one of the necessary conditions for ANCOVA being appropriate. The best approach here is to look at a scatter plot. 
+
+```{r }
+#| label: fig-keyboardScatter
+#| fig-cap: "Hours of Pain vs Hours Spent Keyboarding"
+#| fig-alt: "Hours of pain vs hours spent keyboarding"
+#| aria-describedby: "keyboardScatterLD"
+#| echo: true
+# Scatter plot of hours of pain and hours spent keyboarding ----
+# 
+ggplot(
+  data = keyboardingData, # <1>
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( # <2> 
+    method = "lm", # <3> 
+    formula = y ~ x, # <4> 
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain"
+  )
+
+```
+1. Notice we're just using the data, not the model
+2. Adds a smoother function's graph.
+3. Fit a Linear Model.
+4. Specifies the form of the linear model.
+
+```{=html}
+<details id=keyboardScatterLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 99 with labels 40, 60, and 80.</p>
+  <p>The plot is made up of two elements.</p>
+  <ul>
+  <li>There is a set of 12 points representing the cases.</li>
+  <ul>
+  <li>The first seven points are between 50 and 60 hours spent keyboarding and between 31 and 60 hours of pain.</li>
+  <li>The last five points are between 60 and 72.5 hours spent keyboarding and 60 and 99 hours of pain.</li>
+  <li>The points appear to reflect a linear relationship between the two quantities.</li>
+  </ul>
+  <li>There is a dashed, straight line that cuts diagonaly across the plot from the lower left to the upper right. The dashed line starts at (50, 39) and ends at (72, 88).</li>
+</details>
+```
+
+@fig-keyboardScatter shows the scatter plot of hours of pain experienced by the hours spent keyboarding. Notice that I've NOT incorporated the type of keyboard each person got assigned. I want to get a clear sense of the relationship between the response and the covariate. If I add too many other attributes to this plot (e.g., the factor), I might overlook what I need to attend to.
+
+Ultimately, we're looking to see whether there is a linear relationship between the response and the covariate. That is to say, is the a constant rate of change between them. If we are plotting in the standard Cartesian coordinate system without scale transformations (e.g., log), then we should be able to sketch a straight line. In @fig-keyboardScatter, I added the plot of the estimated linear regression model of the response (hours of pain) with respect to the covariate (hours spent keyboarding). This graph appears as the dashed, black line. Does this line appear to mimic what we see in the scatter plot?
+
+From @fig-keyboardScatter I would say that we have a linear relationship between the response and our covariate. While not the best of fits, the graph of the fitted linear model appears to coincide with the trend (i.e., the generalized relationship) between the response (hours of pain) and the covariate (time spent keyboarding). If the graph of the fitted model didn't, we could explore other models by tweaking the `formula` argument. For instance, we could look a quartic (fourth power) relationship (see @fig-examplePlots).
+
+```{r }
+#| label: fig-examplePlots
+#| fig-cap: "Examples of Alternative Models"
+#| fig-subcap: 
+#|  - "Failed Quartic: formula = y $\\sim$ x^4"
+#|  - "Actual Quartic: formula = y $\\sim$ I(x$^4)"
+#| layout-ncol: 2
+#| aria-describedby: "examplePlotsLD"
+# Example Code Showing the As Is operator ----
+# Failed Quadratic Model
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( 
+    inherit.aes = FALSE,
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm", 
+    formula = y ~ x^4, 
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain"
+  )
+
+# Actual Quadratic Model
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( 
+    inherit.aes = FALSE,
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm", 
+    formula = y ~ I(x^4), 
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain"
+  )
+
+```
+
+```{=html}
+<details id=examplePlotsLD>
+  <summary>Long Description</summary>
+  <p>There are two plots, both are made up of points and dashed lines.</p>
+  <ul>
+  <li>The left plot (a) is titled "Failed Quartic: formula = y~x^4"</li>
+  <ul>
+  <li>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</li>
+  <li>The vertical axis is labelled "Hours of Pain" and goes from 31 to 99 with labels 40, 60, and 80.</li>
+  <li>There is a set of 12 points representing the cases.</li>
+  <ul>
+  <li>The first seven points are between 50 and 60 hours spent keyboarding and between 31 and 60 hours of pain.</li>
+  <li>The last five points are between 60 and 72.5 hours spent keyboarding and 60 and 99 hours of pain.</li>
+  </ul>
+  <li>There is a dashed, straight line that cuts diagonaly across the plot from the lower left to the upper right. The dashed line starts at (50, 39) and ends at (72, 88).</li>
+  </ul>
+  <li>The right plot (b) is titled "Actual Quartic: formula = y~I(x^4)"</li>
+  <ul>
+  <li>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</li>
+  <li>The vertical axis is labelled "Hours of Pain" and goes from 31 to 99 with labels 40, 60, and 80.</li>
+  <li>There is a set of 12 points representing the cases.</li>
+  <ul>
+  <li>The first seven points are between 50 and 60 hours spent keyboarding and between 31 and 60 hours of pain.</li>
+  <li>The last five points are between 60 and 72.5 hours spent keyboarding and 60 and 99 hours of pain.</li>
+  </ul>
+  <li>There is a dashed, curve that increases from the lower left to the upper right at an increasing rate. The dashed curve starts at (50, 43) and ends at (72, 93).</li>
+  </ul>
+</details>
+```
+
+Notice that in @fig-examplePlots we can see the impact of the "As Is" operator of R (`I`) on formula statements. @fig-examplePlots-1 is a carbon copy of our original linear relationship (i.e., `formula = y ~ x`). However, using the "As Is" operator in @fig-examplePlots-2 will force R to fit the appropriate model. If we were to see a nonlinear relationship (e.g., a quadratic relationship), then I would go back to the model step and change the formula to `y ~  I(hrs.kbd^2) + kbd.type` (don't forget to update the `interactionCheck` too) to linearize the response-covariate relationship. (You can find the code for @fig-examplePlots in the [Code Appendix](#codeAppendix); this code demonstrates the 'As Is' operator inside formula statements.)
+
+### Your Turn
+
+Create a scatter plot for the Lego Set Price study between the response and the covariate. Do we have a linear relationship between these quantities?
+
+:::{.callout-note collapse="true"}
+#### Linear Relationship Between Price and Pieces?
+Code for this plot may be found in the [Code Appendix](#codeAppendix) under the heading Scatter plot for Lego Set Price Study. 
+```{r }
+#| label: fig-legoScatter
+#| fig-cap: "Set Price vs Number of Pieces"
+#| fig-alt: "Lego set price vs number of lego pieces"
+#| aria-describedby: "legoScatterLD"
+#| echo: false
+# Scatter plot for Lego Set Price Study ----
+ggplot(
+  data = legoData, 
+  mapping = aes(
+    y = price,
+    x = numParts
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth( 
+    method = "lm",
+    formula = y ~ x,
+    color = "black",
+    linetype = "dashed",
+    se = FALSE
+  ) +
+  theme_bw() +
+  labs(
+    x = "Number of Lego pieces",
+    y = "Set price (US$)"
+  )
+
+```
+```{=html}
+<details id=legoScatterLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled "Number of Lego pieces" and goes from about 0 to 6200 with labels 0, 2000, 4000, and 6000.</p>
+  <p>The vertical axis is labelled "Set price (US$)" and goes from 0 to 490 with labels 0, 100, 200, 300, and 400.</p>
+  <p>The plot is made up of two elements.</p>
+  <ul>
+  <li>There is a set of 50 points representing the cases.</li>
+  <ul>
+  <li>The cases form three clusters.</li>
+  <li>The first cluster has 37 cases that have between 0 and 1500 pieces and cost between $0 and $120.</li>
+  <li>The second cluster has 12 cases that have betwen 2000 and 3200 pieces and cost between $120 and $250.</li>
+  <li>The last cluster has 1 case that has just over 6000 pieces and costs $470.</li>
+  <li>The points appear to reflect a linear relationship between the two quantities.</li>
+  </ul>
+  <li>There is a dashed, straight line that cuts diagonaly across the plot from the lower left to the upper right.</li>
+  <ul>
+  <li>The dashed line starts at (108, 15) and ends at (6020, 450).</li>
+  <li>The points are tightly centered around the dashed line.</li>
+  </ul>
+</details>
+```
+Based upon @fig-legoScatter, I would say that we have a linear relationship between the quantities Lego set price and number of Lego pieces in a set.
+:::
+
+## Checking Potential Outliers
+
+While we always want to explore our data for potential outliers, ANCOVA models are less resistant to their influence than a typical balanced ANOVA model.
+
+To explore for potential outliers, you will want to work in a systematic way, moving through your quantitative attributes one at a time. I recommend using box plots and the various univariate Rules of Thumb to check. For example @fig-boxPlotFences gives the box plot for hours of pain using the 1.5 IQR rule.
+
+```{r }
+#| label: fig-boxPlotFences
+#| fig-cap: "Box Plot of Hours of Pain"
+#| fig-alt: "box plot of hours of pain"
+#| aria-describedby: "boxPlotFencesLD"
+#| echo: true
+#| fig-height: 2
+# Demo Code for box plot with how to adjust the outlier detection ----
+## Keyboarding Study
+ggplot(
+  data = keyboardingData,
+  mapping = aes(x = hrs.pain)
+) + 
+  geom_boxplot(
+    coef = 1.5 # <1> 
+  ) +
+  theme_void() + 
+  xlab("Hours of Pain") +
+  theme(
+    axis.line.x = element_line(),
+    axis.text.x = element_text(size = 12),
+    axis.title.x = element_text(size = 12)
+  )
+
+```
+1. Use this to adjust outlier detection; `coef*IQR`.
+
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=boxPlotFencesLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+
+Once you complete all of the univariate checks for potential outliers, we can move on to *potential multivariate outliers*. A potential multivariate outlier is a case whose values appear to be inconsistent with the underlying structure of the rest of the collection. This is different from potential univariate outliers in that univariate are case's whose values tend to be extremes. A potential multivariate outlier may not be an outlier along any univariate check. 
+
+To help us check for potential multivariate outliers, we are going to make use of the `{rstatix}` package's `mahalanobis_distance` function.
+
+```{r }
+#| label: fig-keyboardOutliers
+#| fig-cap: "Potential Multivariate Outliers in Keyboarding Pain Study"
+#| fig-alt: "Scatter plot showing hours of pain vs hours spent keyboarding with potential multivariate outliers flagged"
+#| aria-describedby: "keyboardOutliersLD"
+#| echo: true
+# Demo Code for Detecting Multivariate Outliers ----
+## Step 1: send the data through the Mahalanobis function
+outlierDetection <- rstatix::mahalanobis_distance(keyboardingData)
+
+## Step 2: OPTIONAL--reattach the factor
+outlierDetection <- cbind(
+  outlierDetection,
+  factor = keyboardingData$kbd.type
+)
+
+## Step 3: Make a scatter plot
+ggplot(
+  data = outlierDetection,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    shape = is.outlier,
+  )
+) +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    shape = "Potential Outlier"
+  )
+
+```
+```{=html}
+<details id=keyboardOutliersLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 99 with labels 40, 60, and 80.</p>
+  <p>There is a set of 12 points representing the cases.</p>
+  <ul>
+  <li>The first seven points are between 50 and 60 hours spent keyboarding and between 31 and 60 hours of pain.</li>
+  <li>The last five points are between 60 and 72.5 hours spent keyboarding and 60 and 99 hours of pain.</li>
+  <li>All points have same shape: circles. Circles represent that the case is FALSE for being a potential multivariate outlier.</li>
+  </ul>
+</details>
+```
+
+In @fig-keyboardOutliers, the shape of the points will reflect a `FALSE` or `TRUE` judgement of the statement "This observation is a potential multivariate outlier." Thus, `TRUE` would indicate that we have a potential multivariate outlier. In our case, we have all `FALSE` points, thus we do not have a potential multivariate outliers to be concerned about.
+
+### Your Turn
+
+Check the Lego Set Price data for the presence of potential multivariate outliers. When ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Potential Multivarite Outlier Lego Sets?
+Code for @fig-legoOutliers can be found in the [Code Appendix](#codeAppendix) under the heading Lego Set Multivariate Outliers.
+```{r}
+#| label: fig-legoOutliers
+#| fig-cap: "Potential Multivariate Outliers in the Lego Set Price Study"
+#| fig-alt: "Scatter plot of set price vs number of pieces showing potential multivariate outliers"
+#| aria-describedby: "legoOutliersLD"
+#| echo: false
+# Lego Set Multivariate Outliers ----
+outlierDetection <- rstatix::mahalanobis_distance(legoData)
+
+outlierDetection <- cbind(
+  outlierDetection,
+  factor = legoData$collection
+)
+
+ggplot(
+  data = outlierDetection,
+  mapping = aes(
+    y = price,
+    x = numParts,
+    shape = is.outlier,
+  )
+) +
+  geom_point(size = 2) +
+  theme_bw() +
+  labs(
+    x = "Number of Pieces",
+    y = "Price ($US)",
+    shape = "Potential Outlier",
+  ) 
+
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=keyboardOutliersLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Number of Lego pieces" and goes from about 0 to 6200 with labels 0, 2000, 4000, and 6000.</p>
+  <p>The vertical axis is labelled "Set price (US$)" and goes from 0 to 490 with labels 0, 100, 200, 300, and 400.</p>
+  <p>There is a set of 50 points representing the cases which form three clusters.</p>
+  <ul>
+  <li>The first cluster has 37 cases that have between 0 and 1500 pieces and cost between $0 and $120. All cases are shown as circles.</li>
+  <li>The second cluster has 12 cases that have betwen 2000 and 3200 pieces and cost between $120 and $250. All cases are shown as circles.</li>
+  <li>The last cluster has 1 case that has just over 6000 pieces and costs $470. This case is shown as a triangle.</li>
+  </ul>
+  <p>Circles represent the case is FALSE for being a potential multivariate outlier.</p>
+  <p>Triangles represent the case is TRUE for being a potential multivariate outlier.</p>
+</details>
+```
+@fig-legoOutliers shows the scatter plot showing the results of the calculating the Mahalanobis distances for each point. Notice that unlike @fig-keyboardOutliers, we have two different shapes for the Potential Outlier aesthetic: circles for `FALSE` and triangles for `TRUE`. This tell us that we have at least one case getting flagged as a potential multivariate outlier.
+:::
+
+### Dealing with Potential [Multivariate] Outliers
+
+If we have potential multivariate outliers, we need to investigate why they are potential outliers. For example, is there a data entry error or some other mistake for those cases? If we can fix those errors, we should and then re-run our analyses. If we can't fix those errors, then we will want to consider removing those cases. If we do not know, then we should run the model with and without these cases and compare the results.
+
+In the Lego Set Price study, our potential univariate and multivariate outliers are *not* the result of data entry errors; they are legitimate values. Thus, we might want to run a second set of ANCOVA models omitting the one set that was flagged as a potential multivariate outlier to see what, if any, changes to our model occur. 
+
+#### Your Turn
+
+Which Lego sets show up as potential univariate outliers? Which Lego set was flagged as the potential multivariate outlier?
+
+:::{.callout-note collapse="true"}
+#### Lego Outliers?
+In the univariate and multivariate approaches, the same Lego set gets flagged as being a potential outlier: the 2018 Harry Potter Hogwarts Castle. While we could run the ANCOVA with and without this case, I suspect that the results will not change much as this case is fairly consistent with trend we see in the data. The major distinction is the shear number of pieces that are in this set as opposed to other sets. This set has nearly twice as many pieces as the next larget set in the data collection.
+:::
+
+## Homogeneity of Slopes
+
+The Standard ANCOVA model assumes that the relationship between the covariate and the factor is nonexistent. That is, there is no interaction/interplay between the two. This manifests itself in the model as there being only a single slope parameter, $\beta$, that does not depend on the factor. Geometrically, we see this appear as having a set of parallel lines showing the relationship between the response and the covariate. Each line has a different intercept, reflecting the factor effect. This is way the Standard ANCOVA model is often referred to as the "Separate Intercepts" Or "Parallel Lines" ANCOVA model.
+
+The assumption that we make here is often refer to as the homogeneity of slopes. More accurately, this is the assumption that the rate of change of the response with respect to the covariate is invariant (unchanging) regarding the factor(s) (and block). Given that we're fitting a linear model between the response and the covariate, this means that we should have identical constant rates of change for each level of our factor(s). In other words, there is no interaction between our covariate and our factor(s).
+
+There are two ways that we can assess this assumption: looking at how well a plot for the separate intercepts model fits our data and we can do an informal test of the interaction between the covariate and our factor(s).
+
+### Using a Plot
+
+One route we can take is to build a plot of the response (amount of time in pain) by the covariate (time spent keyboarding) and the type of keyboard used. This is similar to what we did to check for the linear relationship between the response and the covariate. However, there are two distinct differences. First, we're going to explicitly include the factor (type of keyboard) to our plot. Second, we're going to impose three regression lines--one for each kind of keyboard--that only differ in their intercepts. If these lines appear to match up with the data reasonably well, we can be convinced that we have homogeneity of slopes. If they do not, then we might need to re-think this assumption and potentially fit a different ANCOVA model (see the final section of this guide).
+
+```{r }
+#| label: fig-keyboardHomoROC
+#| fig-cap: "Homogeneity of Slopes for Keyboarding Pain Study"
+#| fig-alt: "Scatter plot of hours of pain by hours spent keyboarding showing keyboard type and regression lines"
+#| aria-describedby: "keyboardHomoROCLD"
+#| echo: true
+# Demo Code for Assessing Homogeneity of Slopes in Keyboarding Pain Study ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type,
+    linetype = kbd.type
+  )
+) +
+  geom_point(size = 3) +
+  geom_smooth(
+    method = "lm",
+    mapping = aes(y = predict(keyboardModel)), # <1>
+    formula = y ~ x,
+    se = FALSE
+  ) +
+  scale_color_manual(values = psuPalette) +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+  theme_bw() +
+  theme(
+    legend.key.width = unit(1, "cm") # <2>
+  )
+```
+1. Notice that we're using the predicted values from our ANCOVA model for the regression, *not* the actual response values.
+2. We can make the key elements of a legend bigger by using code like this.
+
+```{=html}
+<details id=keyboardHomoROCLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the three levels of keyboard type.</p>
+  <ul>
+  <li>Keyboard type 1</li>
+  <ul>
+  <li>There are four dark blue circles at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There is a solid, dark blue line going from (50, 57) to (72, 97).</li>
+  </ul>
+  <li>Keyboard type 2</li>
+  <ul>
+  <li>There are four red triangles at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There is a short dashed red line going from (54, 46) to (68, 72).</li>
+  </ul>
+  <li>Keyboard Type 3</li>
+  <ul>
+  <li>There are four teal squares at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going from (51, 35) to (56, 44).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+In the code for @fig-keyboardHomoROC, you'll notice that we used the smoother geometry (`geom_smooth`) to add the three lines. For these lines we want to use a linear model (`method = "lm"`) and define the formula `y ~ x`. The most important aspect was that within `geom_smooth` we replaced the observed pain duration with the predicted duration from our ANCOVA model: `predict(keyboardModel)`.
+
+We approach @fig-keyboardHomoROC just as we would an interaction plot from our exploration of Factorial designs or Block designs. We are wanting to see that all of the regression lines have essentially the same slope as each other. Remember, we don't have to be perfectly parallel to account for the reality of dealing with real data. 
+
+I recommend checking out the section at the end of this guide to learn more about the five different ANCOVA models.
+
+### Informal Test of Interaction
+
+The second approach we can take is to do an informal test of the interaction term. Recall that we formed a second ANCOVA model called `interactionCheckKB`. We will want to check this set of results using Type III *Sum of Squares*. To get the information, we'll use the `{car}` package's `Anova` function.
+
+To do this informal check, you will want to keep your Unusualness Threshold and Type I Error Risk in mind. While we are going to look at an ANOVA table (@tbl-keyboardCheck), we do not typically report this table in the body of a report; this might go in an appendix or supplemental material file. At most, you'll extract the information you need an report that in a sentence or two.
+
+```{r}
+#| label: tbl-keyboardCheck
+#| tbl-cap: "Informal Test of Covariate-Factor Interaction"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for INFORMAL Interaction Check ----
+## Use the car package
+car::Anova( 
+  mod = interactionCheckKB,
+  type = 3 # <1>
+) %>%
+  kable(
+    digits = 3,
+    col.names = c("Source", "SS", "DF", "F ratio", "p-value"),
+    # caption = "Informal Test of Covariate-Factor Interaction",
+    align = c('l', rep('c',4)),
+    booktab = TRUE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  ) %>%
+  row_spec( # <2>
+    row = 4,
+    bold = TRUE, # <3>
+    background = "#FFFFC5" # <4>
+  )
+
+```
+1. Make sure to use Type III Sums of Squares.
+2. The `row_spec` function allows us to make a row of a table standout more.
+3. Makes the entire row bold.
+4. Highlights the row in a certain color.
+
+We only want to focus on the interaction term of hours spent keyboarding and the type of keyboard (i.e., `hrs.kbd:kbd.type`) shown in @tbl-keyboardCheck as a yellow highlighted and bolded row. The *p*-value for this term is approximately 0.35. This is well beyond any UT you're allowed to use in this course, thus, we will fail to reject the null hypothesis. That is to say, the interaction between the covariate and the factor is not statistically important. This tells us that we should not anticipate different rates of change of pain duration with respect to time spent keyboarding for different kinds of keyboards.
+
+I often use the informal test to supplement my decision from the plots, never in place of. Plot such as @fig-keyboardHomoROC provide me with additional information beyond homogeneity of slopes (e.g., how well the model appears to fit the data) that the informal test doesn't tell me.
+
+### Your Turn
+
+Create an assess the homogeneity of slopes for the Lego Set Price study. What would you decide? How do your plot and your decision there coincide (or not) with an informal test of the interaction of the covariate and factor? Check your answer when you're ready.
+
+:::{.callout-note collapse="true"}
+#### Lego Homogeneity of Slopes?
+Code for the plot and table may be found in the [Code Appendix](#codeAppendix) under the headings Assessing Homogeneity of Slopes in Lego Set Price Study and Lego Set Price Informal Test.
+```{r }
+#| label: fig-legoHomoROC
+#| fig-cap: "Homogeneity of Slopes for Lego Set Price Study"
+#| fig-alt: "Scatter plot of set price by number of piees showing collection and regression lines"
+#| aria-describedby: "legoHomoROCLD"
+#| echo: false
+# Assessing Homogeneity of Slopes in Lego Set Price Study ----
+ggplot(
+  data = legoData,
+  mapping = aes(
+    y = price,
+    x = numParts,
+    color = collection,
+    shape = collection,
+    linetype = collection
+  )
+) +
+  geom_point(size = 3) +
+  geom_smooth(
+    method = "lm",
+    mapping = aes(y = predict(legoModel)),
+    formula = y ~ x,
+    se = FALSE
+  ) +
+  scale_color_manual(values = psuPalette) +
+  labs(
+    x = "Number of Lego pieces",
+    y = "Set price (US$)",
+    color = "Collection",
+    shape = "Collection",
+    linetype = "Collection"
+  ) +
+  theme_bw() +
+  theme(
+    legend.key.width = unit(1, "cm") 
+  )
+```
+
+```{=html}
+<details id=legoHomoROCLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Number of Lego pieces" and goes from about 0 to 6200 with labels 0, 2000, 4000, and 6000.</p>
+  <p>The vertical axis is labelled "Set price (US$)" and goes from 0 to 490 with labels 0, 100, 200, 300, and 400.</p>
+  <p>Lego collections controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the five levels of Lego collection.</p>
+  <ul>
+  <li>Architecture Collection</li>
+  <ul>
+  <li>There are ten dark blue circles with the first at (361, 29.99) and the last at (2276, 199.99).</li>
+  <li>There is a solid, dark blue line going from (361, 30) to (2276, 175).</li>
+  </ul>
+  <li>Botantical Collection</li>
+  <ul>
+  <li>There are ten red triangles with the first at (111, 9.99) and the last at (1173, 99.99).</li>
+  <li>There is a short dashed red line going from (111, 10) to (1173, 90).</li>
+  </ul>
+  <li>Harry Potter Collection</li>
+  <ul>
+  <li>There are ten teal solid squares with the first at (159, 19.99) and the last at (6020, 469.99).</li>
+  <li>There is a long dashed teal line going from (159, 25) to (6020, 470).</li>
+  </ul>
+  <li>Modular Buildings Collection</li>
+  <ul>
+  <li>There are ten golden plus-signs with the first at (2034, 149.99) and the last at (3068, 229.99).</li>
+  <li>There is a long dashed, long gap golden line going from (2034, 150) to (3068, 225).</li>
+  </ul>
+  <li>Star Wars Collection</li>
+  <ul>
+  <li>There are ten gray empty squares containing x's with the first at (108, 14.99) and the last at (1145, 119.99).</li>
+  <li>There is a dotted gray line going from (108, 22) to (1145, 100).</li>
+  </ul>
+  </ul>
+</details>
+```
+```{r}
+#| label: tbl-legoCheck
+#| tbl-cap: "Informal Test of Covariate-Factor Interaction"
+#| html-table-processing: none
+#| echo: true
+# Lego Set Price Informal Test ----
+car::Anova( 
+  mod = legoCheck,
+  type = 3
+) %>%
+  kable(
+    digits = 3,
+    col.names = c("Source", "SS", "DF", "F ratio", "p-value"),
+    # caption = "Informal Test of Covariate-Factor Interaction",
+    align = c('l', rep('c',4)),
+    booktab = TRUE
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  ) %>%
+  row_spec( 
+    row = 4,
+    bold = TRUE, 
+    background = "#FFFFC5" 
+  )
+
+```
+From @fig-legoHomoROC and @tbl-legoCheck, we can be assured that the homogeneity of slopes assumption is satisfied for the Lego Set Price study.
+:::
+
+## Gaussian Residuals
+
+We can use a QQ plot as well as values of the *Sample Skewness* and *Sample Excess Kurtosis* to assess the assumption that the residuals follow a Gaussian assumption.
+
+```{r }
+#| label: fig-keyboardQQ
+#| fig-cap: "QQ Plot for Residuals in Keyboarding Pain Study"
+#| fig-alt: "QQ plot for keyboarding study residuals"
+#| aria-describedby: "keyboardQQLD"
+#| echo: true
+# Demo Code for QQ plot in Keyboarding Pain Study ----
+car::qqPlot(
+  x = residuals(keyboardModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (hours)"
+)
+
+```
+```{=html}
+<details id=keyboardQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2 to +2 with labels of –1.5, –1, –0.5, 0, 0.5, 1, and 1.5.</p>
+  <p>The vertical axis is labelled “Residuals (hours)” and goes from about –11 to 10.5 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2, –10) to (+1.9, +10).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 12 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.75, –10) while the last point is roughly at (1.75, 9.9).</li>
+  <li>The points are generally around the perfect match line with the fifth and sixth points bulging away (below) the line.</li>
+  <li>All of the points are inside the confidence envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+There is very little to be concerned about in the QQ plot (@fig-keyboardQQ); the values of *Sample Skewness* and *Sample Excess Kurtosis* are `r round(skew(keyboardModel$residuals), 2)` and `r round(kurtosi(keyboardModel$residuals), 2)`, respectively. Given the small sample size, I'm not surprised that we have fewer potentially outliers than anticipated with a true Gaussian distribution (negative excess kurtosis value). I think that we can go ahead and declare this assumption satisfied for the Keyboarding Pain study.
+
+### Your Turn
+
+Create the QQ Plot for the residuals from the Lego Set Price study. Check your answer when ready.
+
+:::{.callout-note collapse="true"}
+#### Lego QQ Plot
+Code for the QQ plot may be found in the [Code Appendix](#codeAppendix) under the heading Lego Set Price Study QQ Plot.
+```{r }
+#| label: fig-legoQQ
+#| fig-cap: "QQ Plot for Residuals in Legto Set Price Study"
+#| fig-alt: "QQ plot for lego set price study residuals"
+#| aria-describedby: "legoQQLD"
+#| echo: false
+# Lego Set Price Study QQ Plot ----
+car::qqPlot(
+  x = residuals(legoModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (US$)"
+)
+
+```
+```{=html}
+<details id=legoQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2.5 to +2.5 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (US$)” and goes from about –40 to 24 with labels of –40, –30, –30, –20, –10, 0, 10, and 20.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.5, –27) to (+2.5, +24).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 50 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2.6, –39) while the last point is roughly at (2.6, 22).</li>
+  <li>Most points are slightly above the perfect match line.</li>
+  <li>Starting with the fortith point, the points are consistently further away (above) the perfect match line.</li>
+  <li>There are four points outside of the envelope (one below and three above). Two more points are visibily on the upper edge of the envelope. The remaining points are inside the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+There is very little to be concerned about in the QQ plot (@fig-legoQQ); the values of *Sample Skewness* and *Sample Excess Kurtosis* are `r round(skew(legoModel$residuals), 2)` and `r round(kurtosi(legoModel$residuals), 2)`, respectively. Taken together, I will say that the Gaussian residuals assumption is satisfied.
+:::
+
+## Homoscedasticity
+
+Given that we have more than just a single factor, we need to look at a Tukey-Anscombe plot rather than just a strip chart.
+
+```{r }
+#| label: fig-keyboardVar
+#| fig-cap: "Tukey-Anscombe Plot for Keyboarding Pain Study"
+#| fig-alt: "Tukey-Anscombe plot for the keyboarding pain study"
+#| aria-describedby: "keyboardVarLD"
+#| echo: true
+# Demo Code for Tukey-Anscombe Plot for the Keyboarding Pain Study ----
+ggplot(
+  data = data.frame(
+    residuals = residuals(keyboardModel),
+    fitted = fitted.values(keyboardModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = stats::loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (hours)",
+    y = "Residuals (hours)"
+  )
+
+```
+```{=html}
+<details id=keyboardVarLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Fitted values (hours)” and goes from about 30 to 100 with labels of 40, 60, 80, and 100.</p>
+  <p>The vertical axis is labelled “Residuals (hours)” and goes from about –11 to 11 with labels of –10, –5, 0, 5, and 10.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 12 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are 6 points above and 6 points above the dashed line.</li>
+  <li>Eight points are between residual values of –7.5 and +7.5.</li>
+  <li>There are four points with larger residuals (in magnitude): (41, 7.75), (42, –10), (75, 9.9), and (76, –8).</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (35, 4) curves down to (49, –1), crossing the dashed line at (42, 0).</li>
+  <li>The curve increases from (49, –1) to (50, 1), crossing the dashed line at (58, 0).</li>
+  <li>The curve decreases from (50, 1) to the point (96, –2) in a constant fashion, crossing the dashed line at (84, 0).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+I'm a bit hesitant for the homoscedasticity assumption given the curvy nature of the line (see @fig-keyboardVar). The curve is reminiscent of a cubic function. I might say that homoscedasticity might be questionable. I would look at box plots and descriptive statistics of the residuals relative to the factor to see if there might be any numeric evidence of heteroscedasticity.
+
+:::{.callout-tip}
+### Using Descriptive Statistics for Homoscedasticity
+You can use various descriptive statistics to help you assess homoscedasticity. You'll want to make sure that you are using the residuals. For some statistics, you'll want to look for ratios of groups that exceed two (e.g., *Sample Range*, *Sample Arithmetic Standard Deviation*) or exceed four (e.g., *Sample Arithmetic Variance*). 
+:::
+
+### Your Turn
+
+Construct the Tukey-Anscombe plot for the Lego Set Price study. What is your assessment of the homoscedasticity assumption in that data?
+
+:::{.callout-note collapse="true"}
+#### Homoscedastic Legos?
+You can find the code for the Tukey-Anscombe plot in the [Code Appendix](#codeAppendix) under the heading Tukey-Anscombe Plot for the Lego Set Price Study.
+```{r }
+#| label: fig-legoVar
+#| fig-cap: "Tukey-Anscombe Plot for Lego Set Price Study"
+#| fig-alt: "Tukey-Anscombe plot for the Lego set price study"
+#| aria-describedby: "legoVarLD"
+#| echo: false
+# Tukey-Anscombe Plot for the Lego Set Price Study ----
+data.frame(
+    residuals = residuals(legoModel),
+    fitted = fitted.values(legoModel),
+    collection = legoData$collection 
+) %>%
+  ggplot(
+  mapping = aes(
+    x = fitted,
+    y = residuals
+  )
+) +
+  geom_point(
+    mapping = aes(color = collection, shape = collection),
+    size = 2
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = loess,
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (US$)",
+    y = "Residuals (US$)",
+    color = "Collection",
+    shape = "Collection"
+  )
+
+```
+```{=html}
+<details id=legoVarLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Fitted values (US$)” and goes from about 0 to 490 with labels of 100, 200, 300, and 400.</p>
+  <p>The vertical axis is labelled “Residuals (US$)” and goes from about –40 to 24 with labels of –40, –20, 0, and 20.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 50 points spaced throughout the plot but they form three clusters. The points are colored and have different shapes depending on the Lego collection.</p>
+  <ul>
+  <li>There are 26 points above and 24 points above the dashed line.</li>
+  <li>The first cluster is for fitted values between $0 and $110. With the exception of one point, (70, 20.5), all have residuals between –$20 and +$20.</li>
+  <li>The first cluster is made up of all of the Botantical Collection (red triangles), all of the Star Wars collection (gray squares will x's), all but two of the Harry Potter collection (teal solid squares) and all but two of the Architecture collection (blue circles).</li>
+  <li>The second cluster is for fitted values between $145 and $230. With three exceptions, the points (155, –39), (179, 22), and (180, –20.5), all have residuals between –$20 and +$20.</li>
+  <li>The second cluster is made up of all of the Modular Buildings collection (golden plus-signs), one Harry Potter set, and two Architecture sets.</li>
+  <li>The third cluster is the single point (470, 2) and is one Harry Potter Set.</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (10, –1) curves up to (80, 4), crossing the dashed line at (35, 0).</li>
+  <li>The curve decreases from (80, 4) to (150, –2), crossing the dashed line at (125, 0).</li>
+  <li>The curve inccreases from (150, –2) to the point (470, 4), crossing the dashed line at (200, 0).</li>
+  </ul>
+  </ul>
+</details>
+```
+While there is some squiggle to the smoother line in @fig-legoVar, that appears to be an artifact of the clustering of the residuals. That cluster appears to be driven by both the level of the factor (i.e., which collection a set is from) and the number of pieces in the set. With this in mind, I'm overly concerned about violating homoscedasticity.
+:::
+
+## Independence of Observations
+
+Unfortunately, we don't know measurement order so index plots and the Durbin-Watson statistic are not going to be useful here. However, we can think through the study design and reach the decision that we have independent observations.
+
+### Your Turn
+
+For both the Keyboarding Pain and Lego Set Price studies, what would you be looking for to assess Independence of Observations? What assessments would you make in each study?
+
+## ANCOVA + Block
+
+Keep in mind that if you introduce a Block, then the assumptions associated with those models will get imported into your situation as well. That is, the block doesn't interact with factors. The approaches you used previously (as well as much of the code) remains the same.
+
+## Multiple Covariates
+
+If you are planning on using multiple covariates in your model, then there is one extra assumption that you need to check. We assume that that all of our covariates are not highly correlated with one another; that is, we do not want to have multicollinearity amongst our covariates.
+
+There are two tools you can use to check out the possibility of multicolinearity. The first is the Generalized Variance Inflation Factor and the second is the Squared Multiple Correlation.
+
+For the Generalized Variance Inflation Factor (GVIF), you can use the `vif` function (from the `{car}` package) on the ANCOVA model. While, you'll get GVIF values for all terms in the model, we can focus on the covariates. Look at the column labelled `GVIF^(1/(2*Df))` and square the values there. This will give a value that you can compare to the typical VIF Rules of Thumb for 5 (start of moderate concern) and 10 (start of serious problem).
+
+For the Squared Multiple Correlation (SMC), we can make use of the function `smc` from the `{psych}` package. For this function, you'll use all of the covariate columns from the data frame as the input. You'll get back a listing of SMC values for each covariate. The Rule of Thumb here is that values beyond 0.5 indicate that we might have redundancy (multicollinearity).
+
+### Example
+
+As a quick example, we'll draw upon the Palmer Penguins data set from the package `{palmerpenguins}`. Suppose that we are investigating the impact of penguin species on body mass with three covariates: bill length, bill depth, and flipper length, all measured in millimeters.
+
+We would set up the ANCOVA model in `R` as
+
+```{r }
+#| label: penguins1
+#| echo: true
+# Demo Code for checking multicollinearity between multiple covariates ----
+## Fit Model for Palmer Penguins
+penguins <- palmerpenguins::penguins
+
+penguinModel <- aov(
+  formula = body_mass_g ~ species + bill_length_mm + bill_depth_mm + flipper_length_mm,
+  data = penguins
+)
+
+```
+Then to get the GVIF values, we could use code such as the following.
+```{r}
+#| label: tbl-penguins2
+#| tbl-cap: "Generalized Variance Inflation Factors"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Getting GVIFs ---- 
+gvifs <- as.data.frame(car::vif(penguinModel))
+gvifs$squared <- gvifs$"GVIF^(1/(2*Df))"^2
+
+kable(
+  x = gvifs,
+  digits = 3,
+  # caption = "Generalized Variance Inflation Factors",
+  col.names = c("Source", "GVIF", "DF", "GVIF^(1/(2*Df))", "Squared"),
+  align = "lcccc"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  ) 
+
+```
+
+Notice that bill length and flipper length both exceed 5 in the squared column (ignore the factor--species) of @tbl-penguins2; this indicates that there may be some correlation between the covariates.
+
+```{r}
+#| label: tbl-penguins3
+#| tbl-cap: "Squared Multiple Correlation"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Getting SMCs ---- 
+smcs <- psych::smc(penguins[,c("bill_length_mm", "bill_depth_mm", "flipper_length_mm")])
+
+kable(
+  x = smcs,
+  digits = 3,
+  # caption = "Squared Multiple Correlation",
+  col.names = c("Variable", "SMC"),
+  align = "lc"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+For the SMC values (@tbl-penguins3), we can see that flipper length is above 0.5, indicating this covariate may be redundant given the others. I would consider fitting the model without flipper length and seeing what happens.
+
+# Results
+
+Results for ANCOVA models are a bit mixed: some people will only report Omnibus Results, others will proceed to looking at Post Hoc analyses. This is to say, there's not an overriding drive to automatically conduct Post Hoc analysis like there is for a CRD/One-way layout or even Factorial designs. My suggestion is to let your research questions guide you.
+
+:::{.callout-tip}
+When in doubt, always defer to your research questions. When working in a confirmatory fashion, your SRQs should dictate your analyses. When working in an exploratory fashion, let your curiosity guide you but remember that you are building hypotheses to test rigorously in a new study.
+:::
+
+## Omnibus Results
+
+In this particular situation, we have a __balanced__ design, thus we do not need to worry about different types of Sums of Squares.
+
+```{r }
+#| label: tbl-keyboardTable
+#| tbl-cap: "ANOVA Table for Keyboarding Study"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Omnibus Test/Modern ANCOVA Table ----
+parameters::model_parameters(
+  model = keyboardModel,
+  es_type = c("eta", "omega", "epsilon")
+) %>%
+  dplyr::mutate( # <1> 
+    Parameter = dplyr::case_when(
+      Parameter == "hrs.kbd" ~ "Hours Spent Keyboarding",
+      Parameter == "kbd.type" ~ "Keyboard Type",
+      TRUE ~ Parameter
+    ) 
+  ) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 3,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    # caption = "ANOVA Table for Keyboarding Study",
+    format.args = list(big.mark = ","),
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+1. Fixing the Parameter (Source) Column's values for more readable row names.
+
+While we don't necessarily want to ignore the covariate's row in the @tbl-keyboardTable (like we do for a block), we don't want to get caught up in that row. That is, don't forget that our focus is on our factor(s). Our interpretations remain the same as before. For example,
+
+> The type of keyboard assigned to the patient accounts of about 11.6 times as much variation in pain duration as our residuals/what's left unexplained (\(F(2,8)=11.64\)), even when we account for how much time the patient spends keyboarding. Under the null hypothesis that keyboard has no impact on pain duration, we would only anticipate such a result less than 1% of the time (*p* = 0.0043). The type of keyboard accounts for a large poroportion of the variation in pain durations with around 64% (see @tbl-keyboardTable).
+
+### Your Turn
+
+Create two (2) omnibus results tables for the Lego Set Price study: one using the full data set and one dropping the potential multivariate outlier. What would you come up with as a paragraph describing the results for both tables? Compare the results; what was the impact of the potential multivariate outlier (if any) on your decisions? 
+
+## Point Estimates
+
+The topic of point estimates in ANCOVA is a bit complicated as there are __*two*__ sets of point estimates. We can look at the straight up estimates from the model (a.k.a. "raw" estimates) and we can also look at covariate adjusted estimates.
+
+### "Raw" Estimates
+
+To get the un-adjusted or "raw" point estimates, we will make use of the `dummy.coef` function as we've done in the past.
+
+```{r}
+#| label: tbl-keyboardPE1
+#| tbl-cap: "Unadjusted Point Estimates from the Keyboarding Study"
+#| html-table-processing: none
+#| echo: true
+# Demo Code of getting un-adjusted point estimates ----
+# Keyboarding Model
+rawPointEst <- dummy.coef(keyboardModel)
+rawPointEst <- unlist(rawPointEst)
+names(rawPointEst) <- c( # <1> 
+  "Grand Mean",
+  "Hours Spent Keyboarding",
+  paste("Keyboard Type", levels(keyboardingData$kbd.type))
+)
+
+data.frame("Estimate" = rawPointEst) %>%
+  knitr::kable(
+  digits = 2,
+  # caption = "Unadjusted Point Estimates from the Keyboarding Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+1. Be sure you know the order
+
+Something that should immediately stand out to you is the point estimate for the *GSAM* is negative in @tbl-keyboardPE1. However, we know from exploring the data that $GSAM(\mathcal{Y})\approx `r round(mean(keyboardingData$hrs.pain), 2)`$ hrs/person. These are two very different values!
+
+What's the deal? These "raw" or "un-adjusted" point estimates are incorporating the effect of the covariate. Thus, to account for the covariate's impact on the response, we have to make some adjustments. For the *GSAM* this works through the following formula: $GSAM(\mathcal{Y})=GSAM_{Raw}(\mathcal{Y})+\widehat{\beta}\cdot SAM(\mathcal{X})$ where $\mathcal{Y}$ represents the collection pain duration (hours), $\mathcal{X}$ represents the collection of hours spent keyboarding, and with $\widehat{\beta}$ representing the estimated coefficient for the covariate. For our data, this translates to
+$$`r round(mean(keyboardingData$hrs.pain), 2)` \approx `r round(rawPointEst[1], 2)` + `r round(rawPointEst[2], 2)` \cdot `r round(mean(keyboardingData$hrs.kbd), 2)`$$
+
+### Adjusted Point Estimates
+
+We can also get covariate adjusted point estimates for our factor's levels. Now, there is an important note I need to stress here. The point estimates for the factor's levels we previously looked at are for the *factor effects* but the adjusted point estimates are for the __*factor means*__ (also called "marginal means"). That is, we will be getting $\widehat{\mu_i}=\widehat{\mu_{\bullet\bullet}}+\widehat{\alpha_{i}}$ rather than just $\widehat{\alpha_i}$. The best way to get the covariate adjusted point estimates for the factor means is to use the `{emmeans}` package.
+
+The `adjust` argument of `emmeans` allows for the following values `"bonferroni"`, `"tukey"`, `"scheffe"`,`"sidak"`, `"holm"`, `"hochberg"`, `"hommel"`, `"BH"` (Benjamini and Hochberg), and `"fdr"`. These will produce the appropriately adjusted confidence intervals (for the `$emmeans` objects) and adjusted *p*-values (for the `$contrasts` objects).
+
+```{r }
+#| label: tbl-emMeans
+#| tbl-cap: "Marginal Means-Tukey 90\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
+# Demo code for getting adjusted factor means ----
+## Keyboarding
+emmOutKey <- emmeans::emmeans(
+  object = keyboardModel,
+  specs = pairwise ~ kbd.type,
+  adjust = "tukey",
+  level = 0.9
+)
+
+## Point Estimates
+as.data.frame(emmOutKey$emmeans) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Keyboard Type", "Marginal Mean","SE", "DF",
+                  "Lower Bound","Upper Bound"),
+    # caption = "Marginal Means-Tukey 90\\% Adjustment",
+    align = c("l", rep("c", 5)),
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+### Interpreting Point Estimates
+
+Regardless of whether you're interpreting the "raw"/un-adjusted point estimates or the adjusted estimates; whether factor effects, factor means, or the coefficient for the covariate, all of these point estimates are *rates of change* and should be interpreted as such.
+
++ *GSAM* of $\widehat{\mu_{\bullet\bullet}}=59.17$ pain hours per person [covariate adjusted]
+  - Our participants accumulated a total number of pain hours 59.17 times as large as the sample size.
++ RoC of Pain Duration w.r.t. Hours Keyboarding, $\widehat{\beta}=1.82$ hours per hour
+  - Across all treatments and participants, the change in the amount of time a person felt pain (in hours) is approximately 1.82 times as large as the corresponding change in how long they keyboarded (in hours).
++ Keyboard Type 1 Effect, $\widehat{\alpha_{1}}=14.40$ pain hours per person
+  - After accounting for the impact of how long a person spent keyboarding, our group of people using Keyboard Type 1 accumulated an additional 14.4 pain hours per person beyond the general baseline expectations.
++ Keyboard Type 1 Mean, $\widehat{\mu_1}=73.57$ pain hours per person
+  - After accounting for the impact of how long a person spent keyboarding, our Keyboard Type 1 treatment group accumulated a total number of pain hours that was 73.57 times as large as the size of that treatment group.
+
+### Your Turn
+
+Get and interpret the *adjusted* point estimates for the Lego Set Price study.
+
+## Post Hoc Analysis
+
+For Post Hoc Analysis, we'll follow the same paths was what we've done in the past: explore which pairs of factor levels are statistically different from one another. And for those that are, what's the practical significance of those differences (i.e., what's the size of the effect)?
+
+### Pairwise Comparisons
+
+Just as with Factorial models, we will use the `{emmeans}` package here as well. Since I've already stored the output, I don't need to call `emmeans` a second time. Remember that we ask for the `constrasts` sub-object from our previously stored `emmOutKey` object to get pairwise comparisons.
+
+```{r}
+#| label: tbl-keyboardPH1
+#| tbl-cap: "Marginal Means-Tukey 90\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
+# Demo code for Pairwise Comparisons in ANCOVA ----
+## Keyboarding Study
+as.data.frame(emmOutKey$contrasts) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Comparison", "Difference","SE", "DF",
+                  "t Statistic","p-value"),
+    # caption = "Marginal Means-Tukey 90\\% Adjustment",
+    align = c("l", rep("c", 5)),
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+For more complicated ANCOVA models (e.g., multiple factors), we can use the techniques previously mentioned (including for contrasts). I want to note here that these pairwise comparisons are all made using the value of the *Sample Arithmetic Mean* of the covariate. In the Keyboarding Pain study, that value is 59 hrs/person. Thus, all of these pairwise comparison estimates used 59 hrs/person. If you use `specs = pairwise ~ kbd.type | hrs.kbd`, you'll get an extra line that says `hrs.kbd = 59:` at the top of your raw output; the rest of the table is identical to what we've already seen.
+
+### Effect Sizes
+
+You will want to use the `{emmeans}` package for the effect sizes as well (the `anova.PostHoc` function won't account for the covariate).
+
+```{r}
+#| label: tbl-effectSize1
+#| tbl-cap: "Effect Sizes for Keyboard Type"
+#| html-table-processing: none
+#| echo: true
+# Demo code for post hoc (pairwise) effect sizes ----
+## Keyboarding Study
+as.data.frame(
+  eff_size(
+    object = emmOutKey,
+    sigma = sigma(keyboardModel),
+    edf = df.residual(keyboardModel)
+  ) 
+) %>%
+  dplyr::mutate(
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps) %>%
+  knitr::kable(
+    digits = 3,
+    col.names = c("Keyboard Comparison", "Cohen's d", "Probability of Superiority"),
+    align = "lccc",
+    # caption = "Effect Sizes for Keyboard Type",
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+
+### Your Turn
+
+Get creative and come up with not only the pairwise comparisons but also two contrasts for the Lego Set Price study.
+
+{{< pagebreak >}}
+
+# Choosing Between the Five ANCOVA Models
+
+There are actually five (5) different ANCOVA models. Each one is a slight variation and is applicable in different situations. The choice between them comes down to what you're trying to study. The choice that you make has impacts on your designs including on the *degrees of freedom* within your model. I've provide some general notation for calculating the *Degrees of Freedom* used by each model for a One-way ANCOVA model.
+
+## Model 1: No Effects--Constant [Grand] Mean 
+
+This is the null model for ANCOVA: our factor(s) and our covariate(s) have absolutely no impact on the response. In this model, we have only used 1 *Degree of Freedom* as we only have to estimate the value of the *Grand Mean*. If this situation were true, then the blue horizontal line in @fig-constantMean would accurately describe the data. 
+
+```{r constantMean, echo=TRUE}
+#| label: fig-constantMean
+#| fig-cap: "Graph of the Constant Mean ANCOVA Model"
+#| fig-alt: "Constant Mean ANCOVA scatter plot"
+#| aria-describedby: "constantMeanLD"
+# Demo code for the Constant Mean ANCOVA Model ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = mean(keyboardingData$hrs.pain),
+    color = "blue"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right"
+  )
+
+```
+```{=html}
+<details id=constantMeanLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape and color of points in the plot.</p>
+  <p>The plot contains two sets of elements in the plot.</p>
+  <ul>
+  <li>A set of twelve points in three groups of four by Keyboard type.</li>
+  <ul>
+  <li>There are four dark blue circles for Keyboard Type 1 at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There are four red triangles for Keyboard Type 2 at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There are four teal squares for Keyboard Type 3 at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going from (51, 35) to (56, 44).</li>
+  </ul>
+  <li>A solid blue horizontal line at 59.17 hours of pain.</li>
+  </ul>
+</details>
+```
+
+## Model 2: Single Line
+
+The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in @fig-singleLine would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of the response with respect to the covariate.
+
+```{r singleLine,  echo=TRUE}
+#| label: fig-singleLine
+#| fig-cap: "Graph of the Single Line ANCOVA Model"
+#| fig-alt: "Single Line ANCOVA model scatter plot"
+#| aria-describedby: "singleLineLD"
+#| echo: true
+# Demo Code for the Single Line ANCOVA Model ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth(
+    inherit.aes = FALSE, # <1> 
+    mapping = aes(x = hrs.kbd, y = hrs.pain),
+    method = "lm",
+    formula = y ~ x,
+    se = FALSE
+    ) +
+  theme_bw() +
+  scale_color_manual(values = psuPalette) +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right",
+    legend.key.width = unit(1, "cm")
+  )
+
+```
+1. Tells the smoother to ignore the factor.
+
+```{=html}
+<details id=singleLineLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape and color of points in the plot.</p>
+  <p>The plot contains two sets of elements in the plot.</p>
+  <ul>
+  <li>A set of twelve points in three groups of four by Keyboard type.</li>
+  <ul>
+  <li>There are four dark blue circles for Keyboard Type 1 at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There are four red triangles for Keyboard Type 2 at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There are four teal squares for Keyboard Type 3 at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going from (51, 35) to (56, 44).</li>
+  </ul>
+  <li>A solid blue line that is straight and goes from (50, 49) to (72, 89).</li>
+  </ul>
+</details>
+```
+
+## Model 3: Separate Intercepts/Parallel Lines ("Standard ANCOVA")
+
+This is the standard ANCOVA model and the one that we most often want to draw upon. (This is the model that we are using in this course.) Here, we are anticipating that both the covariate and the factor(s) have an impact on the response. The way we think that they do so is that the factor level effects act as vertical shifts of the linear relationship between the response and the covariate. That is, we should have a set of parallel lines whose intercepts differ thanks to the factor. In this model, we use \(1+1+(g-1)=g+1\) *Degrees of Freedom*. We are estimating the *Grand Mean*, the Rate of Change of the Response w.r.t. the Covariate, and the *g*-1 factor level effects which translate to the intercepts.
+
+Again, if this is the case, the *g* parallel lines we plot should accurately describe the data in @fig-separateIntercepts.
+
+```{r}
+#| label: fig-separateIntercepts
+#| fig-cap: "Graph of the Separate Intercepts/Parallel Lines ANCOVA Model"
+#| fig-alt: "Separate Intercepts ANCOVA Model Scatter plot"
+#| aria-describedby: "separateInterceptsLD"
+#| echo: true
+# Demo Code for the Separate Intercepts/Parallel Lines ANCOVA Model ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type,
+    linetype = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth(
+    method = "lm",
+    mapping = aes(y = predict(keyboardModel)),
+    formula = y ~ x,
+    se = FALSE
+  ) +
+  theme_bw() +
+  scale_color_manual(values = psuPalette) +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right",
+    legend.key.width = unit(1, "cm")
+  )
+
+```
+```{=html}
+<details id=separateInterceptsLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the three levels of keyboard type.</p>
+  <ul>
+  <li>Keyboard type 1</li>
+  <ul>
+  <li>There are four dark blue circles at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There is a solid, dark blue line going from (50, 57) to (72, 97).</li>
+  </ul>
+  <li>Keyboard type 2</li>
+  <ul>
+  <li>There are four red triangles at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There is a short dashed red line going from (54, 46) to (68, 72).</li>
+  </ul>
+  <li>Keyboard Type 3</li>
+  <ul>
+  <li>There are four teal squares at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going from (51, 35) to (56, 44).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+## Model 4: Separate Slopes
+
+For this version of the ANCOVA model, we opt to allow the Rate of Change of the Response w.r.t. the Covariate to change from group to group while requiring all models to share a common point (e.g., a common point of intersection). The choice of common point should be guided by your understanding of the context and be somewhat sensible. For example, we could specify that all of the models should intersect at 0 hours of keyboarding. Alternatively, we could say that all of the models should intersect at the value of the *SAM* of hours spent keyboarding (~59 hrs/person). The choice is ours but will impact the estimates for the various $\widehat{\beta_i}$ values. In this model, we use $1+1+(g-1)=g+1$ *Degrees of Freedom*. We are estimating the *Grand Mean*, the point of intersection, and the *g*-1 Rates of Change of the Response w.r.t. the Covariate by Factor Level.
+
+As before, we would look at the lines in @fig-separateSlopes to see how well they describe our data.
+
+```{r }
+#| label: fig-separateSlopes
+#| fig-cap: "Graph of the Separate Slopes ANCOVA Model"
+#| fig-alt: "Separate Slopes ANCOVA Model scatter plot"
+#| aria-describedby: "separateSlopesLD"
+#| echo: true
+# Demo Code for the Separate Slopes ANCOVA Model ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type,
+    linetype = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x + 0, # <1> 
+    se = FALSE
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+  theme(
+    legend.position = "right",
+    legend.key.width = unit(1, "cm")
+  )
+
+```
+1. Requires all lines to intersect at x = 0.
+
+```{=html}
+<details id=separateSlopesLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the three levels of keyboard type.</p>
+  <ul>
+  <li>Keyboard type 1</li>
+  <ul>
+  <li>There are four dark blue circles at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There is a solid, dark blue line going from (50, 64) to (72, 91).</li>
+  </ul>
+  <li>Keyboard type 2</li>
+  <ul>
+  <li>There are four red triangles at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There is a short dashed red line going from (54, 52) to (68, 67).</li>
+  </ul>
+  <li>Keyboard Type 3</li>
+  <ul>
+  <li>There are four teal squares at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going from (51, 39) to (56, 42).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+## Model 5: Separate Lines
+
+The last ANCOVA model is that of separate lines; here is where we believe that there is a theoretically important reason to have the factor(s) and covariate(s) interact. We could see this with a statistically significant interaction term. In this model, we use $1+1+(g-1)+(g-1)=2g$ *Degrees of Freedom*. We estimate the *Grand Mean*, the various Rates of Change of the response w.r.t. the Covariate by Factor level, and the factor effects (the intercepts). 
+
+Again, we're looking to see how well the lines describe the data in @fig-separateLines.
+
+```{r }
+#| label: fig-separateLines
+#| fig-cap: "Graph of the Separate Lines ANCOVA Model"
+#| fig-alt: "Separate Lines ANCOVA Model scatter plot"
+#| aria-describedby: "separateLinesLD"
+#| echo: true
+
+# Demo code for the Separate Lines ANCOVA Model ----
+ggplot(
+  data = keyboardingData,
+  mapping = aes(
+    y = hrs.pain,
+    x = hrs.kbd,
+    color = kbd.type,
+    shape = kbd.type,
+    linetype = kbd.type
+  )
+) +
+  geom_point(size = 2) +
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x,
+    se = FALSE
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme_bw() +
+  labs(
+    x = "Hours Spent Keyboarding",
+    y = "Hours of Pain",
+    color = "Keyboard Type",
+    shape = "Keyboard Type",
+    linetype = "Keyboard Type"
+  ) +
+   theme(
+     legend.position = "right",
+     legend.key.width = unit(1, "cm")
+   )
+
+```
+```{=html}
+<details id=separateLinesLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Hours spent keyboarding" and goes from about 49 to 73 with labels 50, 55, 60, 65, and 70.</p>
+  <p>The vertical axis is labelled "Hours of Pain" and goes from 31 to 100 with labels 40, 60, 80, and 100.</p>
+  <p>Keyboarding type controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the three levels of keyboard type.</p>
+  <ul>
+  <li>Keyboard type 1</li>
+  <ul>
+  <li>There are four dark blue circles at (50, 58), (60, 85), (61, 69), and (72, 95).</li>
+  <li>There is a solid, dark blue line going up from (50, 59) to (72, 95).</li>
+  </ul>
+  <li>Keyboard type 2</li>
+  <ul>
+  <li>There are four red triangles at (54, 41), (59, 52), (66, 71), and (68, 74).</li>
+  <li>There is a short dashed red line going up from (54, 41) to (68, 74).</li>
+  </ul>
+  <li>Keyboard Type 3</li>
+  <ul>
+  <li>There are four teal squares at (51, 40), (55, 50), (56, 34), and (56, 41).</li>
+  <li>There is a long dashed teal line going down from (51, 42) to (56, 41).</li>
+  </ul>
+  </ul>
+</details>
+```
+
+## Making a Choice
+
+As you look through @fig-constantMean--@fig-separateLines, you'll notice that the models do better and worse jobs at describing our data. Hopefully, we will all agree that the Constant Mean ANCOVA model (@fig-constantMean), that is our Null Model, does a terrible job describing our data. While an improvement on the Constant Mean ANCOVA model, the Single Line ANCOVA model, still leaves a bit to be desired for describing our data (@fig-singleLine).
+
+The next three models visually do a better job in describing our data. We generally want to use the simplest model possible. We can explore whether the interaction of factor and covariate is important both theoretically and statistically. Further, we can look at whether there are any improvements to be had by looking at a more complicated model. You can learn more about these models in Section 17.3 of Oehlert.
+
+{{< pagebreak >}}
+
+# Code Appendix {#codeAppendix}
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
