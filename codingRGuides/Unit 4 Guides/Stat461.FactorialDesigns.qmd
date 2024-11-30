@@ -1,0 +1,1526 @@
+---
+title: "Factorial Designs/Models"
+subtitle: "Parametric Shortcut"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+This guide focuses on Factorial Designs and Models. For our purposes, we will restrict our attention to *full* factorial models with all fixed effects. This means that only our measurement/experimental units will be the only random effect in the model. This guide will also cover Post Hoc analyses in the factorial setting. Be sure to check out the section that highlights the impacts of different sums of squares for imbalanced designs.
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, `{DescTols}`, and `{openxlsx}`. 
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
+              "car", "psych", "parameters", "emmeans", "DescTools", "openxlsx")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+# Custom Color Palette ----
+psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+
+```
+
+## Load Data
+
+For this tutorial, we're going to look at two contexts: __Spoonapults__ and __Battery Manufacturing__. I'll give a brief description of each context and then show how to load the data.
+
+### Spoonapults
+
+This data comes from the study that the Fall 2024 Stat 461 class designed to investigate the impact of launch angle and position on how far a spoonapult will fling a gummy bear. For this guide, we will focus on the design as being a full two-way ANOVA; in a separate document I'll show the Partially Balanced Incomplete Block design approach for these data.
+
+We can access and clean the data through the following code (shared in the F24_Spoonapults_StarterCode.R file):
+
+```{r }
+#| label: loadData1
+#| echo: true
+# Load Original Data ----
+bears <- openxlsx::readWorkbook(
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Fall2024.xlsx",
+  sheet = 1,
+  colNames = TRUE,
+  rowNames = FALSE
+)
+
+## Clean Original Data ----
+bears <- bears %>%
+  mutate(
+    Team = str_to_sentence(Team), # <1>
+    Angle = str_trim(str_to_sentence(Angle)), # <2>
+    Position = str_trim(str_to_sentence(Position)) # <2>
+  ) %>%
+  mutate( # <3>
+    Position = case_when(
+      Position == "Friont" ~ "Front",
+      .default = Position
+    ) 
+  ) %>%
+  mutate(
+    Team = as.factor(Team), # <4>
+    Angle = factor(Angle, levels = c("Flat", "Low", "High")), # <4>
+    Position = as.factor(Position), # <4>
+    Spoonapult = as.character(Spoonapult), # <5>
+    Bear = as.character(Bear) # <5>
+  )
+
+# Create Experimental Unit Data Frame ----
+spoonapults <- bears %>%
+  group_by(Team, Angle, Position, Spoonapult) %>%
+  summarize( # <6>
+    SAM_in = mean(Distance_in),
+    Med_in = median(Distance_in),
+    SAM_cm = mean(Distance_cm),
+    Med_cm = mean(Distance_cm),
+    .groups = "drop"
+  )
+
+```
+1. Standardize Team Names.
+2. Fix inconsistent formatting of levels for both factors.
+3. Fix misspelled front position.
+4. Set factors and block as factor data type.
+5. Set id columns to character data type.
+6. This code allows us to focus on using the experimental units as our units of analysis.
+
+Keep in mind that by "following the random assignment", we can make the determination that our unit of analysis should be the spoonapults and not the individual gummy bears. The last bit of the data wrangling code does this by creating a new *response* for our spoonapults out of the response we measured. This can either be the spoonapult's performance (via the *SAM*) or the spoonapult's middle launched distance (via the *Sample Median*). We can use either in our analysis; the choice is yours. 
+
+From this point, we will use the `spoonaults` data frame, not the `bears` data frame.
+
+### Battery Manufacturing
+
+An engineer is designing a battery for use in a device that will people will use in some extreme temperatures. Unfortunately, the engineer may only alter one design parameter: the plate material for the battery of which he has three choices.
+
+The device his batteries are for gets manufactured separately and is then shipped to the field, where the engineer has no control over the temperature the device will encounter. His experiences lead him to believe that environmental temperature will affect the battery life. He can control the temperature in the lab for product development testing.
+
+He decides to test all three plate materials at three temperature levels—15ºF, 70ºF, and 125ºF—as these temperatures are consistent with reported end-use environments.
+
+His questions:
+
+1) What effects do material type and temperature have on life of battery?
+2) Is there a choice of material that would give uniformly long life regardless of temperature?
+
+```{r}
+#| label: loadBattery
+#| echo: true
+## Demo code for loading and cleaning data ----
+## Load battery data
+batteryData <- read.table(
+  file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/batteryLife.dat",
+  header = TRUE,
+  sep = ","
+)
+
+## Clean data ----
+batteryData$temperature <- dplyr::case_match(
+  .x = batteryData$temperature,
+  15 ~ "15ºF",
+  70 ~ "70ºF",
+  125 ~ "125ºF",
+  .ptype = factor(levels = c("15ºF", "70ºF", "125ºF"))
+)
+
+batteryData$material <- dplyr::case_match(
+  .x = batteryData$material,
+  1 ~ "Plate 1",
+  2 ~ "Plate 2",
+  3 ~ "Plate 3",
+  .ptype = factor(levels = c("Plate 1", "Plate 2", "Plate 3"))
+)
+
+```
+
+For the Battery Manufacturing data I made use of the `case_match` function from the `dplyr` package. This allowed me not only transform/clean the reported values but also simultaneously tell R to treat the attributes as factors.
+
+# Omnibus SRQs and Hypotheses
+
+One of the ways in which the analysis of factorial designs differs from that of one-way ANVOA is that instead of a single statistical research question (SRQ) driving the omnibus test, we have several. Each of them get their own set of hypotheses.
+
+## Spoonapults Context
+
+For the Spoonapults, we can express the *three* SRQs for the omnibus tests as follows.
+
++ SRQ1: Does the launch angle make a difference on how far a throws a gummy bear?
+    - $H_{1,0}$: There is no statistically significant impact on how far a spoonapult throws a gummy bear flies due to launch angle.
+    - $H_{1,A}$: There is a statistically significant impact on how far a spoonapult throws a gummy bear flies due to launch angle.
++ SRQ2: Does the launch position make a difference on how far a gummy bear flew?
+    - $H_{2,0}$: There is no statistically significant impact on how far a spoonapult throws a gummy bear due to launch position.
+    - $H_{2,A}$: There is a statistically significant impact on how far a spoonapult throws a gummy bear due to launch position.
++ SRQ3: Does the interaction of launch angle and position make a difference on how far a gummy bear flew?
+    - $H_{3,0}$: There is no statistically significant interaction effect between launch angle and position on how far a spoonapult throws a gummy bear.
+    - $H_{3,A}$: There is a statistically significant interaction effect between launch angle and position on how far a spoonapult throws a gummy bear.
+
+The above show the English statement forms of the hypotheses. Remember that we can also display these algebraically by including the model. Be sure to explain what the notation means in the model as shown in this example.
+
+### Algebraic Example
+
+For our spoonapults study, we will be working with the following two-way ANOVA model: 
+$$y_{ijk}=\mu_{\bullet\bullet\bullet}+\alpha_{i}+\beta_{j} + \alpha\beta_{ij}+\epsilon_{ijk}$$
+where $\mu_{\bullet\bullet\bullet}$ represents the Grand Mean of spoonapult performance, $\alpha_i$ the main effect of launch angle *i*, $\beta_j$ the main effect of launch position *j*, and $\alpha\beta_{ij}$ the interaction effect of launch angle *i* and position *j*. The residuals are represented by $\epsilon_{ijk}$. We will test the following hypotheses:
+
++ $\alpha_i=0$ for all *i* vs. $\alpha_i\neq0$ for some *i*
++ $\beta_j=0$ for all *j* vs. $\beta_j\neq0$ for some *j*
++ $\alpha\beta_{ij}=0$ for all *ij* combinations vs. $\alpha\beta_{ij}\neq0$ for some *ij* combination
+
+:::{.callout-tip}
+#### Having Both Forms
+Having *both* English statements and algebraic forms of hypotheses make your report much more well rounded. In terms of the course learning outcomes, giving both gives you an opportunity to explain what terms in the model mean for your context.
+:::
+
+### Your Turn
+
+Take a moment and write out the hypotheses and algebraic models for the Battery Manufacturing study. When you're ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Battery Manufacturing Hypotheses
+The first thing to recognize that of the researcher's two questions, the first one (effects) is the omnibus question while the second one (choice for long life) is a Post Hoc question.
+
++ Main Effect: Plate Material
+  + $H_{1,0}$: There is no statistically significant impact of plate material type on battery life.
+  + $H_{1,A}$: There is a statistically significant impact of plate material type on battery life.
+  + $\alpha_i=0$ for all *i* vs. $\alpha_i\neq0$ for some *i*
++ Main Effect: Operating Temperature
+  + $H_{2,0}$: There is no statistically significant impact of operating temperature on battery life.
+  + $H_{2,A}$: There is a statistically significant impact of operating temperature on battery life.
+  + $\beta_j=0$ for all *j* vs. $\beta_j\neq0$ for some *j*
++ Interaction
+  + $H_{3,0}$: There is no statistically significant interaction effect between plate material and operating temperature on battery life.
+  + $H_{3,A}$: There is a statistically significant interaction effect between plate material and operating temperature on battery life.
+  + $\alpha\beta_{ij}=0$ for all *ij* combinations vs. $\alpha\beta_{ij}\neq0$ for some *ij* combination
+:::
+
+# Checking the Appropriateness of Factorial Design
+
+As we have been doing since Unit 3, checking for whether ANOVA methods are appropriate for answering our SRQ comes down to the following:
+
++ Do we have a quantitative response?
++ Do we have two or more categorical/qualitative factors? (If only one, then we're not factorial ANOVA.)
++ Do we have enough *Degrees of Freedom* to be able to estimate the Main Effects and Interactions?
++ Do we have enough *Degrees of Freedom* for estimating residuals/errors?
++ Do we have an additive model *up to interaction terms*?
+
+As before, our knowledge of the study design and the Hasse diagram can help us out.
+
+## Battery Manufacturing Example
+
+@fig-batteryHD shows the Hasse diagram for the Battery Manufacturing study. We know that the response is quantitative (number of hours of life). From the Hasse diagram, we have two factors (Plate Material and Temperature) which are both categorical. We are doing a full factorial structure (we have all possible interactions). Further, since we have positive *Degrees of Freedom* for each node in the Hasse diagram, we know that we should be able to estimate all main effects, interactions, and the residuals/errors.
+
+```{r}
+#| label: fig-batteryHD
+#| fig-cap: "Hasse Diagram for Battery Manufacturing Study"
+#| fig-alt: "Hasse diagram for battery manufacturing study"
+#| aria-describedby: "batteryHDLD"
+#| fig-height: 3
+#| echo: true
+
+## Hasse Diagram For Battery Study ----
+modelLabels <- c("1 Maintain Charge 1", "3 Plate 2", "3 Temperature 2",
+                 "9 Plate × Temperature 4", "36 (Batteries) 27")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+           FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE,
+           TRUE, TRUE, FALSE),
+  nrow = 5,
+  ncol = 5,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=batteryHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has five nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Maintain Charge 1".</p>
+  <p>The second node is to the left of the second level and says "3 Plate 2".</p>
+  <p>The third node is to the right of the second level and says "3 Temperature 2".</p>
+  <p>The fourth node on the third level and says "9 Plate x Temperature 4".</p>
+  <p>The fifth and final node is on the lowest level and says "36 (Batteries) 27".</p>
+</details>
+```
+
+## Your Turn
+
+Create a similar paragraph as I did but for the Gummy Bears situation. When you're ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+### Spoonapults Appropriate?
+@fig-spoonapultHD shows the Hasse diagram for the Spoonapult study. We know that the response is quantitative (spoonapult launch performance). From the Hasse diagram, we have two categorical factors: (launch) angle and (launch) position. We are doing a full factorial structure (we have all possible interactions). Further, since we have positive *Degrees of Freedom* for each node in the Hasse diagram, we know that we should be able to estimate all main effects, interactions, and the residuals/errors.
+
+```{r}
+#| label: fig-spoonapultHD
+#| fig-cap: "Hasse Diagram for Spoonapult Study"
+#| fig-alt: "Hasse diagram for Spoonapult study"
+#| aria-describedby: "spoonapultHDLD"
+#| fig-height: 3
+
+## Hasse Diagram For Spoonapults ----
+modelLabels <- c("1 Throw Bears 1", "3 Angle 2", "2 Position 1",
+                 "6 Angle x Position 2", "18 (Spoonapults) 12")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+           FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE,
+           TRUE, TRUE, FALSE),
+  nrow = 5,
+  ncol = 5,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=spoonapultHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has five nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Throw Bears 1".</p>
+  <p>The second node is to the left of the second level and says "3 Angle 2".</p>
+  <p>The third node is to the right of the second level and says "2 Position 1".</p>
+  <p>The fourth node on the third level and says "6 Angle x Position 2".</p>
+  <p>The fifth and final node is on the lowest level and says "18 (Spoonapults) 12".</p>
+</details>
+```
+:::
+
+:::{.callout-tip}
+#### Check Data Types
+Don't forget to check the data types in R. This can be most easily accomplished with the `str` (structure) function. You want to see either `int` or `num` after your response and `factor` after your factors (and any blocks).
+:::
+
+# Explore Your Data
+
+Just as with one-way ANOVA settings, you should always engage in some exploratory data analysis. This will help you get a better sense of your data. Exploring the data in factorial settings becomes much more important as now you have many more ways to think about slicing up the data resulting in more ways to help people (and yourself) think about the data. Remember, data visualizations are some of your strongest and most helpful tools here.
+
+## Box Plots for Factorial Designs
+
+Previously, we've used side-by-side box plots to compare the structural aspects of response values within the different levels of the factor. We can extend this idea with by having multiple factors as well as incorporating the interaction of factors.
+
+```{r}
+#| label: fig-boxplot1
+#| fig-cap: "Box Plot of Battery Life Spans by Temperature and Plate Material"
+#| fig-alt: "Box plot of battery life spans by temperature and plate material"
+#| aria-describedby: "boxplot1LD"
+#| echo: true
+# Demo code for box plot of interaction of factors ----
+## Battery Manufacturing Study
+ggplot(
+  data = batteryData,
+  mapping = aes(
+    x = interaction(material, temperature, sep = " x "), # <1>
+    y = life
+  )
+) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 0.5) # <2>
+  ) +
+  labs(
+    x = "Plate Material and Operating Temperature",
+    y = "Battery life (hours)"
+  )
+
+```
+1. The `interaction` function takes multiple factors and will construct a new factor that represents the interaction.
+2. The names of interactions can get quite long. This code rotates the axis labels and shifts the text to make them fit a little better.
+
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=boxplot1LD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+@fig-boxplot1 is a set of side-by-side box plots on the interaction. Something to notice is that there are groupings within the plot based upon the levels of one of the factors. That is, the first three box plots are all for 15ºF, the next for 70ºF, and the last three for 125ºF. If instead you wanted these organized by plate material, you would just need to add the following argument to the `interaction` call: `lex.order = TRUE`. 
+
+:::{.callout-tip}
+### Use Good Judgement
+Keep in mind that the number of levels for an interaction term is the product of the number of levels for each factor involved in the interaction. Thus, you'll want to be a bit cautious about how complex you want to make your data visualizations so you don't overwhelm your readers (or yourself).
+:::
+
+## Descriptive Statistics
+
+In addition to data visualizations, we also may make use of descriptive/incisive statistics. We've used the `describeBy` from the `{psych}` package in the past to break our response up into groups based upon our factor. We can do something similar in multi-factor situations.
+
+```{r descStatsBattery, echo=TRUE}
+#| label: descStatsBattery
+#| echo: true
+# Demo code for descriptive statistics for factorial treatment structure ----
+## Using the {psych} package's describeBy function
+## Battery Manufacturing 
+batteryStats <- psych::describeBy(
+  life ~ temperature + material, # <1> 
+  data = batteryData,
+  na.rm = TRUE,
+  skew = TRUE,
+  ranges = TRUE,
+  quant = c(0.25, 0.75),
+  IQR = TRUE,
+  mat = TRUE,
+  digits = 4
+)
+
+```
+1. Notice that we use the `+` as an "AND", not as addition.
+
+Once we've used the `describeBy` function, we can view the results for ourselves via the `View` command in the R console or we can create a professional looking table--which would go in a report.
+
+```{r}
+#| label: tbl-statsBattery
+#| tbl-cap: "Summary Statistics for Battery Life Spans"
+#| html-table-processing: none
+#| echo: true
+# Demo code for professional table of descriptive statistics ----
+## Battery Manufacturing study
+batteryStats %>%
+  tibble::remove_rownames() %>% # <1>
+  dplyr::select(
+    group1, group2, n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
+  ) %>%
+  knitr::kable(
+    # caption = "Summary Statistics for Battery Life Spans",
+    digits = 3,
+    format.args = list(big.mark = ","),
+    align = rep(c("l", "c"), times = c(2, 11)),
+    col.names = c("Temperature", "Material", "n", "Min", "Q1", "Median",
+                  "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
+                  "Sample Ex. Kurtosis"),
+    booktabs = TRUE
+  )  %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  ) 
+
+```
+1. This removes meaningless, auto-generated row names. 
+
+Notice that something that we can see from @tbl-statsBattery is that every treatment has the same number of replicates. This confirms that the study design is a *balanced* design. We can also see that two-thirds of the treatments have negative skewness indicating that potential outliers tend to have short life spans than the main bulk within each treatment. Further, all treatments are platykurtic (have negative excess kurtosis), indicating fewer potential outliers than we would expect for a Gaussian distribution. This could be a result of only have four replicates.
+
+:::{.callout-tip}
+### Interpret Tables of Statistics
+Don't forget to provide some interpretation of your descriptive/incisive statistics. You need to help your readers make sense of the table of values.
+:::
+
+## Check Interactions
+
+With a (full) Factorial Designs, we no longer have a truly additive model. The interaction term, in some ways, is a measure of how far our model departs from additivity. We want to see whether interactions are important or unimportant: data visualizations are our key to detect this. 
+
+We've worked with interaction plots before: with one-way ANOVA + Block. While there we were using the interaction plot to check an assumption (that the block and factor don't interact), here we're going to use the interaction plots to explore the factorial structure. This can help us make a decision about whether to fit the full factorial model (main effects and *all* interaction terms) or if we can fit a factorial model that misses some of the interaction terms. I want to note here that at this moment we will operate on an "all-or-none" principle for the levels of an interaction term. That is, we either keep the all levels of an interaction term or we drop all of them. We will not keep some levels of an interaction and drop others.
+
+Remember that what we're looking for is the presence or absence of segment parallelism. In a perfect, ideal world if the segments are perfectly parallel (or laying on top of each other), then there is no interaction. However, we're not in the perfect, ideal world. Thus, we'll look at the general trends of segments and see how they compare. If the segments are orthogonal (perpendicular) to each other, that indicates a strong interaction effect.
+
+### Battery Manufacturing Interaction Plot
+
+Consider the following interaction plot for the Battery Manufacturing study.
+
+```{r}
+#| label: fig-batteryInt
+#| fig-cap: "Interaction Plot for the Battery Manufacturing Study"
+#| fig-alt: "Interaction plot for the battery manufacturing study"
+#| aria-describedy: "batteryIntLD"
+#| echo: true
+# Demo code for making interaction plot ----
+## Battery Manufacturing study
+ggplot(
+  data = batteryData,
+  mapping = aes(
+    x = temperature, # <1>
+    y = life, # <2>
+    shape = material, # <3>
+    color = material, # <3>
+    linetype = material, # <3>
+    group = material # <4>
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) + # <5>
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) + # <5>
+  geom_jitter( # <6>
+    width = 0.1,
+    height = 0.1,
+    alpha = 0.4,
+    size = 1
+  ) + 
+  theme_bw() +
+  labs(
+    x = "Operating Temperature",
+    y = "Life span (hours)",
+    shape = "Plate Material",
+    color = "Plate Material",
+    linetype = "Plate Material"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  )
+  
+```
+1. Set one factor as the horizontal (`x`) aesthetic.
+2. Set your response as the vertical (`y`) aesthetic.
+3. Set the other factor as the shape, line type/style, and color aesthetic(s). You can do any of these; always pair color with one of the others.
+4. You must set the second factor to the `group` aesthetic as this will ensure the calculations are done correctly.
+5. The `stat_summary` will plot the values of the *SAM* within each group for each factor level and connect them with line segments.
+6. The `geom_jitter` is entirely *optional*. This adds the observed values to the plot with some transparency (`alpha = 0.4`). This let us get a sense of the variability of the observations.
+
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=batteryIntLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+From @fig-batteryInt, we can see that there is some interaction between the operating temperature and plate material. For example, going from 15ºF to 70ºF, produced a drop in life span for materials one and two but for plate three there is a slight increase in life span. As we move from room temperature (70ºF) to the high of 125ºF, this time plate material one appears to hold steady in life span while the other two materials experience drops in life span.
+
+#### Your Turn
+
+Create an interaction plot with an accompanying paragraph for the Spoonapults data. When ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+##### Spoonapult Interaction Plot
+The code for the plot appears as part of the Code Appendix under the heading Spoonapult Interaction Plot.
+```{r}
+#| label: fig-spoonapultInt
+#| fig-cap: "Interaction Plot for the Spoonapult Study"
+#| fig-alt: "Interaction plot for the spoonapult study"
+#| aria-describedy: "spoonapultIntLD"
+#| echo: false
+# Spoonapult interaction plot ----
+ggplot(
+  data = spoonapults,
+  mapping = aes(
+    x = Angle, 
+    y = SAM_cm, 
+    shape = Position, 
+    color = Position, 
+    linetype = Position, 
+    group = Position 
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) + 
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) + 
+  geom_jitter( 
+    width = 0.1,
+    height = 0.1,
+    alpha = 0.4,
+    size = 1
+  ) + 
+  theme_bw() +
+  labs(
+    x = "Launch angle",
+    y = "Performance (cm/bear)",
+    shape = "Position",
+    color = "Position",
+    linetype = "Position"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  )
+  
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=spoonapultIntLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+From @fig-spoonapultInt we see that there might be a small interaction effect between the launch angle and launch position, especially for the flat and low angles. This suggests that we should stick with the original plan and fit a full factorial model.
+:::
+
+# Fit the Model
+
+Once we've verified that a factorial ANOVA model is appropriate and made a decision about including interaction terms, we can turn our attention to forming the model in `R`.
+
+:::{.callout-tip}
+## To Keep Interaction Terms or Not
+Generally speaking, there is little harm in keeping interaction terms in the model, even if the interaction plot suggests the interaction effects are minimal. However, there are two things to keep in mind here. First, the interaction term will use up *degrees of freedom*. If you are running low on *degrees of freedom*, you might consider removing superfluous terms from the model. Second, if you are using a model building approach, start with the full factorial model and then you can formally test the interaction effects.
+:::
+
+There are two different ways that you can specify factorial designs in `R`: you can manually type in the main effects and interactions in the order you wish OR you can let `R` fill in all of the terms for you. 
+
+For `R`, to specify a main effect, you simply type the name of the factor in the formula just as we have been doing all semester.
+
+For an interaction, you'll type the names of __all__ main effects involved in the interaction, separating each name with a colon (:). For example, if we wanted the two-way interaction of A and B, we would type `A:B`; for a three-way interaction of A, B, and C, we would type `A:B:C`.
+
+To have `R` automatically fill in all terms, you simply list each main effect and use `*` to separate terms. Thus, typing `y ~ A*B` is the same as `y ~ A + B + A:B`. Notice that in the `formula` argument the `*` symbol can take on multiple meanings: multiplication as in `2*A` and factorial expansion as in `A*B` going to `A + B + A:B`. 
+
+I'll show both approaches here.
+
+```{r}
+#| label: factorialModels
+#| echo: true
+# Demo code for forming the factorial models ----
+## Fitting by hand--Battery Manufacturing Study
+batteryModel <- aov(
+  formula = life ~ temperature + material + temperature:material,
+  data = batteryData
+)
+
+## Letting R handle the expansion--Spoonapult Study
+spoonModel <- aov(
+  formula = SAM_cm ~ Angle*Position,
+  data = spoonapults
+)
+
+```
+
+# Assessing Assumptions
+
+For the parametric shortcut for factorial designs (the ANVOA *F* test), we have the same three assumptions as in the One-way case: Gaussian Residuals, Homoscedasticity, and Independence of Observations. We will assess them in the same ways as we have before.
+
+## Gaussian Residuals
+
+Use a QQ plot like usual.
+
+```{r}
+#| label: fig-batteryQQ
+#| fig-cap: "QQ Plot for Residuals in Battery Manufacturing Study"
+#| fig-alt: "QQ Plot for residuals in battery manufacturing study"
+#| aria-describedby: batteryQQLD
+#| echo: true
+# Demo code for QQ plot ----
+## Battery Manufacturing
+car::qqPlot(
+  x = residuals(batteryModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (hours)"
+)
+
+```
+```{=html}
+<details id=barleyQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2.25 to +2.25 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (hours)” and goes from about –65 to 45 with labels of –60, –40, –20, 0, 20, and 40.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.25, –55) to (+2, +45).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 36 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2.1, –61) while the last point is roughly at (2.1, 42).</li>
+  <li>Most of the points follow the perfect match line with some slight wiggling to either side.</li>
+  <li>The first point is further away from the perfect match line.</li>
+  <li>The last five points curve away from the perfect match line.</li>
+  <li>All of the points are within the confidence envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+There is very little to be concerned about in our QQ plot (@fig-batteryQQ). The value of the *Sample Skewness* of the residuals is `r round(psych::skew(batteryModel$residuals), 2)` while the value of the *Sample Excess Kurtosis* is `r round(psych::kurtosi(batteryModel$residuals), 2)`. Based upon these three elements, I believe we an proceed as if our residuals follow a Gaussian distribution.
+
+### Your Turn
+
+Assess the Gaussian Residuals assumption for the Spoonapults study. Check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Gaussian Spoonapult Residuals?
+Code for the plot may be found in the Code Appendix under the heading Spoonapult QQ Plot.
+```{r}
+#| label: fig-spoonQQ
+#| fig-cap: "QQ Plot for Spoonapult Residuals"
+#| fig-alt: "QQ Plot for Spoonapult Residuals"
+#| aria-describedby: spoonQQLD
+#| echo: false
+# Spoonapult QQ Plot ----
+car::qqPlot(
+  x = residuals(spoonModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (cm/bear)"
+)
+
+```
+```{=html}
+<details id=spoonQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2 to +2 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (cm/bear)” and goes from about –150 to 200 with labels of –150, –50, 0, 50, 100, and 150.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.1, –110) to (+2.1, +110).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 18 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.9, –149) while the last point is roughly at (1.9, 190).</li>
+  <li>Most points in the middle follow the perfect match line.</li>
+  <li>The first four points start below the perfect match line but arc towards it.</li>
+  <li>The last three points are above the perfect match line and arc away from it.</li>
+  <li>Three points are outside of the envelope and another point is one the edge. The rest of the points are inside the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+The QQ plot (@fig-spoonQQ) for the Spoonapult study is somewhat concerning. We have around 16% of the points outside of the 90% confidence envelope. However, we are a balanced design in that each treatment has the same number of replicates; this gives us a little more wiggle room on the assumptions. The value of the *Sample Skewness* of the residuals is `r round(psych::skew(spoonModel$residuals), 2)` while the value of the *Sample Excess Kurtosis* is `r round(psych::kurtosi(spoonModel$residuals), 2)`. Combining the QQ plot with the values of the statistics and knowledge of the study design, I suggest we cautiously proceed with the Gaussian assumption.
+:::
+
+## Homoscedasticity
+
+Much like with Block designs, we will replace the Strip Chart with the more general Tukey-Anscombe plot. This allows us to better incorporate our full model.
+
+```{r}
+#| label: fig-batteryVar
+#| fig-cap: "Tukey-Anscombe Plot for Battery Manufacturing Study"
+#| fig-alt: "Tukey-Anscombe plot for battery manufacturing study"
+#| aria-describedby: "batteryVarLD"
+#| echo: true
+# Demo code for making a Tukey-Anscombe Plot ----
+## Battery Manufacturing Study 
+ggplot(
+  data = data.frame(
+    residuals = residuals(batteryModel),
+    fitted = fitted.values(batteryModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = "loess",
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (hours)",
+    y = "Residuals (hours)"
+  )
+
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=batteryVarLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+The first thing that I notice in the Tukey-Anscombe plot (@fig-batteryVar) is that the fourth strip from the left shows the least amount of variation while the fifth strip (from the left) shows the most. The fifth used more than twice the vertical space as the fourth, however, this is the only aspect that causes me a moment of hesitation. There are no discernible patterns to the plot and the blue reference line is perfectly horizontal indicating that we have [sufficient] homoscedasticity.
+
+### Your Turn
+
+Asses and report your decision on Homoscedasticity for the Spoonapult study. When ready, check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Homoscedasticity in Spoonapult Study?
+Code for the Tukey-Anscombe plot for the Spoonapult study may be found in the Code Appendix under the heading Spoonapult Tukey-Anscombe Plot.
+```{r}
+#| label: fig-spoonVar
+#| fig-cap: "Tukey-Anscombe Plot for Spoonapult Study"
+#| fig-alt: "Tukey-Anscombe plot for spoonapult study"
+#| aria-describedby: "spoonVarLD"
+#| echo: false
+# Spoonauplt Tukey-Anscombe Plot ---- 
+ggplot(
+  data = data.frame(
+    residuals = residuals(spoonModel),
+    fitted = fitted.values(spoonModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = "loess",
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (cm/bear)",
+    y = "Residuals (cm/bear)"
+  )
+
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=batteryVarLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+In @fig-spoonVar, I immediately notice that the second strip from the left uses the most vertical space by far. This strip is more than twice that of the first, fourth, and fifth strips and almost the third strip. The first strip appears to use just over twice the vertical space as the fifth strip. The blue smoother line appears to be perfectly horizontal, suggesting that this is not a pattern to the variation driven by the fitted values (i.e., the model). I feel that we need to be cautious with the homoscedasticity assumption for the Spoonapult study.
+:::
+
+## Independence of Observations
+
+For Independence of Observations, keep in mind that our Go To is to think about the study design. If we happen to know measurement order, then we can make use of an index plot and the DW statistic.
+
+### Battery Manufacturing Study
+
+Unfortunately, we don't know measurement order in the Battery Manufacturing study, so index plots are not going to be useful here. However, we can think through the study design and reach a decision about independent observations.
+
+In this particular case, we know that the application of plate material was randomly assigned to instances of the battery building process and that a set of batteries using each plate material were selected via a random process. Within each of those sets, the engineer assigned an operating temperature to each battery. Taken together, this information does not raise any flags that we have dependent observations based upon the design.
+
+### The Spoonapult Study
+
+Our Spoonapult study is a bit tricky. Our main data frame for analysis (`spoonapults`) does not contain any order information but there is some order information in base data involving individual gummy bears. The catch is that we have multiple "first" gummy bears: one for each treatment within each team. Due to this structuring and the small number of replicates within each treatment-team combo (i.e., 3), I wouldn't use the Durbin-Watson statistic. I *might* look at a more complicated index plot using the raw response values versus the order stratified by team and treatment. However, that plot will be overly complicated and suffer from a limitation of data: three points per configuration. Thus, I doubt the plot will be useful. This leaves the study design as the key.
+
+### Your Turn
+
+Assess the Independence of Observations assumption for the Spoonapult study. Check your answer below.
+
+:::{.callout-note collapse="true"}
+#### Independent Spoonapults? Gummy Bears?
+One of the first things we need to decide is whether Independent Observations refers to the spoonapults or gummy bears. The answer here is we want Independent Observations of our *Unit of Analysis*, thus, spoonapults. As I think about your study design, I do not see any major threats to the independence of the spoonapults.
+:::
+
+## Recapping Assumptions
+
+We will state that all three assumptions are satisfied in the Battery Manufacturing study. For the Spoonapult Study, we need to exercise some caution.
+
+# Omnibus Results
+
+For results, we want to tackle both sets: Omnibus (*F* test, effect sizes, and point estimates) and Post Hoc (pairwise, effect sizes, and/or contrasts).
+
+## ANOVA Table
+
+For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ designs. Thus, we do not need to worry about different types of *Sums of Squares*. However, I'm going to demonstrate how we can switch the types.
+
+```{r}
+#| label: tbl-batteryModel
+#| tbl-cap: "ANOVA Table for Battery Manufacturing Study"
+#| html-table-processing: none
+#| echo: true
+# Omnibus Test/Modern ANOVA Table ---
+## Battery Model
+parameters::model_parameters(
+  model = batteryModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 3, # <1> 
+  drop = "(Intercept)", # <2> 
+  verbose = FALSE # <3> 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 3,
+    row.names = FALSE,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    format.args = list(big.mark = ","), 
+    # caption = "ANOVA Table for Battery Manufacturing Study",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+1. The `type` argument allows us to specify if we want Type `1`, `2`, or `3` SSQs.
+2. Specifying the `type` argument will trigger a test of the *GSAM* (i.e., the "intercept" in regression setting) which is not needed for ANOVA. This line removes that test.
+3. Makes the function "quiet".
+
+
+@tbl-batteryModel gives us a modern ANOVA table for our full factorial in the Battery Manufacturing Study. Unlike for RCBD, we care about all of the rows this time. We interpret the *F*-ratio just as we have done previously. Same goes for the *p*-values. Supposing that we set $UT=0.05$, we still use the *p*-values from the table in the regular way to make decisions between the hypotheses. 
+
+The effect sizes (partial omega/eta/epsilon-squared values) are still proportions of variation in the response explained and we can use the regular Rules of Thumb for qualitative sizing. The biggest catch is to recognize that these aren't *unique* explanations of variance.
+
+In the Battery Manufacturing situation, we would decide to reject the null hypothesis for each of the main effects and for the interaction term. Of these, temperature appears to explain most of the variation in battery life.
+
+### Your Turn
+
+Make the modern ANOVA table for the Spoonapult Study. Write a paragraph to go with the table.
+
+:::{.callout-note collapse="true"}
+#### Spoonapult Omnibus Results
+Code for the table can be found in the Code Appendix under the heading Spoonapult Omnibus ANOVA Table.
+```{r}
+#| label: tbl-spoonModel
+#| tbl-cap: "ANOVA Table for Spoonapult Study"
+#| html-table-processing: none
+#| echo: false
+# Spoonapult Omnibus ANOVA Table ----
+parameters::model_parameters(
+  model = spoonModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 3, 
+  drop = "(Intercept)", 
+  verbose = FALSE  
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 3,
+    row.names = FALSE,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    format.args = list(big.mark = ","), 
+    # caption = "ANOVA Table for Spoonapult Study",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+According to your study design document, you set your overall Type I Error at 5% (0.05) this would mean that your Unusualness Threshold can be no larger that 5%. Based upon the results in @tbl-spoonModel, none of the main effects or interactions are statistically significant. The launch angle potentially explains around 12-15% of the variation in spoonapult performance, which is not much. 
+:::
+
+## Point Estimates
+
+You can get point estimates for your main effects and treatment effects using the `dummy.coef` function. 
+
+```{r}
+#| label: tbl-batteryPE
+#| tbl-cap: "Point Estimates from the Battery Manufacturing Study"
+#| html-table-processing: none
+#| echo: true
+# Demo code for Point Estimates ----
+## Battery Manufacturing Study
+pointEst <- dummy.coef(batteryModel)
+pointEst <- unlist(pointEst)
+names(pointEst) <- c(
+  "Grand Mean",
+  levels(batteryData$temperature),
+  levels(batteryData$material),
+  outer(
+    levels(batteryData$temperature),
+    levels(batteryData$material),
+    FUN = paste,
+    sep = " x "
+  )
+)
+
+data.frame("Estimate" = pointEst) %>%
+  knitr::kable(
+  digits = 2,
+  # caption = "Point Estimates from the Battery Manufacturing Study",
+  booktabs = TRUE,
+  align = "c"
+  ) %>%
+  kableExtra::kable_styling(
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  ) 
+
+```
+
+I will make no claims that @tbl-batteryPE is the most efficient way to present the point estimates. I'll leave how to better parse this table to you.
+
+What I will highlight is that the interpretations of the *GSAM* and the main effects remain consistent with what we've worked with previously. For example, ignoring all factors, our batteries lasted 105.53 times as long as the number of batteries we tested (i.e., the common baseline performance). At 70ºF, the battery's performance was an additional 2.06 hours/battery greater than the common baseline. However, Plate 1 batteries had a reduction of 22.36 hours/battery from baseline.
+
+The interpretation of interaction terms may be thought of as the "differences in differences" for performances or as how much we have to moderate the performance of a group from just the main effects? That is to say, how much does the battery performance change due to the interaction of the two factors. For example, let's consider Plate 1 and 15ºF. The performance for the batteries in this group starts with baseline (105.53 hrs/battery) and gets a bonus for 15ºF (+39.31 hrs/battery). However, this group also has a performance penalty for Plate 1 (-22.36 hrs/battery). However, the interaction of 15ºF and Plate 1 moderates the performance penalty by giving back 12.28 hrs/battery. If we add these rates together, \(105.53+39.31-22.36+12.28\approx `r 105.53+39.31-22.36+12.28`\), which is equal (up to rounding) to the value of the *SAM* we saw for this group in @tbl-statsBattery.
+
+### Your Turn
+
+Get the point estimates for the Spoonapult Study. Give interpretations for the *GSAM*, one level of each main effect, and one interaction level.
+
+# Pairwise Comparisons for Post Hoc Analysis
+
+Post Hoc analysis in (full) factorial designs is a much richer ground. This is due to the fact that we simply have more going on to explore. In fact, we can conceptualize the following kinds of pairwise explorations:
+
++ Pairwise Comparisons of Individual Main Effects
++ Pairwise Comparisons of Conditioned Main Effects
++ Pairwise Comparisons of Interactions
+
+Each of these types of pairwise comparisons allow you to look at different aspects. __However,__ you should specify what you are wanting to explore *prior* to doing your analysis so that you don't accidentally shift perspectives (EDA vs. CDA) and claim your work is for the other.
+
+For all of these approaches, we will make use of the `{emmeans}` package for ease of coding and so that we can be sure to get effect sizes (practical significance).
+
+## Individual Main Effects Pairwise Comparisons
+
+In this type of pairwise comparison, we are focusing on comparing the levels of a single factor (i.e., a main effect), ignoring all other factors in the model. This is equivalent to doing pairwise analysis in One-way ANOVA.
+
+Given that the plate material came up as being an important contributor to how long the battery lasted, we might want to see which plate materials are statistically different from one another. We'll control SCI at 10% via Tukey's HSD.
+
+```{r}
+#| label: tbl-platePostHoc1
+#| tbl-cap: "Post Hoc Comparisons for Main Effect Plate Material"
+#| html-table-processing: none
+#| echo: true
+# Demo code for main effects pairwise comparisons ----
+## Battery Life Example, Plate Material
+platePostHoc <- emmeans::emmeans(
+  object = batteryModel,
+  specs = pairwise ~ material,
+  adjust = "tukey",
+  level = 0.9
+)
+
+knitr::kable(
+  x = platePostHoc$contrasts,
+  digits = 3,
+  # caption = "Post Hoc Comparisons for Main Effect Plate Material",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value"),
+  align = "lccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+
+From @tbl-platePostHoc1, we can see that plate material 1 is statistically different from both plate materials 2 and 3, but plate materials 2 and 3 are not statistically different from each other. Given the order of comparison (the Pair column) and the values of the differences, the data suggest that plate material 1 leads to shorter battery life.
+
+We can add measures of effect size to @tbl-platePostHoc1. In the following example, I'll show how we can get the effect size table, and then join that two the results table.
+
+```{r }
+#| label: tbl-platePostHoc2
+#| tbl-cap: "Post Hoc Comparisons for Main Effect Plate Material"
+#| html-table-processing: none
+#| echo: true
+# Demo code for main effects pairwise with effect sizes ----
+## Battery Life Study, Plate Material
+### Create effect size table
+plateEffects <- as.data.frame(
+  eff_size(
+    object = platePostHoc,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
+  dplyr::mutate( # <1> 
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps)
+
+### Build table
+as.data.frame(platePostHoc$contrasts) %>%
+  left_join(
+    y = plateEffects,
+    by = join_by(contrast == contrast)
+  ) %>%
+  knitr::kable(
+  digits = 3,
+  # caption = "Post Hoc Comparisons for Main Effect Plate Material",
+  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
+                "Prob. of Superiority"),
+  align = "lccccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+
+```
+1. The `eff_size` command places the pairs inside parentheses that we can/should remove.
+
+We still interpret Cohen's *d* and the Probability of Superiority in the same was we did for pairwise comparisons in the One-way case.
+
+## Conditional Main Effects Pairwise Comparisons
+
+In this type of pairwise comparison, we are still wanting to compare the levels of particular factor, but this time we want to incorporate information from another term in the model. That is, we want to make our pairwise comparisons of Factor A's levels when controlling/accounting for the levels of Factor B. These type of pairwise comparison isn't as common as the other two.
+
+For this kind of pairwise comparison, we might pose the question of which plate materials are statistically different from one another when we account for the operating temperature. The `specs` argument to `emmeans` has a crucial change for this type of analysis. After we specify `pairwise ~ material` to indicate that we want to do pairwise comparisons between the levels of the plate material factor, we type `| temperature`. We read the vertical bar (|, a.k.a. "pipe") as "given" and then we list what we want to condition our results by. In this case, the operating temperature factor. For this testing family, we'll arbitrarily choose to control the False Discovery Rate via the Benjamini-Hochberg method at 8%.
+
+```{r}
+#| label: tbl-plateGivenTempPostHoc1
+#| tbl-cap: "Post Hoc Comparisons for Plate Material Conditioned by Temperature"
+#| html-table-processing: none
+#| echo: true
+# Demo code for conditional pairwise comparisons ----
+## Battery Life Example, Plate Material Conditioned on Temp
+plateTempPostHoc <- emmeans::emmeans(
+  object = batteryModel,
+  specs = pairwise ~ material | temperature, # <1> 
+  adjust = "BH",
+  level = 0.92
+)
+
+knitr::kable(
+  x = plateTempPostHoc$contrasts,
+  digits = 3,
+  # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
+  col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value"),
+  align = "llccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position")
+  )
+
+```
+1. Notice the use of the `|`. 
+
+Just as before, we can add on effect size estimates to @tbl-plateGivenTempPostHoc1 as shown in @tbl-plateGivenTempPostHoc2 and the following code.
+
+```{r , echo=TRUE}
+#| label: tbl-plateGivenTempPostHoc2
+#| tbl-cap: "Post Hoc Comparisons for Plate Material Conditioned by Temperature"
+#| html-table-processing: none
+#| echo: true
+# Demo code for conditional pairwise comparisons with effect sizes ----
+## Battery Life Study, Plate Material Conditioned on Temp
+### Create effect size table
+plateTempEffects <- as.data.frame(
+  eff_size(
+    object = plateTempPostHoc,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
+  dplyr::mutate( 
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, temperature, effect.size, ps)
+
+### Build table
+as.data.frame(plateTempPostHoc$contrasts) %>%
+  left_join(
+    y = plateTempEffects,
+    by = join_by(contrast == contrast, temperature == temperature)
+  ) %>%
+  knitr::kable(
+  digits = 3,
+  # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
+  col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value",
+                "Cohen's d", "Prob. of Superiority"),
+  align = "llccccccc",
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  )
+
+```
+
+The biggest thing to keep in mind when you work with this table is that when you talk about the difference between plate material 1 and plate material 2, you need to specify at what operating temperature you're look at. From \@tbl-plateGivenTempPostHoc2, plate material 1 is only statistically different from plate materials 2 and 3 at the 70ºF operating temperature. Notice how this is a more nuanced result than what we saw with just the [unconditional] main effect post hoc analysis.
+
+## Interaction Term Pairwise Comparisons
+
+This last type of pairwise comparison focuses on interaction terms. Generally speaking, when we use this approach we jump straight to the treatment or grouping interaction term. That is, the highest order interaction term in the model that represents are experiment's treatments or what made the groups in a quasi-experiment.
+
+In the Battery Life study, our treatments consisted of a pairing of a plate material and an operating temperature; e.g., plate material 1 and operating temperature of 15ºF. This means that there are nine different treatments which we could compare. From the omnibus results (@tbl-batteryModel), we saw that there is a statistically significant interaction term. Thus, we might want to see which of the treatments are statistically different from each other, beyond what we've already done.
+
+For this example testing family, we'll control SCI at 10% using Tukey's adjustment. For this approach we need to place the interaction term that represents the treatment, i.e., `material:temperature` in the `specs` argument after `pairwise ~`.
+
+```{r }
+#| label: tbl-batteryTrtPostHoc1
+#| tbl-cap: "Post Hoc Comparisons of Battery Study Treatments"
+#| html-table-processing: none
+#| echo: true
+# Demo code for Pairwise Comparison of Interaction Term ----
+## Battery Study, Treatments
+
+## Generate pairwise comparisons
+treatmentPostHoc <- emmeans::emmeans(
+  object = batteryModel,
+  specs = pairwise ~ material:temperature, # notice the interaction
+  ajust = "tukey",
+  level = 0.9
+)
+
+## Generate effect sizes
+treatmentEffects <- as.data.frame(
+  eff_size(
+    object = treatmentPostHoc,
+    sigma = sigma(batteryModel),
+    edf = df.residual(batteryModel)
+  ) 
+) %>%
+  dplyr::mutate( 
+    contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
+    ps = probSup(effect.size),
+    .after = effect.size
+  ) %>%
+  dplyr::select(contrast, effect.size, ps)
+
+## Build table
+as.data.frame(treatmentPostHoc$contrasts) %>%
+  left_join(
+    y = treatmentEffects,
+    by = join_by(contrast == contrast)
+  ) %>%
+  kable(
+    digits = 3,
+    # caption = "Post Hoc Comparisons of Battery Study Treatments",
+    col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value",
+                  "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = c("scale_down")
+  )
+```
+
+Notice that @tbl-batteryTrtPostHoc1 is a rather large table. When working with factorial models, you will want to have care about what you do for Post Hoc analysis. In factorial settings our testing families can grow quite quickly thus we will want to think critically about what we actually want to do for Post Hoc analyses.
+
+# Running Contrasts in Factorial Settings
+
+One way to help limit the size of a testing family for post hoc analysis is to only include those comparisons that you want to test. (The `{emmeans}` package generates a warning message to this effect when you run the above commands for the treatment pairwise comparisons.)
+
+The method for doing contrasts in factorial settings is the same as in the One-way setting. However, I strongly recommend that you use the `{emmeans}` package as opposed to other methods so that you can make full use of the factorial model.
+
+## Contrasts on Main Effect
+
+Let's do a contrast on plate materials where we compare plate material 1 to the set of plate materials 2 and 3.
+
+```{r}
+#| label: tbl-batteryContrast1
+#| tbl-cap: "Battery Life Main Effects Contrast on Plate Material"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for main effects contrasts ----
+## Get the appropriate means from the model
+plateMeans <- emmeans::emmeans(
+  object = batteryModel,
+  specs = ~ material # <1> 
+)
+
+# plateMeans # <2> 
+
+## Apply the contrasts
+plateContrasts1 <- emmeans::contrast(
+  object = plateMeans, # <3> 
+  method = list(
+    "Plate 1 vs. Plates 2 & 3" = c(1, -1/2, -1/2)
+  ),
+  adjust = "none" # <4> 
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(plateContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, 
+    ps = probSup(cohen)
+  ) %>%
+  kable(
+    digits = 3,
+    # caption = "Battery Life Main Effects Contrast on Plate Material",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  ) 
+```
+1. Nothing goes on the left of `~`; list what term you want to build a contrast of main effects for.
+2. Look at the raw output object to double check the order of levels before proceeding with adapting the rest of the code.
+3. Notice that this is the means object, not the ANOVA model.
+4. Remember that if your testing family only has one member, we don't need any MC/SI adjustments.
+
+All of our interpretations for the elements in @tbl-batteryContrast1 are the same we have previously worked with.
+
+## Contrasts on Treatments
+
+We can also run contrasts on our treatments. This includes pairwise comparisons, thus we can do a subset instead of doing all of the ${9\choose2} = 36$. The following code shows how we might apply this approach.
+
+```{r , echo=TRUE}
+#| label: tbl-batteryContrast2
+#| tbl-cap: "Treatment Contrasts for Battery Study--Bonferroni Adjusted"
+# Demo Code for main effects contrasts ----
+## Get the appropriate means from the model
+treatmentMeans <- emmeans::emmeans(
+  object = batteryModel,
+  specs = ~ material:temperature
+)
+
+# treatmentMeans # <1> 
+
+## Apply the contrasts
+treatmentContrasts1 <- emmeans::contrast(
+  object = treatmentMeans, # <2> 
+  method = list(
+    "Plate 1 at 15ºF vs. Plate 2 at 70ºF" = c(1,0,0,0,-1,0,0,0,0),
+    "Plate 1 vs Plates 2 & 3, all at 70ºF" = c(0,0,0,1,-1/2,-1/2,0,0,0),
+    "Plate 1-all temps vs. Plate 2-all temps" = c(1/3,-1/3,0,1/3,-1/3,0,1/3,-1/3,0)
+  ),
+  adjust = "bonferroni"
+)
+
+## Add effect sizes and make a nice looking table
+as.data.frame(treatmentContrasts1) %>%
+  dplyr::mutate(
+    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d,
+    ps = probSup(cohen)
+  ) %>%
+  kable(
+    digits = 3,
+    # caption = "Treatment Contrasts for Battery Study--Bonferroni Adjusted",
+    col.names = c("Contrast", "Difference", "SE", "DF", "t Statistic",
+                  "p-value", "Cohen's d", "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("HOLD_position", "scale_down")
+  )
+
+```
+1. Be sure to look at the output so you can build your weight vectors appropriately.
+2. Notice that this is the means object.
+
+# Imbalanced Designs
+
+As mentioned in class, when you have imbalanced designs for factorial models, we have to make a decision about which type of Sums of Squares we want to use.
+
+## Different Types of Sums of Squares
+
+We have three types of Sums of Squares. Keep in mind that the default is Type I for the `aov` call. Most often in Factorial ANOVA settings, we are interested in Type II (model building--watch out of important interaction terms) and Type III (for testing differences among factor levels).
+
+For all of these we can use the `type` argument of the `model_parameters` function that we use for our modern ANOVA tables.
+
+## Quick Example
+
+For this example, I'm going to use a data set collected for the purpose of exploring the effects of different training methods (fixed, 2 levels) and energy drinks (fixed, 2 levels) on the time to run around a particular track.
+
+Look at how the various values change across the tables.
+
+```{r}
+#| label: runningData
+#| echo: true
+# Demo Code of Imbalanced Designs
+# Load Running Data
+running <- read.table(
+  file = "http://stat.ethz.ch/~meier/teaching/data/running.dat", 
+  header = TRUE
+)
+
+running$method <- as.factor(running$method)
+running$drink <- as.factor(running$drink)
+
+# Fit the anova model--same as usual
+runningModel <- aov(
+  formula = y ~ method*drink, # R interprets this as y ~ method + drink + method:drink
+  data = running
+)
+
+```
+
+```{r}
+#| label: tbl-runningType1
+#| tbl-cap: "ANOVA Table for Running-Type I SSQs"
+#| html-table-processing: none
+#| echo: true
+# Demo Code
+# Type I SSQs
+parameters::model_parameters(
+  model = runningModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 1, # Type I SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
+    # caption = "ANOVA Table for Running-Type I SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+```{r}
+#| label: tbl-runningType2
+#| tbl-cap: "ANOVA Table for Running-Type II SSQs"
+#| html-table-processing: none
+#| echo: true
+# Demo Code
+# Type II SSQs
+parameters::model_parameters(
+  model = runningModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 2, # Type II SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
+    # caption = "ANOVA Table for Running-Type II SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+
+```{r}
+#| label: tbl-runningType3
+#| tbl-cap: "ANOVA Table for Running-Type III SSQs"
+#| html-table-processing: none
+#| echo: true
+# Demo Code
+# Type III SSQs
+parameters::model_parameters(
+  model = runningModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 3, # Type III SSQs
+  drop = "(Intercept)", 
+  verbose = FALSE 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 4,
+    row.names = FALSE,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Omega Sq.", "Partial Eta Sq.",
+                  "Partial Epsilon Sq."),
+    # caption = "ANOVA Table for Running-Type III SSQs",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+
+```
+
+Notice how the various corresponding values in @tbl-runningType1, @tbl-runningType2, and @tbl-runningType3 change for our main effects (training method and drink type). While in this example we would be hard pressed to make different decisions about statistical significance, this will not always be the case. There are situations out there where you'll end up making different decisions based upon which type of Sums of Squares you use. Thus, you want to think carefully about what is most appropriate in your current context.
+
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```

@@ -1,0 +1,524 @@
+---
+title: "Analyzing the Fall 2024 Spoonapults Study"
+subtitle: "Partially Balanced Incomplete Block Design"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+In this guide, I'll give an overview of analyzing your spoonapult data using a partially balanced incomplete block design (PBIBD). 
+
+:::{.callout-note}
+I'm going to hide the code for many of the visualizations. However, all of the code will be listed in the Code Appendix.
+
+:::
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, `{DescTols}`, and `{openxlsx}`. 
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
+              "car", "psych", "parameters", "emmeans", "DescTools", "openxlsx")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+# Custom Color Palette ----
+psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+
+```
+
+## Load Data
+
+This data comes from the study that the Fall 2024 Stat 461 class designed to investigate the impact of launch angle and position on how far a spoonapult will fling a gummy bear. For this guide, we will focus on the design as being a full two-way ANOVA; in a separate document I'll show the Partially Balanced Incomplete Block design approach for these data.
+
+We can access and clean the data through the following code (shared in the F24_Spoonapults_StarterCode.R file):
+
+```{r }
+#| label: loadData1
+#| echo: true
+# Load Original Data ----
+bears <- openxlsx::readWorkbook(
+  xlsxFile = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/gummyBears_Fall2024.xlsx",
+  sheet = 1,
+  colNames = TRUE,
+  rowNames = FALSE
+)
+
+## Clean Original Data ----
+bears <- bears %>%
+  mutate(
+    Team = str_to_sentence(Team), # <1>
+    Angle = str_trim(str_to_sentence(Angle)), # <2>
+    Position = str_trim(str_to_sentence(Position)) # <2>
+  ) %>%
+  mutate( # <3>
+    Position = case_when(
+      Position == "Friont" ~ "Front",
+      .default = Position
+    ) 
+  ) %>%
+  mutate(
+    Team = as.factor(Team), # <4>
+    Angle = factor(Angle, levels = c("Flat", "Low", "High")), # <4>
+    Position = as.factor(Position), # <4>
+    Spoonapult = as.character(Spoonapult), # <5>
+    Bear = as.character(Bear) # <5>
+  )
+
+# Create Experimental Unit Data Frame ----
+spoonapults <- bears %>%
+  group_by(Team, Angle, Position, Spoonapult) %>%
+  summarize( # <6>
+    SAM_in = mean(Distance_in),
+    Med_in = median(Distance_in),
+    SAM_cm = mean(Distance_cm),
+    Med_cm = mean(Distance_cm),
+    .groups = "drop"
+  )
+
+```
+1. Standardize Team Names.
+2. Fix inconsistent formatting of levels for both factors.
+3. Fix misspelled front position.
+4. Set factors and block as factor data type.
+5. Set id columns to character data type.
+6. This code allows us to focus on using the experimental units as our units of analysis.
+
+Keep in mind that by "following the random assignment", we can make the determination that our unit of analysis should be the spoonapults and not the individual gummy bears. The last bit of the data wrangling code does this by creating a new *response* for our spoonapults out of the response we measured. This can either be the spoonapult's performance (via the *SAM*) or the spoonapult's middle launched distance (via the *Sample Median*). We can use either in our analysis; the choice is yours. 
+
+From this point, we will use the `spoonaults` data frame, not the `bears` data frame.
+
+# Checking the Appropriateness of Factorial Design
+
+As we have been doing since Unit 3, checking for whether ANOVA methods are appropriate for answering our SRQ comes down to the following:
+
++ Do we have a quantitative response?
++ Do we have two or more categorical/qualitative factors? (If only one, then we're not factorial ANOVA.)
++ Do we have enough *Degrees of Freedom* to be able to estimate the Main Effects and Interactions?
++ Do we have enough *Degrees of Freedom* for estimating residuals/errors?
++ Do we have an additive model *up to interaction terms*?
+
+As before, our knowledge of the study design and the Hasse diagram can help us out.
+
+We know that the response is quantitative (spoonapult launch performance). From the Hasse diagram, we have two categorical factors: (launch) angle and (launch) position. We are doing a full factorial structure (we have all possible interactions). However, we also have a a block term, Team, now in our model. This creates an additional node in our Hasse diagram (@fig-spoonapultHD) that was not present in the [Factorial Guide](https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.FactorialDesigns.html). Just as before, we have positive *Degrees of Freedom* for each node in the Hasse diagram, we know that we should be able to estimate all main effects, interactions, and the residuals/errors.
+
+```{r}
+#| label: fig-spoonapultHD
+#| fig-cap: "Hasse Diagram for Spoonapult Study"
+#| fig-alt: "Hasse diagram for Spoonapult study"
+#| aria-describedby: "spoonapultHDLD"
+#| fig-height: 3
+
+## Hasse Diagram For Spoonapults ----
+modelLabels <- c("1 Throw Bears 1", "6 Team 5", "3 Angle 2", "2 Position 1",
+                 "6 Angle x Position 2", "18 (Spoonapults) 7")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+           TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+           TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+           TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+           TRUE, FALSE, TRUE, TRUE, FALSE, FALSE,
+           TRUE, TRUE, TRUE, TRUE, TRUE, FALSE),
+  nrow = 6,
+  ncol = 6,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=spoonapultHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Throw Bears 1".</p>
+  <p>the second node is at the left of the second level and says "6 Team 5". This node only connects to the first and last nodes.</p>
+  <p>The third node is in the middle of the second level and says "3 Angle 2".</p>
+  <p>The fourth node is to the right of the second level and says "2 Position 1".</p>
+  <p>The fifth node on the third level and says "6 Angle x Position 2". This node is connected to the Angle and Position nodes of the prior level.</p>
+  <p>The sixth and final node is on the lowest level and says "18 (Spoonapults) 12".</p>
+</details>
+```
+
+The presence of a node in the second level that only connects to the first and last nodes is a sign that that node represents a block. Further, we know from the design that each team (i.e., our blocks) only have three units within them, $k=3$. We also know that there are six treatments ($g=6$). Since we have fewer units in each block than treatments ($k<g$), we know that we must have an incomplete block design.
+
+Fortunately, the way in which you designed your study satisfies some of the conditions for incomplete block designs. Namely, that you planned for three replicates for each treatment ($r=3$) and planned on having six teams ($b=6$). This would give you a total sample size of $N=18$, which satisfies the following equation: $N=kb=rg$. For your study, $18=3*6=3*6$. I stepped in to use a *cyclic design* to construct the partially incomplete block design for you.
+
+# Fitting the Model
+
+To fit the ANOVA model for our PBIBD, we use the `aov` function just as we have in past. The catch here is that we'll need to have both the block term and the factorial structure in the formula statement.
+
+```{r}
+#| label: fitModel
+#| echo: true
+# Demo Code for Fitting PBIBD Model ----
+## Spoonapult Study
+spoonModel <- aov(
+  formula = SAM_cm ~ Team + Angle*Position,
+  data = spoonapults
+)
+
+```
+
+# Check Assumptions
+
+Just as with our other models, when we go to take the inference step, we need to assess the assumptions we make for our inference approach. As we are using a parametric shortcut, we have the core assumptions to check. Since we also have a block, we need to make sure that the block doesn't interact with our factors.
+
+## Gaussian Residuals
+
+The QQ plot (@fig-spoonQQ) for the PBIBD Spoonapult study looks good. None of the points are beyond the 90% confidence envelope and most points are around the line of perfect matching. The value of the *Sample Skewness* of the residuals is `r round(psych::skew(spoonModel$residuals), 2)` while the value of the *Sample Excess Kurtosis* is `r round(psych::kurtosi(spoonModel$residuals), 2)`. Combining these values with the QQ plot, I would say that this assumption is satisfied.
+
+```{r}
+#| label: fig-spoonQQ
+#| fig-cap: "QQ Plot for Spoonapult Residuals"
+#| fig-alt: "QQ Plot for Spoonapult Residuals"
+#| aria-describedby: spoonQQLD
+#| echo: false
+# Spoonapult QQ Plot ----
+car::qqPlot(
+  x = residuals(spoonModel), 
+  distribution = "norm",
+  envelope = 0.90,
+  id = FALSE,
+  pch = 20,
+  ylab = "Residuals (cm/bear)"
+)
+
+```
+```{=html}
+<details id=spoonQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2 to +2 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (cm/bear)” and goes from about –100 to 140 with labels of –50, 0, 50, and 100.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–1.4, –90) to (+2.05, +110).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 18 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.9, –37) while the last point is roughly at (1.9, 120).</li>
+  <li>The vast majority of the points follow the perfect match line.</li>
+  <li>The fourth and third points from the end bulge above the perfect match line but remain in the envelope.</li>
+  <li>All points are inside the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
+## Homoscedasticity
+
+In @fig-spoonVar, I first notice that the LOESS curve (i.e., the blue curve) looks like a downward opening parabola. This suggests that there is a pattern to the variation of the residuals related to our model. This makes me question whether we have homoscedasticity.
+
+```{r}
+#| label: fig-spoonVar
+#| fig-cap: "Tukey-Anscombe Plot for Spoonapult Study"
+#| fig-alt: "Tukey-Anscombe plot for spoonapult study"
+#| aria-describedby: "spoonVarLD"
+#| echo: false
+# Spoonauplt Tukey-Anscombe Plot ---- 
+ggplot(
+  data = data.frame(
+    residuals = residuals(spoonModel),
+    fitted = fitted.values(spoonModel)
+  ),
+  mapping = aes(x = fitted, y = residuals)
+) +
+  geom_point(size = 2) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "grey50"
+  ) +
+  geom_smooth(
+    formula = y ~ x,
+    method = "loess",
+    method.args = list(degree = 1),
+    se = FALSE,
+    linewidth = 0.5
+  ) +
+  theme_bw() +
+  labs(
+    x = "Fitted values (cm/bear)",
+    y = "Residuals (cm/bear)"
+  )
+
+```
+```{=html}
+<details id=spoonVarLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled "Fitted values (cm/bear)", and goes from about 180 to 475 with labels of 200, 300, and 400.</p>
+  <p>The vertical axis is labelled "Residuals (cm/bear)", and goes from about -80 to 130 with labels of -50, 0, 50, and 100.</p>
+  <p>The plot has three elements.</p>
+  <ul>
+  <li>There is a dashed grey line stretching the full way across the graph at a residual value of 0.</li>
+  <li>There is a set of 18 points.</li>
+  <ul>
+  <li>The points are not arranged in strips. Rather the points are spaced throughout the plot with 9 points below the dashed line and 9 points above.</li>
+  <li>The points below the dashed line are mostly to the outer edges of the horizontal axis; that is, fitted values under 250 or at least 390.</li>
+  <li>The points above the dashed line are mostly in the inner portion of the horizontal axis; that is, fitted values between 250 and 390.</li>
+  </ul>
+  <li>There is a solid, blue loess curve. The curve is shaped like a parabola that opens down. </li>
+  </ul>
+</details>
+```
+
+## Independence of Observations
+
+As mentioned in the [Factorial Guide](https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.FactorialDesigns.html), I don't see any obvious threats to the independence of the spoonapults, especially between teams (blocks). Within each block, there might be some threats we might need to consider. For example, did only one person make each spoonapult within a team? Did only one person fire the spoonapults? These might introduce a lurking confounder that jeopardize the independence of observations.
+
+## No Interaction Between Block and Factors
+
+As we have a block (team), we need to make sure that there is no interaction between the block and the factors. This can be a bit more complicated than what is shown in the [Block Guide](https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.Blocks.html) as we have the incomplete nature to deal with.
+
+One approach that we could take is to start with the interaction plot for our two factors and incorporate the block. @fig-spoonapultInt does this by using the block (i.e., Team) to facet the plot and make a 2 by 3 grid of interaction plots, one for each team. An important thing to keep in mind here is that since each team only had one spoonapult for each treatment, the values of the *SAM* are just the response values for the units of analysis.
+
+```{r}
+#| label: fig-spoonapultInt
+#| fig-cap: "Interaction Plot for the Spoonapult Study"
+#| fig-alt: "Interaction plot for the spoonapult study"
+#| aria-describedy: "spoonapultIntLD"
+#| echo: false
+# Spoonapult interaction plot ----
+ggplot(
+  data = spoonapults,
+  mapping = aes(
+    x = Angle, 
+    y = SAM_cm, 
+    shape = Position, 
+    color = Position, 
+    linetype = Position, 
+    group = Position 
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) + 
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) + 
+  theme_bw() +
+  labs(
+    x = "Launch angle",
+    y = "Performance (cm/bear)",
+    shape = "Position",
+    color = "Position",
+    linetype = "Position"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  ) +
+  facet_wrap(facets = vars(Team), nrow = 2)
+  
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=spoonapultIntLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+Something that strikes me when I look at @fig-spoonapultInt, is that Teams Bear and Eland appear to behave differently than the other teams. Team Bear had two back positions but noticed a decrease in performance when moving from flat to low. Teams Dormouse and Fox saw increased performance when they increased the launch angle for back positions. Team Eland saw an increase in performance when moving from flat to high launch angles in the front position while Teams Alpaca and Crab saw decreases. This makes me concerned that our block is interacting with our factors.
+
+We can also look for potential interactions one factor at a time. @fig-IntTeamAngle shows the interaction plot for team and launch angle. Keep in mind that three teams had all three launch angles and three teams only had two launch angles. I see three distinct sets of trends in the data. For Teams Alpaca and Crab, performance decreased with increases in launch angle. For Teams Eland and Fox, performance increased with increases in launch angle. For Teams Bear and Dormouse, performance decreased when going from flat to low angle and then increased when going from low to high.
+
+```{r}
+#| label: fig-IntTeamAngle
+#| fig-cap: "Interaction Plot for Team and Launch Angle"
+#| fig-alt: "Interaction plot for team and launch angle"
+#| aria-describedy: "intTeamAngleLD"
+#| echo: false
+# Spoonapult interaction plot ----
+ggplot(
+  data = spoonapults,
+  mapping = aes(
+    x = Angle, 
+    y = SAM_cm, 
+    shape = Team, 
+    color = Team, 
+    linetype = Team, 
+    group = Team 
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) + 
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) + 
+  theme_bw() +
+  labs(
+    x = "Launch angle",
+    y = "Performance (cm/bear)",
+    shape = "Team",
+    color = "Team",
+    linetype = "Team"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  ) 
+  
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=intTeamAngleLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+@fig-IntTeamPos shows the interaction between team and launch position. Here, all groups had at least one of each position. There are two trends I notice in @fig-IntTeamPos. Teams Crab, Dormouse, and Fox all saw decreased performance when moving from back to front positions. Teams Alpaca, Bear, and Eland saw just the opposite: increased performance when moving from bakc to front positions.
+
+```{r}
+#| label: fig-IntTeamPos
+#| fig-cap: "Interaction Plot for Team and Launch Position"
+#| fig-alt: "Interaction plot for team and launch position"
+#| aria-describedy: "intTeamPosLD"
+#| echo: false
+# Spoonapult interaction plot ----
+ggplot(
+  data = spoonapults,
+  mapping = aes(
+    x = Position, 
+    y = SAM_cm, 
+    shape = Team, 
+    color = Team, 
+    linetype = Team, 
+    group = Team 
+  )
+) +
+  stat_summary(fun = "mean", geom = "point", size = 3) + 
+  stat_summary(fun = "mean", geom = "line", linewidth = 1) + 
+  theme_bw() +
+  labs(
+    x = "Launch position",
+    y = "Performance (cm/bear)",
+    shape = "Team",
+    color = "Team",
+    linetype = "Team"
+  ) +
+  scale_color_manual(values = psuPalette) +
+  theme(
+    legend.position = "bottom",
+    text = element_text(size = 12)
+  ) 
+  
+```
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+```{=html}
+<details id=intTeamPosLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+Given these plots, I believe that we do not satisfy the assumption that the block and our factors don't interact. Rather, I believe that there is some potentially serious interactions happening.
+
+Generally, this means that we would need to shift our model away from the PBIBD towards something else. Given the limited sample size, we might want to look at a fractional factorial design. We might consider whether to drop the interaction of angle and position or even collapse angle and position into a single factor (similar to what happened in the Fruit Fly Study of HW #3.2).
+
+# Omnibus Results
+
+:::{.callout-important}
+In what follows I'm going to show the key steps for doing the omnibus tests for a PBIBD using the spoonapult data. However, keep in mind that that we've already established that the assumptions are not satisfied. Thus, we __*should not*__ consider any results from these analysis to be trustworthy.
+:::
+
+Whenever we work with incomplete block designs (balanced or partially balanced), we need to make sure that any tests of main effects or interactions are adjusted for the block. The easiest approach for that is to make sure that we use Type III Sums of Squares (a.k.a. fully adjusted sums of squares). In R, the `aov` defaults to Type I (sequential) Sums of Squares. However, as we saw in the [Factorial Guide](https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.FactorialDesigns.html), we can use an argument of the `model_parameters` function from the `{parameters}` package to switch which type of Sums of Squares gets used. The following code demonstrates this and creates the professional looking ANOVA table.
+
+```{r}
+#| label: tbl-spoonModel
+#| tbl-cap: "ANOVA Table for Spoonapult Study (PBIBD)"
+#| html-table-processing: none
+#| echo: true
+# Omnibus Test/Modern ANOVA Table ---
+## Spoonapult Model
+parameters::model_parameters(
+  model = spoonModel,
+  es_type = c("eta", "omega", "epsilon"),
+  type = 3, # <1> 
+  drop = "(Intercept)", # <2> 
+  verbose = FALSE # <3> 
+) %>%
+  dplyr::mutate(
+    p = ifelse(
+      test = is.na(p),
+      yes = NA,
+      no = pvalRound(p)
+    )
+  ) %>%
+  knitr::kable(
+    digits = 3,
+    row.names = FALSE,
+    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    format.args = list(big.mark = ","), 
+    # caption = "ANOVA Table for Spoonapult Study (PBIBD)",
+    align = c('l',rep('c',8)),
+    booktab = TRUE
+  ) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    font_size = 12,
+    latex_options = c("scale_down", "HOLD_position")
+  )
+
+```
+1. The `type` argument allows us to specify if we want Type `1`, `2`, or `3` SSQs.
+2. Specifying the `type` argument will trigger a test of the *GSAM* (i.e., the "intercept" in regression setting) which is not needed for ANOVA. This line removes that test.
+3. Makes the function "quiet" by preventing a bunch of extra messages getting printed (useful when working in a RMD/QMD).
+
+Using your overall Type I Error Rate as your Unusualness Threshold, we will decide to fail to reject all three null hypotheses for the Spoonapult study (see @tbl-spoonModel). This means that we'll decide to act as if launch angle and launch position have no impact on a spoonapult's performance, either separately or in combination.
+
+# Challenge: Study Post-mortem
+
+I want each of you to think critically about the class' Spoonapult study and discuss with *multiple* classmates what might have gone wrong. Why did launch position have essentially no impact on the performance of spoonapults? What kind of impact should launch angle have had? What might have happened to lead to the interaction between team and the factors? What might need to be done the next time through?
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
