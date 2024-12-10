@@ -329,10 +329,10 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "def
       guide = guide_axis(angle = 45)
     )
 
-  if (palette == "boast") {
+  if (colors == "boast") {
     plot <- plot +
-      scale_color_manual(values = boastPalette)
-  } else if (palette == "psu") {
+      scale_color_manual(values = boastUtils::boastPalette)
+  } else if (colors == "psu") {
     plot <- plot +
       scale_color_manual(values = psuPalette)
   }
