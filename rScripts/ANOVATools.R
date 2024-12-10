@@ -263,17 +263,10 @@ anovaFixer <- function(aov.obj, fixed, random, type = "unrestricted"){
 ## Make a plot of pairwise comparisons of treatments for each subject
 sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "default"){
   require(tidyverse)
-  if (colors == "boast" | colors == "psu") {
-    if ("boastUtils" %in% installed.packages()[,"Package"]) {
-      require(boastUtils)
-      palette <- colors
-    } else {
-      warning("boastUtils package not installed; changing colors to default")
-      palette <- "default"
-    }
-  } else {
-    palette <- colors
-  }
+  psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                  "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+  boastPalette <- c("#0072B2", "#D55E00", "#009E73", "#AA4499",
+                    "#56B4E9", "#E69F00", "#CC79A7", "#000000", "#999999")
 
   if (!is.null(colsIgnore)) {
     dataWide <- dataWide %>%
@@ -338,10 +331,10 @@ sphericityPlot <- function(dataWide, subjectID, colsIgnore = NULL, colors = "def
 
   if (palette == "boast") {
     plot <- plot +
-      scale_color_manual(values = boastUtils::boastPalette)
+      scale_color_manual(values = boastPalette)
   } else if (palette == "psu") {
     plot <- plot +
-      scale_color_manual(values = boastUtils::psuPalette)
+      scale_color_manual(values = psuPalette)
   }
 
   return(plot)
