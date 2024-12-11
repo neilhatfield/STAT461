@@ -195,6 +195,17 @@ hasseDiagram::hasse(
 
 ```
 
+```{=html}
+<details id=beerHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has four nodes in three levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Judge Beer 1".</p>
+  <p>The second node is to the left of the second level and says "6 (Judge) 5".</p>
+  <p>The third node is to the right of the second level and says "4 Beer 3".</p>
+  <p>The fourth and final node is on the lowest level and says "24 (Observation) 15".</p>
+</details>
+```
+
 In looking at the Hasse diagram (@fig-beerHD), we can see that we have sufficient *degrees of freedom* to estimate all effects and residuals/errors. From the design we know that we have a continuous response (beer rating) as well as a categorical factor (the beer). We are also using the same judges for each beer (i.e., our "subjects"), thus we are in a Within Subjects Repeated Measures design. (We also have an additive model.)
 
 ## Prepare the Data
@@ -318,6 +329,26 @@ car::qqPlot(
 ```
 1. Notice that we are using the residuals from the `beerMixed` model we constructed using the `{lme4}` package.
 
+```{=html}
+<details id=beerQQResLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2.1 to +2.1 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (score)” and goes from about –3 to 4.5 with labels of –2, 0, 2, and 4.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.05, –3) to (+2.1, +4.5).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 24 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2, –2.9) while the last point is roughly at (2.01, 4.25).</li>
+  <li>The points form a squiggle that tends to be below the line of perfect match.</li>
+  <li>Only five points are above the perfect match line.</li>
+  <li>There are three points clearly outside of the envelope (below) with two more points on the lower edge. The remaining points are inside the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
 While there are roughly three points outside of the envelope (see @fig-beerQQRes), this is only about 12% of the observations. I would supplement this plot with the values of the *Sample Skewness* (`r round(skew(residuals(beerMixed)), 2)`) and *Sample Excess Kurtosis* (`r round(kurtosi(residuals(beerMixed)), 2)`) to help make my final decision. However, I would lean towards treating this assumption as satisfied.
 
 ### Gaussian Subject Effects
@@ -350,6 +381,25 @@ car::qqPlot(
 1. While the code here looks a bit complicated all this does is extract the list of effects for each subject (judge) and turns them from a list into a vector.
 2. Notice that we again us the *random effects* model for checking the assumption.
 3. The `whichel` argument allows us to select which *effect levels* we want to extract; this is especially useful when we have multiple random effects.
+
+```{=html}
+<details id=beerSubQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –1.8 to +1.8 with labels of –1, –0.5, 0, 0.5, and 1.</p>
+  <p>The vertical axis is labelled “Judge Effects” and goes from about –9 to 11 with labels of –5, 0, 5, and 10.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–1.8, –9) to (+1.8, +7).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 6 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.4, –8.5) while the last point is roughly at (1.4, 10.5).</li>
+  <li>There is one point below, two essentially on, and three points above the line of perfect match.</li>
+  <li>All points are in the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
 
 Getting the values of *Sample Skewness* and *Sample Excess Kurtosis* are bit more complicated than usual, but we just need to go through the step of extracting the vector of effects as shown in the code for the QQ plot.
 
@@ -404,16 +454,42 @@ ggplot(
   ) +
   geom_smooth(
     formula = y ~ x,
-    method = stats::loess,
+    method = "loess",
     method.args = list(degree = 1),
     se = FALSE,
     linewidth = 0.5
   ) +
   theme_bw() +
-  xlab("Fitted values (score)") +
-  ylab("Residuals (score)")
+  labs(
+    x = "Fitted values (score)",
+    y = "Residuals (score)"
+  )
 
 ```
+
+```{=html}
+<details id=beerTALD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Fitted values (score)” and goes from about 39 to 79 with labels of 40, 50, 60, and 70.</p>
+  <p>The vertical axis is labelled “Residuals (score)” and goes from about –4 to 5 with labels of –2, 0, 2, and 4.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 24 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are visually 8 points above and 14 points below the dashed line.</li>
+  <li>Most points lie between 50 and 70 for fitted value and -2 and +2 for residual value.</li>
+  <li>The points appear to start with lower residual values which then increase as fitted value increases towards 60. At a fitted value of 60 the residaul values begin to decrease.</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (41, -1.9) curves up to (59, 0.9), crossing the dashed line at (53, 0).</li>
+  <li>The curve decreases from (59, 0.9) to (78, -1.75), crossing the dashed line at (68, 0).</li>
+  </ul>
+  </ul>
+</details>
+```
+
 
 In looking at @fig-beerTA, I'm a little concerned about heteroscedasticity. Further investigation would be useful.
 
@@ -465,6 +541,22 @@ ggplot(
 
 ```
 
+```{=html}
+<details id=beerDotLD>
+  <summary>Long Description</summary>
+    <p>The plot contains four dot plots stacked one on top of the others. The plots are labelled, from top to bottom, "Barnstormer", "Craftsman", "King Richard Red", and "Red Mo".</p>
+  <p>For all dot plots, the horizontal axis is labelled “Residual (score)” and goes from about -4 to 5 with labels of -2, 0, 2, and 4.</p>
+  <p>The vertical axis is not formally used in dot plots; dots get stacked on top of each other if they have the same value.</p>
+  <p>Each dot plot contains six points.</p>
+  <ul>
+  <li>For Barnstormer, the points are at -3.36, -3.24, -0.87, 1.22, 1.76, and 4.49.</li>
+  <li>For Craftsman, the points are at -2.18, -0.45, -0.03, 0.1, 0.1, and 2.46.</li>
+  <li>For King Richard Red, the points are at -1.36, -0.87, -0.78, -0.51, 1.76, and 1.76.</li>
+  <li>For Red Mo, the points are at -3.24, -0.87, -0.78, -0.51, 1.76, and 3.64.</li>
+  </ul>
+</details>
+```
+
 As we look at @fig-beerDot, we can see that we're right on the cusp of a potential issue. The variation (as spread) for the King Richard Red is just under half of that of the Barnstormer. The narrowing of King Richard Red and of Craftsman could explain the parabolic shape in the Tukey-Anscombe plot (@fig-beerTA). With this information, I'm now less concerned about homoscedasticity being violated.
 
 ### Independence of Subjects
@@ -480,7 +572,7 @@ Keep in mind that there are essentially __*two*__ measurement orders that we hav
 
 Since we are treating each subject as their own block, we will need to make sure that there isn't an interaction between the subjects and the factor. For the Beer Judging study, this means that we will want to examine an interaction plot to look for consistency between the judges and the beers.
 
-```{r beerInteraction, echo=TRUE}
+```{r}
 #| label: fig-beerInteraction
 #| fig-cap: "Interaction Plot for Beer and Judge"
 #| fig-alt: "Interaction plot between beer and judge for the beer judging study"
@@ -515,6 +607,22 @@ ggplot(
 
 ```
 
+```{=html}
+<details id=beerInteractionLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Judge" and has labels A, B, C, D, E, and F.</p>
+  <p>The vertical axis is labelled "Score" and goes from 35 to 77 with labels 40, 50, 60, and 70.</p>
+  <p>Beer controls the shape, line type, and color of points and lines in the plot.</p>
+  <p>The plot contains two sets of elements (points and lines) grouped by the four levels of beer.</p>
+  <ul>
+  <li>The Barnstormer beer has six dark blue circles with a solid blue line connecting them at (A, 50), (B, 38), (C, 45), (D, 65), (E, 55) and (F, 48).</li>
+  <li>The Craftsman beer has six red triangles connected by dashed lines at (A, 70), (B, 58), (C, 60), (D, 75), (E, 70) and (F, 68).</li>
+  <li>The King Richard Red beer has six teal squares connected by long-dashed lines at (A, 70), (B, 60), (C, 58), (D, 75), (E, 65) and (F, 63).</li>
+  <li>The Red Mo beer has six golden plus-signs connected by long-dash, long-gapped lines at 
+  </ul>
+</details>
+```
+
 In @fig-beerInteraction, we can see that as we move from judge to judge, the same general trend holds true for all beers. While there are a pair of line segments that cross between between Judges B and C, the general trend still holds. This indicates that there is not a significant interaction between judge (subject; our block) and beer (our factor).
 
 In the event that you have more than a few subjects, line plots may be challenging to make sense of; for example, think about the line plot for our sugar cookie study. In such cases, you might create a set of plots ("small multiple") through the use of a faceting attribute or use an alternative visualization (e.g., a heat map).
@@ -540,6 +648,17 @@ ggplot(
   scale_fill_gradient2(name = "Score")
 ```
 
+```{=html}
+<details id=beerHeatLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Judge" and has labels A, B, C, D, E, and F.</p>
+  <p>The vertical axis is labelled "Beer" and has labels of Barnstormer, Craftsman, King Richard Red, and Red Mo.</p>
+  <p>The score controls the color gradiant used to fille the cells; the darker the higher the score.</p>
+  <p>The Red Mo and Craftsman rows tend to have darker cells than the other two beers.</p>
+  <p>Judge D has a darker column than the other judges.</p>
+</details>
+```
+
 While in the interaction plot (@fig-beerInteraction) we're looking for consistency via parallelism of line segments, we want to look for consistency in the shading of @fig-beerHeat. Instead of [near] parallel lines, we want to see the same general pattern as we move through the columns. For example, Judge A's column has Red Mod and Craftsman as darker (i.e., higher scores) while King Richard Red and Barnstromer are lighter (i.e., lower scores). That pattern of which beers are darker/lighter holds across each of the judges. This speaks to there not being an interaction between judge and beer that would need to be modeled.
 
 
@@ -553,7 +672,7 @@ The idea behind sphericity is that we have essentially the same levels of variat
 #| label: fig-beerSpherePlot
 #| fig-cap: "Sphericity Plot for Beer Judging"
 #| fig-alt: "Sphericity plot for beer judging study"
-#| aria-desricbedby: "beerSpherePlotLD"
+#| aria-desricbedby: "beerSphereLD"
 #| echo: true
 # Demo Code for Sphericity Plot ----
 sphericityPlot(
@@ -569,6 +688,21 @@ sphericityPlot(
 2. Give the name of the column containing the subject information in quotation marks.
 3. If there are __*any*__ extra columns, you need to list their names in the `colsIgnore` argument (as part of the vector) so that they will be ignored.
 4. Sets the color palette; `"psu"` has 8 colors, `"boast"` has 9 colors; `"default"` will use defaults from `{ggplot2}`. 
+
+```{=html}
+<details id=beerSphereLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Comparison" and has labels of Barnstormer vs Craftsman, Barnstorm vs King Richard Red, Barnstormer vs Red Mo, Craftsman vs Red Mo, King Richard Red vs. Craftsman, and King Richard vs. Red Mo.</p>
+  <p>The vertical axis is labelled "Difference" and goes from about -24 to 7 with labels at -20, -10, and 0.</p>
+  <p>The plot contains 36 dots, with some horizontal jittering.</p>
+  <p>The points for Barnstormer vs Craftsman go from about -20 to -10 for differences.</p>
+  <p>The points for Barnstormer vs King Richard Red go from about -10 to 0 for differences.</p>
+  <p>The points for Barnstorm vs. Red Mo go from -23 to -10 for differences.</p>
+  <p>The points for Craftsman vs Red Mod go from -2 to 6 for differences.</p>
+  <p>The points for King Richard Red vs. Craftsman go from -5 to 0 for differences.</p>
+  <p>The points for King Richard Red vs. Red Mo go from -5 to 5 for differences.</p>
+</details>
+```
 
 The `sphericityPlot` function comes from my `ANOVATools.R` script and requires __*wide format*__ data. The call returns a plot like you see in @fig-beerSpherePlot. The horizontal placement of the points does not mean much as there is some horizontal jitter in place so that the points don't all lie on top of one another. The vertical placements are insightful. These related to the differences in treatments. Much like a strip chart, we're looking to see if any comparison uses up a different amount of vertical space. As I look through @fig-beerSpherePlot, I see that King Richard Red vs. Craftsman uses the least amount of vertical space, but not excessively so given the others. My initial thought would be that sphericity is satisfied.
 
@@ -607,7 +741,7 @@ Taken together, we will say that the sphericity is satisfied.
 
 While not an assumption of the parametric shortcut, checking for interference effects (i.e., order effects, carryover effects) when you're assessing assumptions is a wise move. To do this, we'll make use of a visualization known as a Residual Sequence Plot.
 
-```{r beerResSeq, echo=TRUE}
+```{r}
 #| label: fig-beerResSeq
 #| fig-cap: "Residual Sequence Plot for Beer Judging Study"
 #| fig-alt: "Residual sequence plot for beer judging study"
@@ -637,6 +771,22 @@ cbind(
 1. Notice that we are extracting the residuals from the mixed effects model, `beerMixed`, and adding them to our long format data for this plot.
 2. Make sure that you update this code to facet by the column that goes with your subject information.
 
+```{=html}
+<details id=beerResSeqLD>
+  <summary>Long Description</summary>
+  <p>The plot contains six plots organized arranged by the judge.</p>
+  <p>All plots have the same horizontal axis labelled "Tasting Order" that goes from 1 to 4 with labels of 1, 2, 3, and 4.</p>
+  <p>All plots have the same vertical axis labelled "Residuals (score)" and goes from about -3.75 to 4.25 with labels at -2, 0, 2, and 4.</p>
+  <p>All plots contain a dashed horizontal line at a residual value of 0.</p>
+  <p>Each plot contains four points connected by solid line segments.</p>
+  <p>Judge A plot has points (1, 0.1), (2, 1.76), (3, -3.24) and (4, 1.76).</p>
+  <p>Judge B plot has points (1, -3.36), (2, -0.03), (3, -1.36) and (4, 3.64).</p>
+  <p>Judge C plot has points (1, -0.45), (2, -0.78), (3, -0.78) and (4, 1.22).</p>
+  <p>Judge D plot has points (1, -0.51), (2, -2.18), (3, 4.49) and (4, -0.51).</p>
+  <p>Judge E plot has points (1, 0.1), (2, 1.76), (3, -3.24) and (4, 1.76).</p>
+  <p>Judge F plot has points (1, -0.87), (2, 2.46), (3, -0.87) and (4, -0.87).</p>
+</details>
+```
 
 @fig-beerResSeq shows the residuals for each judge's scores, ordered by how the judge's tasted the beers. We are looking for anything that would suggest that there might be a relationship between the residuals and the tasting order. When I look at this plots, I don't see anything that would make me thing that we have significant interference effects to deal with.
 
@@ -908,6 +1058,19 @@ hasseDiagram::hasse(
 )
 
 ```
+```{=html}
+<details id=shoesHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has six nodes in four levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Sell Shoes 1".</p>
+  <p>The second node is to the left of the second level and says "2 Campaign 1".</p>
+  <p>The third node is to the right of the second level and says "3 Time Point 2".</p>
+  <p>The fourth node is to the left of the third level is only connected to the second node above. The forth node says "10 (Market) 8".</p>
+  <p>The fifth node is to the right of the third level and is connected to both of the nodes on the second level. The fifth node says "6 Campaign x Time Point 2".</p>
+  <p>The sixth and final node is on the lowest level and says "30 (Markets X Time) 16".</p>
+</details>
+```
+
 
 ## Prepare the Data
 
@@ -940,11 +1103,17 @@ shoesLong <- tidyr::pivot_longer(
       "t2" ~ "during",
       "t3" ~ "after",
       .ptype = factor(levels = c("before", "during", "after"))
+    ),
+    marketNum = gsub( # <2>
+      pattern = "^.",
+      replacement = "",
+      x = market
     )
   )
 
 ```
 1. This code will recode the times to the terms before, during, and after as well as sets this as an ordered factor.
+2. The `marketNum` column will be useful in plotting.
 
 
 ## Fit the Models
@@ -1020,13 +1189,32 @@ car::qqPlot(
 ```
 1. Notice the use of the mixed effects model.
 
+```{=html}
+<details id=shoesQQResLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –2.25 to +2.25 with labels of –2, –1, 0, 1, and 2.</p>
+  <p>The vertical axis is labelled “Residuals (sales)” and goes from about –30 to 34 with labels of –30, –20,  –10, 0, 10, 20, and 30.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–2.25, –29) to (+2.25, +30).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 30 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–2.1, –29) while the last point is roughly at (2.1, 33).</li>
+  <li>Most points are slightly below the perfect match line, but still close to the line.</li>
+  <li>There are no points outside of the envelope.</li>
+  </ul>
+  </ul>
+</details>
+```
+
 The value of *Sample Skewness* is `r round(skew(residuals(shoesAssumptions)), 2)` and the value of *Sample Excess Kurtosis* is `r round(kurtosi(residuals(shoesAssumptions)), 2)`. Taking these values with @fig-shoesQQRes, I believe this assumption is satisfied.
 
 ### Gaussian Subject Effects
 
 For the Subject effects following a Gaussian distribution, we will need to use the `{lme4}` package's `ranef` function to extract the appropriate random effects.
 
-```{r shoesTrtQQ, echo=TRUE}
+```{r}
 #| label: fig-shoesSubQQ
 #| fig-cap: "QQ Plot for Market Effects in Shoe Ad Study"
 #| fig-alt: "Market Effects QQ Plot ofr Shoe Ad Study"
@@ -1046,9 +1234,28 @@ car::qqPlot(
   envelope = 0.90,
   id = FALSE,
   pch = 20,
-  ylab = "Market"
+  ylab = "Market Effect"
 )
 
+```
+
+```{=html}
+<details id=shoesSubQQLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “norm quantiles” and goes from about –1.7 to +1.7 with labels of –1.5, –1, –0.5, 0, 0.5, 1, and 1.5.</p>
+  <p>The vertical axis is labelled “Market Effect” and goes from about –400 to 310 with labels of –300, –200, –100, 0, 100, 200, and 300.</p>
+  <p>The plot contains three sets of elements.</p>
+  <ul>
+  <li>A straight, blue line indicating the perfect matching of quantiles from approximately (–1.25, –400) to (+0.99, +310).</li>
+  <li>Two curved blue lines on either side of the perfect match line. These curves flair away from the perfect match line towards the ends of the plot and narrow in towards the line in the plot’s middle. The curved lines establish the 90% confidence envelope. The envelope is shaded covering the perfect match line with boundaries of the curves as well as where the first and last points are located.</li>
+  <li>There are set of 10 points, each one representing a case from the data set. Their position is set by where that case’s residual would be ordered according to the theoretical quantiles as the horizontal axis and the data-driven ordering as the vertical axis.</li>
+  <ul>
+  <li>The first point is roughly located at (–1.55, –380) while the last point is roughly at (1.55, 300).</li>
+  <li>Most points are around the perfect match line.</li>
+  <li>All points are inside the envelope.</li>
+  </ul>
+  </ul>
+</details>
 ```
 
 The *Sample Skewness* of the Market effects has a value of `r round(skew(marketEffects), 2)` and the value of *Sample Excess Kurtosis* is `r round(kurtosi(marketEffects), 2)`. Again, this assumption appears satisfied.
@@ -1079,7 +1286,7 @@ ggplot(
   ) +
   geom_smooth(
     formula = y ~ x,
-    method = stats::loess,
+    method = "loess",
     method.args = list(degree = 1),
     se = FALSE,
     linewidth = 0.5
@@ -1090,46 +1297,38 @@ ggplot(
 
 ```
 
+```{=html}
+<details id=beerTALD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled “Fitted values (sales)” and goes from about 250 to 1150 with labels of 300, 600, and 900.</p>
+  <p>The vertical axis is labelled “Residuals (sales)” and goes from about –31 to 38 with labels of –20, 0, and 20.</p>
+  <p>There are three elements to the plot.</p>
+  <ul>
+  <li>There is a dashed line at the zero residual location that stretches across the plot.</li>
+  <li>There are 30 points spaced throughout the plot.</p>
+  <ul>
+  <li>There are visually 14 points above and 16 points below the dashed line.</li>
+  <li>Most points lie between 300 and 900 for fitted value and -20 and +20 for residual value.</li>
+  <li>The points appear to have a very weak curvature in how they spread out.</li>
+  </ul>
+  <li>There is a blue curve that spans the plot.</li>
+  <ul>
+  <li>The curve starts at (260, 4) curves down to (600, -3), crossing the dashed line at (375, 0).</li>
+  <li>The curve increases from (600, -3) to (1100, 6), crossing the dashed line at (880, 0).</li>
+  </ul>
+  </ul>
+</details>
+```
+
 While there is a slight bowing to the blue smoother line in @fig-shoesTA, I'm not overly worried about it. This is mainly due to the relatively weak magnitude of the curvature and that it is happening out at the tails, where there are fewer cases.
 
 ### Independence of Subjects
 
-One of the interesting things about Nested Repeated Measures is that we inherently know at least *some* of the measurement order. We might not know which store got measured before which other store, but we know the sequence of measurements for each store. Thus, we can make the following plot (@fig-shoesTS).
-
-```{r shoesTimeSeries, echo=TRUE}
-#| label: fig-shoesTS
-#| fig-cap: "Shoe Sales by Time and Store"
-#| fig-alt: "Time Series plot of shoe sales by store"
-#| aria-describedby: "shoesTSLD"
-#| echo: true
-# Demo Code Independence of Subjects ----
-ggplot(
-  data = shoesLong,
-  mapping = aes(
-    x = time,
-    y = sales,
-    color = paste(campaign, market, sep = ":"),
-    group = paste(campaign, market, sep = ":")
-  )
-) +
-  geom_point() +
-  geom_line() +
-  theme_bw() +
-  xlab("Time Point (relative to campaign)") +
-  ylab("Sales (coded)") +
-  labs(
-    color = "Campagin:Market"
-  )
-
-```
-
-@fig-shoesTS is great for letting us compare the effects over time. However, this plot doesn't necessarily allow us to see if our subjects are independent of one another. The consistency of the effects over time do indicate that the inherent dependency between each subject's measurements *is* consistent across time. If a particular market had a huge increase in sales after the campaign, that would suggest something strange happened.
-
-For Nested Repeated Measures we ultimately want to fall back on our study design to make a solid justification. This is why I've been pressing you all course long on including details/being specific.
+With a Nested Repeated Measures is that we inherently know at least *some* of the measurement order. We might not know which store got measured before which other store, but we know the sequence of measurements for each store. We could use this information to create a time series plot. However, such a plot help us decide whether our subjects are independent of one another. For Nested Repeated Measures we ultimately want to fall back on our study design to make a solid justification. This is why I've been pressing you all course long on including details/being specific.
 
 ### Interaction of Subject and Factor
 
-A similar plot to the previous Time Series plot is to construct a plot known as "Growth Curves". In essence, we want to see how the response changes for each subject over time...but we're going to separate the data a bit more cleanly so we can see if and how the factor might interact with our subjects.
+A time series plot shows us how some attribute changes over time. For Nested Repeated Measures designs, time series plots are the foundation for a "Growth Curve" plot that helps us look for interactions between our subjects and the factor. In essence, we want to see how the response changes for each subject over time...but we're going to separate the data a bit more cleanly so we can see if and how the factor might interact with our subjects.
 
 ```{r}
 #| label: fig-shoesGrowth
@@ -1143,45 +1342,97 @@ ggplot(
   mapping = aes(
     x = time,
     y = sales,
-    color = market,
-    group = market
+    color = marketNum, # <1>
+    shape = marketNum, # <1>
+    linetype = marketNum, # <1>
+    group = market # <2>
     )
 ) +
   geom_point(size = 2) +
   geom_line() +
-  facet_wrap(facets = ~campaign) +
-  ggplot2::theme_bw() +
-  xlab("Time Period") +
-  ylab("Sales (coded)") +
   labs(
-    color = "Market"
-  )
+    x = "Time Period (relative to campaign)",
+    y = "Sales (coded)",
+    color = "Market \n(rel. to Campaign)", # <3>
+    shape = "Market \n(rel. to Campaign)", # <3>
+    linetype = "Market \n(rel. to Campaign)" # <3>
+  ) +
+  facet_wrap(facets = ~campaign) +
+  theme_bw() +
+  scale_color_manual(values = psuPalette)
 
 ```
+1. Here is where creating the `marketNum` column comes in handy. This let's me use recycle the color, point shapes, and line types relative to the campaign.
+2. Notice that the `grouping` aesthetic is the original `market`, not the `marketNum`.
+3. By placing `\n` inside the label, you can introduce a line break in a `ggplot` title. Useful for long titles.
 
-Notice that we used the `facet_wrap` on campaign to split the time series plot into separate panels/facets for each campaign. If we see the same behaviors in both facets, then there is no worrisome interaction between subjects and our factor (Figure \ref{fig:shoesGrowthCurves}).
+```{=html}
+<details id=shoesGrowthLD>
+  <summary>Long Description</summary>
+  <p>The plot contains to panels side by side for the two levels of campaign: A and B.</p>
+  <p>Both panels have the same horizontal axis labelled "Time period (relative to campaign)" that is labelled before, during, and after.</p>
+  <p>Both panels have the same vertical axis labelled "Sales (coded)" and goes from about 150 to 1200 with labels at 300, 600, and 900.</p>
+  <p>Each panel contains five sets of three points, each connected by a line.</p>
+  <p>Market, relative to campaign, controls the color, point shape, and line type.</p>
+  <p>Panel Campaign A</p>
+  <ul>
+  <li>Market 1 has solid, blue circles and a solid lines connecting the points (before, 958), (during, 1047) and (after, 933).</li>
+  <li>Market 2 has solid, red triangles and a short-dashed lines connecting the points (before, 1005), (during, 1122) and (after, 986).</li>
+  <li>Market 3 has solid, teal squares and long-dashed lines connecting the points (before, 351), (during, 436) and (after, 339).</li>
+  <li>Market 4 has golden plus-signs and long-dashed, long-gapped lines connecting the points (before, 549), (during, 632) and (after, 512).</li>
+  <li>Market 5 has grey boxes with x's and dotted lines connecting the points (before, 730), (during, 784) and (after, 707).</li>
+  </ul>
+  <p>Panel Campaign B</p>
+    <ul>
+  <li>Market 1 has solid, blue circles and a solid lines connecting the points (before, 780), (during, 897) and (after, 718).</li>
+  <li>Market 2 has solid, red triangles and a short-dashed lines connecting the points (before, 229), (during, 275) and (after, 202).</li>
+  <li>Market 3 has solid, teal squares and long-dashed lines connecting the points (before, 883), (during, 964) and (after, 817).</li>
+  <li>Market 4 has golden plus-signs and long-dashed, long-gapped lines connecting the points (before, 624), (during, 695) and (after, 599).</li>
+  <li>Market 5 has grey boxes with x's and dotted lines connecting the points (before, 375), (during, 436) and (after, 351).</li>
+  </ul>
+</details>
+```
 
-Keep in mind that Market 3 in Campaign 1 is __*not*__ the same market as Market 3 in Campaign 2. They just happen to be the *third* market inside each campaign.
+@fig-shoesGrowth shows us the growth curves for the Shoe Advertisement study. Notice that we used the `facet_wrap` on campaign to split the time series plot into separate panels/facets for each campaign. This helps us look for potential interactions between the subjects and factor. If the different panels show different behaviors, then we have some interaction. If instead, we see the same kinds of behavior, then there might not be any important interaction effects.
+
+Something to keep in mind is the plotting choice I made. I used the market number instead of the market id to assign color, point shape, and line type in @fig-shoesGrowth. While this helps to reduce the overall number of colors, shapes, and line types, it comes with the risk that a viewer might mistake Market 1 in Campaign A being the same as Market 1 in Campaign B. If I were to do this in a report, I would take great care to clarify this point in the text. If I was worried about whether my readers would still be confused, I'd seek a different plot; perhaps a heat map like @fig-beerHeat.
 
 ### Sphericity
 
 The idea behind sphericity is that we have essentially the same levels of variation for the *differences between treatments*. While there is a visual method we can use here, we do need to do so with some caution. Much like looking for homoscedasticity, we'll want to see if any difference has *excessively different* variation than another difference. Unlike homoscedasticity __there is no rule of thumb/guideline__ (e.g., more than twice) for sphericity. 
 
-```{r shoesSpherePlot, echo=TRUE}
-#| fig.cap = "Sphericity Plot for Shoe Sales Study",
-#| fig.width = 6,
-#| fig.height = 3
-
+```{r }
+#| label: fig-shoesSpherePlot
+#| fig-cap: "Sphericity Plot for Shoe Sales Advertisement Study"
+#| fig-alt: "Sphericity plot for Shoe Ad study"
+#| aria-describedby: "shoesSphereLD"
+#| echo: true
 # Demo Code for Sphericity Plot ----
 sphericityPlot(
   dataWide = shoesWide,
   subjectID = c("market", "campaign"), 
-  colsIgnore = NULL 
+  colsIgnore = NULL,
+  colors = "psu"
 )
 
 ```
 
-The `nlme` package does not support Mauchly's Test for Sphericity. Thus, we will have to rely on the plot in Figure \ref{fig:shoesSpherePlot}.
+```{=html}
+<details id=shoesSphereLD>
+  <summary>Long Description</summary>
+    <p>The horizontal axis is labelled "Comparison" and has labels of t1 vs t2, t1 vs t3, and t2 vs t3.</p>
+  <p>The vertical axis is labelled "Difference" and goes from about -140 to 190 with labels at -100, 0, and 100.</p>
+  <p>The plot contains 30 dots, with some horizontal jittering.</p>
+  <p>The points for Barnstormer vs Craftsman go from about -20 to -10 for differences.</p>
+  <p>The points for t1 vs t2 Red go from about -120 to -45 for differences.</p>
+  <p>The points for t1 vs t3 go from 10 to 70 for differences.</p>
+  <p>The points for t2 vs t3 go from 70 to 170 for differences.</p>
+</details>
+```
+
+In looking at @fig-shoesSpherePlot, the differences the sales during and after the campaigns (t2 and t3, respectively) appear to have the most (pairwise) variation but it isn't that much beyond the other two sets of differences. This leads me to believe that the Sphericity assumption is satisfied.
+
+The `{nlme}` package does not support Mauchly's Test for Sphericity. Thus, we will have to rely on the plot.
 
 ## Results
 
@@ -1189,29 +1440,48 @@ As we have been doing all semester, we can divide our results into an Omnibus po
 
 ### Omnibus Test
 
-As mentioned, getting a nice looking table is not as straightforward with the Nested Repeated Measures ANOVA problems.
+The nested structure of our model creates a small hiccup for creating an ANOVA table. We will need to (*carefully*) extract the appropriate elements from our model and build our own ANOVA table. For this, we'll focus on preparing a classical ANOVA table and not worry about any effect sizes.
 
-```{r shoesTable, echo=TRUE}
-# Demo Code for Omnibus ANOVA Table ----
+The first step is to extract the pieces that we need and then construct all of the elements.
 
+```{r }
+#| label: buildShoeTable
+#| echo: true
+# Demo code for building an ANOVA Table ----
+## Nested Repeated Measures
 ## We have to custom build the ANOVA table
-shoesTemp <- summary(shoesModel)
-shoesOmni <- rbind(
+shoesTemp <- summary(shoesModel) # <1>
+shoesOmni <- rbind( # <2>
   shoesTemp$`Error: market:campaign`[[1]],
   shoesTemp$`Error: Within`[[1]]
 )
 
-row.names(shoesOmni) <- c("campaign", "market", "time","campaign:time", "market:time")
+row.names(shoesOmni) <- c("campaign", "market", "time","campaign:time", "market:time") # <3>
 
 shoesOmni["market", "F value"] <- shoesOmni["market", "Mean Sq"] / 
-  shoesOmni["market:time", "Mean Sq"]
-shoesOmni["market", "Pr(>F)"] <- pf(
+  shoesOmni["market:time", "Mean Sq"] # <4>
+shoesOmni["market", "Pr(>F)"] <- pf( # <5>
   q = shoesOmni["market", "F value"],
   df1 = shoesOmni["market", "Df"],
   df2 = shoesOmni["market:time", "Df"],
   lower.tail = FALSE
 )
 
+```
+1. While we can't use the `anova` call, we can still use the `summary` command to bring the appropriate pieces out of the model.
+2. There are two ANOVA summaries that we need to make into one table.
+3. This gives names to the rows that match our context. You'll *always* need to double check the ordering.
+4. The subject term (market) missed out on getting an appropriate *F* ratio constructed.
+5. This gives the the *p*-value (via parametric shortcut) to the subject term (market).
+
+Once we've built the data for the table, we can then create on using the `kable` function.
+
+```{r}
+#| label: tbl-shoesTable
+#| tbl-cap: "ANOVA Table for Shoe Advertisement Study"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Omnibus ANOVA Table ----
 shoesOmni %>%
   tibble::rownames_to_column(
     var = "Source"
@@ -1220,13 +1490,13 @@ shoesOmni %>%
     `Pr(>F)` = ifelse(
       test = is.na(`Pr(>F)`),
       yes = NA,
-      no = pvalRound(`Pr(>F)`)
+      no = pvalRound(`Pr(>F)`, digits = 3)
     )
   ) %>%
   knitr::kable(
-    digits = 4,
+    digits = 3,
     col.names = c("Source", "df", "SS", "MS", "F", "p-value"),
-    caption = "ANOVA Table for Athletic Shoes Study",
+    # caption = "ANOVA Table for Shoe Advertisement Study",
     align = c('l',rep('c',5)),
     booktab = TRUE,
     format.args = list(big.mark = ",")
@@ -1239,13 +1509,15 @@ shoesOmni %>%
 
 ```
 
-We will not worry about effect sizes here.
+While creating @tbl-shoesTable was more complicated than any of our other ANOVA tables, we still approach interpreting the values of this table in the same way. Notice that the market by time interaction term (last row of @tbl-shoesTable) is positioned much like our typical residuals. This term acts like the residuals and was used to form the *F* ratios of the terms except for campaign. Campaign used the market as the comparison group for its *F* ratio.
 
 ### Point Estimates
 
-For point estimates, you might want to look at both Campaign and Time Effects:
+For point estimates, you might want to look at both Campaign and Time Effects.
 
-```{r shoesPH, echo=TRUE}
+```{r}
+#| label: shoesPH
+#| echo: true
 # Demo Code for Using emmeans ----
 shoesCampaignPH <- emmeans::emmeans(
   object = shoesModel,
@@ -1263,9 +1535,13 @@ shoesTimePH <- emmeans::emmeans(
 
 ```
 
-You can get point estimates for both effects:
+From this point you can make the various tables.
 
-```{r shoesPHPE1, echo=TRUE}
+```{r}
+#| label: tbl-shoesPEC
+#| tbl-cap: "Campaign Marginal Means-Tukey 99\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
 # Demo Code Point Estimates ----
 ## Campaign Effects
 as.data.frame(shoesCampaignPH$emmeans) %>%
@@ -1273,7 +1549,7 @@ as.data.frame(shoesCampaignPH$emmeans) %>%
     digits = 4,
     col.names = c("Campaign", "Marginal Mean","SE", "DF",
                   "Lower Bound","Upper Bound"),
-    caption = "Marginal Means-Tukey 99\\% Adjustment",
+    # caption = "Campaign Marginal Means-Tukey 99\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
   ) %>%
@@ -1285,7 +1561,11 @@ as.data.frame(shoesCampaignPH$emmeans) %>%
 
 ```
 
-```{r shoesPHPE2, echo=TRUE}
+```{r}
+#| label: tbl-shoesPET
+#| tbl-cap: "Time Point Marginal Means-Tukey 99\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
 # Demo Code Point Estimates ----
 ## Time Point Effects
 as.data.frame(shoesTimePH$emmeans) %>%
@@ -1293,7 +1573,7 @@ as.data.frame(shoesTimePH$emmeans) %>%
     digits = 4,
     col.names = c("Time Point", "Marginal Mean","SE", "DF",
                   "Lower Bound","Upper Bound"),
-    caption = "Marginal Means-Tukey 99\\% Adjustment",
+    # caption = "Time Point Marginal Means-Tukey 99\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
   ) %>%
@@ -1305,11 +1585,19 @@ as.data.frame(shoesTimePH$emmeans) %>%
 
 ```
 
+The marginal means for the main effects of Campaign (@tbl-shoesPEC) and Time Point (@tbl-shoesPET) allow us build our understanding of what might be happening that the omnibus results (@tbl-shoesTable) started pointing towards. Primarily, the biggest effect occurs during the advertisement campaign.
+
 ### Post Hoc-Pairwise Comparisons
 
-You can also do the standard pairwise comparisons:
+We can also do pairwise comparisons on the main effects.
 
-```{r shoesPHPairs1, echo=TRUE}
+For a factor with only two levels, the pairwise comparison __will be equivalent__ to the *F* test. In fact, if you take the value of the *t* statistic from the pairwise test and square the value, you should get the value of the *F* ratio (up to rounding). You can check this out using @tbl-shoesPHC.
+
+```{r }
+#| label: tbl-shoesPHC
+#| tbl-cap: "Campaign Comparison-Tukey 99\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
 # Demo Code Point Estimates ----
 ## Pairwise on Campaign
 as.data.frame(shoesCampaignPH$contrasts) %>%
@@ -1317,7 +1605,7 @@ as.data.frame(shoesCampaignPH$contrasts) %>%
     digits = 4,
     col.names = c("Comparison", "Difference","SE", "DF",
                   "t Statistic","p-value"),
-    caption = "Campaign Comparison-Tukey 99\\% Adjustment",
+    # caption = "Campaign Comparison-Tukey 99\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
   ) %>%
@@ -1329,7 +1617,13 @@ as.data.frame(shoesCampaignPH$contrasts) %>%
 
 ```
 
-```{r shoesPHPairs2, echo=TRUE}
+The findings from @tbl-shoesTable and affirmed by @tbl-shoesPHC point suggest that there was no impact from which star athlete (of the two) was featured.
+
+```{r}
+#| label: tbl-shoesPHT
+#| tbl-cap: "Time Point-Tukey 99\\% Adjustment"
+#| html-table-processing: none
+#| echo: true
 # Demo Code Point Estimates ----
 ## Pairwise on Time Point
 as.data.frame(shoesTimePH$contrasts) %>%
@@ -1337,7 +1631,7 @@ as.data.frame(shoesTimePH$contrasts) %>%
     digits = 4,
     col.names = c("Comparison", "Difference","SE", "DF",
                   "t Statistic","p-value"),
-    caption = "Time Point-Tukey 99\\% Adjustment",
+    # caption = "Time Point-Tukey 99\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
   ) %>%
@@ -1348,6 +1642,8 @@ as.data.frame(shoesTimePH$contrasts) %>%
   )
 
 ```
+
+@tbl-shoesPHT highlights that the advertisement campaign had its greatest effect *during* its run, with sales returning levels statistically indistinguishable from before the campaign.
 
 ### Effect Sizes
 
