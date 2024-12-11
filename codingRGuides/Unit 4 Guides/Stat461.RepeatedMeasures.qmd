@@ -1,5 +1,5 @@
 ---
-title: "Factorial Designs/Models"
+title: "Repeated Measures Designs"
 subtitle: "Parametric Shortcut"
 author: "Neil J. Hatfield"
 date-modified: now
