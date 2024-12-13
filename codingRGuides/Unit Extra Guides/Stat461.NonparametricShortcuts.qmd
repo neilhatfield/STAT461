@@ -1,0 +1,861 @@
+---
+title: "Nonparametric Shortcuts for ANOVA Models"
+subtitle: "Alternative to Parametric Shortcuts"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+This guide covers how to use a nonparametric shortcut in place of the parametric shortcut for several types of ANOVA models. We will primarily focus on the Kruskal-Wallis *H* test, the Friedman Test, and the Mack-Skillings Test.
+
+# Key Notes to Keep in Mind
+
+There are several important notes to keep in mind when you consider using a nonparametric shortcut. 
+
+1) __Nonparametric doesn't mean assumption-free.__ These shortcuts still require assumptions but these assumptions tend to be less demanding than those of parametric shortcuts. For example, nonparametric shortcuts almost never assume a *named* distribution such as the Gaussian, opting for a more general class of distributions such as "continuous".
+2) If the assumptions of a parametric shortcut are satisfied, you should use that method. Parametric shortcuts are more powerful (i.e., better ability to detect departures from the null model) than nonparametric when their assumptions are met.
+3) Be consistent with your usage: if you use a nonparametric shortcut for your omnibus tests, then use nonparametric shortcuts for your post hoc analysis. Don't switch back-and-forth between approaches.
+4) The types of ANOVA models that you'll be able to explore using these shortcuts are limited but is an active area of study. This guide will help you to analyze the following models/design situations.
+    + One-way layouts (fixed effect)
+      - One factor 
+      - Only using the highest order interaction term (i.e., the treatments) in a multi-factor study; all other terms are dropped
+    + Some Two-way layouts
+      - Single Factor + Block
+      - Within Subjects Repeated Measures One-way ANOVA (i.e., One-way + Block)
+      - Two factors with __*no*__ interaction term
+
+## Data Ranks
+
+Many nonparametric shortcuts are *rank-based* methods. The underlying approach here is to use a case's (measurement unit's) *rank* instead of their *magnitude*. As a quick example, suppose that we have three people's whose heights are 71", 62", 84". If we used their magnitudes, then we would directly use the 71, 62, and 84, respectively. If we used their ranks instead, we'd use 2, 1, 3, respectively. This shift to ranks also comes with a slight modification to the underlying ANOVA model: instead of focusing on the performance metrics (i.e., the *Arithmetic Means*), we'll look at measures of middle (i.e., *Medians*).
+
+# Getting Ready
+
+As always, we need to ensure that we have get R set up for us to have success. This includes loading packages, setting global options, and loading in any additional tools as well as loading our data.
+
+## Loading Packages, Setting Options, Loading Additional Tools
+
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{rcompanion}`, `{dunn.test}`, `{NSM3}`, and `{agricolae}`. 
+
+We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
+
+```{r}
+#| label: documentStart
+#| echo: true
+#| results: hide
+# Load useful packages ----
+packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
+              "car", "psych", "rcompanion", "dunn.test", "NSM3",
+              "agricolae")
+lapply(
+  X = packages,
+  FUN = library,
+  character.only = TRUE,
+  quietly = TRUE
+)
+
+# Set options ----
+options(contrasts = c("contr.sum", "contr.poly"))
+options(knitr.kable.NA = "")
+
+# Load additional tools ----
+source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/ANOVATools.R")
+
+# Custom Color Palette ----
+psuPalette <- c("#1E407C", "#BC204B", "#3EA39E", "#E98300",
+                "#999999", "#AC8DCE", "#F2665E", "#99CC00")
+
+```
+
+If you do not have all of the packages (e.g., `{rcompanion}`, `{dunn.test}`, `{NSM3}`, or `{agricolae}`), you should install them via `install.packages`.
+
+:::{.callout-tip}
+If you ran the `checkSetup` function I created and put at the top of the R/RStudio resources page in Canvas, then you should have all of the packages installed.
+
+:::
+
+# Example Contexts
+
+In this guide, we're going to refer to three different contexts. In each sub-section, I'll discuss the scenario and show how to load the data.
+
+## The Honey Study {#honeyStudy}
+
+We want to see how three different varietals (types of plant) impact the amount of honey bees produce (in pounds) when they draw from a single varietal. In our study, we have nine colonies that we've randomly selected from a large population of honey bee (*Apis mellifera*) colonies via lottery. We then used a separate lottery to randomly assign three colonies to each of three varietals: clover, orange blossom, and alfalfa.
+
+```{r}
+#| label: loadHoneyData
+#| echo: true
+# Demo code for loading Honey data ----
+honeyData <- data.frame(
+  Amount = c(150, 50, 100, 85, 90, 95, 130, 50, 80),
+  Varietal = rep(c("Clover", "Orange Blossom", "Alfalfa"), each = 3)
+)
+## Set Varietal to factor
+honeyData$Varietal <- as.factor(honeyData$Varietal)
+
+```
+
+## The Alfalfa Pest Study
+
+In another study, researchers explored how several different methods controlled the alfalfa weevil (*Hypera postica Gyllenhal*) for different varieties of alfalfa. In particular, we have five different types of alfalfa consisting of experimental (i.e., new), recently introduced, and established species. 
+
+For the weevil management methods, we have four methods.
+
+  + Conventional--using petro-chemicals as prescribed for agriculture usages.
+  + Integrated Pest Management (IPM)--using a variety of methods with minimal usage of petro-chemicals
+  + Organic--practices avoiding any use of petro-chemicals.
+  + None--alfalfa is only cut at regular intervals
+
+The response in this study will be the number of whole alfalfa weevil larvae found in the plot during the 2-hour collection window. To learn more about this study, check out the chapter by [MacFarland & Yates](https://link.springer.com/chapter/10.1007/978-3-319-30634-6_7).
+
+```{r }
+#| label: loadWeevilData
+#| echo: true
+# Demo Code for loading Alfalfa study data ----
+rootPath <- "https://static-content.springer.com/esm/chp%3A10.1007%2F978-3-319-30634-6_7/" # <1>
+filePath <- "MediaObjects/385146_1_En_7_MOESM1_ESM.csv"
+
+alfalfaData <- read.table(
+  file = paste0(rootPath, filePath),
+  header = TRUE,
+  sep = ","
+)
+
+alfalfaData$Treatment <- as.factor(alfalfaData$Treatment)
+alfalfaData$Variety <- as.factor(alfalfaData$Variety)
+
+```
+1. If you need to break a URL into pieces, break just after a forward slash, `/`.
+
+
+## The Baseball Rounding Times Study
+
+The final study is for how three different methods for rounding first base impact the time (seconds) it takes a runner to reach second base from the home plate. Twenty-two runners took part in the study, running the bases 6 times--twice for each of the three methods. The recorded data are the values of the *SAM* for each pair of run times by trial. This study is a Within Subjects Repeated Measures ANOVA design. These data are part of the `NSM3` package.
+
+```{r roundingData, echo=TRUE}
+#| label: loadRoundingData
+#| echo: true
+# Demo Code for loading data from NSM3 package ----
+data("rounding.times", package = "NSM3")
+
+colnames(rounding.times) <- c("Round Out", "Narrow Angle", "Wide Angle") # <1>
+
+```
+1.The data is stored as a matrix instead of a data frame. However, adding on column names will allow us to use the matrix and get meaningful results.
+
+## Explore the Data
+
+Just as with the Parametric Shortcut, you should always begin by exploring your data. Check out the other guides/tutorials I've posted on data visualizations and descriptive statistics. You should create a data narrative that weaves both of these types of elements together and helps your readers build their understanding of your data.
+
+# Check Appropriateness
+
+One important thing to keep in mind is that checking whether ANOVA methods are appropriate is different from assessing the assumptions of a particular test. We must meet these conditions regardless of whether we're using a parameteric or nonparametric shortcut. Thus, we still need to ensure that 
+
+  1) we are working with a qualitative/categorical factor,
+  2) we are working with a quantitative response,
+  3) we are working with an additive model (up to interactions),
+  4) we have estimable effects, and
+  5) we have estimable errors/residuals.
+
+We can check these in the same manner as we have all semester.
+
+# One-way ANOVA (Kruskal-Wallis *H* Test)
+
+The Kruskal-Wallis *H* Test is a nonparametric shortcut for dealing with One-way ANOVA contexts. You can arrive at a one-way layout in two ways. The most natural way is when you have designed a study to only involve a single factor. The second way is when you have a multi-factor study but for some reason you're only interested in the highest order interaction term. That is you're statistical research questions are focused on the treatment/grouping structure of your measurement units.
+
+The underlying model for the Kruskal-Wallis test is given by the equation 
+$$Y_{ij}=\theta_{\bullet\bullet}+\tau_{i}+\epsilon_{ij}$$
+where $\theta_{\bullet\bullet}$ represents the *__Grand Median__*, $\tau_i$ represents the effect of factor level *i* relative to the *Median*, and $\epsilon_{ij}$ represents the residuals for this model.
+
+## Example Context
+
+The [Honey Study](#honeyStudy) is a good example of a one-way ANOVA situation that we could analyze via the Kruskal-Wallis *H* test. Keep in mind that we need the situation to amenable to ANOVA methods, regardless of whether we're using a nonparametric shortcut for the inference. @fig-honeyHD gives the Hasse diagram for this study. With our nine hives of the same species of bee, we can see that we have sufficient degrees of freedom to estimate the effects for our three levels of varietal and have degrees of freedom for our error term. Given that we're measuring our response (excess honey) in pounds, along with the additive model shown in @fig-honeyHD, a one-way ANOVA model is a valid approach.
+
+```{r honeyHD, echo=TRUE}
+#| label: fig-honeyHD
+#| fig-cap: "Hasse Diagram for Honey Study"
+#| fig-alt: "Hasse diagram for honey study"
+#| aria-describedby: "honeyHDLD"
+#| fig-height: 4
+#| echo: false
+# Demo code for Hasse Diagram for the Honey Study ----
+modelLabels <- c("1 Make Honey 1", "3 Varietal 2", "9 (Hives) 6")
+modelMatrix <- matrix(
+  data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
+  nrow = 3,
+  ncol = 3,
+  byrow = FALSE
+)
+hasseDiagram::hasse(
+ data = modelMatrix,
+ labels = modelLabels
+)
+
+```
+```{=html}
+<details id=honeyHDLD>
+  <summary>Long Description</summary>
+  <p>The Hasse diagram has three nodes in three levels. Nodes are sequentially connected by downwards pointing arrows.</p>
+  <p>The first node at the top level says "1 Make Honey 1".</p>
+  <p>The second node on the second level and says "3 Varietal 2".</p>
+  <p>The third and final node is on the lowest level and says "9 (Hives) 6".</p>
+</details>
+```
+
+It is worth pointing out that @fig-honeyHD is the same Hasse diagram as what was discussed in the [One-way Guide](https://neilhatfield.github.io/STAT461/codingRGuides/Unit%203%20Guides/Stat461.OnewayANOVA_Shortcut.html#example-honey-study). Hasse diagrams are not dependent upon what method you use to generate your sampling distribution. Rather, they only depend upon the study design.
+
+## Assessing Assumptions
+
+The Kruskal-Wallis *H* test makes two assumptions:
+
+  1) Independence of Observations
+  2) The response follows some *continuous* distribution that differs between groups by location (*Medians*) at most.
+
+If these assumptions are satisfied, then our test statistic, *H*, follows a $\chi^2$ with $k-1$ *degrees of freedom* (where we have *k* levels to our factor) under the null hypothesis of no impact due to our factor.
+
+### Assessing Independence of Observations
+
+We can assess the Independence of Observations by looking at an index plot (as we did for the parametric shortcut). Remember that we can look at index plots of the either the residuals or of the response values. Keep in mind that for more complex models (i.e., beyond a single factor), we will need to incorporate other attributes from the model into the index plot.
+
+In the Honey Study, we only have a single factor and we know that the data are in measurement order. Thus, we can make an index plot (@fig-honeyIO).
+
+```{r honeyIO, echo=TRUE}
+#| label: fig-honeyIO
+#| fig-cap: "Index Plot for Honey Study"
+#| fig-alt: "Index plot for the honey study"
+#| aria-describedby: "honeyIOLD"
+#| echo: true
+# Demo code of an index plot using the response for Honey Study ----
+ggplot(
+  data = honeyData,
+  mapping = aes(
+    x = 1:nrow(honeyData),
+    y = Amount
+  )
+) +
+  geom_point() +
+  geom_line() +
+  geom_hline(
+    yintercept = mean(honeyData$Amount, na.rm = TRUE),
+    color = "red",
+    linetype = "dashed"
+  ) +
+  theme_bw() +
+  xlab("Measurement Order") +
+  ylab("Amount of Honey (lbs)") +
+  scale_x_continuous(breaks = 1:9)
+
+```
+```{=html}
+<details id=honeyIOLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled "Measurement Order" and goes from 1 to 9 with labels of 1, 2, 3, 4, 5, 6, 7, 8, and 9.</p>
+  <p>The vertical axis is labelled "Amount of Honey (lbs)" and goes from about 48 to 152 with labels of 50, 75, 100, 125, and 150.</p>
+  <p>There are two elements in the plot.</p>
+  <p>The first element is a red, dashed horizontal line at the vertical value of 92.22. This is the value of the Grand Sample Arithmetic Mean.</p>
+  <p>The second element is a set of 9 points sequentially connected by line segments.</p>
+  <p>The points are at (1, 150), (2, 50), (3, 100), (4, 85), (5, 90), (6, 95), (7, 130), (8, 50) and (9, 80).</p>
+</details>
+```
+
+@fig-honeyIO shows the index plot using the response of the Honey study (i.e., amount of honey produced in pounds). Just as before, we are still looking to see if there are any patterns to this plot. The presence of patterns indicates a threat to the assumption of Independent Observations. Even though there are only nine measurement units in the Honey study, I don't see any patterns in @fig-honeyIO. Additionally, I can't think of any threats to independence from the study design (each hive was placed sufficiently far apart to minimize competition and cross-contamination).
+
+### Assessing Continuous Distribution
+
+The second assumption (the response follows some continuous distribution) is a bit complicated. What we mean here is that up to differences in the location parameter, the response follows the same kind of continuous (or continuous adjacent) distribution family. For example, the responses in each group all come from log-normal distributions that have different values for $\mu$ (the location parameter, not the Expected Value). Or they all come from $\chi^2$ distributions except each group has a different value for $\nu$ (degrees of freedom). Whatever named distribution best describes our data can only have differences in the value of the location parameter; all scale parameters should be the same.
+
+We are bit flexible with this assumption, as we will allow for "continuous adjacent" data. Likert scale data (e.g., 1-strongly disagree to 5-strongly agree; the Hedonic tasting scale) aren't actually continuous but are ordinal, which allows for us to meaningfully convert these scale scores into ranks.
+
+While we could use QQ Plots with a bunch of different distributions (any pre-programmed distribution in `R` may be used instead of `"norm"` for the `distribution` argument), we will instead just ask ourselves "Is the response continuous or at least ordinal?" and "Do I have reason to suspect that one of the groups/treatments creates extremely different behavior in the response attribute?" These two questions will guide us in assessing whether or not this assumption is satisfied.
+
+:::{.callout-note}
+There are some methods that are beyond this course that can be used for digging deeper into the assumption.
+:::
+
+Our response in the Honey Study is the excess honey (lbs) that each hive produces during the same time span. Weight is a continuous attribute. Further, we have no reason to believe that the type of Varietal (kind of flower) will alter the process which underpins honey production beyond the total amount of honey produced. Thus, we will act as though the continuous assumption is satisfied.
+
+### What About Homoscedasticity?
+
+If you attempt to line up the assumptions for the parametric shortcut with those of the Kruskal-Wallis, you might find yourself asking about homoscedasticity. Strictly speaking, we still have this assumption in that the only difference in the continuous distribution of our response is location parameter--that is, they all use the same scale. If we also want to free the scale, we have what is referred to as the *k-Sample Behrens-Fisher Problem*; Rust and Fligner proposed a modification to Kruskal-Wallis to account for this (beyond this guide).
+
+## Results
+
+Once you've made the decision to use the the Kruskal-Wallis *H* test (and you've made an argument that it is appropriate), then we need to fit the model. In this guide, we'll only look at running the Krusal-Wallis test using base R. That is to say, you'll need no additional packages to conduct the test.
+
+The following code shows how we run fit the nonparametric model for the test.
+```{r}
+#| label: honeyKW
+#| echo: true
+# Demo code for running the Kruskal-Wallis test in base R ----
+honeyOmni <- kruskal.test(
+  formula = Amount ~ Varietal,
+  data = honeyData,
+  na.action = "na.omit"
+)
+
+```
+
+Notice that all we've done is swap `aov` for `kruskal.test`. We are still using a `formula` argument in the format `response ~ factor`, the `data` argument, and the optional `na.action` safety argument.
+
+### Omnibus
+
+While fitting the model was a quick change of function, reporting the results is different. This is due to the fact that there is *no* ANOVA table for the Kruskal-Wallis setting. Instead, we often list out the values in our narrative paragraphs. Just like the parametric shortcut, you must still have set up your decision rule, especially your Type I Risk, $\mathcal{E}_{I}$, and your Unusualness Threshold (*UT*). For the Honey Study, I'm going to use $\mathcal{E}_{I}=0.05$ and $UT=0.03$.
+
+:::{.callout-note}
+If you want to create a table to display your results, you can; just don't call the table an "ANOVA Table".
+:::
+
+To quickly view our results from the Kruskal-Wallis test, we just need to call the result object.
+
+```{r}
+#| label: honeyOmniOut
+#| echo: true
+## Demo Code for showing Kruskal-Wallis results ----
+honeyOmni
+
+```
+
+Keep in mind that we should not be displaying raw output in our reports. Since we've stored these results, we can weave them into our narrative text. We just need to know how to call the right elements. @tbl-KWElements shows how we can extract the pieces from the output object.
+
+| Value | Object Name | Code Example | Final Result |
+|:------|:-------------:|:------------------------:|:--------:|
+| *H* | `honeyOmni$statistic` | `round(honeyOmni$statistic, digits = 2)` | `r round(honeyOmni$statistic, digits = 2)`|
+| *DF* | `honeyOmni$parameter` | `honeyOmni$parameter` |`r honeyOmni$parameter` |
+| *p*-value | `honeyOmni$p.value` | `round(honeyOmni$p.value, digits = 4)` | `r round(honeyOmni$p.value, digits = 4)` |
+
+: Commands to Extract KW Results {#tbl-KWElements}
+
+To get a measure of effect size, we will use *Epsilon-Squared*. However, we must use the function from the `{rcompanion}` package to account for using the Kruskal-Wallis test appropriately.
+
+```{r}
+#| label: honeyES
+#| echo: true
+# Demo Code for measuring practical significance for Kruskal-Wallis ----
+## Honey Study
+honeyEffectSize <- rcompanion::epsilonSquared(
+  x = honeyData$Amount,
+  g = honeyData$Varietal,
+  digits = 4
+)
+
+## Display results
+honeyEffectSize
+
+```
+
+Notice that instead of using a formula, we use `x` to denote the response and `g` to pass along the grouping (factor) information. Additionally, you'll notice that even though `digits = 4`, there are five numbers after the decimal point. Here the `digits` argument refers to the number of *significant* digits to display.
+
+We still interpret $\epsilon^2$ as the proportion of variation explained by our model, just like we interpret the effect sizes in the parametric shortcut.
+
+We can bring both sets of elements together to create a narrative paragraph such as the one below.
+
+Given that a one-way ANOVA model is appropriate to investigate whether the varietal impacts the amount of excess honey produced and we decided that we did not meet the assumptions for the parametric ANOVA *F* test, we turned towards the nonparametric Kruskal-Wallis *H* test. After checking that the data satisfy the assumptions, we found that $H=`r round(honeyOmni$statistic, digits = 2)`$ with `r honeyOmni$parameter` degrees of freedom. This results in a *p*-value of `r round(honeyOmni$p.value, digits = 4)`. Since this is larger than our stated Unusualness Threshold ($UT = 0.03$), we will fail to reject the null and decide to act as if varietal does not impact the amount of excess honey the bees produced.
+
+:::{.callout-tip collapse="true"}
+#### Generating Code for Paragraph
+Here's how the example paragraph looks in my Quarto/RMD document:
+
+Given that a one-way ANOVA model is appropriate to investigate whether the varietal impacts the amount of excess honey produced and we decided that we did not meet the assumptions for the parametric ANOVA *F* test, we turned towards the nonparametric Kruskal-Wallis *H* test. After checking that the data satisfy the assumptions, we found that \$H=\` r round(honeyOmni&#36;statistic, digits = 2)\`\$ with \` r honeyOmni&#36;parameter\` degrees of freedom. This results in a *p*-value of \` r round(honeyOmni&#36;p.value, digits = 4) \`. Since this is larger than our stated Unusualness Threshold (\$UT = 0.03\$), we will fail to reject the null and decide to act as if varietal does not impact the amount of excess honey the bees produced.
+
+Note 1: I didn't make use of the effect size since I'm failing to reject the null hypothesis. Generally, we only include effect sizes when we have a statistical discovery (i.e., rejecting the null).
+
+Note 2: the \` is the "back tick" from the key just to the left of the 1-key on a standard (American) keyboard. This symbol immediately followed by `r` will start an in-line code chunk.
+:::
+
+### Post Hoc-Pairwise
+
+There are two sets approaches that you can use for pairwise comparisons in the nonparametric setting. (We won't worry about contrasts in this guide.) For both of the approaches, I'm going to use the __Alfalfa Pest Study__ data, ignoring the block. We will aim to control our SCI at 0.1 and use a $UT=0.1$.
+
+Here are the raw outputs of the Kruskal-Wallis *H* for this context.
+
+```{r }
+#| label: alfalfaStudy
+#| echo: true
+# Demo Code for fitting Oneway Alfalfa Study ----
+## KW Results
+alfalfaModel0 <- kruskal.test(
+  formula = Larvae ~ Treatment,
+  data = alfalfaData,
+  na.action = "na.omit"
+)
+
+alfalfaModel0
+```
+
+#### The DSCF Test
+
+The Dwass-Steel-Critchlow-Fligner (DSCF) Test is the nonparametric equivalent of the Tukey/Tukey-Kramer HSD test. To use this approach, you'll need to have loaded my ANOVA Tools.
+
+```{r}
+#| label: tbl-dscf
+#| tbl-cap: "Post Hoc-Dwass-Steel-Critchlow-Fligner Tests"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for the DSCF Test ----
+dscf <- dscfTest(
+  response = alfalfaData$Larvae, # <1>
+  factor = alfalfaData$Treatment
+)
+# Kable Code for DSCF
+knitr::kable(
+  x = dscf,
+  digits = 3,
+  col.names = c("Comparison", "Observed W", "Adj. p-value"),
+  # caption = "Post Hoc-Dwass-Steel-Critchlow-Fligner Tests",
+  align = 'lcc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  ) 
+```
+1. Notice that we call the individual response and factor columns instead of using a `formula` argument.
+
+You would then compare these adjusted *p*-values to your Unusualness Threshold.
+
+#### Dunn's Test
+
+Dunn's Test (which is different from *Dunnet's Test*) is part of the `{dunn.test}` package and will give you flexibility for using a number of different methods to control our Type I Error Rate.
+
+```{r}
+#| label: tbl-dunn
+#| tbl-cap: "Post Hoc Dunn's Test--Bonferroni Adjustment"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for using Dunn's Test ----
+dunn <- purrr::quietly(dunn.test::dunn.test)( # <1>
+  x = alfalfaData$Larvae, # <2> 
+  g = alfalfaData$Treatment, 
+  method = "bonferroni", # <3> 
+  alpha = 0.1, # <4> 
+  kw = FALSE, # <5> 
+  table = FALSE, # <6> 
+  list = FALSE # <7>
+)$result # <8> 
+
+## Kable Code for Dunn's Test
+knitr::kable(
+  x = data.frame(
+    comparison = dunn$comparisons,
+    pvalues = dunn$P.adjusted
+  ),
+  digits = 4,
+  # caption = "Post Hoc Dunn's Test--Bonferroni Adjustment", # <9>
+  col.names = c("Comparison", "Adj. p-Value"),
+  align = 'lc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+
+```
+1. The `dunn.test` can be noisy and print a lot of extra things. The `purrr::quietly` call helps to tamp this down.
+2. Notice that we call the individual response and factor columns instead of using a `formula` argument.
+3. We can change what adjustment method we're using to match our choice of Type I Error Rate that we're controlling; see @tbl-dunnOptions for options.
+4. You will need to specify your overall Type I Error Rate.
+5. Turns off an additional printout of the Kruskal-Wallis *H* test.
+6. Turns off the default table output method.
+7. This is useful if you are using a step up/down method for addressing the Multiple Comparison problem.
+8. This is the key step that will help you save the results of the pairwise comparisons for further use. Don't forget this.
+9. Don't forget to update the caption to refer to the adjustment method you actually used.
+
+
+You can then compare these *p*-values to your Unusalness Threshold.
+
+You can change which method you use by changing the value of the `method` argument:
+
+| Chosen Method | Set `method =` |
+|:--------------|:-----------------------:|
+| Bonferroni | `"bonferroni"` |
+| Šidák | `"sidak"` |
+| Holm | `"holm"` |
+| Holm-Šidák | `"hs"` |
+| Hochberg | `"hochberg"` |
+| Benjamini-Hochberg | `"bh"` |
+
+: Dunn's Test Adjustment Options {#tbl-dunnOptions}
+
+For the last four, set `list = TRUE` to have the results be put into the proper ordering and marked for rejection of the null hypothesis. 
+
+#### Post Hoc Effect Sizes
+
+When you have used Nonparametric Shortcuts (either through Dunn's Test or the DSCF Test), you'll want to use the `kw.PostHoc` function (also from my helper functions). You'll need to provide two inputs: the response vector and the treatment vector.
+
+```{r}
+#| label: tbl-npES
+#| tbl-cap: "Post Hoc Comparison Effect Sizes"
+#| html-table-processing: none
+#| echo: true
+# Demo Code for Post Hoc Effect Size for Nonparametric One-way ANOVA ----
+kw.PostHoc(
+    response = alfalfaData$Larvae,
+    treatments = alfalfaData$Treatment
+  ) %>%
+knitr::kable(
+  digits = 3,
+  # caption = "Post Hoc Comparison Effect Sizes",
+  col.names = c("Pairwise Comparison","Hodges Lehmann Estimate",
+                "Prob. Superiority"),
+  align = 'lcc',
+  booktabs = TRUE
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("condensed", "boardered"),
+    font_size = 12,
+    latex_options = "HOLD_position"
+  )
+```
+
+The Probability of Superiority (@tbl-npES) has the same kind of interpretation as in the parametric shortcut: approximately 27% of the time we randomly select a plot getting conventional weevil treatment and one getting the IPM treatment, the conventional plot will have the higher number of whole larvae. 
+
+The Hodges-Lehmann Estimate of @tbl-npES, $\widehat{\Delta}$, measures the middle difference of all possible pairings between two groups. If we imagine taking all of the plots which got either conventional pest control or the IPM treatment, we can imagine all of the pairings of plot from each group (i.e., the 25 pairings). For each pairing, we can find the difference in number of whole weevil larvae found. For these two groups/treatments, half of all the pairings show that the conventional group have at least 29 fewer whole larvae than the IPM group.
+
+# Two-way ANOVAs
+
+There are two nonparametric shortcuts we can take for Two-way ANOVA designs: Friedman and Mack-Skillings. In both cases, the underlying model is the same: 
+$$Y_{ij}=\theta_{\bullet\bullet\bullet}+\beta_{i}+\tau_{j}+\epsilon_{ijk}$$
+where $\theta_{\bullet\bullet\bullet}$ represents the *__Grand Median__*, $\beta_{i}$ represents the effect due to block *i*, $\tau_j$ represents the effect of factor level *j* relative to the *Median*, and $\epsilon_{ijk}$ represents the residuals for this model.
+
+## Deciding Between Tests
+
+The main difference between these approaches comes down to the notion of replication. That is, if we designed the study to have only 1 replicate within each group (i.e., block-factor pairing) like we see in a Within Subjects design, then we would use the Friedman Test. If we designed our study to have 1 or more replicates in each group AND be balanced, then we would use the Mack-Skillings test.
+
+:::{.callout-caution}
+These tests are extremely dependent on the study designs being met. In either case the designs must be balanced.
+:::
+
+## Assessing Assumptions
+
+The Friedman and Mack-Skillings tests make the same three assumptions:
+
+  1) Independence of Observations
+  2) The response follows some *continuous* distribution that differs between groups by location (*Medians*) at most.
+  3) We do not have any significant (and meaningful) interaction between our block and our factor.
+
+If these assumptions are satisfied, the our test statistics, Friedman's *S* and Mack-Skillings' *MS*, each follow a $\chi^2$ with $k-1$ *degrees of freedom* (where we have *k* levels to our factor).
+
+### Independence of Observations
+
+Use the approaches we've made use of all semester.
+
+### Continuous Distribution
+
+Use the same approach as for the Kruskal-Wallis: Is the response continuous or at least ordinal? Do I have reason to suspect that one of the groups/treatments creates extremely different behavior in the response attribute? 
+
+### No Interaction Between Block and Factor
+
+Just as we've done in the past, we will want to look at an interaction plot. A major difference here is to not use the *SAM* but the *Sample Median*.
+
+```{r}
+#| label: fig-alfalfaInt
+#| fig-cap: "Interaction Plot for Alfalfa Pest Study"
+#| fig-alt: "Interaction plot for alfalfa pest study"
+#| aria-describedby: "alfalfaIntLD"
+#| echo: true
+# Demo Code for Interaction Plot in Alfalfa Pest Study ----
+ggplot2::ggplot(
+  data = alfalfaData,
+  mapping = aes(
+    x = Variety,
+    y = Larvae,
+    color = Treatment,
+    shape = Treatment,
+    linetype = Treatment,
+    group = Treatment
+  )
+) +
+  stat_summary(fun = "median", geom = "point") + # <1>
+  stat_summary(fun = "median", geom = "line") +
+  labs(
+    x = "Variety",
+    y = "Number of Whole Larvae Found",
+    color = "Treatment",
+    shape = "Treatment",
+    linetype = "Treatment"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "right"
+  ) +
+  scale_color_manual(values = psuPalette)
+
+```
+1. Notice the use of the *Median* instead of the *Mean*.
+
+```{=html}
+<details id=alfalfaIntLD>
+  <summary>Long Description</summary>
+  <p>The horizontal axis is labelled "Variety" and has labels of  ALPV44NP18, ALPV54QX13, ALPV55QX17, ALPV64TJ19, and ALPV78DG42.</p>
+  <p>The vertical axis is labelled "Number of Whole Larvae Found" and goes from about 48 to 154 with labels of 50, 75, 100, 125, and 150.</p>
+  <p>The attribute "Treatment" contols color, point shape, and line type across four levels.</p>
+  <ul>
+  <li>Conventional treatment is blue, solid circles, and solid lines.</li>
+  <li>IPM treatment is read, solid triangles, and dashed lines.</li>
+  <li>No treatment ("None") is teal, solid squares, and long-dashed lines.</li>
+  <li>Organic treatment is golden plus-signs, and long-dashed, long-gapped lines.</li>
+  </ul>
+  <p>The plot consists of four sets of five points that are sequentially connected by line segments.</p>
+  <ul>
+  <li>The conventional points are at (ALPV44NP18, 88), (ALPV54QX13, 78), (ALPV55QX17, 105), (ALPV64TJ19, 52) and (ALPV78DG42, 49).</li>
+  <li>The IPM points are at (ALPV44NP18, 94), (ALPV54QX13, 107), (ALPV55QX17, 128), (ALPV64TJ19, 81) and (ALPV78DG42, 90).</li>
+  <li>The No treatment points are at (ALPV44NP18, 104), (ALPV54QX13, 115), (ALPV55QX17, 136), (ALPV64TJ19, 94) and (ALPV78DG42, 102).</li>
+  <li>The Organic points are at (ALPV44NP18, 104), (ALPV54QX13, 115), (ALPV55QX17, 136), (ALPV64TJ19, 94) and (ALPV78DG42, 102).</li>
+  </ul>
+</details>
+```
+
+In looking at @fig-alfalfaInt we are still looking for parallelism between corresponding line segments. Keep in mind that we do not need perfection. The only somewhat worrying segment is for the Conventional treatment between the ALPV44NP18 and ALPV54QX13 varieties.
+
+## Friedman's Test
+
+We have two different approaches we can take with the Friedman test: we can use base `R` or we can use the `{agricolae}` package. The base `R` route will work for all two-way designs and allows us to enter a formula-data frame pair (our typical method), a set of vectors, or as a matrix. The `{agricolae}` package requires us to enter a set of vectors (data frame columns) only.
+
+### Using Base R
+
+Beyond the fact that we don't need any special packages when using the `friedman.test` function that is part of the base build of R, we can make use of R's formula notation. However, you still have to keep in mind that the Friedman test is for single replicate designs--only one unit gets each treatment OR you have a One-way Within Subjects Repeated Measures design.
+
+Here is an example of invoking fitting the model for Friedman's test.
+
+```{r}
+#| label: friedman1
+#| echo: true
+# Demo Code for Fitting a Model for Friedman's Test ----
+alfalfaModel1 <- friedman.test(
+  formula = Larvae ~ Treatment | Variety, # <1>
+  data = alfalfaData
+)
+
+```
+1. Notice that after we listed the factor (`Treatement`) we placed the block after the vertical pipe symbol: `| Variety`. This *is* different from the approach we used in nonparametric settings.
+
+If our data aren't in a data frame, that is not a problem. The `friedman.test` function can also take a data matrix as the input and it will automatically detect which are blocks and which are factors based upon the indices.
+
+```{r}
+#| label: friedman2
+#| echo: true
+# Demo Code for Fitting a Model for Friedman's Test ----
+roundingModel1 <- friedman.test(
+  y = rounding.times
+)
+
+```
+
+#### Omnibus Results
+
+Just like the Kruskal-Wallis *H* test, we do not have an ANOVA table for Friedman's. However, report the values as part of our narrative text and see raw output.
+
+```{r}
+#| label: friedmanRaw
+#| echo: true
+# Demo Code for Getting Raw Output for Friedman's Test ----
+alfalfaModel1
+
+roundingModel1
+```
+
+| Value | Object Name | Code Example | Final Result |
+|:------|:-------------:|:--------------------------:|:--------:|
+| *S* | `yourModel$statistic` | `round(alfalfaModel1$statistic, digits = 2)` | `r round(alfalfaModel1$statistic, digits = 2)`|
+| *DF* | `yourModel$parameter` | `alfalfaModel1$parameter` |`r alfalfaModel1$parameter` |
+| *p*-value | `yourModel$p.value` | `round(alfalfaModel1$p.value, digits = 4)` | `r round(alfalfaModel1$p.value, digits = 4)` |
+
+: Commands to Extract Friedman Results (Base `R` Method) {#tbl-friedmanBase}
+
+You can use the commands found in @tbl-friedmanBase to extract the various key values from Friedman's test. Once you have these values, you can write a narrative just like the example in the Kruskal-Wallis section.
+
+### Using `{agricolae}`
+
+The `{agricolae}` package does not support a formula statement but will provide some additional information the base R approach does not. To fit the model for this package, we would run code like the following.
+
+```{r}
+#| label: agricolae1
+#| echo: true
+# Demo Code for Fitting the Model for Friedman's Test via Agricolae ----
+alfalfaModel2 <- friedman(
+  judge = alfalfaData$Variety, # <1> 
+  trt = alfalfaData$Treatment, # <2>
+  evaluation = alfalfaData$Larvae, # <3>
+  alpha = 0.1, # <4>
+)
+
+```
+1. The `judge` argument is for your block.
+2. The `trt` argument is for your factor/treatment.
+3. The `evaluation` argument is for your response.
+4. The `alpha` argument is for your overall Type I Error Rate level.
+
+Notice that the `{agricolae}` package's `friedman` function is seemingly built for a Within Subjects design ("judge", "treatment", "evaluation"). 
+
+Just as with the other approaches in this guide, we will need to form a narrative text to communicate the results but we can also view the raw output.
+
+```{r}
+#| label: agricolae2
+#| echo: true
+# Demo Code for Raw Output from agricolae's Friedman's test ----
+alfalfaModel2
+
+```
+
+At top of the raw output, we have the value of the statistic *S* (labelled as `Chisq`) along with the *degrees of freedom* for *S* and the *p*-value. In the middle of the output (under the heading `$means`) we have the factor level values of the *SAM* (labeled as `alfalfaData.Larvae`) followed by the sum of the ranks of each group (labeled as `rankSum`). We can also see the values for the *SASD*, size (*r*eplicates), and Tukey's Five-Number Summary.
+
+At the bottom of the raw output, under the heading of `$groups` we can see a Connecting Letter Report showing us at a glance which treatment levels are statistically different from the others. __Important Note:__ this connecting letter report only controls the *Experimentwise Error Rate (EER)* via Fisher's Least Significance Difference (LSD) method. The overall Type I Error rate we're controlling at is the `alpha` given in the command.
+
+We can extract the elements of this raw output using the options listed in @tbl-friedmanAgricolae.
+
+| Value | Object Name | Code Example | Final Result |
+|:------|:-------------:|:--------------------------:|:----------:|
+| -- | `yourModel$statistics` | `alfalfaModel2$statistics` | Data Frame of Inference Pieces |
+| *S* | `yourModel$statistics$Chisq` | `round(alfalfaModel2$statistics$Chisq, digits = 2)` | `r round(alfalfaModel2$statistics$Chisq, digits = 2)`
+| *DF* | `yourModel$statistics$Df` | `alfalfaModel2$statistics$Df` |`r alfalfaModel2$statistics$Df` |
+| *p*-value | `yourModel$statistics$p.chisq` | `round(alfalfaModel2$statistics$p.chisq, digits = 4)` | `r round(alfalfaModel2$statistics$p.chisq, digits = 4)` |
+| Summary Info | `yourModel$means` | `alfalfaModel2$means` | Data Frame of Summary Stats by group |
+| Connecting Letter Report | `yourModel$groups` | `alfalfaModel2$groups` | Data Frame of Connecting Letters-LSD/EER Control |
+
+: Commands to Extract Friedman Results (`{agricolae}` Method) {#tbl-friedmanAgricolae}
+
+### Post Hoc-Pairwise
+
+If you want to do Post Hoc analysis with Friedman's Test, you can. If you are only controlling the Experimentwise Error Rate (EER) and want to use the Least Significant Difference method, the you just need the output from the `{agricolae}` package's `friedman` test. If you want something different, or you used base R, you'll need to draw upon the `{NSM3}` package.
+
+For the Rounding Study, we would run the following command to run the Wilcoxon, Nemenyi, McDonald-Thompson (WNMT) *R* test.
+
+```{r}
+#| label: wnmt1
+#| echo: true
+# Demo Code for WNMT  with a Matrix ----
+postHocRounding <- pWNMT(
+  x = rounding.times, # <1>
+  method = "Monte Carlo", # <2>
+  n.mc = 2500 # <3>
+)
+
+postHocRounding
+
+```
+1. This example uses the data matrix instead of a data frame.
+2. Default is `"Monte Carlo"` for the simulation method.
+3. This controls the number of Monte Carlo simulations to run; default is 10,000.
+
+In the raw output, you'll hopefully notice the three statements that got printed. First thing to notice is that instead of using the treatment names, the output uses "1", "2", and "3". These correspond to the first, second, and third columns, respectively. Based upon the ordering of the columns when we first read in the data, 1 is Round Out, 2 is Narrow Angle, and 3 is Wide Angle. Hence, knowing the structure of your data matrix is vital here.
+
+Each statement provides the value of the WNMT *R* statistic as well as the appropriate *p*-value. To make a decision, compare that *p*-value to your Unusualness Threshold. 
+
+#### Working with a Data Frame
+
+If you attempt to use the WNMT in the Alfalfa Pest Study, you'll encounter an error message. As far as I can tell, the internal algorithm for constructing the appropriate matrix is breaking down. To get around this error, we can form the matrix ourselves by creating a wide format data frame.
+ 
+```{r}
+#| label: wnmt2
+#| echo: true
+# Demo Code for using WNMT with a Data Frame ----
+## Make wide data frame
+alfWide <- alfalfaData %>%
+  dplyr::select(!Plot) %>%
+  pivot_wider(
+    id_cols = Variety,
+    names_from = Treatment,
+    values_from = Larvae
+  ) %>%
+  tibble::column_to_rownames(var = "Variety")
+
+## Create data matrix
+alfMatrix <- as.matrix(alfWide)
+
+alfalfaPostHoc <- pWNMT(
+  x = alfMatrix,
+  method = "Monte Carlo",
+  n.mc = 2500
+)
+
+alfalfaPostHoc
+
+```
+
+To give ourselves a key for understand what treatments 1, 2, 3, and 4 represent, in the WNMT raw output for the Alfalfa study, we can use the following code.
+
+```{r}
+#| label: wnmtColNames
+#| echo: true
+# Demo Code for getting column names from data matrix ----
+colnames(alfMatrix)
+
+```
+
+Again, we can compare the listed *p*-values to our Unusualness Threshold for decision making. (Remember, that *p*-values can't actually be zero.)
+
+
+## Mack-Skillings Test
+
+If you have 1) a balanced design, and 2) 1+ replicates per group, you can use the Mack-Skillings Test in place of Friedman's Test. To run this test, we will need to use the `NSM3` package.
+
+## Fitting the Model
+
+```{r }
+#| label: mackSkil
+#| echo: true
+# Demo Code for Mack-Skillings Test ----
+alfalfaModel3 <- pMackSkil(
+  x = alfalfaData$Larvae, # <1>
+  b = alfalfaData$Variety, # <2>
+  trt = alfalfaData$Treatment, # <3>
+  method = "Monte Carlo", # <4>
+  n.mc = 10000 # <5>
+)
+
+```
+1. The `x` argument is for the response.
+2. The `b` argument is for the block.
+3. The `trt` argument is for the factor.
+4. The `"Monte Carlo"` is the default simulation method.
+5. Controls the number of Monte Carlo simulations to run for estimation purposes; default is 10,000.
+
+
+## Omnibus Results
+
+```{r mackSkillOmni, echo=TRUE}
+#| label: mackSkillOmni
+#| echo: true
+# Demo Code for Raw Output from Mack-Skillings ----
+alfalfaModel3
+
+```
+
+Notice that the raw output for Mack-Skillings is fairly straight to the point. Something to keep in mind is that since a Monte Carlo simulation is being used to generate the sampling distribution for the *MS* statistic, the *p*-values are *approximate* only.
+
+We can also extract the values from this output using the commands in @tbl-mackSkills.
+
+| Value | Object Name | Code Example | Final Result |
+|:------|:-------------:|:--------------------------:|:--------:|
+| *MS* | `yourModel$obs.stat` | `round(alfalfaModel3$obs.stat, digits = 2)` | `r round(alfalfaModel3$obs.stat, digits = 2)`|
+| *p*-value | `yourModel$p.val` | `round(alfalfaModel3$p.val, digits = 4)` | `r round(alfalfaModel3$p.val, digits = 4)` |
+
+: Commands to Extract Mack-Skillings Results {#tbl-mackSkills}
+
+## Post Hoc-Pairwise
+
+If you need to do Post Hoc analysis for this situation, come talk to me.
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
