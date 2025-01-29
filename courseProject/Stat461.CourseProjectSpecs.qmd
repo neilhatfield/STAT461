@@ -179,3 +179,7 @@ Here are some ideas that have been done by students in the past:
 | brand of pop/soda, type of candy | volume of displaced foam |
 | species of Wisconsin Fast Plant, fertilizer type, light conditions | height of plant |
 | Minecraft Character Handedness, Shooting Hand, Type of Bow | Shot power |
+| Perceived disability status | Perception of Competence |
+| Sport, Geographic Region | Season Win Percentage |
+| Game Title and Ore Type | Rupee Value of Item Drop |
+| Race/Ethnicity | Level of Spice Detection |
