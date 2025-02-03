@@ -2,18 +2,18 @@
 title: "Exploring Double Stuf vs. Regular Oreos®"
 subtitle: "Homework #1.1-Example C"
 author: "C. Student"
-date: "1/19/2024"
+date: "1/24/2025"
 output: pdf_document
 geometry: left=1in,right=1in,top=1in,bottom=1in
 urlcolor: blue
 header-includes:
   - \usepackage{subfig}
 bibliography: references.bib
-csl: apa.csl
+csl: apa7.csl
 ---
 
 ```{r setupFiles, include = FALSE}
-# Setting Document Options
+# Setting Document Options ----
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
   fig.align = "center"
 )
 
-# Add additional packages by name to the following list
+# Add additional packages by name to the following list ----
 packages <- c("tidyverse", "knitr", "kableExtra", "psych", "car",
               "mratios", "boastUtils"
 )
@@ -64,6 +64,7 @@ The original inquiry that began the most recent exploration started with a New Y
 ```{r originalOreoData}
 #| fig.cap = "Oreo Data (Anderson, 2013a)",
 #| out.width = '80%'
+# Add image of Dan Anderson's data ----
 knitr::include_graphics("dansData.jpg")
 ```
 
@@ -96,7 +97,7 @@ Throughout this study, I will adopt an Unusualness Threshold of 3%. That is to s
 #| fig.subcap=c("Original Data", "Fixed Data"),
 #| fig.ncol=2,
 #| out.width="50%"
-# Box plots
+# Box plots of Original and Fixed Data Collections ----
 ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass, y = Type, fill = Type)
@@ -113,11 +114,11 @@ ggplot(
     values = boastPalette
   )
 
-# Fix the flipped labels
+# Fix the flipped labels ----
 oreoData[13, "Type"] <- "Regular"
 oreoData[39, "Type"] <- "Double Stuf"
 
-# Recreate the box plots
+# Recreate the box plots -----
 ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass, y = Type, fill = Type)
@@ -145,10 +146,10 @@ I reached out to Dr. Hatfield about the issue and he confirmed that there was a 
 #| fig.cap="Shadowgram of Filling Masses",
 #| fig.width=4,
 #| fig.height=2
-# Load shadowgram function
+# Load shadowgram function ----
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R")
 
-# Create a shadowgram for the filling masses
+# Create a shadowgram for the filling masses -----
 shadowgram(
   dataVec = oreoData$Filling.Mass,
   label = "Filling mass (g)",
@@ -162,8 +163,12 @@ Figure \ref{fig:shadowgram} provides a glimpse at modal clumps of cookies based 
 
 I also wanted to look at a histogram to get a better sense of the créme filling masses. Figure \ref{fig:histograms} provides us with side-by-side histograms for the two types of cookies. We can see a match between the centers of the modal clumps in the shadowgram (Figure \ref{fig:shadowgram}) and the location of the highest bars in Figure \ref{fig:histograms}. Further, we can get a sense of the spread of the filling masses. The Double Stuf cookies appear to go from a little under 6 grams to over 7.5 grams; the Regular cookies vary from a bit under 2.5 grams to just over 4 grams.
 
-```{r histograms, fig.cap="Histograms of Filling Mass by Type of Cookie", fig.width=6, fig.height=2, fig.pos="H"}
-# Create side-by-side histograms
+```{r histograms}
+#| fig.cap="Histograms of Filling Mass by Type of Cookie",
+#| fig.width=6,
+#| fig.height=2,
+#| fig.pos="H"
+# Create side-by-side histograms -----
 ggplot(
   data = oreoData,
   mapping = aes(x = Filling.Mass, fill = Type)
@@ -203,7 +208,7 @@ ggplot(
 ```
 
 ```{r descStats}
-# Get descriptive statistics by type of Oreo
+# Get descriptive statistics by type of Oreo ----
 groupStats <- psych::describeBy(
   x = oreoData$Filling.Mass,
   group = oreoData$Type,
@@ -216,7 +221,7 @@ groupStats <- psych::describeBy(
   digits = 4
 )
 
-# Set row names as type of cookie; select useful columns
+# Set row names as type of cookie; select useful columns ----
 groupStats <- groupStats %>%
   tibble::remove_rownames() %>%
   tibble::column_to_rownames(
@@ -231,7 +236,7 @@ groupStats <- groupStats %>%
 In addition to using data visualizations, I've also used used several descriptive statistics on filling mass by the type of cookie as displayed in Table \ref{tab:descStatsTable}. We can quickly see that there are `r groupStats["Regular", "n"]` regular Oreos and `r groupStats["Double Stuf", "n"]` Double Stuf Oreos.
 
 ```{r descStatsTable}
-# Generate a professional looking table
+# Generate a professional looking table ----
 groupStats %>%
   knitr::kable(
     caption = "Summary Statistics for Oreo Filling Masses",
@@ -258,18 +263,18 @@ In addition to the *sample median*, I could use the *sample arithmetic mean* (*S
 
 Just as the *MAD* provides some sense of variation, the *sample arithmetic variance* (*SAV*) does too. (As does the *sample arithmetic standard deviation*--*SASD*.). For regular Oreos, the value of the *SAV* is `r round(groupStats["Regular", "sd"]^2, digits = 4)` sq. grams; for Double Stuf `r round(groupStats["Double Stuf", "sd"]^2, digits = 4)` sq. grams. These values point out that the cookies vary from one another in terms of créme filling masses, with them having almost identical levels of pairwise deviation. The *SASD* can tell us about where accumulation of créme filling picks up and slows down. For regular cookies, we see an uptick in accumulation at approximately `r round(groupStats["Regular", "mean"] - groupStats["Regular", "sd"], digits = 2)` grams (\(SAM\left(\mathcal{R}\right)*1\text{ cookie} -SASD\left(\mathcal{R}\right)\) and a slow down in accumulation near `r round(groupStats["Regular", "mean"] + groupStats["Regular", "sd"], digits = 2)` grams (\(SAM\left(\mathcal{R}\right)*1\text{ cookie} +SASD\left(\mathcal{R}\right)\).
 
-The last two statistics in Table \ref{tab:descStatsTable} are *sample skewness* and *sample excess kurtosis*. Both of these statistics provide information about how the underlying filling process of the cookies behaves. The negative value of *sample skewness* for Double Stuf Oreos indicates that the process appears to create cookies that have less créme filling than most Double Stuf Oreos have. The positive value for regular Oreos indicates the opposite: the filling process for regular Oreos will fill some cookies with more créme filling than typical. These values connect well with the prior observation from the box plots and where I noticed more and less observation density. For *sample excess kurtosis*, the positive value tells us that the filling process for Double Stuf Oreos will create more outliers than I would anticipate if the process behaved in a Gaussian way. The negative value for regular Oreos suggests that that process creates fewer outliers than if that process also behaved in a Guassian way.
+The last two statistics in Table \ref{tab:descStatsTable} are *sample skewness* and *sample excess kurtosis*. Both of these statistics provide information about how the underlying filling process of the cookies behaves. The negative value of *sample skewness* for Double Stuf Oreos indicates that the process appears to create cookies that have less créme filling than most Double Stuf Oreos have. The positive value for regular Oreos indicates the opposite: the filling process for regular Oreos will fill some cookies with more créme filling than typical. These values connect well with the prior observation from the box plots and where I noticed more and less observation density. For *sample excess kurtosis*, the positive value tells us that the filling process for Double Stuf Oreos will create more outliers than I would anticipate if the process behaved in a Gaussian way. The negative value for regular Oreos suggests that that process creates fewer outliers than if that process also behaved in a Gaussian way.
 
 ```{r pairwiseComparisons}
 #| fig.cap = "Histogram of all pairwise ratios of créme filling masses",
 #| fig.width = 4,
 #| fig.height = 3
-# Split Oreos into separate vectors by type
+# Split Oreos into separate vectors by type ----
 splitOreos <- unstack(
   x = oreoData,
   form = Filling.Mass ~ Type
 )
-# Create all pairwise ratios between cookies of each type
+# Create all pairwise ratios between cookies of each type ----
 pairRatios <- outer(
   X = splitOreos[["Double Stuf"]],
   Y = splitOreos[["Regular"]],
@@ -283,6 +288,7 @@ pairRatios <- outer(
     values_to = "ratio"
   )
 
+# Create histogram of ratio pairs ----
 ggplot(
   data = pairRatios,
   mapping = aes(x = ratio)
@@ -315,7 +321,6 @@ ggplot(
 
 As a final exploration of the data collection, I wanted to form all possible pairings of one Double Stuf Oreo and one regular Oreo and look at the ratio of their créme filling masses. Figure \ref{fig:pairwiseComparisons} shows the results of this investigation. The bulk of the `r format(nrow(pairRatios), big.mark = ",")` pairings result in a ratio that is at least 2 (i.e., `r length(which(pairRatios$ratio >= 2))` pairs). However, there are `r length(which(pairRatios$ratio < 2))` pairs that result in a ratio under 2. Interestingly, there are also `r length(which(pairRatios$ratio >= 2.5))` pairs with a ratio over 2.5. This highlights for me that the ratio of the filling processes could be centered above 2 but there is a decent amount of variation in this ratio.
 
-
 Now that I have a better understanding of the data, I believe that I can answer the statistical research question.
 
 # Results
@@ -328,13 +333,14 @@ where \(\mu_T\) represents the performance of the underlying créme filling proc
 
 The *t* test for the ratio of two group's values of the *sample arithmetic mean* makes two primary assumptions: Gaussian errors and independent observations. While the values of the *sample arithmetic standard deviation* are nearly identical, we will proceed with a test that allows for heteroscedasticity.
 
-Figure \ref{fig:qqPlots} provides QQ plots for both Regular and Double Stuf Oreos when compared against a Gaussian distribution. For the regular Oreos (Figure \ref{fig:qqPlots}a), there are three points (`r round(3/36, 2)*100`%) located just outside of the envelope. For the Double Stuf Oreos, there is just one point (`r round(1/30, 2)*100`%). Pairing these plots with the values of *sample skewness* and *sample excess kurtosis* in Table \ref{tab:descStatsTable} have mean relatively satisfied that our data are not overly inconsistent with the Gaussian assumption. The one point of hesitancy is the fact that the two groups have slight skewness in opposite directions. This could magnify the differences between them. However, it is worth noting that Double Stuf Oreos have a negative skewness suggesting that potential outliers are underfilled while regular Oreos have a postivie skewness suggesting just the opposite.  
+Figure \ref{fig:qqPlots} provides QQ plots for both Regular and Double Stuf Oreos when compared against a Gaussian distribution. For the regular Oreos (Figure \ref{fig:qqPlots}a), there are three points (`r round(3/36, 2)*100`%) located just outside of the envelope. For the Double Stuf Oreos, there is just one point (`r round(1/30, 2)*100`%). Pairing these plots with the values of *sample skewness* and *sample excess kurtosis* in Table \ref{tab:descStatsTable} provide evidence that the assumption is relatively satisfied. That is to say, our data are not overtly inconsistent with the Gaussian assumption. The one point of hesitancy is the fact that the two groups have slight skewness in opposite directions. This could magnify the differences between them. However, it is worth noting that Double Stuf Oreos have a negative skewness suggesting that potential outliers are underfilled while regular Oreos have a postivie skewness suggesting just the opposite.  
 
 ```{r qqPlots}
 #| fig.cap="QQ Plots for Log Filling Mass",
 #| fig.subcap=c("Regular", "Double Stuf"),
 #| fig.width=2.75,
 #| fig.height=2.75
+# Create QQ Plots for Data ----
 par(mar = c(4, 4, .1, .1), cex = 0.75)
 car::qqPlot(
   formula = ~ Filling.Mass,
@@ -367,6 +373,7 @@ To assess the issue of independence, knowing the order in which measurements wer
 #| fig.width=5, 
 #| fig.height=2.5,
 #| fig.pos = "H"
+# Create Index Plot for Data ----
 ggplot(
   data = oreoData,
   mapping = aes(
@@ -396,7 +403,7 @@ ggplot(
 ## Parametric Shortcut: Ratio *t* Test
 
 ```{r ratioTest}
-# Carry out the ratio test
+# Carry out the ratio test ----
 ratioOut <- ttestratio(
   formula = Filling.Mass ~ Type,
   data = oreoData,
@@ -406,16 +413,15 @@ ratioOut <- ttestratio(
 )
 ```
 
-With the assumptions tentatively satisfied, I'll proceed with the parametric shortcut for the the ratio test. I found that \(t(`r round(ratioOut$parameter, digits = 2)`)\approx`r round(ratioOut$statistic, digits = 2)`\), with a *p*-value `r ifelse(test = ratioOut$p.value < 0.001, yes = "less than 0.001", no = round(ratioOut$p.value, digits = 3))`. Given that this means that we would see a value at least as extreme as we have for our test statistic less than one-tenth of a percent of the time we repeat the study when the ratio of créme filling masses is 2 (i.e., `r round(ratioOut$p.value, 5)*100`%). Given that this *p*-value is less than our Unusualness Threshold, we will take this as evidence against the null hypothesis. The 97% confidence interval for the ratio based upon our data is \((`r round(ratioOut$conf.int[1], 2)`, `r round(ratioOut$conf.int[2], 2)`)\). Our specific sample of Oreos suggests that when used in conjunction with the 97% confidence interval estimation method based upon the ratio test, the ratio of filling performance might be between `r round(ratioOut$conf.int[1], 2)` and `r round(ratioOut$conf.int[2], 2)`.
+With the assumptions tentatively satisfied, I'll proceed with the parametric shortcut for the the ratio test. I found that \(t(`r round(ratioOut$parameter, digits = 2)`)\approx`r round(ratioOut$statistic, digits = 2)`\), with a *p*-value `r ifelse(test = ratioOut$p.value < 0.001, yes = "less than 0.001 (or 0.1%)", no = round(ratioOut$p.value, digits = 3))`. Given that this means that we would see a value at least as extreme as we have for our test statistic less than one-tenth of a percent of the time we repeat the study when the ratio of créme filling masses is 2 (i.e., `r round(ratioOut$p.value, 5)*100`%). Given that this *p*-value is less than our Unusualness Threshold, we will take this as evidence against the null hypothesis. The 97% confidence interval for the ratio based upon our data is \((`r round(ratioOut$conf.int[1], 2)`, `r round(ratioOut$conf.int[2], 2)`)\). Our specific sample of Oreos suggests that when used in conjunction with the 97% confidence interval estimation method based upon the ratio test, the ratio of filling performance might be between `r round(ratioOut$conf.int[1], 2)` and `r round(ratioOut$conf.int[2], 2)`.
 
 Taking this information together, I will reject the null hypothesis that the ratio is two and decide to act as if the ratio is some other value (greater than two).
 
 ## Bootstrapping Ratio of *SAM* Values
 
 ```{r boot}
-# Set type as Factor since I hadn't already done so
-
-# Define my estimator
+# Conduct bootstrapping ----
+## Define my estimator ----
 ratioSAM <- function(data, index){
   means <- aggregate(
     Filling.Mass ~ Type,
@@ -426,10 +432,10 @@ ratioSAM <- function(data, index){
   )
   return(means$Filling.Mass[1] / means$Filling.Mass[2])
 }
-# Set seed for reproducibility
+## Set seed for reproducibility ----
 set.seed(461)
 
-# Run the bootstrap
+## Run the bootstrap ----
 bootOut <- boot::boot(
   data = oreoData,
   statistic = ratioSAM,
@@ -442,14 +448,14 @@ bootCI <- boot::boot.ci(bootOut, conf = 0.97, type = c("perc", "bca"))
 
 ```
 
-To confirm these results, I conducted a bootstrap simulation on these data see what might emerge for the ratio of créme filling masses. Using a stratified resampling (by Type), I looked at 10,000 values of the ratio of values of the *SAM* (Double Stuf with respect to Regular). Figure \ref{fig:bootPlot} shows the histogram for this simulated sampling distribution of the ratio. The black, dashed vertical line denotes our observed value of our statistic (`r round(bootCI$t0, 2)` grams/gram).
+As a secondary approach that doesn't depend upon the Gaussian assumption, I conducted a bootstrap simulation on these data see what might emerge for the ratio of créme filling masses. Using a stratified resampling (by Type), I looked at 10,000 values of the ratio of values of the *SAM* (Double Stuf with respect to Regular). Figure \ref{fig:bootPlot} shows the histogram for this simulated sampling distribution of the ratio. The black, dashed vertical line denotes our observed value of our statistic (`r round(bootCI$t0, 2)` grams/gram).
 
 ```{r bootPlot}
 #| fig.cap = "Histogram of Bootstrap Results",
 #| fig.width = 5,
 #| fig.height = 3
 
-# Bootstrap Results Histogram
+# Bootstrap Results Histogram ----
 ggplot(
   data = data.frame(
     tvals = bootOut$t
@@ -459,7 +465,7 @@ ggplot(
   geom_histogram(
     bins = 15,
     color = "black",
-    fill = boastUtils::boastPalette[8]
+    fill = boastUtils::boastPalette[5]
   ) +
   geom_vline(
     xintercept = bootCI$t0,
@@ -485,7 +491,7 @@ ggplot(
   theme_bw() 
 ```
 
-The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in Figure \ref{fig:bootPlot} as the solid red lines. Worth noting here is that the minimum observed value of our test statistic in the bootstrapping simulation is approximately `r round(min(bootOut$t), 2)` grams/gram; which is just slightly above the null hypothesis value. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work would need to be done.
+The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in Figure \ref{fig:bootPlot} as the solid red lines. Worth noting here is that the minimum observed value of our test statistic in the bootstrapping simulation is approximately `r round(min(bootOut$t), 2)` grams/gram; which is just slightly above the null hypothesis value. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work needs to be done to confirm this.
 
 # Discussion
 
