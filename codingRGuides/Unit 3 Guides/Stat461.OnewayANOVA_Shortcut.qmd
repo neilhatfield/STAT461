@@ -91,7 +91,7 @@ options(knitr.kable.NA = "")
 Once you have set the `R` options, now comes reading in data. For this guide, we're going to work with three different data sets: the Fall 2023 Song Knowledge data, data from a honey study, and data from Example 3.2 Resin Lifetimes from the Oehlert textbook. 
 
 The following code demonstrates how we can read in the three data sets:
-```{r loadData, echo=TRUE}
+```{r}
 #| label: loadData
 #| echo: true
 # Demo Code for Loading Data ----
@@ -188,7 +188,7 @@ Hasse diagrams can be included in your reports. The following is an example for 
 
 In investigating the effect of the type of varietal (species of flower) has on the production of excess honey, we constructed the Hasse diagram in @fig-honeyHD. With our nine hives of the same species of bee, we can see that we have sufficient degrees of freedom to estimate the effects for our three levels of varietal and have degrees of freedom for our error term. Given that we're measuring our response (excess honey) in pounds, along with the additive model shown in @fig-honeyHD, a one-way ANOVA model is a valid approach.
 
-```{r honeyHD}
+```{r}
 #| label: fig-honeyHD
 #| fig-cap: "Hasse Diagram for Honey Study"
 #| fig-alt: "Hasse diagram for Honey Study"
@@ -714,9 +714,25 @@ If you are using a Quarto Document, you'll want to make sure that you do each of
 
 :::
 
+```{r}
+#| label: getSvalue
+# Code to convert p-value to s-value ----
+sVal <- -1*log(anova(songModel)$`Pr(>F)`[[1]], base = 2)
+```
+
 #### Interpreting @tbl-songTable
 
-We can see that a STAT461 undergraduate's year in school accounts for about 1.9 times as much variation as the residuals in @tbl-songTable. Drawing upon the balanced design to grant some robustness to the heteroscedasticity, we would anticipate seeing an *F* ratio at least as large as this ~20% of the time we would repeat the experiment if there truly was no impact of year in school on quiz score. Since our *p*-value is greater than our Unusualness Threshold (*UT*), we have an event that is "usual" (or typical) under the null hypothesis model and we would fail to reject the null hypothesis. We will decide to act as if a student's year in school does not impact how well they do on a song knowledge quiz.
+We can see that a STAT461 undergraduate's year in school accounts for about 1.9 times as much variation as the residuals in @tbl-songTable. Drawing upon the balanced design to grant some robustness to the heteroscedasticity, we would anticipate seeing an *F* ratio at least as large as this ~20% of the time we would repeat the experiment if there truly was no impact of year in school on quiz score. Since our *p*-value is greater than our Unusualness Threshold (*UT*), we have an event that is "usual" (or typical) under the null hypothesis model and we would fail to reject the null hypothesis. Further, we can note that the *s*-value for this study is `r round(sVal, 2)` bits of information against the null hypothesis; that is to say, getting this result is only a little bit more surprising then getting two heads in a row when flipping a fair coin but less surprising than getting three heads in a row. We will decide to act as if a student's year in school does not impact how well they do on a song knowledge quiz.
+
+:::{.callout-tip}
+### *S*-Values
+The *s*-value (a.k.a. Shannon information measure, binary surprise index, and surprisal) is transformation of *p*-values to assist with interpretations. Here, we imaging flipping (or tossing) a fair coin *s* times and getting the same result for every flip (i.e., all heads or all tails). The larger the value of *s*, the more surprising the result is and the more evidence we have against the idea that the coin is fair (i.e., our null hypothesis).
+
+To convert a *p*-value into an *s*-value, we use the following formula $$s = -\log_2(p)$$
+We can implement this formula in R with the command `sValue <- -1*log(pValue, base = 2)` where `pValue` is our *p*-value obtained from our test (you'll need to either provide this value or extract it from your model/summary object). We can then call `sValue` for use in our document.
+
+Whole number values of *s* (e.g., 1, 2, 3, etc.) are interpreted as the number of successive coin flips all resulting in the same outcome. Non-whole number values of *s* aren't directly interpretable in this fashion, but you can use the whole numbers of either side as part of your interpretation, as was shown in the example. 
+:::
 
 ### Your Turn
 
