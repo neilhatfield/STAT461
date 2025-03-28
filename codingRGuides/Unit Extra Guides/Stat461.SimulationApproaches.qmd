@@ -1,0 +1,374 @@
+---
+title: "Simulation Approaches to ANOVA"
+subtitle: "Permutations and Bootstrapping"
+author: "Neil J. Hatfield"
+date-modified: now
+latex-tinytex: true
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+    code-annotations: below
+    fig-align: center
+    toc: true
+    toc-depth: 4
+    toc-location: right
+    cap-location: top
+    link-external-newwindow: true
+execute: 
+  echo: false
+  warning: false
+---
+
+```{r}
+# Define Freedman-Diaconis Rule ----
+fdRule <- function(x) {
+  return(
+    ifelse(
+      test = IQR(x) == 0,
+      yes =  0.1,
+      no =  2 * IQR(x) / (length(x)^(1/3))
+    )
+  )
+}
+
+```
+
+This guide will focus on simulation approaches to ANOVA models, primarily Permutation Tests and Bootstrapping. This guide will grow/develop as I have time to add to it. My initial plan is for this guide to show how to use a simulation approach for one-way ANOVA and then a few more advanced models.
+
+# Why Simulate?
+
+There are many different types of simulation approaches: permutation, bootstrapping, randomization, parametric bootstrapping, Monte Carlo, etc. However, at their core, they all attempt to address our research question by working with the data we have collected. 
+
+There are a number of different reasons that we might choose to use a simulation.
+
+1) __Lack of Theory:__ we might be in a situation where we have no established statistical theory to underpin a (parametric) shortcut test. For instance, we might be working with a new statistic whose long-run behavior has yet to be articulated.
+2) __Unknown *Standard Error*:__ we could find ourselves in a situation where we need to know something about the sampling variability of our test statistic (i.e., the statistic's *standard error*) but we don't know this information.
+3) __Unsatisfied Gaussian Assumption:__ we might have intended to use a (parametric) shortcut but after getting our data and fitting the model, we do not satisfy the Gaussian assumption.
+4) __Uncomfortable with Assumptions for Shortcuts:__ we might find ourselves unwilling to make the assumptions for a (non-) parametric shortcut test but okay with assumptions behind a simulation approach.
+
+That last option highlights an important reality about simulation approaches:
+
+<div style="text-align: center;">__Simulations methods have their own assumptions.__
+</div>
+
+There is no avoiding needing to make at least one assumption when doing inference. Even using the gold standard of Replication still makes assumptions (namely that the underlying phenomenon does not change over time). Each simulation method will make their own assumptions that we will have assess. 
+
+:::{.callout-note}
+I will quickly comment that if you find yourself in the fourth option, please take some time and reflect on why you might be unwilling to make the assumptions. Say those reasons out loud. Would a knowledgeable peer agree with you?
+:::
+
+In this particular guide, we will focus on just two kinds of simulation approaches: permutation and bootstrapping.
+
+# Permutation Simulations
+
+Permutation simulations are an interesting approach we can take for inference that take the nil hypothesis as the key starting point. Recall that a nil hypothesis is a specific type of null hypothesis of no statistically significant difference. If we act as if the nil hypothesis is true, then any grouping labels are arbitrary and have no impact on the response. Since these grouping labels don't matter, then we could swap the labels between the measurement units without changing the underlying phenomenon. 
+
+For example, let's consider your Paper Airplane study. Our null hypothesis there was that the type/design of the paper airplane had no statistically significant impact on how far the planes traveled. Under this nil hypothesis, the design label (Basic, Dart, Stable) is simply a mark we might put on the plane (i.e., a B, D, or S) and has no consequential impact on the distance. Further, we could have written a different letter on each plane, essentially saying that each plane was any of the three designs.
+
+This swapping of grouping labels under the nil hypothesis provides the genesis for the name of this method. The core idea is that if the grouping labels are just arbitrary, then we should be able to permute (shuffle) the cases (measurement/experimental units) with each other. For each permutation of the cases, we can then calculate the value of our test statistic, building what we refer to as the *Permutation (Sampling) Distribution* for our statistic.
+
+:::{.callout-tip}
+## Combinations and Permutations
+
+In a set of *n* objects that are broken into two groups of *r* and $n-r$ objects, we can think about arranging them in two ways.
+
+__Permutations__ refer to arrangements where the order of the objects matter. For instance, the two arrangements of \[\{1,2,3\}; \{4,5\}\] and \[\{3,2,1\}; \{4,5\}\] are distinct permutations as the first group in each has the elements in different order (1,2,3 vs. 3,2,1). The number of permutations can be found via the formula $P(n,r)=\frac{n!}{(n-r)!}$.
+
+__Combinations__ refer to arrangements where object order does not matter. Here, the two arrangements of \[\{1,2,3\}; \{4,5\}\] and \[\{3,2,1\}; \{4,5\}\] are identical as both groups in each arrangement contain the same elements. The number of combinations can be found with the formula $C(n,r)=\frac{n!}{r!(n-r)!}$.
+
+Notice that $P(n,r)=C(n,r)\times r!$; this highlights that for each combination there are $r!$ equivalent permutations.
+
+:::
+
+If we were to form every possible permutation, we end up with the *Exact Permutation Distribution* and can calculate an exact *p*-value. However, we don't actually calculate all possible permutations for two reasons.
+
+1) Consider the following two permutations of a set of five cases split into two groups: \[\{1,2,3\}; \{4,5\}\] and \[\{3,2,1\}; \{4,5\}\]. These are two distinct permutations of the data but they would result in identical values of most test statistics. Instead of finding all possible permutations, we instead focus on all possible *combinations*.
+2) Except for the the smallest of data collections, finding all possible combinations becomes computationally expensive. Thus, we often take a random sample of the combinations to build an *Approximate Permutation Distribution*.
+
+## Assumptions
+
+Permutation simulations do not have as strict of assumptions as most parametric shortcut approaches do. Parametric shortcuts often reference a particular named distribution (e.g., Gaussian/"normal") but the permutation approach does not. Rather, the permutation approach requires the assumption of __exchangeable observations__.
+
+We derive this assumption from how we are thinking about the nil hypothesis. If the grouping factor does not matter, then the assignment of any particular level/label is arbitrary. In a true experiment, this would be us randomly assigning the labels to each case. At the heart of this thought process is the idea that each of the observations could just have easily come from any of the groups, not just the one that they did. Keep in mind that we're operating under the nil hypothesis (e.g., type/design of plane has no statistical impact) when we imagine exchange observations between the groups.
+
+### Assessing Exchangeability
+
+Assessing changeability depends partially on your study design. If you did a true experiment (i.e., you have random sampling of cases AND random assignment of treatments), then we get exchangeability for free. The same is not true for quasi-experiments or observational studies.
+
+For a quasi-experiment or observational study, we can assess this assumption by answering two questions:
+
+1) Are the cases (observations) independent from each other?
+2) Do the residuals (errors) in our model come from the same distribution?
+
+We can use the same methods as we would for assessing the core three assumptions of the parametric shortcut to answer these two questions. For the first, we can draw upon the study design and index plots/Durbin-Watson if measurement order is known. For the second, we can draw upon QQ Plots (referencing other distributions beyond Gaussian) and strip/Tukey-Anscombe plots. These two questions bring back the independence of observations *and* homoscedasticity assumptions from the parametric approach.
+
+## Using R
+
+### Packages to Use
+
+When we use R for a permutation approach, there is a key decision that we need to make. Do we want to use a pre-built function or if we want to set up the simulation ourselves? I often lean towards that later. While there are some decent packages out there that will do permutation tests, they often do not allow you to extract out the sampling distribution; rather they just give you a summary report. 
+
+A second question is whether we want to do all of scripting to do the permutations or if we want to rely on an existing tool? I lean towards the existing tool, especially with the `{permute}` package. This package contains a suite of functions that allow you to create permutation designs that work for a wide variety of situations, including more complicated models than a one-way ANOVA.
+
+For this example, I'll be loading the `{permute}` package along with the `{tidyverse}` meta-package and the `{openxlsx}` package. These last two will help me load the paper airplane data and give me some extra data wrangling tools. For a reminder on how to load packages, check out @lst-loadPackages.
+
+::: {#lst-loadPackages}
+```{r}
+#| label: loadPackages
+#| echo: true
+# Load Packages ----
+library(tidyverse)
+# install.packages("permute") # <1>
+library(permute)
+library(openxlsx) 
+
+```
+1. You will need to install the `{permute}` package before you load the package.
+
+R Code Loading Packages
+:::
+
+```{r}
+#| label: loadData
+# Load and Clean Data ----
+planeData <- read.xlsx(
+  xlsxFile = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/airplanes_Spring25.xlsx"
+)
+
+planeData$design <- as.factor(planeData$design)
+
+```
+
+
+### Get the Observed Value of Your Statistic
+
+In general, you will need to decide what statistic you want to use as your test statistic. One of the great things about the permutation approach is that you can use *any* statistic that works with your research question. You do not have to use the test statistic that gets used in the parametric method.
+
+For our purposes, the *F* ratio functions as a great statistic to use. Thus we will use this statistic. When doing simulation approaches, making sure that you capture the value of the test statistic using your unaltered, observed data is a good idea. @lst-obsF shows the code I used to extract our observed value of the *F* ratio for the paper airplane study.
+
+::: {#lst-obsF}
+```{r}
+#| label: obsF
+#| echo: true
+# Set Global Options ----
+options(contrasts = c("contr.sum", "contr.poly")) # <1>
+
+# Get Observed F Ratio Value ----
+planeModel <- aov(
+  formula = distance_in ~ design,
+  data = planeData
+)
+
+obs.F <- anova(planeModel)$`F value`[1] # <2>
+
+```
+1. Notice that we set the global constraint.
+2. This command will extract the observed value of *F* from our ANOVA model and save it.
+
+Getting the Observed F Ratio
+:::
+
+### Create the Permutation Simulation
+
+There are two parts to conducting a permutation simulation in R. First, we need to define a function that will shuffle the data and return the value of our test statistic. Second, we need to then run the simulation *B* times to build the permutation sampling distribution.
+
+#### Define a Function
+
+When you go to make your function, there are three big things to keep in mind:
+
+1) How am I going to shuffle cases?
+2) How translate that shuffling into a data frame?
+3) How do I calculate the value of my statistic?
+
+The first element is where the `{permute}` package comes into play. Specifically, the `shuffle` function. This function's job is to return a vector of row indexes (1 to *n*), in a shuffled order. The `control` argument (not shown below) can be used with more complicated permutations. @lst-definePermFunction shows the code for how we could creating a function that shuffles our data and calculates the *F* ratio.
+
+::: {#lst-definePermFunction}
+```{r}
+#| label: definePermFunction
+#| echo: true
+# Define Function for Getting Permutation F Ratio Values ----
+perm.F <- function(data, response, factor) {
+  ## Shuffle the Data ----
+  perm <- shuffle(n = nrow(data)) # <1> 
+  shuffledData <- data.frame(
+    response = data[response],
+    factor = data[[factor]][perm] # <2>
+  )
+  
+  ## Fit the ANOVA Model ----
+  model <- aov(
+    formula = as.formula(paste(response, "~", "factor")), # <3>
+    data = shuffledData
+  )
+  
+  ## Get the value of F ----
+  f <- anova(model)$`F value`[1] 
+  return(f) # <4>
+}
+
+```
+1. The `shuffle` argument will return a vector of row indices from 1 to `n`.
+2. To implement the shuffle on the factor levels we'll use the output from the `shuffle` to re-assign factor levels.
+3. Fit the ANOVA model drawing upon our response and factor inputs.
+4. Returns the value of the *F* ratio so that we can store this value for later work.
+
+Creating Function for Permutation and *F* Ratio
+:::
+
+#### Run the Simulation
+
+Once we have a function that will permute the data and return the value of our test statistic (like `perm.F`), we reach the point of carrying out the simulation. At this point, we face a new, important question: how many permutations do we look at? Alternatively, how many times do we run the simulation (*B*)?
+
+We often do not look at all possible permutations (or combinations) as the total number can be quite large. For the Spring 2025 Paper Airplane study, the total number of combinations would be $${{12}\choose{4,4,4}}=\frac{12!}{4!\cdot4!\cdot4!}=`r format(iterpc::multichoose(n = c(4,4,4)), big.mark = ",")`$$ It would be computationally expensive to try to construct (and track) all of those combinations. Thus, we often set the value of *B* to something smaller.
+
+Picking the value for *B* will depend upon several things. Are you working in an exploratory or confirmatory setting? Are you wanting to achieve a certain level of precision? Are you trying to establish tight control over a Type I error rate? 
+
+If you are just exploring, we can do few permutation simulations; such as $B=500$ or $B=1000$. In more confirmatory settings, we might use $B=5000$, $B=10000$, or even larger values. Keep in mind that the *p*-value we compute will be relative to *B*. Thus, if you want to express your *p*-value to certain number of decimals places, you need to make sure that *B* is large enough to support that. There has been some work done that suggests that $B=5000$ is sufficient for confirmatory work against $\epsilon_{I}=0.05$ while $B=10000$ when $\epsilon_{I}=0.01$. 
+
+For my example below, we'll use $B=1000$. Keep in mind that our observed data constitutes one of the simulations, thus, we only need to simulate $B-1$ more permutations/combinations. We can do this in R using the `replicate` function as shown in @lst-runPermSim.
+
+:::{#lst-runPermSim}
+```{r}
+#| label: runPermSim
+#| echo: true
+# Carry Out Permutation ----
+set.seed(461) # <1>
+planePerm <- replicate( # <2>
+  n = 999, # <3>
+  expr = perm.F( # <4>
+    data = planeData,
+    response = "distance_in",
+    factor = "design"
+  )
+)
+
+
+```
+1. Use `set.seed` to make your code reproducible.
+2. The `replicate` function is part of base R and does not need any packages to be loaded. Be sure to save the outputs!
+3. Notice that we're using $B-1$ for the number of times to run the `expr` argument.
+4. The `expr` argument is where we'll call our permutation function and pass along necessary information.
+
+Code for Running Permutation Simulation
+:::
+
+
+### Look at Results
+
+Once you've run the simulation, we're now ready to explore the results. We can do this by looking at histograms of the results and/or counting the number of times we ended up with a value of our test statistic at least as extreme as what we actually observed (i.e., the *p*-value.)
+
+Before we do either, we need to add the observed value of our test statistic to the vector we got out of the simulation. @lst-addObsF shows a quick command that will add our observed *F* value (`obs.F`) we stored earlier as the last element to the vector we saved the simulation results to (`planePerm`).
+
+:::{#lst-addObsF}
+```{r}
+#| label: addObsF
+#| echo: true
+# Add observed F ratio value ----
+planePerm[length(planePerm) + 1] <- obs.F
+
+```
+:::
+
+#### Calculate the *P*-Value
+
+We can calculate our (approximate, permutation) *p*-value by counting how many times our simulations resulted in a value at least as extreme as what we observed ($\theta^*$). Keep in mind that the meaning for "at least as extreme" is going to depend upon your alternative hypothesis and broader context. For a two-sample problem, that could be observed values less than or equal to $\theta^*$, observed values greater than or equal to $\theta^*$, or observed values that are at least as far from some center point as $\theta^*$.
+
+In the context of ANOVA, our alternatives almost always look for *F* ratios that are at least as large as what we've observed. To get this count, we can use the following code shown in @lst-calcPValue.
+
+:::{#lst-calcPValue}
+```{r}
+#| label: calcPValue
+#| echo: true
+B <- 1000
+extremes <- sum(planePerm >= obs.F)
+(pValue <- extremes / B)
+
+```
+Calculate Permutation *p*-Value
+:::
+
+The expression `planePerm >= obs.F` will run a logical test on each element of the `planePerm` vector: if the value is at least as large as our observed *F* ratio, the system will record TRUE and FALSE otherwise. When we use the `sum` function, TRUE will be treated as 1 and FALSE will be treated as 0.
+
+#### Make a Histogram
+
+Calculating the (approximate) permutation *p*-value is one thing, but it doesn't necessarily help us build a richer understanding of what might be happening in the simulation more broadly. This is where looking at a histogram for the simulated sampling distribution can provide additional insight. @fig-histPerm is an example of such a histogram and contains some additional features.
+
+```{r}
+#| label: fig-histPerm
+#| fig-cap: "Histogram of Permutation Simulation Results (B=1000)"
+#| fig-alt: "Histogram of permtuation simulation results"
+#| echo: true
+#| aria-describedby: histPermLD
+# Make Histogram for Permutation Simulation ----
+ggplot(
+  data = data.frame(
+    `F` = planePerm,
+    type = c(rep("perm", length(planePerm) - 1), "obs")
+  ),
+  mapping = aes(x = `F`)
+) +
+  geom_histogram(
+    color = "black",
+    fill = "blue",
+    binwidth = fdRule, # <1>
+    boundary = 0,
+    closed = "left"
+  ) +
+  geom_vline(
+    xintercept = obs.F,
+    color = "red"
+  ) +
+  annotate( # <2>
+    geom = "label",
+    x = Inf,
+    y = Inf,
+    hjust = 1.25,
+    vjust = 2,
+    label = paste(
+      "Freq ≥ Obs. F \n",
+      "Abs. Freq. is", sum(planePerm >= obs.F), "\n",
+      "Rel. Freq. is", paste0(round(sum(planePerm >= obs.F)/length(planePerm)*100, 2), "%")
+    )
+  ) +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.01))
+  ) +
+  theme_bw() +
+  labs(
+    x = "Values of the F Ratio",
+    y = "Frequency"
+  )
+
+```
+1. See the [Code Appendix](#code-appendix) for the code that defines the FD rule.
+2. The `annotate` call adds on the boxed text with *p*-value.
+
+
+```{r}
+description <- BrailleR::VI(x = last_plot())
+```
+
+```{=html}
+<details id=histPermLD>
+  <summary>Long Description</summary>
+  `r paste(description$text, collapse = " ")`
+  <p><em>Description automatically generated by the {BrailleR} package.</em></p>
+</details>
+```
+
+In @fig-histPerm, we can see that under the nil hypothesis, we can get *F* ratios as large as 2.5 with fairly regular frequency. However, the frequency of larger values tapers off fairly quickly after this. Getting a value of `r round(obs.F, 2)` or larger when design has no statistical impact on distance is extremely rare: there are only five cases. The *s*-value that goes with this permutation *p*-value is `r round(-1*log(0.005, base = 2), 2)`.
+
+Notice that the results from the permutation simulation are inline with those from our parametric shortcut. As the assumptions for both methods were satisfied, the two should be consistent with each other. 
+
+
+# Bootstrapping
+
+Coming soon
+
+{{< pagebreak >}}
+
+# Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
