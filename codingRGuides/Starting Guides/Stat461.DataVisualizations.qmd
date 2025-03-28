@@ -89,6 +89,13 @@ Here are some questions to ask yourself as you plan your data visualization:
 A good practice is to sketch what you're trying to create. This will help you think through the various elements of your visualization. Additionally, this can help you better ask others for help.
 :::
 
+:::{.callout-tip}
+### The PCIP System
+
+A great way to help you think about data visualizations is the PCIP System. This approach gets you to think through a cycle of Plan-Code-Improve phases before moving into a final Polish phase. You can learn more about this approach at [this webpage](https://neilhatfield.github.io/STAT184/PCIP_System.html).
+
+:::
+
 ## Data Wrangling
 
 An important part of making a plan is to double check that you have the data you need and that the data is in a useful form. For this guide, I'm using the penguins data, which is ready to go, and some Oreo data, which isn't quite ready. The major thing that I need to do for my data is to tell R to treat the type of Oreo as a factor.
@@ -169,7 +176,7 @@ While this visualization allows you to get a big picture view of your data, play
 
 ### Bar Charts
 
-Many people are familiar with bar charts; they are a classic type of visualization. We can use either absolute or relative frequencies. An important difference between a bar chart and a dot plot is that bar charts *aggregate* our data. That is, while a dot plot shows the individual cases, the bar chart will hide them. Generally, bar charts are used with attributes that are categorical in nature such as the species of penguins or the type of Oreo.
+Many people are familiar with bar charts; they are a classic type of visualization. We can use either absolute or relative frequencies. An important difference between a bar chart and a dot plot is that bar charts *aggregate* our data. That is, while a dot plot shows cases that are individual (single) objects or living beings, the bar chart will hide these types of cases in favor of group case (i.e., a case that represents a collections of objects/living beings). Generally, bar charts are used with attributes that are categorical in nature such as the species of penguins or the type of Oreo.
 
 ```{r}
 #| label: fig-bar1
@@ -366,7 +373,7 @@ description <- BrailleR::VI(x = last_plot())
 
 Much like with dot plots, one of the biggest challenges for producing useful histograms is determining either the number of bins (the `bins` argument) or the width of each bin (the `binwidth` argument). You only need to set one of these two as the choice of one automatically determines the other. By default, `ggplot` will use 30 bins--but will produce a warning message that you should use a better number of bins. You can play around with your choices for either of these arguments and find the value that leads to the clearest histogram.
 
-A statistician and a mathematician worked together to form what is known as the Freedman-Diaconis rule which can help you come up with a potentially useful bin width. You can define this in R as
+A statistician and a mathematician worked together to form what is known as the Freedman-Diaconis rule which can help you come up with a potentially useful bin width. You can define this in R with the following function.
 
 ```{r}
 #| label: fdRule
@@ -429,7 +436,7 @@ description <- BrailleR::VI(x = last_plot())
 </details>
 ```
 
-As you compare @fig-hist1 and @fig-hist3, pay attention to how your descriptions change between them. In the former we might talk about the gaps between two groupings of values but in the later there are no longer any gaps. This highlights that your choice of bin width (or number of bins) is consequential. 
+As you compare @fig-hist1 and @fig-hist3, pay attention to how your descriptions change between them. In the former, we might talk about the gaps between two groupings of values but in the later there are no longer any gaps. This highlights that your choice of bin width (or number of bins) is consequential. 
 
 :::{.callout-caution}
 A common mistake that people make with histograms is to use the histogram to justify a claim that data follow a typical distribution. For example, upon seeing a symmetric, bell-shaped histogram and declaring that the data follow a Gaussian or "Normal" distribution. Unfortunately, this is __NOT__ accurate. At best, we can use a histogram as evidence *against* our data following a particular distribution. A histogram with a strong positive skew would support our claim that the data *do not* follow a Gaussian or "Normal" distribution.
@@ -437,7 +444,7 @@ A common mistake that people make with histograms is to use the histogram to jus
 
 ### Pie Charts
 
-Another data visualization that people often mention are pie charts. Pie charts take the notion of a bar chart and plot things in a circular space. While in a bar chart we read the height of the bar to get the frequency value, pie charts work off of angle measures. That is, the measure of the each slices angle reflects the relative proportion of the whole. This pie charts great at relativistic comparisons between values but terrible for getting accurate amounts. A second drawback to pie charts deals with deciding which slice has a larger angle measure when they are close to each other.
+Another data visualization that people often mention are pie charts. Pie charts take the notion of a bar chart and plot things in a circular space. While in a bar chart we read the height of the bar to get the frequency value, pie charts work off of angle measures. That is, the angle measure for each slice reflects the relative proportion of the whole data collection. This makes pie charts great at relativistic comparisons between categories but terrible for getting accurate amounts. A second drawback to pie charts deals with deciding which slice has a larger angle measure when they are close to each other.
 
 If you absolutely want to create a pie chart, you can. However, you will need to do a little bit of data wrangling first.
 
@@ -544,7 +551,7 @@ description <- BrailleR::VI(x = last_plot())
 </details>
 ```
 
-@fig-waffle1 shows a waffle plot for the penguins species data. For this visualization, I've opted to to the proportion route (via the `make_proportional = TRUE` argument). This means that each square in my 10 X 10 grid represents one percent of the data collection. If we instead wanted each square to represent an individual penguin, I'd use `make_proportional = FALSE` as shown in @fig-waffle2.
+@fig-waffle1 shows a waffle plot for the penguins species data. For this visualization, I've opted to go the proportion route (via the `make_proportional = TRUE` argument). This means that each square in my 10 X 10 grid represents one percent of the data collection. If we instead wanted each square to represent an individual penguin, I'd use `make_proportional = FALSE` as shown in @fig-waffle2.
 
 ```{r}
 #| label: fig-waffle2
@@ -573,7 +580,7 @@ ggplot(
   coord_equal()
 
 ```
-1. We can alter how many rows appear in the waffle plot. I changed to 8 since 344 (the sample size of the penguin data) is a multiple of 8.
+1. We can alter how many rows appear in the waffle plot. I changed to `n_rows = 8` since 344 (the sample size of the penguin data) is a multiple of 8.
 
 ```{r}
 description <- BrailleR::VI(x = last_plot())
@@ -637,7 +644,7 @@ description <- BrailleR::VI(x = last_plot())
 
 @fig-density1 shows the density plot for the Oreo filling masses. You'll notice that at the left and right edges there are hard stops to the plot. By default the density plot will stop at the lower and upper extrema in the data. If you want to have the smoothing continue on, you'll need to adjust the limits with an additional command such as `scale_x_continuous(limits = c(lb, ub))` where you replace `lb` and `ub` with the numeric values for the new lower and upper bounds, respectively.
 
-Density plots do not suffer from the same sensitivity to bin width as histograms do. However, they still limits. Inside of the `geom_density` there is an option that controls an aspect called bandwidth (`bw`). We can think about bandwidth as a way of adjusting how much of the data we look at to make the smooth curve as we move through the domain of filling masses. If we make bandwidth very large, then we use more the data making a shallow curve. If we use a small bandwidth, then we use less data, making the curve more spiked. A second important option in `geom_density` is the `kernel`. This is the function that gets used to help make the smooth curve; different kernels will result in different density plots for the same data.
+Density plots do not suffer from the same sensitivity to bin width as histograms do. However, they still have limitations. Inside of the `geom_density` there is an option that controls an aspect called bandwidth (`bw`). We can think about bandwidth as a way of adjusting how much of the data we look at to make the smooth curve as we move through the domain of filling masses. If we make bandwidth very large, then we use more the data making a shallow curve. If we use a small bandwidth, then we use less data, making the curve more spiked. A second important option in `geom_density` is the `kernel`. This is the function that gets used to help make the smooth curve; different kernels will result in different density plots for the same data.
 
 :::{.callout-note}
 Digging into both bandwidth and kernel choices are beyond what is necessary for Stat 461. For any instances in our class, use the defaults for these is sufficient.
@@ -645,7 +652,7 @@ Digging into both bandwidth and kernel choices are beyond what is necessary for 
 
 ## Structural Visualizations
 
-The preceding kinds of data visualizations draw upon frequency of case occurrence. These count-based aspects work well with attributes that are categorical/qualitative or quantitative in nature. Suppose that we wanted to draw upon the inherent ordering of the underlying case attribute to help us learn more about our data. When we used the frequency-based visualizations with quantities, the conventions of how we plot kicked in help put the values of the case attribute into numeric order. However, there is a kind of data visualization that was originally created to help highlight the ordinal structure: the box plot.
+The preceding kinds of data visualizations draw upon frequency of case occurrence. These count-based aspects work well with attributes that are categorical/qualitative or quantitative in nature. Suppose that we wanted to draw upon the inherent ordering of the underlying case attribute to help us learn more about our data. When we used the frequency-based visualizations with quantities, the conventions of how we plot kicked in to help put the values of the case attribute into numeric order. However, there is a kind of data visualization that was originally created to help highlight the ordinal structure: the box plot.
 
 Many people often think about the box plot as just a visual representation of [Tukey's] Five Number Summery. The standard box plot does show these values but the purpose is to show much, much more.
 
@@ -683,8 +690,8 @@ ggplot(
 1. To invoke the box plot geometry we use the `geom_boxplot` command.
 2. For a [standard] box plot set `coef = Inf`.
 3. Traditionally, whiskers end with hash marks called staples. However, more modern box plots do away with them (the default). If you want them you can use the `staplewidth` argument as shown here.
-4. For a horizontal box plot, map the case attribute to `x` and tell `y` to have no (`NULL`) label. If you want a vertical box plot, use swap `x` and `y` in the code.
-5. These command will make a cleaner box plot by getting rid of elements that don't have any meaning. For a vertical box plot, change the `.y` to `.x` as you swap the other `x` and `y` references.
+4. For a horizontal box plot, map the case attribute to `x` and tell `y` to have no (`NULL`) label. If you want a vertical box plot, just swap `x` and `y` in the code.
+5. These commands will make a cleaner box plot by getting rid of elements that don't have any meaning. For a vertical box plot, change the `.y` to `.x` as you swap the other `x` and `y` references.
 
 ```{r}
 description <- BrailleR::VI(x = last_plot())
@@ -698,11 +705,11 @@ description <- BrailleR::VI(x = last_plot())
 </details>
 ```
 
-@fig-box1 is a standard box plot in the sense that the whiskers (the lines) extend to the values of the *Sample Minimum* ($Q_0$) and *Sample Maximum* ($Q_4$). A box plot demonstrates the structure of a data collection in multiple ways. First, we can observe how the data collection lies across the continuum of the case attribute (much like a histogram does). Second, the box plot also shows us what portions of the continuum of values are captured by each of the ordered quarters of the collection. In @fig-box1, the first quarter covers the intervals $[2.25, 3.25]$, approximately. The third quarter approximately covers $[4.55, 6.4]$. We can do the same with the second and fourth quarters. Third, we can use where the quarters lie along with the fact that they contain *roughly* the same number of cases talk about density. The first quarter is more dense than the third quarter, suggesting that the first quarter has less variation between the cases than the third quarter. Finally, we can also use the box plot to get a sense of symmetry by comparing the two halves of the plot. We can split the box plot along the the thicker black line inside of the box that represents the value of the *Sample Median*). @fig-box1 shows that the filling masses of Oreos might have a some positive skewness (we need to cover more the filling mass axis for values larger than the value of the *Sample Median*).
+@fig-box1 is a standard box plot in the sense that the whiskers (the lines) extend to the values of the *Sample Minimum* ($Q_0$) and *Sample Maximum* ($Q_4$). A box plot demonstrates the structure of a data collection in multiple ways. First, we can observe how the data collection lies across the continuum of the case attribute (much like a histogram does). Second, the box plot also shows us what portions of the continuum of values are captured by each of the ordered quarters of the collection. In @fig-box1, the first quarter covers the intervals $[2.25, 3.25]$, approximately. The third quarter approximately covers $[4.55, 6.4]$. We can do the same with the second and fourth quarters. Third, we can use where the quarters lie along with the fact that they contain *roughly* the same number of cases to talk about density. The first quarter is more dense than the third quarter, suggesting that the first quarter has less variation between the cases than the third quarter. Finally, we can also use the box plot to get a sense of symmetry by comparing the two halves of the plot. We can split the box plot along the the thicker black line inside of the box that represents the value of the *Sample Median*). @fig-box1 shows that the filling masses of Oreos might have a some positive skewness (we need to cover more of the filling mass axis for values larger than the value of the *Sample Median*).
 
 ### Outlier Box Plots (Schematic Plots)
 
-A second form of box plots is sometimes referred to as an "outlier box plot" although this name is a bit misleading. Tukey original referred to these as *Schematic Plots*. They differ from standard box plots in that the whiskers will no longer reach the values of the *Sample Minimum* and *Sample Maximum*. Rather, they will extend to the appropriate hinge. Any cases whose values are beyond the hinges are considered as *outlying cases*. Such cases are not necessarily [potential] outliers as their classification as outlying depends upon our choice for a multiplier (i.e., the `coef` argument).
+A second form of box plots is sometimes referred to as an "outlier box plot" although this name is a bit misleading. Tukey original referred to these as *Schematic Plots*. They differ from standard box plots in that the whiskers will no longer reach to the values of the *Sample Minimum* and *Sample Maximum*. Rather, they will extend to the appropriate hinge. Any cases whose values are beyond the hinges are considered as *outlying cases*. Such cases are not necessarily [potential] outliers as their classification as outlying depends upon our choice for a multiplier (i.e., the `coef` argument).
 
 ```{r}
 #| label: fig-box2
@@ -754,7 +761,7 @@ description <- BrailleR::VI(x = last_plot())
 
 ### Other Variations of the Box Plot
 
-There are a number of additional variations of box plots such as variable width of the boxes, adding notches to the boxes and adding on additional cut points (e.g., the first and seventh octiles). 
+There are a number of additional variations of box plots such as variable width of the boxes, adding notches to the boxes, and adding on additional cut points (e.g., the first and seventh octiles). 
 
 ## Visualizing Multiple Attributes
 
@@ -803,7 +810,7 @@ description <- BrailleR::VI(x = last_plot())
 </details>
 ```
 
-@fig-strip1 shows why we call such plots strip: we get a long, narrow set of points. These plot allow us to start looking at how similar/different cases are from each other both within their groupings and across groupings. Here, a categorical/qualitative attribute such as type of Oreo is what creates the groupings. Notice that we can't see each individual point (as in a dot plot). Cookies that share the same type and have either the same or very similar amounts of filling will end up lying on top of each other.
+@fig-strip1 shows why we call such plots strip charts: we get a long, narrow set of points. These plot allow us to start looking at how similar/different cases are from each other both within their groupings and across groupings. Here, a categorical/qualitative attribute such as type of Oreo is what creates the groupings. Notice that we can't see each individual point (as in a dot plot). Cookies that share the same type and have either the same or very similar amounts of filling will end up lying on top of each other.
 
 :::{.callout-tip}
 If you want to make sure that you can see each point, you can do so by adding a small amount of jitter to each point just in the plot. This can be achieved by using the jitter geometry (`geom_jitter`) instead of the point geometry OR by using the argument `position = "jitter"` in `geom_point`. Keep in mind that you might need to adjust the amount of jitter in both horizontal and vertical dimensions to match your needs.
@@ -948,7 +955,7 @@ description <- BrailleR::VI(x = last_plot())
 
 ## Using Multiple Layers
 
-The graphics that we create using `{ggplot2}` are very customizable and can allow us to do many things. One thing that we can do is layer multiple geometries on top of one another. This can allow us to leverage the strengths of different geometries to make up for the weaknesses of others. Consider 
+The graphics that we create using `{ggplot2}` are very customizable and can allow us to do many things. One thing that we can do is layer multiple geometries on top of one another. This can allow us to leverage the strengths of different geometries to make up for the weaknesses of others. Consider the following plot. 
 
 ```{r}
 #| label: fig-box4
