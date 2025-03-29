@@ -220,7 +220,7 @@ Creating Function for Permutation and *F* Ratio
 
 Once we have a function that will permute the data and return the value of our test statistic (like `perm.F`), we reach the point of carrying out the simulation. At this point, we face a new, important question: how many permutations do we look at? Alternatively, how many times do we run the simulation (*B*)?
 
-We often do not look at all possible permutations (or combinations) as the total number can be quite large. For the Spring 2025 Paper Airplane study, the total number of combinations would be $${{12}\choose{4,4,4}}=\frac{12!}{4!\cdot4!\cdot4!}=`r format(iterpc::multichoose(n = c(4,4,4)), big.mark = ",")`$$ It would be computationally expensive to try to construct (and track) all of those combinations. Thus, we often set the value of *B* to something smaller.
+We often do not look at all possible permutations (or combinations) as the total number can be quite large. For the Spring 2025 Paper Airplane study, the total number of combinations would be $$\binom{12}{4,4,4} =\frac{12!}{4!\cdot4!\cdot4!}=`r format(iterpc::multichoose(n = c(4,4,4)), big.mark = ",")`$$ It would be computationally expensive to try to construct (and track) all of those combinations. Thus, we often set the value of *B* to something smaller.
 
 Picking the value for *B* will depend upon several things. Are you working in an exploratory or confirmatory setting? Are you wanting to achieve a certain level of precision? Are you trying to establish tight control over a Type I error rate? 
 
