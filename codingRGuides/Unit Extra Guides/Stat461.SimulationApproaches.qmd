@@ -361,6 +361,9 @@ In @fig-histPerm, we can see that under the nil hypothesis, we can get *F* ratio
 
 Notice that the results from the permutation simulation are inline with those from our parametric shortcut. As the assumptions for both methods were satisfied, the two should be consistent with each other. 
 
+## Final Comments on Permutation Simulations
+
+There are limits to what permutation simulations can do. Their primary usage is for testing a nil hypothesis by helping us to estimate a *p*-value. This method is __great__ for this purpose. However, this approach is terrible for trying to generate any measure of effect size. This is primarily due to the fact that permutation distributions do not allow us to get dependable estimates of the sampling variation for any test statistic. Due to this, we should not use a permutation simulation to attempt to build a confidence interval for our test statistic. If we want such a confidence interval, we should consider the next simulation method.
 
 # Bootstrapping
 
