@@ -51,7 +51,7 @@ checkSetup <- function(){
 
     ### Install hasseDiagrams package ----
     if (!("hasseDiagram" %in% installed.packages()[, "Package"])) {
-      install.packages("hasseDiagram")
+      devtools::install_version("hasseDiagram", "0.2.0")
     }
     
     ### Install last working version of kableExtra ----
