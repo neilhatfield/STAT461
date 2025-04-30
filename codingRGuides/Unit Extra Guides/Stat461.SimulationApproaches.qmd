@@ -52,7 +52,7 @@ That last option highlights an important reality about simulation approaches:
 <div style="text-align: center;">__Simulations methods have their own assumptions.__
 </div>
 
-There is no avoiding needing to make at least one assumption when doing inference. Even using the gold standard of Replication still makes assumptions (namely that the underlying phenomenon does not change over time). Each simulation method will make their own assumptions that we will have assess. 
+There is no avoiding needing to make at least one assumption when doing inference. Even using the gold standard of Replication still makes assumptions (namely that the underlying phenomenon does not change over time). Each simulation method will make their own assumptions that we will have to assess. 
 
 :::{.callout-note}
 I will quickly comment that if you find yourself in the fourth option, please take some time and reflect on why you might be unwilling to make the assumptions. Say those reasons out loud. Would a knowledgeable peer agree with you?
@@ -178,7 +178,7 @@ There are two parts to conducting a permutation simulation in R. First, we need 
 When you go to make your function, there are three big things to keep in mind:
 
 1) How am I going to shuffle cases?
-2) How translate that shuffling into a data frame?
+2) How do I translate that shuffling into a data frame?
 3) How do I calculate the value of my statistic?
 
 The first element is where the `{permute}` package comes into play. Specifically, the `shuffle` function. This function's job is to return a vector of row indexes (1 to *n*), in a shuffled order. The `control` argument (not shown below) can be used with more complicated permutations. @lst-definePermFunction shows the code for how we could creating a function that shuffles our data and calculates the *F* ratio.
@@ -268,6 +268,7 @@ Before we do either, we need to add the observed value of our test statistic to 
 planePerm[length(planePerm) + 1] <- obs.F
 
 ```
+Add Observed F Ratio to the Set of F Ratios
 :::
 
 #### Calculate the *P*-Value
@@ -292,7 +293,7 @@ The expression `planePerm >= obs.F` will run a logical test on each element of t
 
 #### Make a Histogram
 
-Calculating the (approximate) permutation *p*-value is one thing, but it doesn't necessarily help us build a richer understanding of what might be happening in the simulation more broadly. This is where looking at a histogram for the simulated sampling distribution can provide additional insight. @fig-histPerm is an example of such a histogram and contains some additional features.
+Calculating the (approximate) permutation *p*-value is one thing, but it doesn't necessarily help us build a richer understanding of what might be happening in the simulation more broadly. This is where looking at a histogram for the simulated sampling distribution can provide additional insight. @fig-histPerm (and @lst-histPerm) is an example of such a histogram and contains some additional features.
 
 ```{r}
 #| label: fig-histPerm
@@ -300,6 +301,8 @@ Calculating the (approximate) permutation *p*-value is one thing, but it doesn't
 #| fig-alt: "Histogram of permtuation simulation results"
 #| echo: true
 #| aria-describedby: histPermLD
+#| lst-label: lst-histPerm
+#| lst-cap: "Code for Making a Histogram of Permuation Simulation Results"
 # Make Histogram for Permutation Simulation ----
 ggplot(
   data = data.frame(
@@ -363,7 +366,7 @@ Notice that the results from the permutation simulation are inline with those fr
 
 ## Final Comments on Permutation Simulations
 
-There are limits to what permutation simulations can do. Their primary usage is for testing a nil hypothesis by helping us to estimate a *p*-value. This method is __great__ for this purpose. However, this approach is terrible for trying to generate any measure of effect size. This is primarily due to the fact that permutation distributions do not allow us to get dependable estimates of the sampling variation for any test statistic. Due to this, we should not use a permutation simulation to attempt to build a confidence interval for our test statistic. If we want such a confidence interval, we should consider the next simulation method.
+There are limits to what permutation simulations can do. Their primary usage is for testing a nil hypothesis by helping us to estimate a *p*-value. This method is __great__ for this purpose. However, this approach is not ideal for trying to generate any measure of effect size. This is primarily due to the fact that permutation distributions do not allow us to get dependable estimates of the sampling variation for any test statistic. Due to this, we should not use a permutation simulation to attempt to build a confidence interval for our test statistic. If we want such a confidence interval, we should consider the next simulation method.
 
 # Bootstrapping
 
