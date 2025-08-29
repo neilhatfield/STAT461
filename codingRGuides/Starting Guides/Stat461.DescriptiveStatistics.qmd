@@ -52,28 +52,30 @@ lapply(
 
 ## Load Data
 
-For this guide I'm going to use two different data sets: penguin data from the `{palmerpenguins}` package and a version of the Oreo data that you'll have in HW #1.1. 
+I'm going to use the built-in penguin data as well as a version of the Oreo data related to HW #1.1. As a reminder, here's how you load these both into R.
 
 ```{r}
 #| label: loadData
 #| echo: true
-#| eval: true
 # Loading data into my session ----
 ## Palmer Penguin data
-# install.packages("palmerpenguins")  # <1>
-penguins <- palmerpenguins::penguins # <2>
+data(penguins) # <1>
 
 ## Oreo Data (HW #1.1) 
-oreoData <- read.table( 
+oreoData <- read.table( # <2>
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
   header = TRUE,
   sep = ","
-) # <3>
+) 
+
+## R versions older than 4.5.1 # <3>
+# install.packages("palmerpenguins")  
+# penguins <- palmerpenguins::penguins 
 
 ```
-1. If you don't have the `{palmerpenguins}` package, run this install command without the octothrope.
-2. Since we're just after the data frame, we don't need to load the whole package.
-3. This code can be quickly modified for you to use with your own Oreo data.
+1. The `data` command will load any of built-in data set.
+2. Here's how you can use the base R function `read.table` to load data from an online source. Be sure to update the URL to match you data.
+3. If you are using a version of R that is older than 4.5.1, then the penguin data will not be built-in. You'll need to first install and load the `{palmerpenguins}` data.
 
 ### Check Loaded Data
 
@@ -158,9 +160,9 @@ Notice that `nrow` did not make any distinctions between any types of cookies or
 
 Knowing whether you have missing values, and how many, can be useful. If you have a high proportion of missing values, you might need to rethink your data collection methods and your results might not be accurate reflections of the broader population.
 
-We can use code such as `nrow(oreoData[is.na(oreoData$Type),])` to get a count of how many observations are missing the Type attribute (`r nrow(oreoData[is.na(oreoData$Type),])` observations.) Similarly, we can find out that `r nrow(penguins[is.na(penguins$flipper_length_mm),])` penguins are missing measurements of their flipper length (`nrow(penguins[is.na(penguins$flipper_length_mm),])`).
+We can use code such as `nrow(oreoData[is.na(oreoData$Type),])` to get a count of how many observations are missing the Type attribute (`r nrow(oreoData[is.na(oreoData$Type),])` observations.) Similarly, we can find out that `r nrow(penguins[is.na(penguins$flipper_len),])` penguins are missing measurements of their flipper length (`nrow(penguins[is.na(penguins$flipper_len),])`).
 
-If you wanted the count of observations that are NOT missing, you can use R's logical negation, `!`. Thus, `nrow(penguins[!is.na(penguins$flipper_length_mm),])` yields how many observations aren't missing (`r nrow(penguins[!is.na(penguins$flipper_length_mm),])`).
+If you wanted the count of observations that are NOT missing, you can use R's logical negation, `!`. Thus, `nrow(penguins[!is.na(penguins$flipper_len),])` yields how many observations aren't missing (`r nrow(penguins[!is.na(penguins$flipper_len),])`).
 
 ## Extrema
 
@@ -168,7 +170,7 @@ When the case attribute has some logical order to the values reflecting having m
 
 The statistics that we use here are the *sample max[-imum]* (via `max`) and the *sample min[-imum]* (via `min`). The outputs of these two statistics can be the same value (indicating that all observations are the same) or different. Keep in mind that statistical software will assume the typical numeric ordering.
 
-Both functions are easy to use: `max(oreoData$Filling.Mass)` and `min(oreoData$Filling.Mass)` will yield results of `r max(oreoData$Filling.Mass)` and `r min(oreoData$Filling.Mass)`, respectively. However, we need to have care. Notice what you get if you swap `penguins$flipper_length_mm` for `oreoData$Filling.Mass` in the `max` function: `r max(penguins$flipper_length_mm)`. We got NA because there are missing values in the column of flipper length. To correct this, we will add the `na.rm = TRUE` argument to both `max` and `min`. `max(penguins$flipper_length_mm, na.rm = TRUE)` gives `r max(penguins$flipper_length_mm, na.rm = TRUE)`, and `min(penguins$flipper_length_mm, na.rm = TRUE)` yields `r min(penguins$flipper_length_mm, na.rm = TRUE)`.
+Both functions are easy to use: `max(oreoData$Filling.Mass)` and `min(oreoData$Filling.Mass)` will yield results of `r max(oreoData$Filling.Mass)` and `r min(oreoData$Filling.Mass)`, respectively. However, we need to have care. Notice what you get if you swap `penguins$flipper_len` for `oreoData$Filling.Mass` in the `max` function: `r max(penguins$flipper_len)`. We got NA because there are missing values in the column of flipper length. To correct this, we will add the `na.rm = TRUE` argument to both `max` and `min`. `max(penguins$flipper_len, na.rm = TRUE)` gives `r max(penguins$flipper_len, na.rm = TRUE)`, and `min(penguins$flipper_len, na.rm = TRUE)` yields `r min(penguins$flipper_len, na.rm = TRUE)`.
 
 Pretty much every statistic we're going to use has the `na.rm` argument. Thus, a good habit to get into is to always include `na.rm = TRUE` to ensure that you get a value.
 
@@ -192,7 +194,7 @@ For example, the five quartiles are
 
 We can use the `quantile` function in R to get the cut point values. For example, using `quantile(oreoData$Filling.Mass, na.rm = TRUE)` will return the five quartiles: `r quantile(oreoData$Filling.Mass, na.rm = TRUE)`. By default, `quantile` will return all five quartiles. 
 
-You can adjust what type of quantile you're looking at with the `probs` argument. Suppose I want to look at octiles for the flipper lengths; I would need to use `probs = seq(0, 1, 1/8)` in the `quantile` function to get these nine values. Thus, `quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)` yields the values `r quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)`. Notice that I used `1/8` rather than `0.125`; remember that R will do calculations for you.
+You can adjust what type of quantile you're looking at with the `probs` argument. Suppose I want to look at octiles for the flipper lengths; I would need to use `probs = seq(0, 1, 1/8)` in the `quantile` function to get these nine values. Thus, `quantile(penguins$flipper_len, probs = seq(0, 1, 1/8), na.rm = TRUE)` yields the values `r quantile(penguins$flipper_len, probs = seq(0, 1, 1/8), na.rm = TRUE)`. Notice that I used `1/8` rather than `0.125`; remember that R will do calculations for you.
 
 :::{.callout-warning}
 The function definition of quantiles are not universally agreed upon. For example, some people insist that cut point must be equal to an observed case's value; others don't require this restriction. Thus, two people asking for the same quantiles on the same data but using two different statistical software packages could end up with slightly different values. If you continually are getting a value flagged as incorrect, come talk with me.
@@ -202,7 +204,7 @@ The function definition of quantiles are not universally agreed upon. For exampl
 
 Group Performance deals with how well a collection did in terms of some goal. Most often, the goals deal with amassing some case attribute. There are two statistics which measure this that are worth mentioning: *GP+* and *GP\**. The key between them deals with whether your data values may be meaningfully combined with addition or if multiplication is the way to go.
 
-If your values are additive in nature, then you can use the `sum` function in R; `sum(penguins$body_mass_g, na.rm = TRUE)` yields the total amassed mass of the penguins (`r sum(penguins$body_mass_g, na.rm = TRUE)` grams).
+If your values are additive in nature, then you can use the `sum` function in R; `sum(penguins$body_mass, na.rm = TRUE)` yields the total amassed mass of the penguins (`r sum(penguins$body_mass, na.rm = TRUE)` grams).
 
 If your values are multiplicative in nature, then you should use the `prod` function in R. This will multiply all of the values together. The data in my two example data frame are all additive in nature (most things are). However, here are some examples where there is a multiplicative structure to the data:
 
@@ -237,7 +239,7 @@ Thus, you need to have care with which statistic you're using. Just saying "the 
 
 The *Sample Arithmetic Mean* or *SAM* is the most commonly used *sample mean* (often denoted as $\overline{x}$). This statistic has a critical assumption that most people fail to realize: the input data set must consist of values which can be meaningfully combined through addition. If this assumption is not satisfied, then the resulting value of the *SAM* is junk at best, misleading at worst.
 
-In R, you'll use the `mean` function to get values of the *SAM*. (You may add on the argument `trim` to get a *trimmed [arithmetic] mean*.) If we wanted to know the value of the *SAM* for the flipper lengths, we would use `mean(penguins$flipper_length_mm, na.rm = TRUE)` and find a value of `r mean(penguins$flipper_length_mm, na.rm = TRUE)` mm/penguin. Notice that the output is not rounded. This is a good example that you'll want to use the `round` function (see the Getting Started guide) to make sure numbers look nice. There is little reason to ever present more than four (4) decimals.
+In R, you'll use the `mean` function to get values of the *SAM*. (You may add on the argument `trim` to get a *trimmed [arithmetic] mean*.) If we wanted to know the value of the *SAM* for the flipper lengths, we would use `mean(penguins$flipper_len, na.rm = TRUE)` and find a value of `r mean(penguins$flipper_len, na.rm = TRUE)` mm/penguin. Notice that the output is not rounded. This is a good example that you'll want to use the `round` function (see the Getting Started guide) to make sure numbers look nice. There is little reason to ever present more than four (4) decimals.
 
 ### *Sample Geometric Mean*
 
@@ -315,7 +317,7 @@ If you want a measure of the association, there are also many different statisti
 
 Instead of `na.rm = TRUE`, you will need to use either of the following: `use = "complete.obs"` or `use = "pairwise.complete.obs"`. The former case is when you are only putting in two data vectors; the later for when you are putting into two data frames *__with only numeric data columns__* and want the correlations between all combinations.
 
-For example, suppose I wanted to get the value of Pearson's Correlation for penguin bill length and body mass. To do so, I would need to code `cor(penguins$bill_length_mm, penguins$body_mass_g, method = "pearson", use = "complete.obs")`; this yields a value of `r cor(penguins$bill_length_mm, penguins$body_mass_g, method = "pearson", use = "complete.obs")`. 
+For example, suppose I wanted to get the value of Pearson's Correlation for penguin bill length and body mass. To do so, I would need to code `cor(penguins$bill_len, penguins$body_mass, method = "pearson", use = "complete.obs")`; this yields a value of `r cor(penguins$bill_len, penguins$body_mass, method = "pearson", use = "complete.obs")`. 
 
 ## Most Frequent Value
 
@@ -404,7 +406,7 @@ Try to come up with the code that will display the penguins' body mass, grouped 
 #| eval: true
 # Summarizing Penguin Data by Species ----
 sumSpeciesPenguins <- psych::describeBy(
-  x = penguins$body_mass_g,
+  x = penguins$body_mass,
   group = penguins$species,
   na.rm = TRUE,
   skew = TRUE,
@@ -882,7 +884,7 @@ While we haven't yet seen an example of empty table cells, these can and will sh
 #| echo: false
 # Example of table with empty cells ----
 quickAOV <- aov(
-  formula = flipper_length_mm ~ species,
+  formula = flipper_len ~ species,
   data = penguins
 )
 

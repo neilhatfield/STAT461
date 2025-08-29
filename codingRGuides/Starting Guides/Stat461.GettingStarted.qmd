@@ -17,7 +17,7 @@ format:
 execute: 
   echo: false
   warning: false
-  cache: true
+  cache: false
 ---
 
 Welcome! Whether this is your first time using R/RStudio or not, I hope that this document will be helpful for getting started. If you do not intend to use R and/or aren't interested in learning to use R, you do not need to read any further than Section 1.
@@ -30,13 +30,13 @@ If you are using other statistical software, keep in mind that you are still res
 
 # Installing the Software
 
-If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.4.0 or higher; at the time of writing, the current version of R is 4.4.1.
+If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.5.0 or higher; at the time of writing, the current version of R is 4.5.1.
 
 ## Check Your Version
 Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:
 
-    R version 4.4.1 (2024-06-14) -- "Race for Your Life"
-    Copyright (C) 2024 The R Foundation for Statistical Computing
+    R version 4.5.1 (2025-06-13) -- "Great Square Root"
+    Copyright (C) 2025 The R Foundation for Statistical Computing
     Platform: aarch64-apple-darwin20
     
     R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -57,6 +57,7 @@ The very first line of this text will tell you the version number. If you alread
 
 ```{r}
 #| label: versionInfo
+#| echo: true
 # Display version info for R ----
 version
 
@@ -113,7 +114,7 @@ You can copy/paste the above lines into your R console and press Enter/Return. M
 If you do not get that message and/or run into problems, please come see me.
 
 ::: {.callout-note}
-You only need to load and run the `checkSetup` function successfully *once* for the entire semester. The only times you might need to run this function multiple times is if you 1) ran into problems on previous runs, 2) are using a computer for the first time, or 3) needed to update R to new major version (e.g., 4.3.* to 4.4.*).
+You only need to load and run the `checkSetup` function successfully *once* for the entire semester. The only times you might need to run this function multiple times is if you 1) ran into problems on previous runs, 2) are using a computer for the first time, or 3) needed to update R to new major version (e.g., 4.4.* to 4.5.*).
 :::
 
 # Writing and Running R Code

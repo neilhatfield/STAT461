@@ -3202,7 +3202,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">July 26, 2024</p>
+      <p class="date-modified">August 29, 2025</p>
     </div>
   </div>
     
@@ -3221,12 +3221,12 @@ window.Quarto = {
 </section>
 <section id="installing-the-software" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Installing the Software</h1>
-<p>If you have not already done so, you will need to install R. You can either search online for the link or you can use this <a href="https://cran.r-project.org/">Download R from CRAN</a> link. <strong>Be sure that you are using a recent version of R.</strong> That is, you need to have R be on version 4.4.0 or higher; at the time of writing, the current version of R is 4.4.1.</p>
+<p>If you have not already done so, you will need to install R. You can either search online for the link or you can use this <a href="https://cran.r-project.org/">Download R from CRAN</a> link. <strong>Be sure that you are using a recent version of R.</strong> That is, you need to have R be on version 4.5.0 or higher; at the time of writing, the current version of R is 4.5.1.</p>
 <section id="check-your-version" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="check-your-version"><span class="header-section-number">2.1</span> Check Your Version</h2>
 <p>Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:</p>
-<pre><code>R version 4.4.1 (2024-06-14) -- &quot;Race for Your Life&quot;
-Copyright (C) 2024 The R Foundation for Statistical Computing
+<pre><code>R version 4.5.1 (2025-06-13) -- &quot;Great Square Root&quot;
+Copyright (C) 2025 The R Foundation for Statistical Computing
 Platform: aarch64-apple-darwin20
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -3244,6 +3244,8 @@ Type &#39;demo()&#39; for some demos, &#39;help()&#39; for on-line help, or
 Type &#39;q()&#39; to quit R</code></pre>
 <p>The very first line of this text will tell you the version number. If you already have R up and running, you don’t need to quit and restart R to check your version. In your console, simply type <code>version</code> and hit the Enter/Return key. R will return some key information about your computer as a two-column list that looks like the following:</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display version info for R ----</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               _                           
 platform       aarch64-apple-darwin20      
@@ -3252,14 +3254,14 @@ os             darwin20
 system         aarch64, darwin20           
 status                                     
 major          4                           
-minor          4.1                         
-year           2024                        
+minor          5.1                         
+year           2025                        
 month          06                          
-day            14                          
-svn rev        86737                       
+day            13                          
+svn rev        88306                       
 language       R                           
-version.string R version 4.4.1 (2024-06-14)
-nickname       Race for Your Life          </code></pre>
+version.string R version 4.5.1 (2025-06-13)
+nickname       Great Square Root           </code></pre>
 </div>
 </div>
 <p>Look for the lines <code>major</code> and <code>minor</code> (or the line <code>version.string</code>). These will provide you with the version information.</p>
@@ -3304,18 +3306,18 @@ nickname       Race for Your Life          </code></pre>
 <p>Once you have R installed or updated to the current version and have decided on which IDE you’ll use (if applicable), your next step is to make sure that you have all of the key packages installed. These packages offer ways to extend R and make our lives easier.</p>
 <p>To assist everyone with ensuring that you will have all of necessary packages installed, I’ve written a script that will help you.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the checkSetup function ----</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-2-2" class="code-annotation-target"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R&quot;</span>)</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-2-3" class="code-annotation-target"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">checkSetup</span>()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-3"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-3-1"><a href="#annotated-cell-3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the checkSetup function ----</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-3-2" class="code-annotation-target"><a href="#annotated-cell-3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R&quot;</span>)</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-3-3" class="code-annotation-target"><a href="#annotated-cell-3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">checkSetup</span>()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="2" data-code-annotation="1">The <code>source</code> function will tell R to go out to the listed website and pull the <code>checkSetup</code> function into your current R session.</span>
+<span data-code-cell="annotated-cell-3" data-code-lines="2" data-code-annotation="1">The <code>source</code> function will tell R to go out to the listed website and pull the <code>checkSetup</code> function into your current R session.</span>
 </dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="3" data-code-annotation="2">This command will run the <code>checkSetup</code> function.</span>
+<span data-code-cell="annotated-cell-3" data-code-lines="3" data-code-annotation="2">This command will run the <code>checkSetup</code> function.</span>
 </dd>
 </dl>
 </div>
@@ -3433,47 +3435,47 @@ Tip
 </div>
 <p>Let’s look at loading some of the most used packages in Stat 461.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using separate calls ----</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(psych)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using separate calls ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(psych)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code>{knitr}</code> and <code>{kableExtra}</code> packages assist with creating professional looking tables (and help with knitting/render Markdown-enabled documents) while the <code>{psych}</code> package has some additional tools that make analysis easier. The <code>{tidyverse}</code> package is actually a <em>meta-package</em> that allows us to quickly load multiple packages such as <code>{ggplot2}</code> and <code>{dplyr}</code> for data cleaning and visualization.</p>
 <p>Alternatively, we could use the following approach</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using lapply to load packages ----</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;tidyverse&quot;</span>, <span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;kableExtra&quot;</span>, <span class="st">&quot;psych&quot;</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> packages,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> library,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">character.only =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">quietly =</span> <span class="cn">TRUE</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Using lapply to load packages ----</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;tidyverse&quot;</span>, <span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;kableExtra&quot;</span>, <span class="st">&quot;psych&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> packages,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> library,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">character.only =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">quietly =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Where we first create a <code>packages</code> object that contains the name of all of the packages we want to load. The subsequent <code>lapply</code> command then applies the <code>library</code> command to each element of <code>packages</code>. The <code>character.only</code> and <code>quietly</code> arguments help smooth the processing.</p>
 <p>When I work in a Markdown-enabled documents, I typically place my very first code chunk towards the top of the document and name this chunk “setup” or “setupFiles”. This chunk is where I put my library commands.</p>
 <p>In an R Markdown document, this would look something like the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup}</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="in">packages &lt;- c(&quot;tidyverse&quot;, &quot;knitr&quot;, &quot;kableExtra&quot;, &quot;psych&quot;)</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="in">lapply(</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="in">  X = packages,</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="in">  FUN = library,</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="in">  character.only = TRUE,</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="in">  quietly = TRUE</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup}</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="in">packages &lt;- c(&quot;tidyverse&quot;, &quot;knitr&quot;, &quot;kableExtra&quot;, &quot;psych&quot;)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="in">lapply(</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="in">  X = packages,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="in">  FUN = library,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="in">  character.only = TRUE,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="in">  quietly = TRUE</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In a Quarto document, the name of the chunk moves to the chunk option <code>label</code>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| label: setup</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="in">packages &lt;- c(&quot;tidyverse&quot;, &quot;knitr&quot;, &quot;kableExtra&quot;, &quot;psych&quot;)</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="in">lapply(</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="in">  X = packages,</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="in">  FUN = library,</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="in">  character.only = TRUE,</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="in">  quietly = TRUE</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| label: setup</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="in">packages &lt;- c(&quot;tidyverse&quot;, &quot;knitr&quot;, &quot;kableExtra&quot;, &quot;psych&quot;)</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="in">lapply(</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="in">  X = packages,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="in">  FUN = library,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="in">  character.only = TRUE,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="in">  quietly = TRUE</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="loading-data" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="loading-data"><span class="header-section-number">5.2</span> Loading Data</h2>
@@ -3499,30 +3501,30 @@ Warning
 <h3 data-number="5.2.2" class="anchored" data-anchor-id="write-your-own-code"><span class="header-section-number">5.2.2</span> Write Your Own Code</h3>
 <p>A good practice to get into is to write the code yourself to import data. This is actually easier than you might think. Most data files I provide you will either be *.CSV, *.DAT, *.TXT, or *.Rdata. Further, you can use this method to read data in from an online source using the URL/web address of the data file.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-7-1"><a href="#annotated-cell-7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Structure for reading in data ----</span></span>
-<span id="annotated-cell-7-2"><a href="#annotated-cell-7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Applies to CSV, DAT, or TXT files</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-7-3" class="code-annotation-target"><a href="#annotated-cell-7-3" aria-hidden="true" tabindex="-1"></a>objectName <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-7-4" class="code-annotation-target"><a href="#annotated-cell-7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;path/to/file/on/your/computer.csv or URL&quot;</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3" onclick="event.preventDefault();" href>3</a><span id="annotated-cell-7-5" class="code-annotation-target"><a href="#annotated-cell-7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="4" onclick="event.preventDefault();" href>4</a><span id="annotated-cell-7-6" class="code-annotation-target"><a href="#annotated-cell-7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="annotated-cell-7-7"><a href="#annotated-cell-7-7" aria-hidden="true" tabindex="-1"></a>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-8"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-8-1"><a href="#annotated-cell-8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Structure for reading in data ----</span></span>
+<span id="annotated-cell-8-2"><a href="#annotated-cell-8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Applies to CSV, DAT, or TXT files</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-8-3" class="code-annotation-target"><a href="#annotated-cell-8-3" aria-hidden="true" tabindex="-1"></a>objectName <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-8-4" class="code-annotation-target"><a href="#annotated-cell-8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;path/to/file/on/your/computer.csv or URL&quot;</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="3" onclick="event.preventDefault();" href>3</a><span id="annotated-cell-8-5" class="code-annotation-target"><a href="#annotated-cell-8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="4" onclick="event.preventDefault();" href>4</a><span id="annotated-cell-8-6" class="code-annotation-target"><a href="#annotated-cell-8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="annotated-cell-8-7"><a href="#annotated-cell-8-7" aria-hidden="true" tabindex="-1"></a>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="3" data-code-annotation="1">The <code>read.table</code> function is a powerful workhorse and can be used with many different file types. If you have worked with R before you might have used <code>read.csv</code> which actually calls <code>read.table</code>.</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="3" data-code-annotation="1">The <code>read.table</code> function is a powerful workhorse and can be used with many different file types. If you have worked with R before you might have used <code>read.csv</code> which actually calls <code>read.table</code>.</span>
 </dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="4" data-code-annotation="2">The <code>file</code> argument is required. You have to tell R where to look to get the file.</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="4" data-code-annotation="2">The <code>file</code> argument is required. You have to tell R where to look to get the file.</span>
 </dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="3">3</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="5" data-code-annotation="3">The <code>header</code> argument tells R to interpret the first row as providing column names or not.</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="5" data-code-annotation="3">The <code>header</code> argument tells R to interpret the first row as providing column names or not.</span>
 </dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="4">4</dt>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="6" data-code-annotation="4">The separator argument, <code>sep</code>, tells R what to use to tell where one cell ends and the next begins. The two most common values you’ll encounter in this course are <code>sep = &quot;,&quot;</code> and <code>sep = &quot;&quot;</code>.</span>
+<span data-code-cell="annotated-cell-8" data-code-lines="6" data-code-annotation="4">The separator argument, <code>sep</code>, tells R what to use to tell where one cell ends and the next begins. The two most common values you’ll encounter in this course are <code>sep = &quot;,&quot;</code> and <code>sep = &quot;&quot;</code>.</span>
 </dd>
 </dl>
 </div>
@@ -3530,18 +3532,18 @@ Warning
 <p>You’ll have to know where you have saved your file. For example, if I have a CSV saved to my desktop that I want to load, I would have to use <code>~/Desktop/mydata.csv</code>. You can simplify the file path if you set your working directory (which will be covered in the next section).</p>
 <p>Here’s an example using a provided URL to bring in a CSV, DAT, or TXT file.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing Data via URL ----</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: If you lose internet connection, this command will fail to run</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing Data via URL ----</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: If you lose internet connection, this command will fail to run</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you are loading an RData file (the native data file of R), all you need to do is the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example loading RData File ----</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">&quot;path/to/file.Rdata&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example loading RData File ----</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">&quot;path/to/file.Rdata&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In all of these three examples, the resulting data should be immediately loaded to your current environment and ready to call via their object name.</p>
 </section>
@@ -3577,13 +3579,13 @@ Tip
 <h2 data-number="6.2" class="anchored" data-anchor-id="str"><span class="header-section-number">6.2</span> <code>str</code></h2>
 <p>The structure function, <code>str</code> allows you to see the structure of any object in your R session. This is useful when you want to see how R is thinking about an object rather than viewing all of the things inside of the object. Here’s an example of <code>str</code> in action:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># str example ----</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">url</span>(  </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/onewayExplorations.Rdata&quot;</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(fabric)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># str example ----</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">url</span>(  </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/onewayExplorations.Rdata&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(fabric)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&#39;data.frame&#39;:   16 obs. of  2 variables:
  $ loom    : Factor w/ 4 levels &quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;: 1 1 1 1 2 2 2 2 3 3 ...
@@ -3617,20 +3619,20 @@ Tip
 <h3 data-number="6.6.1" class="anchored" data-anchor-id="round"><span class="header-section-number">6.6.1</span> <code>round</code></h3>
 <p>The first is <code>round</code>. This function takes two arguments: <code>x</code> the number/vector/data frame that you want to round, and <code>digits</code> which is the number of digits <em>after</em> the decimal you wish to keep. You can apply <code>round</code> to multiple values at time IF they are part of the same vector or data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examples of using the round function ----</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examples of using the round function ----</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 124.51</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 125</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="sc">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="sc">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 120</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="at">x =</span> <span class="fu">round</span>(<span class="at">x =</span> fabric<span class="sc">$</span>strength, <span class="at">digits =</span> <span class="dv">0</span>), <span class="at">n =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="at">x =</span> <span class="fu">round</span>(<span class="at">x =</span> fabric<span class="sc">$</span>strength, <span class="at">digits =</span> <span class="dv">0</span>), <span class="at">n =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 98 97</code></pre>
 </div>
@@ -3769,59 +3771,59 @@ H_1&amp;: y = \mu_{\cdot\cdot} + \alpha_{i} + \epsilon_{ij}
 <section id="code-appendix" class="level1" data-number="9">
 <h1 data-number="9"><span class="header-section-number">9</span> Code Appendix</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-16"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-16-1"><a href="#annotated-cell-16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display version info for R ----</span></span>
-<span id="annotated-cell-16-2"><a href="#annotated-cell-16-2" aria-hidden="true" tabindex="-1"></a>version</span>
-<span id="annotated-cell-16-3"><a href="#annotated-cell-16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-4"><a href="#annotated-cell-16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the checkSetup function ----</span></span>
-<span id="annotated-cell-16-5"><a href="#annotated-cell-16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R&quot;</span>)</span>
-<span id="annotated-cell-16-6"><a href="#annotated-cell-16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">checkSetup</span>()</span>
-<span id="annotated-cell-16-7"><a href="#annotated-cell-16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-8"><a href="#annotated-cell-16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Using separate calls ----</span></span>
-<span id="annotated-cell-16-9"><a href="#annotated-cell-16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="annotated-cell-16-10"><a href="#annotated-cell-16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="annotated-cell-16-11"><a href="#annotated-cell-16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="annotated-cell-16-12"><a href="#annotated-cell-16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(psych)</span>
-<span id="annotated-cell-16-13"><a href="#annotated-cell-16-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-14"><a href="#annotated-cell-16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Using lapply to load packages ----</span></span>
-<span id="annotated-cell-16-15"><a href="#annotated-cell-16-15" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;tidyverse&quot;</span>, <span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;kableExtra&quot;</span>, <span class="st">&quot;psych&quot;</span>)</span>
-<span id="annotated-cell-16-16"><a href="#annotated-cell-16-16" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(</span>
-<span id="annotated-cell-16-17"><a href="#annotated-cell-16-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> packages,</span>
-<span id="annotated-cell-16-18"><a href="#annotated-cell-16-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> library,</span>
-<span id="annotated-cell-16-19"><a href="#annotated-cell-16-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">character.only =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-16-20"><a href="#annotated-cell-16-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">quietly =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-16-21"><a href="#annotated-cell-16-21" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-16-22"><a href="#annotated-cell-16-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-23"><a href="#annotated-cell-16-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Structure for reading in data ----</span></span>
-<span id="annotated-cell-16-24"><a href="#annotated-cell-16-24" aria-hidden="true" tabindex="-1"></a><span class="do">## Applies to CSV, DAT, or TXT files</span></span>
-<span id="annotated-cell-16-25"><a href="#annotated-cell-16-25" aria-hidden="true" tabindex="-1"></a>objectName <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
-<span id="annotated-cell-16-26"><a href="#annotated-cell-16-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;path/to/file/on/your/computer.csv or URL&quot;</span>,</span>
-<span id="annotated-cell-16-27"><a href="#annotated-cell-16-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-16-28"><a href="#annotated-cell-16-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="annotated-cell-16-29"><a href="#annotated-cell-16-29" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-16-30"><a href="#annotated-cell-16-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-31"><a href="#annotated-cell-16-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing Data via URL ----</span></span>
-<span id="annotated-cell-16-32"><a href="#annotated-cell-16-32" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: If you lose internet connection, this command will fail to run</span></span>
-<span id="annotated-cell-16-33"><a href="#annotated-cell-16-33" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
-<span id="annotated-cell-16-34"><a href="#annotated-cell-16-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>,</span>
-<span id="annotated-cell-16-35"><a href="#annotated-cell-16-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-16-36"><a href="#annotated-cell-16-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="annotated-cell-16-37"><a href="#annotated-cell-16-37" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-16-38"><a href="#annotated-cell-16-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Example loading RData File ----</span></span>
-<span id="annotated-cell-16-39"><a href="#annotated-cell-16-39" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">&quot;path/to/file.Rdata&quot;</span>)</span>
-<span id="annotated-cell-16-40"><a href="#annotated-cell-16-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-41"><a href="#annotated-cell-16-41" aria-hidden="true" tabindex="-1"></a><span class="co"># str example ----</span></span>
-<span id="annotated-cell-16-42"><a href="#annotated-cell-16-42" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(</span>
-<span id="annotated-cell-16-43"><a href="#annotated-cell-16-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">url</span>(  </span>
-<span id="annotated-cell-16-44"><a href="#annotated-cell-16-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/onewayExplorations.Rdata&quot;</span></span>
-<span id="annotated-cell-16-45"><a href="#annotated-cell-16-45" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-16-46"><a href="#annotated-cell-16-46" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-16-47"><a href="#annotated-cell-16-47" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(fabric)</span>
-<span id="annotated-cell-16-48"><a href="#annotated-cell-16-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-16-49"><a href="#annotated-cell-16-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Examples of using the round function ----</span></span>
-<span id="annotated-cell-16-50"><a href="#annotated-cell-16-50" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span>
-<span id="annotated-cell-16-51"><a href="#annotated-cell-16-51" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="annotated-cell-16-52"><a href="#annotated-cell-16-52" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="annotated-cell-16-53"><a href="#annotated-cell-16-53" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="at">x =</span> <span class="fu">round</span>(<span class="at">x =</span> fabric<span class="sc">$</span>strength, <span class="at">digits =</span> <span class="dv">0</span>), <span class="at">n =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="annotated-cell-17"><pre class="sourceCode r code-annotation-code code-with-copy"><code class="sourceCode r"><span id="annotated-cell-17-1"><a href="#annotated-cell-17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display version info for R ----</span></span>
+<span id="annotated-cell-17-2"><a href="#annotated-cell-17-2" aria-hidden="true" tabindex="-1"></a>version</span>
+<span id="annotated-cell-17-3"><a href="#annotated-cell-17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-4"><a href="#annotated-cell-17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the checkSetup function ----</span></span>
+<span id="annotated-cell-17-5"><a href="#annotated-cell-17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/rScripts/checkSetup.R&quot;</span>)</span>
+<span id="annotated-cell-17-6"><a href="#annotated-cell-17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">checkSetup</span>()</span>
+<span id="annotated-cell-17-7"><a href="#annotated-cell-17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-8"><a href="#annotated-cell-17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Using separate calls ----</span></span>
+<span id="annotated-cell-17-9"><a href="#annotated-cell-17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="annotated-cell-17-10"><a href="#annotated-cell-17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="annotated-cell-17-11"><a href="#annotated-cell-17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="annotated-cell-17-12"><a href="#annotated-cell-17-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(psych)</span>
+<span id="annotated-cell-17-13"><a href="#annotated-cell-17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-14"><a href="#annotated-cell-17-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Using lapply to load packages ----</span></span>
+<span id="annotated-cell-17-15"><a href="#annotated-cell-17-15" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;tidyverse&quot;</span>, <span class="st">&quot;knitr&quot;</span>, <span class="st">&quot;kableExtra&quot;</span>, <span class="st">&quot;psych&quot;</span>)</span>
+<span id="annotated-cell-17-16"><a href="#annotated-cell-17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(</span>
+<span id="annotated-cell-17-17"><a href="#annotated-cell-17-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> packages,</span>
+<span id="annotated-cell-17-18"><a href="#annotated-cell-17-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> library,</span>
+<span id="annotated-cell-17-19"><a href="#annotated-cell-17-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">character.only =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-17-20"><a href="#annotated-cell-17-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">quietly =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-17-21"><a href="#annotated-cell-17-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-17-22"><a href="#annotated-cell-17-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-23"><a href="#annotated-cell-17-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Structure for reading in data ----</span></span>
+<span id="annotated-cell-17-24"><a href="#annotated-cell-17-24" aria-hidden="true" tabindex="-1"></a><span class="do">## Applies to CSV, DAT, or TXT files</span></span>
+<span id="annotated-cell-17-25"><a href="#annotated-cell-17-25" aria-hidden="true" tabindex="-1"></a>objectName <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="annotated-cell-17-26"><a href="#annotated-cell-17-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;path/to/file/on/your/computer.csv or URL&quot;</span>,</span>
+<span id="annotated-cell-17-27"><a href="#annotated-cell-17-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-17-28"><a href="#annotated-cell-17-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="annotated-cell-17-29"><a href="#annotated-cell-17-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-17-30"><a href="#annotated-cell-17-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-31"><a href="#annotated-cell-17-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing Data via URL ----</span></span>
+<span id="annotated-cell-17-32"><a href="#annotated-cell-17-32" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: If you lose internet connection, this command will fail to run</span></span>
+<span id="annotated-cell-17-33"><a href="#annotated-cell-17-33" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="annotated-cell-17-34"><a href="#annotated-cell-17-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>,</span>
+<span id="annotated-cell-17-35"><a href="#annotated-cell-17-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-17-36"><a href="#annotated-cell-17-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="annotated-cell-17-37"><a href="#annotated-cell-17-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-17-38"><a href="#annotated-cell-17-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Example loading RData File ----</span></span>
+<span id="annotated-cell-17-39"><a href="#annotated-cell-17-39" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="at">file =</span> <span class="st">&quot;path/to/file.Rdata&quot;</span>)</span>
+<span id="annotated-cell-17-40"><a href="#annotated-cell-17-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-41"><a href="#annotated-cell-17-41" aria-hidden="true" tabindex="-1"></a><span class="co"># str example ----</span></span>
+<span id="annotated-cell-17-42"><a href="#annotated-cell-17-42" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(</span>
+<span id="annotated-cell-17-43"><a href="#annotated-cell-17-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">url</span>(  </span>
+<span id="annotated-cell-17-44"><a href="#annotated-cell-17-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/onewayExplorations.Rdata&quot;</span></span>
+<span id="annotated-cell-17-45"><a href="#annotated-cell-17-45" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-17-46"><a href="#annotated-cell-17-46" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-17-47"><a href="#annotated-cell-17-47" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(fabric)</span>
+<span id="annotated-cell-17-48"><a href="#annotated-cell-17-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-17-49"><a href="#annotated-cell-17-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Examples of using the round function ----</span></span>
+<span id="annotated-cell-17-50"><a href="#annotated-cell-17-50" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="annotated-cell-17-51"><a href="#annotated-cell-17-51" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="annotated-cell-17-52"><a href="#annotated-cell-17-52" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="at">x =</span> <span class="fl">124.512</span>, <span class="at">digits =</span> <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="annotated-cell-17-53"><a href="#annotated-cell-17-53" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="at">x =</span> <span class="fu">round</span>(<span class="at">x =</span> fabric<span class="sc">$</span>strength, <span class="at">digits =</span> <span class="dv">0</span>), <span class="at">n =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 

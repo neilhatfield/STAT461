@@ -3429,7 +3429,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">July 26, 2024</p>
+      <p class="date-modified">August 29, 2025</p>
     </div>
   </div>
     
@@ -3462,32 +3462,35 @@ window.Quarto = {
 </section>
 <section id="load-data" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="load-data"><span class="header-section-number">1.2</span> Load Data</h2>
-<p>For this guide I’m going to use two different data sets: penguin data from the <code>{palmerpenguins}</code> package and a version of the Oreo data that you’ll have in HW #1.1.</p>
+<p>I’m going to use the built-in penguin data as well as a version of the Oreo data related to HW #1.1. As a reminder, here’s how you load these both into R.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="annotated-cell-2"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-2-1"><a href="#annotated-cell-2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading data into my session ----</span></span>
 <span id="annotated-cell-2-2"><a href="#annotated-cell-2-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Palmer Penguin data</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-2-3" class="code-annotation-target"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;palmerpenguins&quot;)</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-2-4" class="code-annotation-target"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins</span>
-<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-2-6"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Oreo Data (HW #1.1) </span></span>
-<span id="annotated-cell-2-7"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>( </span>
-<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
-<span id="annotated-cell-2-9"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-2-10"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();" href>3</a><span id="annotated-cell-2-11" class="code-annotation-target"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1" onclick="event.preventDefault();" href>1</a><span id="annotated-cell-2-3" class="code-annotation-target"><a href="#annotated-cell-2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(penguins)</span>
+<span id="annotated-cell-2-4"><a href="#annotated-cell-2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-2-5"><a href="#annotated-cell-2-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Oreo Data (HW #1.1) </span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2" onclick="event.preventDefault();" href>2</a><span id="annotated-cell-2-6" class="code-annotation-target"><a href="#annotated-cell-2-6" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="annotated-cell-2-7"><a href="#annotated-cell-2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
+<span id="annotated-cell-2-8"><a href="#annotated-cell-2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-2-9"><a href="#annotated-cell-2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="annotated-cell-2-10"><a href="#annotated-cell-2-10" aria-hidden="true" tabindex="-1"></a>) </span>
+<span id="annotated-cell-2-11"><a href="#annotated-cell-2-11" aria-hidden="true" tabindex="-1"></a></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3" onclick="event.preventDefault();" href>3</a><span id="annotated-cell-2-12" class="code-annotation-target"><a href="#annotated-cell-2-12" aria-hidden="true" tabindex="-1"></a><span class="do">## R versions older than 4.5.1</span></span>
+<span id="annotated-cell-2-13"><a href="#annotated-cell-2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;palmerpenguins&quot;)  </span></span>
+<span id="annotated-cell-2-14"><a href="#annotated-cell-2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># penguins &lt;- palmerpenguins::penguins </span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="3" data-code-annotation="1">If you don’t have the <code>{palmerpenguins}</code> package, run this install command without the octothrope.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="3" data-code-annotation="1">The <code>data</code> command will load any of built-in data set.</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="4" data-code-annotation="2">Since we’re just after the data frame, we don’t need to load the whole package.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="6" data-code-annotation="2">Here’s how you can use the base R function <code>read.table</code> to load data from an online source. Be sure to update the URL to match you data.</span>
 </dd>
 <dt data-target-cell="annotated-cell-2" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="11" data-code-annotation="3">This code can be quickly modified for you to use with your own Oreo data.</span>
+<span data-code-cell="annotated-cell-2" data-code-lines="12" data-code-annotation="3">If you are using a version of R that is older than 4.5.1, then the penguin data will not be built-in. You’ll need to first install and load the <code>{palmerpenguins}</code> data.</span>
 </dd>
 </dl>
 </div>
@@ -3510,15 +3513,15 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examining the structure ----</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>tibble [344 × 8] (S3: tbl_df/tbl/data.frame)
- $ species          : Factor w/ 3 levels &quot;Adelie&quot;,&quot;Chinstrap&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
- $ island           : Factor w/ 3 levels &quot;Biscoe&quot;,&quot;Dream&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
- $ bill_length_mm   : num [1:344] 39.1 39.5 40.3 NA 36.7 39.3 38.9 39.2 34.1 42 ...
- $ bill_depth_mm    : num [1:344] 18.7 17.4 18 NA 19.3 20.6 17.8 19.6 18.1 20.2 ...
- $ flipper_length_mm: int [1:344] 181 186 195 NA 193 190 181 195 193 190 ...
- $ body_mass_g      : int [1:344] 3750 3800 3250 NA 3450 3650 3625 4675 3475 4250 ...
- $ sex              : Factor w/ 2 levels &quot;female&quot;,&quot;male&quot;: 2 1 1 NA 1 2 1 2 NA NA ...
- $ year             : int [1:344] 2007 2007 2007 2007 2007 2007 2007 2007 2007 2007 ...</code></pre>
+<pre><code>&#39;data.frame&#39;:   344 obs. of  8 variables:
+ $ species    : Factor w/ 3 levels &quot;Adelie&quot;,&quot;Chinstrap&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ island     : Factor w/ 3 levels &quot;Biscoe&quot;,&quot;Dream&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+ $ bill_len   : num  39.1 39.5 40.3 NA 36.7 39.3 38.9 39.2 34.1 42 ...
+ $ bill_dep   : num  18.7 17.4 18 NA 19.3 20.6 17.8 19.6 18.1 20.2 ...
+ $ flipper_len: int  181 186 195 NA 193 190 181 195 193 190 ...
+ $ body_mass  : int  3750 3800 3250 NA 3450 3650 3625 4675 3475 4250 ...
+ $ sex        : Factor w/ 2 levels &quot;female&quot;,&quot;male&quot;: 2 1 1 NA 1 2 1 2 NA NA ...
+ $ year       : int  2007 2007 2007 2007 2007 2007 2007 2007 2007 2007 ...</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(oreoData)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -3592,14 +3595,14 @@ Sloppy Language
 <p>Provided that our data are tidy, the first two questions are answered by the <code>nrow</code> and <code>ncol</code> functions, respectively. Using <code>nrow(oreoData)</code> will reveal that there are 60 observations in the data frame, while <code>ncol(oreoData)</code> reveals that there are 2 columns. For the penguin data, what code would you write to verify that there are 344 observations and 8 columns?</p>
 <p>Notice that <code>nrow</code> did not make any distinctions between any types of cookies or species of penguin. You can restrict the counting provided you know some information. For example, <code>nrow(penguins[which(penguins$species == &quot;Gentoo&quot;),])</code> will yield that there are 124 Gentoo penguins. You can get counts by groups a bit more easily using the methods I’ll talk about later.</p>
 <p>Knowing whether you have missing values, and how many, can be useful. If you have a high proportion of missing values, you might need to rethink your data collection methods and your results might not be accurate reflections of the broader population.</p>
-<p>We can use code such as <code>nrow(oreoData[is.na(oreoData$Type),])</code> to get a count of how many observations are missing the Type attribute (0 observations.) Similarly, we can find out that 2 penguins are missing measurements of their flipper length (<code>nrow(penguins[is.na(penguins$flipper_length_mm),])</code>).</p>
-<p>If you wanted the count of observations that are NOT missing, you can use R’s logical negation, <code>!</code>. Thus, <code>nrow(penguins[!is.na(penguins$flipper_length_mm),])</code> yields how many observations aren’t missing (342).</p>
+<p>We can use code such as <code>nrow(oreoData[is.na(oreoData$Type),])</code> to get a count of how many observations are missing the Type attribute (0 observations.) Similarly, we can find out that 2 penguins are missing measurements of their flipper length (<code>nrow(penguins[is.na(penguins$flipper_len),])</code>).</p>
+<p>If you wanted the count of observations that are NOT missing, you can use R’s logical negation, <code>!</code>. Thus, <code>nrow(penguins[!is.na(penguins$flipper_len),])</code> yields how many observations aren’t missing (342).</p>
 </section>
 <section id="extrema" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="extrema"><span class="header-section-number">2.2</span> Extrema</h2>
 <p>When the case attribute has some logical order to the values reflecting having more or less of the attribute, the data collection gains the two <em>extrema</em> attributes: the smallest and largest values.</p>
 <p>The statistics that we use here are the <em>sample max[-imum]</em> (via <code>max</code>) and the <em>sample min[-imum]</em> (via <code>min</code>). The outputs of these two statistics can be the same value (indicating that all observations are the same) or different. Keep in mind that statistical software will assume the typical numeric ordering.</p>
-<p>Both functions are easy to use: <code>max(oreoData$Filling.Mass)</code> and <code>min(oreoData$Filling.Mass)</code> will yield results of 7.21 and 2.292, respectively. However, we need to have care. Notice what you get if you swap <code>penguins$flipper_length_mm</code> for <code>oreoData$Filling.Mass</code> in the <code>max</code> function: NA. We got NA because there are missing values in the column of flipper length. To correct this, we will add the <code>na.rm = TRUE</code> argument to both <code>max</code> and <code>min</code>. <code>max(penguins$flipper_length_mm, na.rm = TRUE)</code> gives 231, and <code>min(penguins$flipper_length_mm, na.rm = TRUE)</code> yields 172.</p>
+<p>Both functions are easy to use: <code>max(oreoData$Filling.Mass)</code> and <code>min(oreoData$Filling.Mass)</code> will yield results of 7.21 and 2.292, respectively. However, we need to have care. Notice what you get if you swap <code>penguins$flipper_len</code> for <code>oreoData$Filling.Mass</code> in the <code>max</code> function: NA. We got NA because there are missing values in the column of flipper length. To correct this, we will add the <code>na.rm = TRUE</code> argument to both <code>max</code> and <code>min</code>. <code>max(penguins$flipper_len, na.rm = TRUE)</code> gives 231, and <code>min(penguins$flipper_len, na.rm = TRUE)</code> yields 172.</p>
 <p>Pretty much every statistic we’re going to use has the <code>na.rm</code> argument. Thus, a good habit to get into is to always include <code>na.rm = TRUE</code> to ensure that you get a value.</p>
 </section>
 <section id="middle" class="level2" data-number="2.3">
@@ -3619,7 +3622,7 @@ Sloppy Language
 <li>The <em>fourth quartile</em>, <span class="math inline">\(Q_4\)</span>, a.k.a., <em>sample max</em>, cutting off the smallest 100% of the data.</li>
 </ol>
 <p>We can use the <code>quantile</code> function in R to get the cut point values. For example, using <code>quantile(oreoData$Filling.Mass, na.rm = TRUE)</code> will return the five quartiles: 2.292, 3.25275, 4.569, 6.41225, 7.21. By default, <code>quantile</code> will return all five quartiles.</p>
-<p>You can adjust what type of quantile you’re looking at with the <code>probs</code> argument. Suppose I want to look at octiles for the flipper lengths; I would need to use <code>probs = seq(0, 1, 1/8)</code> in the <code>quantile</code> function to get these nine values. Thus, <code>quantile(penguins$flipper_length_mm, probs = seq(0, 1, 1/8), na.rm = TRUE)</code> yields the values 172, 186, 190, 193, 197, 207, 213, 219.375, 231. Notice that I used <code>1/8</code> rather than <code>0.125</code>; remember that R will do calculations for you.</p>
+<p>You can adjust what type of quantile you’re looking at with the <code>probs</code> argument. Suppose I want to look at octiles for the flipper lengths; I would need to use <code>probs = seq(0, 1, 1/8)</code> in the <code>quantile</code> function to get these nine values. Thus, <code>quantile(penguins$flipper_len, probs = seq(0, 1, 1/8), na.rm = TRUE)</code> yields the values 172, 186, 190, 193, 197, 207, 213, 219.375, 231. Notice that I used <code>1/8</code> rather than <code>0.125</code>; remember that R will do calculations for you.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3637,7 +3640,7 @@ Warning
 <section id="group-performance" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="group-performance"><span class="header-section-number">2.5</span> Group Performance</h2>
 <p>Group Performance deals with how well a collection did in terms of some goal. Most often, the goals deal with amassing some case attribute. There are two statistics which measure this that are worth mentioning: <em>GP+</em> and <em>GP*</em>. The key between them deals with whether your data values may be meaningfully combined with addition or if multiplication is the way to go.</p>
-<p>If your values are additive in nature, then you can use the <code>sum</code> function in R; <code>sum(penguins$body_mass_g, na.rm = TRUE)</code> yields the total amassed mass of the penguins (1437000 grams).</p>
+<p>If your values are additive in nature, then you can use the <code>sum</code> function in R; <code>sum(penguins$body_mass, na.rm = TRUE)</code> yields the total amassed mass of the penguins (1437000 grams).</p>
 <p>If your values are multiplicative in nature, then you should use the <code>prod</code> function in R. This will multiply all of the values together. The data in my two example data frame are all additive in nature (most things are). However, here are some examples where there is a multiplicative structure to the data:</p>
 <ul>
 <li>Rates</li>
@@ -3670,7 +3673,7 @@ Warning
 <section id="sample-arithmetic-mean" class="level3" data-number="2.6.1">
 <h3 data-number="2.6.1" class="anchored" data-anchor-id="sample-arithmetic-mean"><span class="header-section-number">2.6.1</span> <em>Sample Arithmetic Mean</em></h3>
 <p>The <em>Sample Arithmetic Mean</em> or <em>SAM</em> is the most commonly used <em>sample mean</em> (often denoted as <span class="math inline">\(\overline{x}\)</span>). This statistic has a critical assumption that most people fail to realize: the input data set must consist of values which can be meaningfully combined through addition. If this assumption is not satisfied, then the resulting value of the <em>SAM</em> is junk at best, misleading at worst.</p>
-<p>In R, you’ll use the <code>mean</code> function to get values of the <em>SAM</em>. (You may add on the argument <code>trim</code> to get a <em>trimmed [arithmetic] mean</em>.) If we wanted to know the value of the <em>SAM</em> for the flipper lengths, we would use <code>mean(penguins$flipper_length_mm, na.rm = TRUE)</code> and find a value of 200.9152047 mm/penguin. Notice that the output is not rounded. This is a good example that you’ll want to use the <code>round</code> function (see the Getting Started guide) to make sure numbers look nice. There is little reason to ever present more than four (4) decimals.</p>
+<p>In R, you’ll use the <code>mean</code> function to get values of the <em>SAM</em>. (You may add on the argument <code>trim</code> to get a <em>trimmed [arithmetic] mean</em>.) If we wanted to know the value of the <em>SAM</em> for the flipper lengths, we would use <code>mean(penguins$flipper_len, na.rm = TRUE)</code> and find a value of 200.9152047 mm/penguin. Notice that the output is not rounded. This is a good example that you’ll want to use the <code>round</code> function (see the Getting Started guide) to make sure numbers look nice. There is little reason to ever present more than four (4) decimals.</p>
 </section>
 <section id="sample-geometric-mean" class="level3" data-number="2.6.2">
 <h3 data-number="2.6.2" class="anchored" data-anchor-id="sample-geometric-mean"><span class="header-section-number">2.6.2</span> <em>Sample Geometric Mean</em></h3>
@@ -3751,7 +3754,7 @@ Tip
 <h2 data-number="2.10" class="anchored" data-anchor-id="measures-of-association"><span class="header-section-number">2.10</span> Measures of Association</h2>
 <p>If you want a measure of the association, there are also many different statistics you may use. In R, the <code>cor</code> function will produce the values of Pearson’s correlation, Spearman’s correlation, or Kendall’s <span class="math inline">\(\tau\)</span> (tau) for your selected data. To choose which you’ll use the <code>method</code> argument along with one of <code>&quot;pearson&quot;</code>, <code>&quot;spearman&quot;</code>, or <code>&quot;kendall&quot;</code>.</p>
 <p>Instead of <code>na.rm = TRUE</code>, you will need to use either of the following: <code>use = &quot;complete.obs&quot;</code> or <code>use = &quot;pairwise.complete.obs&quot;</code>. The former case is when you are only putting in two data vectors; the later for when you are putting into two data frames <em><strong>with only numeric data columns</strong></em> and want the correlations between all combinations.</p>
-<p>For example, suppose I wanted to get the value of Pearson’s Correlation for penguin bill length and body mass. To do so, I would need to code <code>cor(penguins$bill_length_mm, penguins$body_mass_g, method = &quot;pearson&quot;, use = &quot;complete.obs&quot;)</code>; this yields a value of 0.5951098.</p>
+<p>For example, suppose I wanted to get the value of Pearson’s Correlation for penguin bill length and body mass. To do so, I would need to code <code>cor(penguins$bill_len, penguins$body_mass, method = &quot;pearson&quot;, use = &quot;complete.obs&quot;)</code>; this yields a value of 0.5951098.</p>
 </section>
 <section id="most-frequent-value" class="level2" data-number="2.11">
 <h2 data-number="2.11" class="anchored" data-anchor-id="most-frequent-value"><span class="header-section-number">2.11</span> Most Frequent Value</h2>
@@ -3961,27 +3964,45 @@ I'm going to give example interpretative statements drawn from the Oreo data con
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
-<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 6%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">vars</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">mean</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">sd</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">median</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">trimmed</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">mad</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">min</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">max</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">range</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">skew</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">kurtosis</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">se</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">IQR</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q0.25</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q0.75</th>
+<th style="text-align: left;"></th>
+<th style="text-align: right;">vars</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">trimmed</th>
+<th style="text-align: right;">mad</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">range</th>
+<th style="text-align: right;">skew</th>
+<th style="text-align: right;">kurtosis</th>
+<th style="text-align: right;">se</th>
+<th style="text-align: right;">IQR</th>
+<th style="text-align: right;">Q0.25</th>
+<th style="text-align: right;">Q0.75</th>
 </tr>
 </thead>
 <tbody>
@@ -4006,9 +4027,6 @@ I'm going to give example interpretative statements drawn from the Oreo data con
 </tr>
 </tbody>
 </table>
-
-
-</div>
 </div>
 </div>
 <p>While the table does look better than the raw display’s above, there is still much we can improve about the display. For instance, we could</p>
@@ -4051,22 +4069,35 @@ I'm going to give example interpretative statements drawn from the Oreo data con
 </dl>
 </div>
 <div class="cell-output-display">
-<div>
-<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 2%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 11%">
+<col style="width: 18%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Min</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q1</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Median</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q3</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Max</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">MAD</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">SAM</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">SASD</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Sample Skew</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Sample Ex. Kurtosis</th>
+<th style="text-align: left;"></th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">Max</th>
+<th style="text-align: right;">MAD</th>
+<th style="text-align: right;">SAM</th>
+<th style="text-align: right;">SASD</th>
+<th style="text-align: right;">Sample Skew</th>
+<th style="text-align: right;">Sample Ex. Kurtosis</th>
 </tr>
 </thead>
 <tbody>
@@ -4086,9 +4117,6 @@ I'm going to give example interpretative statements drawn from the Oreo data con
 </tr>
 </tbody>
 </table>
-
-
-</div>
 </div>
 </div>
 </section>
@@ -4141,22 +4169,35 @@ Table 1: Summary Statistics for Oreo Filling Masses
 </figcaption>
 <div aria-describedby="tbl-kableEx2b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div>
-<table class="do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="do-not-create-environment cell table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 2%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 11%">
+<col style="width: 18%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Min</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q1</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Median</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Q3</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Max</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">MAD</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">SAM</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">SASD</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Sample Skew</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Sample Ex. Kurtosis</th>
+<th style="text-align: left;"></th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">Max</th>
+<th style="text-align: right;">MAD</th>
+<th style="text-align: right;">SAM</th>
+<th style="text-align: right;">SASD</th>
+<th style="text-align: right;">Sample Skew</th>
+<th style="text-align: right;">Sample Ex. Kurtosis</th>
 </tr>
 </thead>
 <tbody>
@@ -4176,9 +4217,6 @@ Table 1: Summary Statistics for Oreo Filling Masses
 </tr>
 </tbody>
 </table>
-
-
-</div>
 </div>
 </div>
 </figure>
@@ -4241,22 +4279,35 @@ Table 2: Summary Statistics for Oreo Filling Masses
 </figcaption>
 <div aria-describedby="tbl-kableEx2c-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div>
-<table class="do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="do-not-create-environment cell table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 3%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 12%">
+<col style="width: 19%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">n</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Min</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Q1</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Median</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Q3</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Max</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">MAD</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">SAM</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">SASD</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Sample Skew</th>
-<th style="text-align: center;" data-quarto-table-cell-role="th">Sample Ex. Kurtosis</th>
+<th style="text-align: left;"></th>
+<th style="text-align: center;">n</th>
+<th style="text-align: center;">Min</th>
+<th style="text-align: center;">Q1</th>
+<th style="text-align: center;">Median</th>
+<th style="text-align: center;">Q3</th>
+<th style="text-align: center;">Max</th>
+<th style="text-align: center;">MAD</th>
+<th style="text-align: center;">SAM</th>
+<th style="text-align: center;">SASD</th>
+<th style="text-align: center;">Sample Skew</th>
+<th style="text-align: center;">Sample Ex. Kurtosis</th>
 </tr>
 </thead>
 <tbody>
@@ -4276,9 +4327,6 @@ Table 2: Summary Statistics for Oreo Filling Masses
 </tr>
 </tbody>
 </table>
-
-
-</div>
 </div>
 </div>
 </figure>
@@ -4629,57 +4677,74 @@ Table 5: Summary Statistics for Oreo Filling Masses
 </figcaption>
 <div aria-describedby="tbl-kableEx3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table data-quarto-disable-processing="true" class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:center;"> n </th>
-   <th style="text-align:center;"> Min </th>
-   <th style="text-align:center;"> Q1 </th>
-   <th style="text-align:center;"> Median </th>
-   <th style="text-align:center;"> Q3 </th>
-   <th style="text-align:center;"> Max </th>
-   <th style="text-align:center;"> MAD </th>
-   <th style="text-align:center;"> SAM </th>
-   <th style="text-align:center;"> SASD </th>
-   <th style="text-align:center;"> Sample Skew </th>
-   <th style="text-align:center;"> Sample Ex. Kurtosis </th>
-  </tr>
- </thead>
+<div>
+<table class="lightable-classic do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">n</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Min</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Q1</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Median</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Q3</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Max</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">MAD</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">SAM</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">SASD</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Sample Skew</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Sample Ex. Kurtosis</th>
+</tr>
+</thead>
 <tbody>
-  <tr>
-   <td style="text-align:left;"> Double Stuf </td>
-   <td style="text-align:center;"> 30 </td>
-   <td style="text-align:center;"> 5.815 </td>
-   <td style="text-align:center;"> 6.287 </td>
-   <td style="text-align:center;"> 6.422 </td>
-   <td style="text-align:center;"> 6.597 </td>
-   <td style="text-align:center;"> 7.210 </td>
-   <td style="text-align:center;"> 0.259 </td>
-   <td style="text-align:center;"> 6.457 </td>
-   <td style="text-align:center;"> 0.302 </td>
-   <td style="text-align:center;"> 0.323 </td>
-   <td style="text-align:center;"> -0.200 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Regular </td>
-   <td style="text-align:center;"> 30 </td>
-   <td style="text-align:center;"> 2.292 </td>
-   <td style="text-align:center;"> 3.199 </td>
-   <td style="text-align:center;"> 3.252 </td>
-   <td style="text-align:center;"> 3.273 </td>
-   <td style="text-align:center;"> 3.323 </td>
-   <td style="text-align:center;"> 0.047 </td>
-   <td style="text-align:center;"> 3.204 </td>
-   <td style="text-align:center;"> 0.181 </td>
-   <td style="text-align:center;"> -4.218 </td>
-   <td style="text-align:center;"> 18.425 </td>
-  </tr>
-</tbody>
-<tfoot><tr><td style="padding: 0; " colspan="100%">
-<span style="font-style: italic;">Note. </span> <sup></sup> Here is an example of a footnote.</td></tr></tfoot>
+<tr class="odd">
+<td style="text-align: left;">Double Stuf</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">5.815</td>
+<td style="text-align: center;">6.287</td>
+<td style="text-align: center;">6.422</td>
+<td style="text-align: center;">6.597</td>
+<td style="text-align: center;">7.210</td>
+<td style="text-align: center;">0.259</td>
+<td style="text-align: center;">6.457</td>
+<td style="text-align: center;">0.302</td>
+<td style="text-align: center;">0.323</td>
+<td style="text-align: center;">-0.200</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Regular</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">2.292</td>
+<td style="text-align: center;">3.199</td>
+<td style="text-align: center;">3.252</td>
+<td style="text-align: center;">3.273</td>
+<td style="text-align: center;">3.323</td>
+<td style="text-align: center;">0.047</td>
+<td style="text-align: center;">3.204</td>
+<td style="text-align: center;">0.181</td>
+<td style="text-align: center;">-4.218</td>
+<td style="text-align: center;">18.425</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: left; padding: 0;"><span style="font-style: italic;">Note. </span> <sup></sup> Here is an example of a footnote.</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+</tfoot>
+
 </table>
 
+
+</div>
 </div>
 </div>
 </figure>
@@ -4699,48 +4764,50 @@ Table 6: Example Table with Empty Cells
 </figcaption>
 <div aria-describedby="tbl-emptyCells1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table data-quarto-disable-processing="true" class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
- <thead>
-  <tr>
-   <th style="text-align:left;"> Parameter </th>
-   <th style="text-align:right;"> Sum_Squares </th>
-   <th style="text-align:right;"> df </th>
-   <th style="text-align:right;"> Mean_Square </th>
-   <th style="text-align:right;"> F </th>
-   <th style="text-align:right;"> p </th>
-   <th style="text-align:right;"> Eta2 </th>
-   <th style="text-align:right;"> Omega2 </th>
-   <th style="text-align:right;"> Epsilon2 </th>
-  </tr>
- </thead>
+<div>
+<table class="lightable-classic do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Parameter</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Sum_Squares</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">df</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean_Square</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">F</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p</th>
+</tr>
+</thead>
 <tbody>
-  <tr>
-   <td style="text-align:left;"> species </td>
-   <td style="text-align:right;"> 52,473.28 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 26,236.64 </td>
-   <td style="text-align:right;"> 594.802 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 0.778 </td>
-   <td style="text-align:right;"> 0.776 </td>
-   <td style="text-align:right;"> 0.777 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Residuals </td>
-   <td style="text-align:right;"> 14,953.26 </td>
-   <td style="text-align:right;"> 339 </td>
-   <td style="text-align:right;"> 44.11 </td>
-   <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> NA </td>
-   <td style="text-align:right;"> NA </td>
-  </tr>
-</tbody>
-<tfoot><tr><td style="padding: 0; " colspan="100%">
-<span style="font-style: italic;">Note: </span> <sup></sup> P-value was auto-rounded to look like zero; p-values cannot be equal to zero.</td></tr></tfoot>
+<tr class="odd">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">52,473.28</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">26,236.64</td>
+<td style="text-align: right;">594.802</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residuals</td>
+<td style="text-align: right;">14,953.26</td>
+<td style="text-align: right;">339</td>
+<td style="text-align: right;">44.11</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: left; padding: 0;"><span style="font-style: italic;">Note: </span> <sup></sup> P-value was auto-rounded to look like zero; p-values cannot be equal to zero.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tfoot>
+
 </table>
 
+
+</div>
 </div>
 </div>
 </figure>
@@ -4776,48 +4843,50 @@ Table 7: Example Table with (Non-)Empty Cells
 </figcaption>
 <div aria-describedby="tbl-emptyCells2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table data-quarto-disable-processing="true" class=" lightable-classic" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
- <thead>
-  <tr>
-   <th style="text-align:left;"> Parameter </th>
-   <th style="text-align:right;"> Sum_Squares </th>
-   <th style="text-align:right;"> df </th>
-   <th style="text-align:right;"> Mean_Square </th>
-   <th style="text-align:right;"> F </th>
-   <th style="text-align:right;"> p </th>
-   <th style="text-align:right;"> Eta2 </th>
-   <th style="text-align:right;"> Omega2 </th>
-   <th style="text-align:right;"> Epsilon2 </th>
-  </tr>
- </thead>
+<div>
+<table class="lightable-classic do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Parameter</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Sum_Squares</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">df</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean_Square</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">F</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p</th>
+</tr>
+</thead>
 <tbody>
-  <tr>
-   <td style="text-align:left;"> species </td>
-   <td style="text-align:right;"> 52,473.28 </td>
-   <td style="text-align:right;"> 2 </td>
-   <td style="text-align:right;"> 26,236.64 </td>
-   <td style="text-align:right;"> 594.802 </td>
-   <td style="text-align:right;"> 0 </td>
-   <td style="text-align:right;"> 0.778 </td>
-   <td style="text-align:right;"> 0.776 </td>
-   <td style="text-align:right;"> 0.777 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> Residuals </td>
-   <td style="text-align:right;"> 14,953.26 </td>
-   <td style="text-align:right;"> 339 </td>
-   <td style="text-align:right;"> 44.11 </td>
-   <td style="text-align:right;">  </td>
-   <td style="text-align:right;">  </td>
-   <td style="text-align:right;">  </td>
-   <td style="text-align:right;">  </td>
-   <td style="text-align:right;">  </td>
-  </tr>
-</tbody>
-<tfoot><tr><td style="padding: 0; " colspan="100%">
-<span style="font-style: italic;">Note: </span> <sup></sup> P-value was auto-rounded to look like zero; p-values cannot be equal to zero.</td></tr></tfoot>
+<tr class="odd">
+<td style="text-align: left;">species</td>
+<td style="text-align: right;">52,473.28</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">26,236.64</td>
+<td style="text-align: right;">594.802</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residuals</td>
+<td style="text-align: right;">14,953.26</td>
+<td style="text-align: right;">339</td>
+<td style="text-align: right;">44.11</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td style="text-align: left; padding: 0;"><span style="font-style: italic;">Note: </span> <sup></sup> P-value was auto-rounded to look like zero; p-values cannot be equal to zero.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tfoot>
+
 </table>
 
+
+</div>
 </div>
 </div>
 </figure>
@@ -4853,267 +4922,270 @@ Tip
 <span id="annotated-cell-24-9"><a href="#annotated-cell-24-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="annotated-cell-24-10"><a href="#annotated-cell-24-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading data into my session ----</span></span>
 <span id="annotated-cell-24-11"><a href="#annotated-cell-24-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Palmer Penguin data</span></span>
-<span id="annotated-cell-24-12"><a href="#annotated-cell-24-12" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;palmerpenguins&quot;)</span></span>
-<span id="annotated-cell-24-13"><a href="#annotated-cell-24-13" aria-hidden="true" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins</span>
-<span id="annotated-cell-24-14"><a href="#annotated-cell-24-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-15"><a href="#annotated-cell-24-15" aria-hidden="true" tabindex="-1"></a><span class="do">## Oreo Data (HW #1.1) </span></span>
-<span id="annotated-cell-24-16"><a href="#annotated-cell-24-16" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>( </span>
-<span id="annotated-cell-24-17"><a href="#annotated-cell-24-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
-<span id="annotated-cell-24-18"><a href="#annotated-cell-24-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-19"><a href="#annotated-cell-24-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="annotated-cell-24-20"><a href="#annotated-cell-24-20" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-24-21"><a href="#annotated-cell-24-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-22"><a href="#annotated-cell-24-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Viewing objects ----</span></span>
-<span id="annotated-cell-24-23"><a href="#annotated-cell-24-23" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(penguins)</span>
+<span id="annotated-cell-24-12"><a href="#annotated-cell-24-12" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(penguins)</span>
+<span id="annotated-cell-24-13"><a href="#annotated-cell-24-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-14"><a href="#annotated-cell-24-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Oreo Data (HW #1.1) </span></span>
+<span id="annotated-cell-24-15"><a href="#annotated-cell-24-15" aria-hidden="true" tabindex="-1"></a>oreoData <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="annotated-cell-24-16"><a href="#annotated-cell-24-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
+<span id="annotated-cell-24-17"><a href="#annotated-cell-24-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-18"><a href="#annotated-cell-24-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="annotated-cell-24-19"><a href="#annotated-cell-24-19" aria-hidden="true" tabindex="-1"></a>) </span>
+<span id="annotated-cell-24-20"><a href="#annotated-cell-24-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-21"><a href="#annotated-cell-24-21" aria-hidden="true" tabindex="-1"></a><span class="do">## R versions older than 4.5.1</span></span>
+<span id="annotated-cell-24-22"><a href="#annotated-cell-24-22" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;palmerpenguins&quot;)  </span></span>
+<span id="annotated-cell-24-23"><a href="#annotated-cell-24-23" aria-hidden="true" tabindex="-1"></a><span class="co"># penguins &lt;- palmerpenguins::penguins </span></span>
 <span id="annotated-cell-24-24"><a href="#annotated-cell-24-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-25"><a href="#annotated-cell-24-25" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(oreoData)</span>
-<span id="annotated-cell-24-26"><a href="#annotated-cell-24-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-27"><a href="#annotated-cell-24-27" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: the effect of the View function in both of these</span></span>
-<span id="annotated-cell-24-28"><a href="#annotated-cell-24-28" aria-hidden="true" tabindex="-1"></a><span class="do">## calls will not appear in this guide. I also don&#39;t recommend</span></span>
-<span id="annotated-cell-24-29"><a href="#annotated-cell-24-29" aria-hidden="true" tabindex="-1"></a><span class="do">## using the View function inside of a Markdown-enabled document.</span></span>
-<span id="annotated-cell-24-30"><a href="#annotated-cell-24-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-31"><a href="#annotated-cell-24-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Examining the structure ----</span></span>
-<span id="annotated-cell-24-32"><a href="#annotated-cell-24-32" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(penguins)</span>
+<span id="annotated-cell-24-25"><a href="#annotated-cell-24-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Viewing objects ----</span></span>
+<span id="annotated-cell-24-26"><a href="#annotated-cell-24-26" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(penguins)</span>
+<span id="annotated-cell-24-27"><a href="#annotated-cell-24-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-28"><a href="#annotated-cell-24-28" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(oreoData)</span>
+<span id="annotated-cell-24-29"><a href="#annotated-cell-24-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-30"><a href="#annotated-cell-24-30" aria-hidden="true" tabindex="-1"></a><span class="do">## Note: the effect of the View function in both of these</span></span>
+<span id="annotated-cell-24-31"><a href="#annotated-cell-24-31" aria-hidden="true" tabindex="-1"></a><span class="do">## calls will not appear in this guide. I also don&#39;t recommend</span></span>
+<span id="annotated-cell-24-32"><a href="#annotated-cell-24-32" aria-hidden="true" tabindex="-1"></a><span class="do">## using the View function inside of a Markdown-enabled document.</span></span>
 <span id="annotated-cell-24-33"><a href="#annotated-cell-24-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-34"><a href="#annotated-cell-24-34" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(oreoData)</span>
-<span id="annotated-cell-24-35"><a href="#annotated-cell-24-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-36"><a href="#annotated-cell-24-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Quickly recode Type as a factor ---</span></span>
-<span id="annotated-cell-24-37"><a href="#annotated-cell-24-37" aria-hidden="true" tabindex="-1"></a>oreoData<span class="sc">$</span>Type <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(oreoData<span class="sc">$</span>Type)</span>
+<span id="annotated-cell-24-34"><a href="#annotated-cell-24-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Examining the structure ----</span></span>
+<span id="annotated-cell-24-35"><a href="#annotated-cell-24-35" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(penguins)</span>
+<span id="annotated-cell-24-36"><a href="#annotated-cell-24-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-37"><a href="#annotated-cell-24-37" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(oreoData)</span>
 <span id="annotated-cell-24-38"><a href="#annotated-cell-24-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-39"><a href="#annotated-cell-24-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the summary function ----</span></span>
-<span id="annotated-cell-24-40"><a href="#annotated-cell-24-40" aria-hidden="true" tabindex="-1"></a><span class="do">## On a single column</span></span>
-<span id="annotated-cell-24-41"><a href="#annotated-cell-24-41" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(oreoData<span class="sc">$</span>Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
-<span id="annotated-cell-24-42"><a href="#annotated-cell-24-42" aria-hidden="true" tabindex="-1"></a><span class="do">## On an entire data frame</span></span>
-<span id="annotated-cell-24-43"><a href="#annotated-cell-24-43" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(oreoData, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="annotated-cell-24-44"><a href="#annotated-cell-24-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-45"><a href="#annotated-cell-24-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the Psych Package&#39;s describe function ----</span></span>
-<span id="annotated-cell-24-46"><a href="#annotated-cell-24-46" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describe</span>(</span>
-<span id="annotated-cell-24-47"><a href="#annotated-cell-24-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> oreoData<span class="sc">$</span>Filling.Mass,</span>
-<span id="annotated-cell-24-48"><a href="#annotated-cell-24-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-49"><a href="#annotated-cell-24-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-50"><a href="#annotated-cell-24-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-51"><a href="#annotated-cell-24-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>),</span>
-<span id="annotated-cell-24-52"><a href="#annotated-cell-24-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-53"><a href="#annotated-cell-24-53" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-24-54"><a href="#annotated-cell-24-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-55"><a href="#annotated-cell-24-55" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(summaryOreo) <span class="ot">&lt;-</span> <span class="st">&quot;Filling Mass&quot;</span></span>
-<span id="annotated-cell-24-56"><a href="#annotated-cell-24-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-57"><a href="#annotated-cell-24-57" aria-hidden="true" tabindex="-1"></a>summaryOreo</span>
-<span id="annotated-cell-24-58"><a href="#annotated-cell-24-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-59"><a href="#annotated-cell-24-59" aria-hidden="true" tabindex="-1"></a><span class="co"># Get Summary Values by Group ----</span></span>
-<span id="annotated-cell-24-60"><a href="#annotated-cell-24-60" aria-hidden="true" tabindex="-1"></a>sumGrpOreo <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describeBy</span>(</span>
-<span id="annotated-cell-24-61"><a href="#annotated-cell-24-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> oreoData<span class="sc">$</span>Filling.Mass,</span>
-<span id="annotated-cell-24-62"><a href="#annotated-cell-24-62" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> oreoData<span class="sc">$</span>Type,</span>
-<span id="annotated-cell-24-63"><a href="#annotated-cell-24-63" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-64"><a href="#annotated-cell-24-64" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-65"><a href="#annotated-cell-24-65" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-66"><a href="#annotated-cell-24-66" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>),</span>
-<span id="annotated-cell-24-67"><a href="#annotated-cell-24-67" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-68"><a href="#annotated-cell-24-68" aria-hidden="true" tabindex="-1"></a>  <span class="at">mat =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-69"><a href="#annotated-cell-24-69" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">4</span></span>
-<span id="annotated-cell-24-70"><a href="#annotated-cell-24-70" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-24-71"><a href="#annotated-cell-24-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-72"><a href="#annotated-cell-24-72" aria-hidden="true" tabindex="-1"></a>sumGrpOreo</span>
-<span id="annotated-cell-24-73"><a href="#annotated-cell-24-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing Penguin Data by Species ----</span></span>
-<span id="annotated-cell-24-74"><a href="#annotated-cell-24-74" aria-hidden="true" tabindex="-1"></a>sumSpeciesPenguins <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describeBy</span>(</span>
-<span id="annotated-cell-24-75"><a href="#annotated-cell-24-75" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> penguins<span class="sc">$</span>body_mass_g,</span>
-<span id="annotated-cell-24-76"><a href="#annotated-cell-24-76" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> penguins<span class="sc">$</span>species,</span>
-<span id="annotated-cell-24-77"><a href="#annotated-cell-24-77" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-78"><a href="#annotated-cell-24-78" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-79"><a href="#annotated-cell-24-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-80"><a href="#annotated-cell-24-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">seq</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">5</span>),</span>
-<span id="annotated-cell-24-81"><a href="#annotated-cell-24-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-82"><a href="#annotated-cell-24-82" aria-hidden="true" tabindex="-1"></a>  <span class="at">mat =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-83"><a href="#annotated-cell-24-83" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">2</span></span>
-<span id="annotated-cell-24-84"><a href="#annotated-cell-24-84" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-24-85"><a href="#annotated-cell-24-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-86"><a href="#annotated-cell-24-86" aria-hidden="true" tabindex="-1"></a>sumSpeciesPenguins</span>
-<span id="annotated-cell-24-87"><a href="#annotated-cell-24-87" aria-hidden="true" tabindex="-1"></a><span class="co"># Using dplyr and data wrangling ----</span></span>
-<span id="annotated-cell-24-88"><a href="#annotated-cell-24-88" aria-hidden="true" tabindex="-1"></a>grpOreoSummary <span class="ot">&lt;-</span> oreoData <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-89"><a href="#annotated-cell-24-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Type) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-90"><a href="#annotated-cell-24-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="annotated-cell-24-91"><a href="#annotated-cell-24-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(), </span>
-<span id="annotated-cell-24-92"><a href="#annotated-cell-24-92" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-93"><a href="#annotated-cell-24-93" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd =</span> <span class="fu">sd</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-94"><a href="#annotated-cell-24-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-95"><a href="#annotated-cell-24-95" aria-hidden="true" tabindex="-1"></a>    <span class="at">trimmed =</span> <span class="fu">mean</span>(Filling.Mass, <span class="at">trim =</span> <span class="fl">0.05</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-96"><a href="#annotated-cell-24-96" aria-hidden="true" tabindex="-1"></a>    <span class="at">mad =</span> <span class="fu">mad</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-97"><a href="#annotated-cell-24-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-98"><a href="#annotated-cell-24-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-99"><a href="#annotated-cell-24-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">range =</span> <span class="fu">max</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fu">min</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-100"><a href="#annotated-cell-24-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">skew =</span> <span class="fu">skew</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-101"><a href="#annotated-cell-24-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">kurtosis =</span> <span class="fu">kurtosi</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="annotated-cell-24-102"><a href="#annotated-cell-24-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> <span class="fu">sd</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="fu">n</span>()),</span>
-<span id="annotated-cell-24-103"><a href="#annotated-cell-24-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">IQR =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.75</span>) <span class="sc">-</span></span>
-<span id="annotated-cell-24-104"><a href="#annotated-cell-24-104" aria-hidden="true" tabindex="-1"></a>      <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
-<span id="annotated-cell-24-105"><a href="#annotated-cell-24-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">Q0.25 =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
-<span id="annotated-cell-24-106"><a href="#annotated-cell-24-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">Q0.75 =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
-<span id="annotated-cell-24-107"><a href="#annotated-cell-24-107" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-108"><a href="#annotated-cell-24-108" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="annotated-cell-24-109"><a href="#annotated-cell-24-109" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
-<span id="annotated-cell-24-110"><a href="#annotated-cell-24-110" aria-hidden="true" tabindex="-1"></a>      <span class="at">.cols =</span> <span class="fu">where</span>(is.numeric),</span>
-<span id="annotated-cell-24-111"><a href="#annotated-cell-24-111" aria-hidden="true" tabindex="-1"></a>      <span class="at">.fns =</span> <span class="sc">~</span><span class="fu">round</span>(.x, <span class="at">digits =</span> <span class="dv">4</span>)</span>
-<span id="annotated-cell-24-112"><a href="#annotated-cell-24-112" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="annotated-cell-24-113"><a href="#annotated-cell-24-113" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-114"><a href="#annotated-cell-24-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-115"><a href="#annotated-cell-24-115" aria-hidden="true" tabindex="-1"></a>grpOreoSummary</span>
-<span id="annotated-cell-24-116"><a href="#annotated-cell-24-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-117"><a href="#annotated-cell-24-117" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Table Example ----</span></span>
-<span id="annotated-cell-24-118"><a href="#annotated-cell-24-118" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-119"><a href="#annotated-cell-24-119" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span>
-<span id="annotated-cell-24-120"><a href="#annotated-cell-24-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-121"><a href="#annotated-cell-24-121" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 1 ----</span></span>
-<span id="annotated-cell-24-122"><a href="#annotated-cell-24-122" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-123"><a href="#annotated-cell-24-123" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-124"><a href="#annotated-cell-24-124" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-125"><a href="#annotated-cell-24-125" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-126"><a href="#annotated-cell-24-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-127"><a href="#annotated-cell-24-127" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-128"><a href="#annotated-cell-24-128" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>)</span>
-<span id="annotated-cell-24-129"><a href="#annotated-cell-24-129" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-130"><a href="#annotated-cell-24-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 2 ----</span></span>
-<span id="annotated-cell-24-131"><a href="#annotated-cell-24-131" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-132"><a href="#annotated-cell-24-132" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-133"><a href="#annotated-cell-24-133" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-134"><a href="#annotated-cell-24-134" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-135"><a href="#annotated-cell-24-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-136"><a href="#annotated-cell-24-136" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-137"><a href="#annotated-cell-24-137" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>)</span>
-<span id="annotated-cell-24-138"><a href="#annotated-cell-24-138" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-139"><a href="#annotated-cell-24-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-140"><a href="#annotated-cell-24-140" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 3 ----</span></span>
-<span id="annotated-cell-24-141"><a href="#annotated-cell-24-141" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-142"><a href="#annotated-cell-24-142" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-143"><a href="#annotated-cell-24-143" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-144"><a href="#annotated-cell-24-144" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-145"><a href="#annotated-cell-24-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-146"><a href="#annotated-cell-24-146" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
-<span id="annotated-cell-24-147"><a href="#annotated-cell-24-147" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-148"><a href="#annotated-cell-24-148" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
-<span id="annotated-cell-24-149"><a href="#annotated-cell-24-149" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-150"><a href="#annotated-cell-24-150" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-151"><a href="#annotated-cell-24-151" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>)</span>
-<span id="annotated-cell-24-152"><a href="#annotated-cell-24-152" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-153"><a href="#annotated-cell-24-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-154"><a href="#annotated-cell-24-154" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying a Predefined Theme ----</span></span>
-<span id="annotated-cell-24-155"><a href="#annotated-cell-24-155" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-156"><a href="#annotated-cell-24-156" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-157"><a href="#annotated-cell-24-157" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-158"><a href="#annotated-cell-24-158" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-159"><a href="#annotated-cell-24-159" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-160"><a href="#annotated-cell-24-160" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
-<span id="annotated-cell-24-161"><a href="#annotated-cell-24-161" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-162"><a href="#annotated-cell-24-162" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
-<span id="annotated-cell-24-163"><a href="#annotated-cell-24-163" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-164"><a href="#annotated-cell-24-164" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-165"><a href="#annotated-cell-24-165" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>)</span>
-<span id="annotated-cell-24-166"><a href="#annotated-cell-24-166" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-167"><a href="#annotated-cell-24-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>()</span>
-<span id="annotated-cell-24-168"><a href="#annotated-cell-24-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-169"><a href="#annotated-cell-24-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Scaling a Too Wide Table ----</span></span>
-<span id="annotated-cell-24-170"><a href="#annotated-cell-24-170" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-171"><a href="#annotated-cell-24-171" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-172"><a href="#annotated-cell-24-172" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-173"><a href="#annotated-cell-24-173" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-174"><a href="#annotated-cell-24-174" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-175"><a href="#annotated-cell-24-175" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
-<span id="annotated-cell-24-176"><a href="#annotated-cell-24-176" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-177"><a href="#annotated-cell-24-177" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
-<span id="annotated-cell-24-178"><a href="#annotated-cell-24-178" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-179"><a href="#annotated-cell-24-179" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-180"><a href="#annotated-cell-24-180" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
-<span id="annotated-cell-24-181"><a href="#annotated-cell-24-181" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-182"><a href="#annotated-cell-24-182" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-183"><a href="#annotated-cell-24-183" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
-<span id="annotated-cell-24-184"><a href="#annotated-cell-24-184" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>)</span>
-<span id="annotated-cell-24-185"><a href="#annotated-cell-24-185" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-186"><a href="#annotated-cell-24-186" aria-hidden="true" tabindex="-1"></a><span class="co"># Using HOLD_position ----</span></span>
-<span id="annotated-cell-24-187"><a href="#annotated-cell-24-187" aria-hidden="true" tabindex="-1"></a><span class="do">## (I&#39;ve chosen not to render this table, rather just showing the code)</span></span>
-<span id="annotated-cell-24-188"><a href="#annotated-cell-24-188" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-189"><a href="#annotated-cell-24-189" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-190"><a href="#annotated-cell-24-190" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
-<span id="annotated-cell-24-191"><a href="#annotated-cell-24-191" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-192"><a href="#annotated-cell-24-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-193"><a href="#annotated-cell-24-193" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
-<span id="annotated-cell-24-194"><a href="#annotated-cell-24-194" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-195"><a href="#annotated-cell-24-195" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
-<span id="annotated-cell-24-196"><a href="#annotated-cell-24-196" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-197"><a href="#annotated-cell-24-197" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-198"><a href="#annotated-cell-24-198" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
-<span id="annotated-cell-24-199"><a href="#annotated-cell-24-199" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-200"><a href="#annotated-cell-24-200" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-201"><a href="#annotated-cell-24-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
-<span id="annotated-cell-24-202"><a href="#annotated-cell-24-202" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>, <span class="st">&quot;HOLD_position&quot;</span>)</span>
-<span id="annotated-cell-24-203"><a href="#annotated-cell-24-203" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-204"><a href="#annotated-cell-24-204" aria-hidden="true" tabindex="-1"></a><span class="co"># Table Footnote Example ----</span></span>
-<span id="annotated-cell-24-205"><a href="#annotated-cell-24-205" aria-hidden="true" tabindex="-1"></a>sumGrpOreo <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-206"><a href="#annotated-cell-24-206" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">remove_rownames</span>() <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-207"><a href="#annotated-cell-24-207" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">column_to_rownames</span>(</span>
-<span id="annotated-cell-24-208"><a href="#annotated-cell-24-208" aria-hidden="true" tabindex="-1"></a>    <span class="at">var =</span> <span class="st">&quot;group1&quot;</span></span>
-<span id="annotated-cell-24-209"><a href="#annotated-cell-24-209" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-210"><a href="#annotated-cell-24-210" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
-<span id="annotated-cell-24-211"><a href="#annotated-cell-24-211" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-39"><a href="#annotated-cell-24-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Quickly recode Type as a factor ---</span></span>
+<span id="annotated-cell-24-40"><a href="#annotated-cell-24-40" aria-hidden="true" tabindex="-1"></a>oreoData<span class="sc">$</span>Type <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(oreoData<span class="sc">$</span>Type)</span>
+<span id="annotated-cell-24-41"><a href="#annotated-cell-24-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-42"><a href="#annotated-cell-24-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the summary function ----</span></span>
+<span id="annotated-cell-24-43"><a href="#annotated-cell-24-43" aria-hidden="true" tabindex="-1"></a><span class="do">## On a single column</span></span>
+<span id="annotated-cell-24-44"><a href="#annotated-cell-24-44" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(oreoData<span class="sc">$</span>Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="annotated-cell-24-45"><a href="#annotated-cell-24-45" aria-hidden="true" tabindex="-1"></a><span class="do">## On an entire data frame</span></span>
+<span id="annotated-cell-24-46"><a href="#annotated-cell-24-46" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(oreoData, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="annotated-cell-24-47"><a href="#annotated-cell-24-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-48"><a href="#annotated-cell-24-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Using the Psych Package&#39;s describe function ----</span></span>
+<span id="annotated-cell-24-49"><a href="#annotated-cell-24-49" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describe</span>(</span>
+<span id="annotated-cell-24-50"><a href="#annotated-cell-24-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> oreoData<span class="sc">$</span>Filling.Mass,</span>
+<span id="annotated-cell-24-51"><a href="#annotated-cell-24-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-52"><a href="#annotated-cell-24-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-53"><a href="#annotated-cell-24-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-54"><a href="#annotated-cell-24-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>),</span>
+<span id="annotated-cell-24-55"><a href="#annotated-cell-24-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-56"><a href="#annotated-cell-24-56" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-24-57"><a href="#annotated-cell-24-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-58"><a href="#annotated-cell-24-58" aria-hidden="true" tabindex="-1"></a><span class="fu">row.names</span>(summaryOreo) <span class="ot">&lt;-</span> <span class="st">&quot;Filling Mass&quot;</span></span>
+<span id="annotated-cell-24-59"><a href="#annotated-cell-24-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-60"><a href="#annotated-cell-24-60" aria-hidden="true" tabindex="-1"></a>summaryOreo</span>
+<span id="annotated-cell-24-61"><a href="#annotated-cell-24-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-62"><a href="#annotated-cell-24-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Get Summary Values by Group ----</span></span>
+<span id="annotated-cell-24-63"><a href="#annotated-cell-24-63" aria-hidden="true" tabindex="-1"></a>sumGrpOreo <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describeBy</span>(</span>
+<span id="annotated-cell-24-64"><a href="#annotated-cell-24-64" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> oreoData<span class="sc">$</span>Filling.Mass,</span>
+<span id="annotated-cell-24-65"><a href="#annotated-cell-24-65" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> oreoData<span class="sc">$</span>Type,</span>
+<span id="annotated-cell-24-66"><a href="#annotated-cell-24-66" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-67"><a href="#annotated-cell-24-67" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-68"><a href="#annotated-cell-24-68" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-69"><a href="#annotated-cell-24-69" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>),</span>
+<span id="annotated-cell-24-70"><a href="#annotated-cell-24-70" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-71"><a href="#annotated-cell-24-71" aria-hidden="true" tabindex="-1"></a>  <span class="at">mat =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-72"><a href="#annotated-cell-24-72" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">4</span></span>
+<span id="annotated-cell-24-73"><a href="#annotated-cell-24-73" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-24-74"><a href="#annotated-cell-24-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-75"><a href="#annotated-cell-24-75" aria-hidden="true" tabindex="-1"></a>sumGrpOreo</span>
+<span id="annotated-cell-24-76"><a href="#annotated-cell-24-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Summarizing Penguin Data by Species ----</span></span>
+<span id="annotated-cell-24-77"><a href="#annotated-cell-24-77" aria-hidden="true" tabindex="-1"></a>sumSpeciesPenguins <span class="ot">&lt;-</span> psych<span class="sc">::</span><span class="fu">describeBy</span>(</span>
+<span id="annotated-cell-24-78"><a href="#annotated-cell-24-78" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> penguins<span class="sc">$</span>body_mass,</span>
+<span id="annotated-cell-24-79"><a href="#annotated-cell-24-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> penguins<span class="sc">$</span>species,</span>
+<span id="annotated-cell-24-80"><a href="#annotated-cell-24-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">na.rm =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-81"><a href="#annotated-cell-24-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">skew =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-82"><a href="#annotated-cell-24-82" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranges =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-83"><a href="#annotated-cell-24-83" aria-hidden="true" tabindex="-1"></a>  <span class="at">quant =</span> <span class="fu">seq</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">5</span>),</span>
+<span id="annotated-cell-24-84"><a href="#annotated-cell-24-84" aria-hidden="true" tabindex="-1"></a>  <span class="at">IQR =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-85"><a href="#annotated-cell-24-85" aria-hidden="true" tabindex="-1"></a>  <span class="at">mat =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-86"><a href="#annotated-cell-24-86" aria-hidden="true" tabindex="-1"></a>  <span class="at">digits =</span> <span class="dv">2</span></span>
+<span id="annotated-cell-24-87"><a href="#annotated-cell-24-87" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-24-88"><a href="#annotated-cell-24-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-89"><a href="#annotated-cell-24-89" aria-hidden="true" tabindex="-1"></a>sumSpeciesPenguins</span>
+<span id="annotated-cell-24-90"><a href="#annotated-cell-24-90" aria-hidden="true" tabindex="-1"></a><span class="co"># Using dplyr and data wrangling ----</span></span>
+<span id="annotated-cell-24-91"><a href="#annotated-cell-24-91" aria-hidden="true" tabindex="-1"></a>grpOreoSummary <span class="ot">&lt;-</span> oreoData <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-92"><a href="#annotated-cell-24-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Type) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-93"><a href="#annotated-cell-24-93" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="annotated-cell-24-94"><a href="#annotated-cell-24-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(), </span>
+<span id="annotated-cell-24-95"><a href="#annotated-cell-24-95" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-96"><a href="#annotated-cell-24-96" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd =</span> <span class="fu">sd</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-97"><a href="#annotated-cell-24-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-98"><a href="#annotated-cell-24-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">trimmed =</span> <span class="fu">mean</span>(Filling.Mass, <span class="at">trim =</span> <span class="fl">0.05</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-99"><a href="#annotated-cell-24-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">mad =</span> <span class="fu">mad</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-100"><a href="#annotated-cell-24-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-101"><a href="#annotated-cell-24-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-102"><a href="#annotated-cell-24-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">range =</span> <span class="fu">max</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">-</span> <span class="fu">min</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-103"><a href="#annotated-cell-24-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">skew =</span> <span class="fu">skew</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-104"><a href="#annotated-cell-24-104" aria-hidden="true" tabindex="-1"></a>    <span class="at">kurtosis =</span> <span class="fu">kurtosi</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="annotated-cell-24-105"><a href="#annotated-cell-24-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> <span class="fu">sd</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="fu">n</span>()),</span>
+<span id="annotated-cell-24-106"><a href="#annotated-cell-24-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">IQR =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.75</span>) <span class="sc">-</span></span>
+<span id="annotated-cell-24-107"><a href="#annotated-cell-24-107" aria-hidden="true" tabindex="-1"></a>      <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
+<span id="annotated-cell-24-108"><a href="#annotated-cell-24-108" aria-hidden="true" tabindex="-1"></a>    <span class="at">Q0.25 =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
+<span id="annotated-cell-24-109"><a href="#annotated-cell-24-109" aria-hidden="true" tabindex="-1"></a>    <span class="at">Q0.75 =</span> <span class="fu">quantile</span>(Filling.Mass, <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
+<span id="annotated-cell-24-110"><a href="#annotated-cell-24-110" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-111"><a href="#annotated-cell-24-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="annotated-cell-24-112"><a href="#annotated-cell-24-112" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
+<span id="annotated-cell-24-113"><a href="#annotated-cell-24-113" aria-hidden="true" tabindex="-1"></a>      <span class="at">.cols =</span> <span class="fu">where</span>(is.numeric),</span>
+<span id="annotated-cell-24-114"><a href="#annotated-cell-24-114" aria-hidden="true" tabindex="-1"></a>      <span class="at">.fns =</span> <span class="sc">~</span><span class="fu">round</span>(.x, <span class="at">digits =</span> <span class="dv">4</span>)</span>
+<span id="annotated-cell-24-115"><a href="#annotated-cell-24-115" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="annotated-cell-24-116"><a href="#annotated-cell-24-116" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-117"><a href="#annotated-cell-24-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-118"><a href="#annotated-cell-24-118" aria-hidden="true" tabindex="-1"></a>grpOreoSummary</span>
+<span id="annotated-cell-24-119"><a href="#annotated-cell-24-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-120"><a href="#annotated-cell-24-120" aria-hidden="true" tabindex="-1"></a><span class="co"># Basic Table Example ----</span></span>
+<span id="annotated-cell-24-121"><a href="#annotated-cell-24-121" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-122"><a href="#annotated-cell-24-122" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() </span>
+<span id="annotated-cell-24-123"><a href="#annotated-cell-24-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-124"><a href="#annotated-cell-24-124" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 1 ----</span></span>
+<span id="annotated-cell-24-125"><a href="#annotated-cell-24-125" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-126"><a href="#annotated-cell-24-126" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-127"><a href="#annotated-cell-24-127" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-128"><a href="#annotated-cell-24-128" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-129"><a href="#annotated-cell-24-129" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-130"><a href="#annotated-cell-24-130" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-131"><a href="#annotated-cell-24-131" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>)</span>
+<span id="annotated-cell-24-132"><a href="#annotated-cell-24-132" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-133"><a href="#annotated-cell-24-133" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 2 ----</span></span>
+<span id="annotated-cell-24-134"><a href="#annotated-cell-24-134" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-135"><a href="#annotated-cell-24-135" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-136"><a href="#annotated-cell-24-136" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-137"><a href="#annotated-cell-24-137" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-138"><a href="#annotated-cell-24-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-139"><a href="#annotated-cell-24-139" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-140"><a href="#annotated-cell-24-140" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>)</span>
+<span id="annotated-cell-24-141"><a href="#annotated-cell-24-141" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-142"><a href="#annotated-cell-24-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-143"><a href="#annotated-cell-24-143" aria-hidden="true" tabindex="-1"></a><span class="co"># Improving the Table, Part 3 ----</span></span>
+<span id="annotated-cell-24-144"><a href="#annotated-cell-24-144" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-145"><a href="#annotated-cell-24-145" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-146"><a href="#annotated-cell-24-146" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-147"><a href="#annotated-cell-24-147" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-148"><a href="#annotated-cell-24-148" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-149"><a href="#annotated-cell-24-149" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
+<span id="annotated-cell-24-150"><a href="#annotated-cell-24-150" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-151"><a href="#annotated-cell-24-151" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
+<span id="annotated-cell-24-152"><a href="#annotated-cell-24-152" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-153"><a href="#annotated-cell-24-153" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-154"><a href="#annotated-cell-24-154" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>)</span>
+<span id="annotated-cell-24-155"><a href="#annotated-cell-24-155" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-156"><a href="#annotated-cell-24-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-157"><a href="#annotated-cell-24-157" aria-hidden="true" tabindex="-1"></a><span class="co"># Applying a Predefined Theme ----</span></span>
+<span id="annotated-cell-24-158"><a href="#annotated-cell-24-158" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-159"><a href="#annotated-cell-24-159" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-160"><a href="#annotated-cell-24-160" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-161"><a href="#annotated-cell-24-161" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-162"><a href="#annotated-cell-24-162" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-163"><a href="#annotated-cell-24-163" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
+<span id="annotated-cell-24-164"><a href="#annotated-cell-24-164" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-165"><a href="#annotated-cell-24-165" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
+<span id="annotated-cell-24-166"><a href="#annotated-cell-24-166" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-167"><a href="#annotated-cell-24-167" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-168"><a href="#annotated-cell-24-168" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>)</span>
+<span id="annotated-cell-24-169"><a href="#annotated-cell-24-169" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-170"><a href="#annotated-cell-24-170" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>()</span>
+<span id="annotated-cell-24-171"><a href="#annotated-cell-24-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-172"><a href="#annotated-cell-24-172" aria-hidden="true" tabindex="-1"></a><span class="co"># Scaling a Too Wide Table ----</span></span>
+<span id="annotated-cell-24-173"><a href="#annotated-cell-24-173" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-174"><a href="#annotated-cell-24-174" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-175"><a href="#annotated-cell-24-175" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-176"><a href="#annotated-cell-24-176" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-177"><a href="#annotated-cell-24-177" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-178"><a href="#annotated-cell-24-178" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
+<span id="annotated-cell-24-179"><a href="#annotated-cell-24-179" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-180"><a href="#annotated-cell-24-180" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
+<span id="annotated-cell-24-181"><a href="#annotated-cell-24-181" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-182"><a href="#annotated-cell-24-182" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-183"><a href="#annotated-cell-24-183" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
+<span id="annotated-cell-24-184"><a href="#annotated-cell-24-184" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-185"><a href="#annotated-cell-24-185" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-186"><a href="#annotated-cell-24-186" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
+<span id="annotated-cell-24-187"><a href="#annotated-cell-24-187" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>)</span>
+<span id="annotated-cell-24-188"><a href="#annotated-cell-24-188" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-189"><a href="#annotated-cell-24-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Using HOLD_position ----</span></span>
+<span id="annotated-cell-24-190"><a href="#annotated-cell-24-190" aria-hidden="true" tabindex="-1"></a><span class="do">## (I&#39;ve chosen not to render this table, rather just showing the code)</span></span>
+<span id="annotated-cell-24-191"><a href="#annotated-cell-24-191" aria-hidden="true" tabindex="-1"></a>summaryOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-192"><a href="#annotated-cell-24-192" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-193"><a href="#annotated-cell-24-193" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-194"><a href="#annotated-cell-24-194" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-195"><a href="#annotated-cell-24-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-196"><a href="#annotated-cell-24-196" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&quot;Summary Statistics for Oreo Filling Masses&quot;</span>,</span>
+<span id="annotated-cell-24-197"><a href="#annotated-cell-24-197" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-198"><a href="#annotated-cell-24-198" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
+<span id="annotated-cell-24-199"><a href="#annotated-cell-24-199" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-200"><a href="#annotated-cell-24-200" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-201"><a href="#annotated-cell-24-201" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
+<span id="annotated-cell-24-202"><a href="#annotated-cell-24-202" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-203"><a href="#annotated-cell-24-203" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-204"><a href="#annotated-cell-24-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
+<span id="annotated-cell-24-205"><a href="#annotated-cell-24-205" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>, <span class="st">&quot;HOLD_position&quot;</span>)</span>
+<span id="annotated-cell-24-206"><a href="#annotated-cell-24-206" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-207"><a href="#annotated-cell-24-207" aria-hidden="true" tabindex="-1"></a><span class="co"># Table Footnote Example ----</span></span>
+<span id="annotated-cell-24-208"><a href="#annotated-cell-24-208" aria-hidden="true" tabindex="-1"></a>sumGrpOreo <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-209"><a href="#annotated-cell-24-209" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">remove_rownames</span>() <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-210"><a href="#annotated-cell-24-210" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">column_to_rownames</span>(</span>
+<span id="annotated-cell-24-211"><a href="#annotated-cell-24-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">var =</span> <span class="st">&quot;group1&quot;</span></span>
 <span id="annotated-cell-24-212"><a href="#annotated-cell-24-212" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-213"><a href="#annotated-cell-24-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-214"><a href="#annotated-cell-24-214" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
-<span id="annotated-cell-24-215"><a href="#annotated-cell-24-215" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
-<span id="annotated-cell-24-216"><a href="#annotated-cell-24-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-217"><a href="#annotated-cell-24-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-218"><a href="#annotated-cell-24-218" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
-<span id="annotated-cell-24-219"><a href="#annotated-cell-24-219" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-220"><a href="#annotated-cell-24-220" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
-<span id="annotated-cell-24-221"><a href="#annotated-cell-24-221" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-222"><a href="#annotated-cell-24-222" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
-<span id="annotated-cell-24-223"><a href="#annotated-cell-24-223" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>, <span class="st">&quot;HOLD_position&quot;</span>)</span>
+<span id="annotated-cell-24-213"><a href="#annotated-cell-24-213" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="annotated-cell-24-214"><a href="#annotated-cell-24-214" aria-hidden="true" tabindex="-1"></a>    n, min, Q0<span class="fl">.25</span>, median, Q0<span class="fl">.75</span>, max, mad, mean, sd, skew, kurtosis</span>
+<span id="annotated-cell-24-215"><a href="#annotated-cell-24-215" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-216"><a href="#annotated-cell-24-216" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-217"><a href="#annotated-cell-24-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;Min&quot;</span>, <span class="st">&quot;Q1&quot;</span>, <span class="st">&quot;Median&quot;</span>, <span class="st">&quot;Q3&quot;</span>, <span class="st">&quot;Max&quot;</span>, <span class="st">&quot;MAD&quot;</span>,</span>
+<span id="annotated-cell-24-218"><a href="#annotated-cell-24-218" aria-hidden="true" tabindex="-1"></a>                  <span class="st">&quot;SAM&quot;</span>, <span class="st">&quot;SASD&quot;</span>, <span class="st">&quot;Sample Skew&quot;</span>, <span class="st">&quot;Sample Ex. Kurtosis&quot;</span>),</span>
+<span id="annotated-cell-24-219"><a href="#annotated-cell-24-219" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-220"><a href="#annotated-cell-24-220" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-221"><a href="#annotated-cell-24-221" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="fu">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">11</span>),</span>
+<span id="annotated-cell-24-222"><a href="#annotated-cell-24-222" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-223"><a href="#annotated-cell-24-223" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
 <span id="annotated-cell-24-224"><a href="#annotated-cell-24-224" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-225"><a href="#annotated-cell-24-225" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">footnote</span>(</span>
-<span id="annotated-cell-24-226"><a href="#annotated-cell-24-226" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;Here is an example of a footnote.&quot;</span>,</span>
-<span id="annotated-cell-24-227"><a href="#annotated-cell-24-227" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note. &quot;</span>,</span>
-<span id="annotated-cell-24-228"><a href="#annotated-cell-24-228" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-229"><a href="#annotated-cell-24-229" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-230"><a href="#annotated-cell-24-230" aria-hidden="true" tabindex="-1"></a><span class="co"># Example of table with empty cells ----</span></span>
-<span id="annotated-cell-24-231"><a href="#annotated-cell-24-231" aria-hidden="true" tabindex="-1"></a>quickAOV <span class="ot">&lt;-</span> <span class="fu">aov</span>(</span>
-<span id="annotated-cell-24-232"><a href="#annotated-cell-24-232" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> flipper_length_mm <span class="sc">~</span> species,</span>
-<span id="annotated-cell-24-233"><a href="#annotated-cell-24-233" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> penguins</span>
-<span id="annotated-cell-24-234"><a href="#annotated-cell-24-234" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="annotated-cell-24-235"><a href="#annotated-cell-24-235" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-236"><a href="#annotated-cell-24-236" aria-hidden="true" tabindex="-1"></a>parameters<span class="sc">::</span><span class="fu">model_parameters</span>(</span>
-<span id="annotated-cell-24-237"><a href="#annotated-cell-24-237" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> quickAOV,</span>
-<span id="annotated-cell-24-238"><a href="#annotated-cell-24-238" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectsize_type =</span> <span class="fu">c</span>(<span class="st">&quot;eta&quot;</span>, <span class="st">&quot;omega&quot;</span>, <span class="st">&quot;epsilon&quot;</span>)</span>
-<span id="annotated-cell-24-239"><a href="#annotated-cell-24-239" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-240"><a href="#annotated-cell-24-240" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-241"><a href="#annotated-cell-24-241" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-242"><a href="#annotated-cell-24-242" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-243"><a href="#annotated-cell-24-243" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-244"><a href="#annotated-cell-24-244" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
-<span id="annotated-cell-24-245"><a href="#annotated-cell-24-245" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-246"><a href="#annotated-cell-24-246" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>() <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-247"><a href="#annotated-cell-24-247" aria-hidden="true" tabindex="-1"></a>  <span class="fu">footnote</span>(</span>
-<span id="annotated-cell-24-248"><a href="#annotated-cell-24-248" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;P-value was auto-rounded to look like zero; p-values cannot be equal to zero.&quot;</span>,</span>
-<span id="annotated-cell-24-249"><a href="#annotated-cell-24-249" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note: &quot;</span>,</span>
-<span id="annotated-cell-24-250"><a href="#annotated-cell-24-250" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-251"><a href="#annotated-cell-24-251" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="annotated-cell-24-252"><a href="#annotated-cell-24-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-253"><a href="#annotated-cell-24-253" aria-hidden="true" tabindex="-1"></a><span class="co"># Change Default ----</span></span>
-<span id="annotated-cell-24-254"><a href="#annotated-cell-24-254" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">knitr.kable.NA =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="annotated-cell-24-225"><a href="#annotated-cell-24-225" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(</span>
+<span id="annotated-cell-24-226"><a href="#annotated-cell-24-226" aria-hidden="true" tabindex="-1"></a>    <span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">&quot;scale_down&quot;</span>, <span class="st">&quot;HOLD_position&quot;</span>)</span>
+<span id="annotated-cell-24-227"><a href="#annotated-cell-24-227" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-228"><a href="#annotated-cell-24-228" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">footnote</span>(</span>
+<span id="annotated-cell-24-229"><a href="#annotated-cell-24-229" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;Here is an example of a footnote.&quot;</span>,</span>
+<span id="annotated-cell-24-230"><a href="#annotated-cell-24-230" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note. &quot;</span>,</span>
+<span id="annotated-cell-24-231"><a href="#annotated-cell-24-231" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-232"><a href="#annotated-cell-24-232" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="annotated-cell-24-233"><a href="#annotated-cell-24-233" aria-hidden="true" tabindex="-1"></a><span class="co"># Example of table with empty cells ----</span></span>
+<span id="annotated-cell-24-234"><a href="#annotated-cell-24-234" aria-hidden="true" tabindex="-1"></a>quickAOV <span class="ot">&lt;-</span> <span class="fu">aov</span>(</span>
+<span id="annotated-cell-24-235"><a href="#annotated-cell-24-235" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> flipper_len <span class="sc">~</span> species,</span>
+<span id="annotated-cell-24-236"><a href="#annotated-cell-24-236" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> penguins</span>
+<span id="annotated-cell-24-237"><a href="#annotated-cell-24-237" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="annotated-cell-24-238"><a href="#annotated-cell-24-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-239"><a href="#annotated-cell-24-239" aria-hidden="true" tabindex="-1"></a>parameters<span class="sc">::</span><span class="fu">model_parameters</span>(</span>
+<span id="annotated-cell-24-240"><a href="#annotated-cell-24-240" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> quickAOV,</span>
+<span id="annotated-cell-24-241"><a href="#annotated-cell-24-241" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectsize_type =</span> <span class="fu">c</span>(<span class="st">&quot;eta&quot;</span>, <span class="st">&quot;omega&quot;</span>, <span class="st">&quot;epsilon&quot;</span>)</span>
+<span id="annotated-cell-24-242"><a href="#annotated-cell-24-242" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-243"><a href="#annotated-cell-24-243" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-244"><a href="#annotated-cell-24-244" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-245"><a href="#annotated-cell-24-245" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-246"><a href="#annotated-cell-24-246" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-247"><a href="#annotated-cell-24-247" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
+<span id="annotated-cell-24-248"><a href="#annotated-cell-24-248" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-249"><a href="#annotated-cell-24-249" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>() <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-250"><a href="#annotated-cell-24-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">footnote</span>(</span>
+<span id="annotated-cell-24-251"><a href="#annotated-cell-24-251" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;P-value was auto-rounded to look like zero; p-values cannot be equal to zero.&quot;</span>,</span>
+<span id="annotated-cell-24-252"><a href="#annotated-cell-24-252" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note: &quot;</span>,</span>
+<span id="annotated-cell-24-253"><a href="#annotated-cell-24-253" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-254"><a href="#annotated-cell-24-254" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="annotated-cell-24-255"><a href="#annotated-cell-24-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="annotated-cell-24-256"><a href="#annotated-cell-24-256" aria-hidden="true" tabindex="-1"></a><span class="co"># Create table ----</span></span>
-<span id="annotated-cell-24-257"><a href="#annotated-cell-24-257" aria-hidden="true" tabindex="-1"></a>parameters<span class="sc">::</span><span class="fu">model_parameters</span>(</span>
-<span id="annotated-cell-24-258"><a href="#annotated-cell-24-258" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> quickAOV,</span>
-<span id="annotated-cell-24-259"><a href="#annotated-cell-24-259" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectsize_type =</span> <span class="fu">c</span>(<span class="st">&quot;eta&quot;</span>, <span class="st">&quot;omega&quot;</span>, <span class="st">&quot;epsilon&quot;</span>)</span>
-<span id="annotated-cell-24-260"><a href="#annotated-cell-24-260" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-261"><a href="#annotated-cell-24-261" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
-<span id="annotated-cell-24-262"><a href="#annotated-cell-24-262" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
-<span id="annotated-cell-24-263"><a href="#annotated-cell-24-263" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
-<span id="annotated-cell-24-264"><a href="#annotated-cell-24-264" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
-<span id="annotated-cell-24-265"><a href="#annotated-cell-24-265" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
-<span id="annotated-cell-24-266"><a href="#annotated-cell-24-266" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-267"><a href="#annotated-cell-24-267" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>() <span class="sc">%&gt;%</span></span>
-<span id="annotated-cell-24-268"><a href="#annotated-cell-24-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">footnote</span>(</span>
-<span id="annotated-cell-24-269"><a href="#annotated-cell-24-269" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;P-value was auto-rounded to look like zero; p-values cannot be equal to zero.&quot;</span>,</span>
-<span id="annotated-cell-24-270"><a href="#annotated-cell-24-270" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note: &quot;</span>,</span>
-<span id="annotated-cell-24-271"><a href="#annotated-cell-24-271" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
-<span id="annotated-cell-24-272"><a href="#annotated-cell-24-272" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-24-256"><a href="#annotated-cell-24-256" aria-hidden="true" tabindex="-1"></a><span class="co"># Change Default ----</span></span>
+<span id="annotated-cell-24-257"><a href="#annotated-cell-24-257" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">knitr.kable.NA =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="annotated-cell-24-258"><a href="#annotated-cell-24-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="annotated-cell-24-259"><a href="#annotated-cell-24-259" aria-hidden="true" tabindex="-1"></a><span class="co"># Create table ----</span></span>
+<span id="annotated-cell-24-260"><a href="#annotated-cell-24-260" aria-hidden="true" tabindex="-1"></a>parameters<span class="sc">::</span><span class="fu">model_parameters</span>(</span>
+<span id="annotated-cell-24-261"><a href="#annotated-cell-24-261" aria-hidden="true" tabindex="-1"></a>  <span class="at">model =</span> quickAOV,</span>
+<span id="annotated-cell-24-262"><a href="#annotated-cell-24-262" aria-hidden="true" tabindex="-1"></a>  <span class="at">effectsize_type =</span> <span class="fu">c</span>(<span class="st">&quot;eta&quot;</span>, <span class="st">&quot;omega&quot;</span>, <span class="st">&quot;epsilon&quot;</span>)</span>
+<span id="annotated-cell-24-263"><a href="#annotated-cell-24-263" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-264"><a href="#annotated-cell-24-264" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="annotated-cell-24-265"><a href="#annotated-cell-24-265" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="annotated-cell-24-266"><a href="#annotated-cell-24-266" aria-hidden="true" tabindex="-1"></a>    <span class="at">format.args =</span> <span class="fu">list</span>(<span class="at">big.mark =</span> <span class="st">&quot;,&quot;</span>),</span>
+<span id="annotated-cell-24-267"><a href="#annotated-cell-24-267" aria-hidden="true" tabindex="-1"></a>    <span class="at">booktabs =</span> <span class="cn">TRUE</span>,</span>
+<span id="annotated-cell-24-268"><a href="#annotated-cell-24-268" aria-hidden="true" tabindex="-1"></a>    <span class="at">table.attr =</span> <span class="st">&#39;data-quarto-disable-processing=&quot;true&quot;&#39;</span></span>
+<span id="annotated-cell-24-269"><a href="#annotated-cell-24-269" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-270"><a href="#annotated-cell-24-270" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>() <span class="sc">%&gt;%</span></span>
+<span id="annotated-cell-24-271"><a href="#annotated-cell-24-271" aria-hidden="true" tabindex="-1"></a>  <span class="fu">footnote</span>(</span>
+<span id="annotated-cell-24-272"><a href="#annotated-cell-24-272" aria-hidden="true" tabindex="-1"></a>    <span class="at">general =</span> <span class="st">&quot;P-value was auto-rounded to look like zero; p-values cannot be equal to zero.&quot;</span>,</span>
+<span id="annotated-cell-24-273"><a href="#annotated-cell-24-273" aria-hidden="true" tabindex="-1"></a>    <span class="at">general_title =</span> <span class="st">&quot;Note: &quot;</span>,</span>
+<span id="annotated-cell-24-274"><a href="#annotated-cell-24-274" aria-hidden="true" tabindex="-1"></a>    <span class="at">footnote_as_chunk =</span> <span class="cn">TRUE</span></span>
+<span id="annotated-cell-24-275"><a href="#annotated-cell-24-275" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 
