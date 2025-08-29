@@ -370,7 +370,11 @@ There are limits to what permutation simulations can do. Their primary usage is 
 
 # Bootstrapping
 
-Coming soon
+## Assumptions
+
+## Using R
+
+## Final Comments
 
 {{< pagebreak >}}
 

@@ -19,26 +19,36 @@ library(ggplot2)
 
 The intent/goal for this assignment is to act as a baseline for you to demonstrate what you know how to do at the start of the course. This assignment will *not* impact your grade in the course. However, at the end of the semester, you will have an assignment where you must reflect upon your growth over the course of the semester. This assignment (HW #1.1) provides you with a clear point from which to see your growth.
 
-There are three assignment links in Canvas for you to be aware of:
+There are four links in Canvas that all connect to each other.
 
-+ HW #1.1--Oreo Comparison Value Check
-  - This is where you'll get access to your assigned data set and where you'll be able to enter various values you're asked to calculate.
-+ HW #1.1--Oreo Comparison Write Up
-  - This is the grading rubric that goes with the report portion of HW #1.1. There is actually nothing that you need to do in this area.
-+ HW #1.1--Oreo Comparison Submission Portal
+1) __HW #1.1 Information__
+    + The link to this document.
+2) __HW #1.1: Oreo Comparison Value Check__
+    + This link will open a MyOpenMath assignment.
+    + This is where you'll get access to your assigned data set and where you'll be able to enter various values you're asked to calculate.
+3) __HW #1.1: Oreo Comparison Rubrics__
+    + This link will open a MyOpenMath assignment.
+    + You will find the grading rubrics that I often use for reports in this course.
+    + Other than reading through the rubrics, there is nothing you need to submit or do in this assignment.
+4) __HW #1.1: Oreo Comparison Submission Portal__
+    + This will be a file upload in Canvas.
   - This is where you'll actually upload your written report (DOC, DOCX, or PDF).
 
-Please be aware that there are multiple data sets--you must use the one that is assigned to you in HW #1.1--Oreo Comparison Value Check
+:::{.callout-caution}
+There are multiple data sets that will be randomly assigned to students on an individual basis. You need to use the one assigned to you in the __Value Check__ MyOpenMath assignment.
+:::
 
 # Background
 
 Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their "foot-long" sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being "double" another version is accurate. Thus was born an investigation.
 
-In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see end of document for more details) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
+In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see [the last section](#furtherDetails) for more information) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
 
-In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. __See the Getting Started Guides on the R/RStudio Resources and Example Code page in Canvas; these were built with this assignment in mind.__
+In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. 
 
-*Caution:* don't assume that the data is error free.
+:::{.callout-tip}
+In our Canvas course, look in the Course Information module for a page titled "R & RStudio Desktop Resources and Example Code". This page will have numerous *Getting Started Guides* that I created with this assignment in mind.
+:::
 
 # Task Summary
 
@@ -71,7 +81,10 @@ Once you have the data saved, you'll need to read the data into your chosen soft
 ## Hint 1--Use the URL to Read in Data.
 
 If you are using __R__, then you can read the data with the following:
-```{r readData, echo=TRUE}
+```{r}
+#| label: "loadData"
+#| echo: true
+# Base R Command to load data from URL
 demoOreo <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat", 
   header = TRUE,
@@ -179,7 +192,7 @@ In the body of your document you'll type `@labelName` to build in the cross-refe
 
 ## Requested statistics
 
-You must include values of the following statistics in your narrative (and in MOM). You may include additional statistics as you wish. However, __you must provide an interpretation of one value from each statistic__. Please include the appropriate units of measurement where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.
+You must include values of the following statistics in your narrative (and in MOM). You may include additional statistics as you wish. However, __you must provide an interpretation of one value for each statistic__. Please include the appropriate units of measurement where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.
 
 | statistic | Regular Oreos | Double Stuf |
 |:----------|:-------------:|:-----------:|
@@ -230,7 +243,7 @@ Include the actual code you used, being sure to comment and organize your code.
 Use the [Homework Template RMD file](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate.Rmd) or the [Quarto Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate_2024.qmd) to automatically create a code appendix for you.
 
 \newpage
-# Further Details on the Stochastic Process
+# Further Details on the Stochastic Process {#furtherDetails}
 
 The class designed the following stochastic process to generate the date for this study:
 

@@ -3094,7 +3094,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">January 16, 2025</p>
+      <p class="date-modified">August 29, 2025</p>
     </div>
   </div>
     
@@ -3106,28 +3106,62 @@ vertical-align: -.125em;
 
 
 <p>The intent/goal for this assignment is to act as a baseline for you to demonstrate what you know how to do at the start of the course. This assignment will <em>not</em> impact your grade in the course. However, at the end of the semester, you will have an assignment where you must reflect upon your growth over the course of the semester. This assignment (HW #1.1) provides you with a clear point from which to see your growth.</p>
-<p>There are three assignment links in Canvas for you to be aware of:</p>
+<p>There are four links in Canvas that all connect to each other.</p>
+<ol type="1">
+<li><strong>HW #1.1 Information</strong>
 <ul>
-<li>HW #1.1–Oreo Comparison Value Check
+<li>The link to this document.</li>
+</ul></li>
+<li><strong>HW #1.1: Oreo Comparison Value Check</strong>
 <ul>
+<li>This link will open a MyOpenMath assignment.</li>
 <li>This is where you’ll get access to your assigned data set and where you’ll be able to enter various values you’re asked to calculate.</li>
 </ul></li>
-<li>HW #1.1–Oreo Comparison Write Up
+<li><strong>HW #1.1: Oreo Comparison Rubrics</strong>
 <ul>
-<li>This is the grading rubric that goes with the report portion of HW #1.1. There is actually nothing that you need to do in this area.</li>
+<li>This link will open a MyOpenMath assignment.</li>
+<li>You will find the grading rubrics that I often use for reports in this course.</li>
+<li>Other than reading through the rubrics, there is nothing you need to submit or do in this assignment.</li>
 </ul></li>
-<li>HW #1.1–Oreo Comparison Submission Portal
+<li><strong>HW #1.1: Oreo Comparison Submission Portal</strong>
+<ul>
+<li>This will be a file upload in Canvas.</li>
+</ul></li>
+</ol>
 <ul>
 <li>This is where you’ll actually upload your written report (DOC, DOCX, or PDF).</li>
-</ul></li>
 </ul>
-<p>Please be aware that there are multiple data sets–you must use the one that is assigned to you in HW #1.1–Oreo Comparison Value Check</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are multiple data sets that will be randomly assigned to students on an individual basis. You need to use the one assigned to you in the <strong>Value Check</strong> MyOpenMath assignment.</p>
+</div>
+</div>
 <section id="background" class="level1">
 <h1>Background</h1>
 <p>Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their “foot-long” sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being “double” another version is accurate. Thus was born an investigation.</p>
-<p>In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. (“Stuf” is the official term for the créme filling.) We designed a stochastic process (see end of document for more details) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.</p>
-<p>In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. <strong>See the Getting Started Guides on the R/RStudio Resources and Example Code page in Canvas; these were built with this assignment in mind.</strong></p>
-<p><em>Caution:</em> don’t assume that the data is error free.</p>
+<p>In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. (“Stuf” is the official term for the créme filling.) We designed a stochastic process (see <a href="#furtherDetails">the last section</a> for more information) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.</p>
+<p>In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In our Canvas course, look in the Course Information module for a page titled “R &amp; RStudio Desktop Resources and Example Code”. This page will have numerous <em>Getting Started Guides</em> that I created with this assignment in mind.</p>
+</div>
+</div>
 </section>
 <section id="task-summary" class="level1">
 <h1>Task Summary</h1>
@@ -3162,11 +3196,12 @@ vertical-align: -.125em;
 <h2 class="anchored" data-anchor-id="hint-1use-the-url-to-read-in-data.">Hint 1–Use the URL to Read in Data.</h2>
 <p>If you are using <strong>R</strong>, then you can read the data with the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>demoOreo <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Base R Command to load data from URL</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>demoOreo <span class="ot">&lt;-</span> <span class="fu">read.table</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;https://raw.github.com/neilhatfield/STAT461/master/dataFiles/classDemoOreo.dat&quot;</span>, </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">sep =</span> <span class="st">&quot;,&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note: you’ll need to replace the example URL with yours.</p>
 </section>
@@ -3272,7 +3307,7 @@ Figure 1: Scaterplot of Filling Mass (g) by Type of Oreo
 </section>
 <section id="requested-statistics" class="level2">
 <h2 class="anchored" data-anchor-id="requested-statistics">Requested statistics</h2>
-<p>You must include values of the following statistics in your narrative (and in MOM). You may include additional statistics as you wish. However, <strong>you must provide an interpretation of one value from each statistic</strong>. Please include the appropriate units of measurement where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.</p>
+<p>You must include values of the following statistics in your narrative (and in MOM). You may include additional statistics as you wish. However, <strong>you must provide an interpretation of one value for each statistic</strong>. Please include the appropriate units of measurement where applicable. You may place them in a table BUT you must also incorporate them into your data narrative.</p>
 <table class="table">
 <thead>
 <tr class="header">
@@ -3362,7 +3397,7 @@ Figure 1: Scaterplot of Filling Mass (g) by Type of Oreo
 </section>
 </section>
 </section>
-<section id="further-details-on-the-stochastic-process" class="level1">
+<section id="furtherDetails" class="level1">
 <h1>Further Details on the Stochastic Process</h1>
 <p>The class designed the following stochastic process to generate the date for this study:</p>
 <ol type="1">
