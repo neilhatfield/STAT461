@@ -135,7 +135,12 @@ If you want to follow along with the guide, now would be a good time to copy and
 
 Over the years I have created some additional tools which can be useful as you perform ANOVA analyses. To access them, you must first load them into your R session by running the following command either in your script or as part of your R Markdown/Quarto document:
 
-```{r extraTools, eval=FALSE, echo=TRUE}
+```{r}
+#| label: extraTools
+#| echo: true
+#| eval: true
+#| results: hide
+
 # Demo code for loading Neil's extra tools ----
 source("https://raw.github.com/neilhatfield/STAT461/main/rScripts/ANOVATools.R")
 
@@ -688,11 +693,12 @@ parameters::model_parameters( # <1>
     "Eta Sq.", "Omega Sq.", "Epsilon Sq."), # <3>
   # caption = "Modern ANOVA Table for Song Knowledge Study", # <4>
   booktabs = TRUE, 
-  align = c("l", rep("c", 8)) # <5>
+  align = c("l", rep("c", 8)), # <5>
+  # format = "latex" # <6>
   ) %>%
   kableExtra::kable_styling(
     font_size = 12,
-    latex_options = c("HOLD_position") # <6>
+    latex_options = c("HOLD_position") # <7>
   )
 
 ```
@@ -701,7 +707,8 @@ parameters::model_parameters( # <1>
 3. The `col.names` argument allows us to put in more human-friend column headers. Names should appear in order, with no skips.
 4. If you are using R Markdown or going to copy/paste the table to another system, be sure to use the `caption` argument (uncommented) to get a table title.
 5. The `align` argument allows you to specify the column alignment (left, center, right) for each column.
-6. The `latex_options` listed here are useful if you are using R Markdown/Quarto to create a PDF.
+6. If you are knitting/render to PDF and keep running into a table that spills over the left/right edges of the page, add the `format` argument with the value `"latex"`.
+7. The `latex_options` listed here are useful if you are using R Markdown/Quarto to create a PDF.
 
 The above table code is meant to be re-useable with the appropriate updates to match your current context. You'll need to change the value of the `model` and `caption` arguments at minimum. You can customize the appear of the table further with the `kable_styling` function as well as pre-set styles from the `{kableExtra}` package such as `kable_classic` or `kable_material`.
 
@@ -783,9 +790,10 @@ Alternatively, we could adopt the convention of reporting that the *p*-value is 
 
 ```{r}
 #| label: resinTable2
+#| tbl-cap: "Modern ANOVA Table for Resin Lifetimes Study with Rounded P-Values"
 #| html-table-processing: none
 #| echo: true
-#| eval: false
+#| eval: true
 # Demo Code for Professional, Modern ANOVA Tables ----
 ## Resin Lifetime study
 parameters::model_parameters(
@@ -795,11 +803,11 @@ parameters::model_parameters(
   dplyr::mutate(
     p = case_when(
       is.na(p) ~ NA_character_,
-      .default = pvalRound(p, digits = 4)
+      .default = pvalRound(p, digits = 3)
     )
   ) %>%
   knitr::kable(
-  digits = 4,
+  digits = 3,
   col.names = c(
     "Source", "SS", "df", "MS", "F", "p-value",
     "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
@@ -813,10 +821,6 @@ parameters::model_parameters(
   )
 
 ```
-
-:::{.callout-warning}
-For some reason the above code is not wanting to execute during the rendering process from Quarto. However, the code __*correctly runs*__ in other environments.
-:::
 
 Either approach is sufficient. You only need to worry about fixing a *p*-value looking like 0 IF you have a *p*-value that is sufficiently close to zero (i.e., less than 0.0001). While 0.0001 is a fairly common threshold, you could update the `pvalRounding` function to use another threshold such as 0.001. I do not recommend going smaller than 0.0001 (`digits = 4`).
 

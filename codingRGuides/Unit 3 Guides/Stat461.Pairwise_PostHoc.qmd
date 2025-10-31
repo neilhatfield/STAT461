@@ -286,6 +286,12 @@ You can directly compare the *p*-values shown in @tbl-emmeans2 to your chosen Un
 
 As you work with @tbl-emmeans2, one column that you'll want to pay careful attention to is the Pair column. This column tells you not only which pair we're examining but the *order of subtraction* for that comparison. Each tool has their own internal rules for establishing the order of subtraction. While `emmeans` ended up using A -- AB, another tool might report AB -- A (reversing the order of subtraction). *You will get consistent results in either case,* but the values of your estimates will be different. While these will result in different differences, there is a relationship between them. They are opposites of one another: $(A-B)=-1*(B-A)$. If you need to express the pairwise comparison in the other order, all you need to do is multiple the difference (or the limits of a confidence interval) by --1.
 
+:::{.callout-tip}
+### Swapping Order of Comparisons
+As shown above, the `{emmeans}` package uses an alphabetical approach to constructing the comparisons. For four factor levels (A, B, C, D), this would result in the comparisons being A-B, A-C, A-D, B-C, B-D, and C-D. If you want the reverse comparisons such as B-A, you can ask for them by changing the `specs` argument. Instead of `specs = pairwise ~ factor` you can enter `specs = revpairwise ~ factor`.
+
+:::
+
 ## Using `tukeyHSD`
 
 The `tukeyHSD` function from base R will allow you to use the Tukey Honest Significant Difference method. Tukey's HSD is a decent default method to use to control the SCI Type I Error Rate when you are looking at all possible pairwise comparisons.
