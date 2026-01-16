@@ -14,6 +14,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -30,28 +31,28 @@ If you are using other statistical software, keep in mind that you are still res
 
 # Installing the Software
 
-If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.5.0 or higher; at the time of writing, the current version of R is 4.5.1.
+If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.5.0 or higher; at the time of writing, the current version of R is 4.5.2.
 
 ## Check Your Version
 Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:
 
-    R version 4.5.1 (2025-06-13) -- "Great Square Root"
+    R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
     Copyright (C) 2025 The R Foundation for Statistical Computing
     Platform: aarch64-apple-darwin20
-    
+
     R is free software and comes with ABSOLUTELY NO WARRANTY.
     You are welcome to redistribute it under certain conditions.
     Type 'license()' or 'licence()' for distribution details.
-    
+
     Natural language support but running in an English locale
-    
+
     R is a collaborative project with many contributors.
     Type 'contributors()' for more information and
     'citation()' on how to cite R or R packages in publications.
-    
+
     Type 'demo()' for some demos, 'help()' for on-line help, or
     'help.start()' for an HTML browser interface to help.
-    Type 'q()' to quit R
+    Type 'q()' to quit R.
 
 The very first line of this text will tell you the version number. If you already have R up and running, you don't need to quit and restart R to check your version. In your console, simply type `version` and hit the Enter/Return key. R will return some key information about your computer as a two-column list that looks like the following:
 
@@ -73,11 +74,10 @@ R will come with a bare-bones set of tools for working with the R language. Howe
 + RStudio Desktop
   + RStudio Desktop is by the far the most common IDE for working with R.
   + [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)
-    + Use the most recent version; at time of writing, Version: 2024.04.2+764
+    + Use the most recent version; at time of writing, Version: 2026.01.0+392 
 + Visual Studio Code
   + VS Code can be used with a variety of different programming languages. However, you will need to [configure VS Code](#Config-VSCode) for using R.
   + [Download Visual Studio Code](https://code.visualstudio.com/download)
-    + Use the most recent version; at time of writing, Version 1.91
 + Positron
   + This is a brand new IDE built by the Posit PBC. I will caution that it is still an early stage product and should only be treated with some care.
   + This is based upon Visual Studio Code but works with R (and Python) from the get go (provided you've installed R) with needing any additional setup.
@@ -537,6 +537,7 @@ There's plenty more you can explore. Here are few resources which are helpful:
 + Xie's [Kintr Options](https://yihui.org/knitr/options/)
 + Ismay and Kennedy's [Getting Used to R, RStudio, and R Markdown](https://ismayc.github.io/rbasics-book/) +
 + [The Quarto Guide](https://quarto.org/docs/guide/)
++ Neil's [Quarto Crash Course](https://neilhatfield.github.io/STAT184/quarto_crash_course/)
 
 {{< pagebreak >}}
 
