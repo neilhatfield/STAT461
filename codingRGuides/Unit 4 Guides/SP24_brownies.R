@@ -53,6 +53,7 @@ tasteDataLong <- tasteDataWide %>%
   ) %>%
   dplyr::select(!Order)
 
+write.csv(tasteDataLong, "~/Desktop/brownies.csv", row.names = FALSE)
 # Data Exploration ----
 ## Univariate Plots ----
 ### Histogram of Scores ----
@@ -159,12 +160,16 @@ brownieMixed <- lme4::lmer(
   data = tasteDataLong
 )
 
+lme4::VarCorr(brownieMixed)
+summary(brownieMixed)
+
 ### Due to singularity, using a Bayesian approach for estimation
 bayesMixed <- blme::blmer(
   formula = score ~ (1|taster) + recipe,
   data = tasteDataLong,
   cov.prior = wishart
 )
+summary(bayesMixed)
 
 ## Model for checking Spherecity ----
 brownieSphere <- rstatix::anova_test(
@@ -295,7 +300,7 @@ cbind(
 # Omnibus Results ----
 parameters::model_parameters(
   model = brownieOmni, # Notice which model we're using here
-  effectsize_type = c("eta", "omega", "epsilon")
+  es_type = c("eta", "omega", "epsilon")
 ) %>%
   dplyr::mutate(
     p = ifelse(
@@ -306,8 +311,8 @@ parameters::model_parameters(
   ) %>%
   knitr::kable(
     digits = 4,
-    col.names = c("Source", "SS", "df", "MS", "F", "p-value",
-                  "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
+    # col.names = c("Source", "SS", "df", "MS", "F", "p-value",
+    #               "Partial Eta Sq.", "Partial Omega Sq.", "Partial Epsilon Sq."),
     caption = "ANOVA Table for Brownie Study (Sp. '24)",
     align = c('l',rep('c',8)),
     booktab = TRUE

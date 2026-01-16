@@ -1247,6 +1247,7 @@ as.data.frame(treatmentPostHoc$contrasts) %>%
     font_size = 12,
     latex_options = c("scale_down")
   )
+
 ```
 
 Notice that @tbl-batteryTrtPostHoc1 is a rather large table. When working with factorial models, you will want to have care about what you do for Post Hoc analysis. In factorial settings our testing families can grow quite quickly thus we will want to think critically about what we actually want to do for Post Hoc analyses.

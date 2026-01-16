@@ -28,7 +28,7 @@ As always, we need to ensure that we have get R set up for us to have success. T
 
 ## Loading Packages, Setting Options, Loading Additional Tools
 
-In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, and `{DescTols}`. 
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, and `{DescTools}`. 
 
 We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
 

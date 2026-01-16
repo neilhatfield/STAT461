@@ -37,8 +37,8 @@ cookieLong <- cookieOrg %>%
   ) %>%
   filter(
     order %in% c("ABC", "ACB", "BAC", "BCA", "CAB", "CBA") &
-    !grepl(pattern = "X_", x = Taster))
-  )
+    !grepl(pattern = "X_", x = Taster)
+    )
 
 cookieLong$order <- as.factor(cookieLong$order)
 cookieLong$Position <- as.integer(cookieLong$Position)
