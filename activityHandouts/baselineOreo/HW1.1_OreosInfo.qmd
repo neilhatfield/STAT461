@@ -1,5 +1,5 @@
 ---
-title: "HW #1.1: Exploring Oreo Data (Baseline)"
+title: "HW #1.1: Exploring Oreo Data"
 author: "Neil J. Hatfield"
 date-modified: now
 format: 
@@ -32,7 +32,7 @@ There are four links in Canvas that all connect to each other.
     + Other than reading through the rubrics, there is nothing you need to submit or do in this assignment.
 4) __HW #1.1: Oreo Comparison Submission Portal__
     + This will be a file upload in Canvas.
-  - This is where you'll actually upload your written report (DOC, DOCX, or PDF).
+    + This is where you'll actually upload your written report (DOC, DOCX, or PDF).
 
 :::{.callout-caution}
 There are multiple data sets that will be randomly assigned to students on an individual basis. You need to use the one assigned to you in the __Value Check__ MyOpenMath assignment.
@@ -40,11 +40,17 @@ There are multiple data sets that will be randomly assigned to students on an in
 
 # Background
 
-Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their "foot-long" sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being "double" another version is accurate. Thus was born an investigation.
+Food product marketing often invokes strong feelings from consumers. For example, Subway was sued by consumers over their "foot-long" sub sandwiches not being 1 foot/12 inches long. In a similar vein, we might ask whether the marketing around one version of a product being "double" another version is accurate. Thus, an investigation was born.
 
-In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see [the last section](#furtherDetails) for more information) that allowed us to 1) select a grocery store in Tempe, AZ, via a lottery, 2) conduct a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and 3) weigh the amount of créme filling (in grams) for all cookies in each package. We separated the packages into 9 separate pairings (one for each team) of Double and Regular for data collection and analysis.
+In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see [the last section](#furtherDetails) for more information) that allowed us to gather data in a statistically rigourous and sound way. This included
 
-In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I will use another data set as a demo. 
+1) Selecting a grocery store in Tempe, AZ, via a lottery,
+2) Conducting a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and
+3) Weighing the amount of créme filling (in grams) for all cookies in each package. 
+
+The class was divided into 9 teams, thus we made 9 pairings of Double Stuf and Regular packages of cookies. Each team took a pair of packages to carry out data recording process.
+
+In this assignment, you will explore the same question as these students did (i.e., Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?). Each student will be assigned one of three selected data sets. I have used a similar data set as a demo in all of the Getting Started guides found in Canvas. 
 
 :::{.callout-tip}
 In our Canvas course, look in the Course Information module for a page titled "R & RStudio Desktop Resources and Example Code". This page will have numerous *Getting Started Guides* that I created with this assignment in mind.
@@ -102,20 +108,34 @@ Explore your assigned data using your selected software package. Your answer her
 Be sure that you have checked your data for any cleaning that should be done. Look at data visualizations. Are there any cookies that seem to not make sense with the rest of their type? Anything looked switched? Be sure you describe any such issues and the remedy you implemented in your narrative.
 
 ## Hint 3
-When making data visualizations, be sure that you use an appropriate title and label the axes. Some useful commands to add to a `ggplot` call:
+When making data visualizations, be sure that you use an appropriate title and label the axes. You can add these using the `labs` function in a chain with a `ggplot` call:
 
-+ `ggtitle("your title here")`
-+ `xlab("label for horizontal axis")`
-+ `ylab("label for vertical axis")`
-+ `theme_*()` (invokes a pre-built style; several options, plus you can build your own)
+```{{r}}
+ggplot(
+  data = yourDataFrame,
+  mapping = aes(#mapping information)
+) +
+  geom_*(Which type of plot you want to make) +
+  labs(
+    title = "Your title here",
+    x = "Your horizontal axis title here"
+    y = "Your horizontal axis title here
+ )
+
+```
+
 
 ## Hint 4
-Control the size and position of your plots by adding options to code chunk header when using RMD files.
+If you are using R Markdown (\*.Rmd) or Quarto (\*.Qmd) to make your report, you can control the size and position of your plots by adding options to the appropriate code chunk.
 
-That is, `{r chunkName, option1=, option2=, etc.}`
+### R Markdown
+
+Add your options to the chunk header: `{r chunkName, option1=, option2=, etc.}`
 
 + `fig.align='left/center/right'`
 + `fig.height=7` and `fig.width=7` (in inches)
+
+### Quarto
 
 If you're using Quarto, you can add the options to your code chunk. For example,
 
@@ -223,7 +243,7 @@ You know what they say about assumptions...CHECK THEM! In your narrative, discus
 
 ## Hint 8
 
-Type set your mathematical statements. In Microsoft Word use the Equation Editor. In R Markdown, use LaTeX expressions.
+Type set your mathematical statements. In Microsoft Word use the Equation Editor. In R Markdown and Quarto, use LaTeX expressions.
 
 # Task 4-Code Appendix
 
