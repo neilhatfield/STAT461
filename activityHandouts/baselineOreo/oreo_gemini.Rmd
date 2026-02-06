@@ -1,0 +1,122 @@
+---
+title: "Oreo Filling Analysis: The Double Stuf Challenge"
+author: "Student F"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+```
+
+1. Get and Read Data
+
+The data is sourced from a .dat file containing filling masses (in grams) for Regular and Double Stuf Oreos.
+
+```{r}
+# Load the data from the provided URL
+url <- "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat"
+oreo_data <- read.table(url, header = TRUE)
+
+# Reshape data for visualization and analysis
+oreo_long <- oreo_data %>%
+  pivot_longer(cols = everything(), names_to = "Type", values_to = "FillingMass")
+```
+
+2. Data Narrative and Cleaning
+
+The dataset contains 45 observations for each cookie type. The data was inspected for missing values and structural integrity; no cleaning was required as the data was already tidy. The "Regular" group serves as our baseline, while the "Double_Stuf" group is our experimental group.
+3. Exploratory Data Analysis (EDA)
+
+To understand the distribution of filling masses, we visualize the data using boxplots and density plots.
+
+```{r}
+# Boxplot for distribution comparison
+ggplot(oreo_long, aes(x = Type, y = FillingMass, fill = Type)) +
+  geom_boxplot(alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Oreo Filling Mass",
+       y = "Mass (grams)", x = "Cookie Type")
+
+# Density plot to check for normality
+ggplot(oreo_long, aes(x = FillingMass, fill = Type)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Density Plot of Filling Masses",
+       x = "Mass (grams)")
+```
+
+4. Statistical Summary & 97% Confidence Intervals
+
+We calculate the descriptive statistics and the 97% Confidence Intervals (CI) using the formula:
+xˉ±t∗⋅(n​s​)
+
+Where t∗ is the critical value for df=44 at the 97% confidence level.
+
+```{r}
+# Summary Stats
+stats_table <- oreo_long %>%
+  group_by(Type) %>%
+  summarise(
+    n = n(),
+    Mean = mean(FillingMass),
+    SD = sd(FillingMass),
+    SE = SD / sqrt(n)
+  )
+
+# Calculate 97% CI
+conf_level <- 0.97
+t_crit <- qt((1 + conf_level) / 2, df = 44)
+
+stats_table <- stats_table %>%
+  mutate(
+    Lower_CI = Mean - t_crit * SE,
+    Upper_CI = Mean + t_crit * SE
+  )
+
+kable(stats_table, caption = "Summary Statistics and 97% Confidence Intervals")
+```
+
+5. Statistical Research Question (SRQ) Plan
+
+Question: Do Double Stuf Oreos have double the filling mass of Regular Oreos?
+
+    Null Hypothesis (H0​): μDouble​=2×μRegular​
+
+    Alternative Hypothesis (Ha​): μDouble​=2×μRegular​
+
+    Method: We will use a One-Sample t-test comparing the Double Stuf sample to a fixed constant calculated as 2×MeanRegular​.
+
+6. Testing and Results
+
+```{r}
+hypothesized_value <- 2 * mean(oreo_data$Regular)
+
+t_test_results <- t.test(oreo_data$Double_Stuf, mu = hypothesized_value, conf.level = 0.97)
+t_test_results
+
+```
+
+Interpretation: The test yielded a p-value of `r round(t_test_results$p.value, 4)`.
+
++ Decision: Since the p-value is greater than 0.03 (our α for 97% confidence), we fail to reject the null hypothesis.
+
++ Confidence Interval Evidence: The 97% CI for Double Stuf is [`r round(t_test_results$conf.int[1], 3)`, `r round(t_test_results$conf.int[2], 3)`]. The "doubled" value of a regular Oreo (`r round(hypothesized_value, 3)`g) is very close to the upper bound.
+
+7. Discussion & Issues
+
+The data suggests that while the sample mean for Double Stuf (6.08g) is technically less than exactly double (6.24g), the difference is not statistically significant at the 97% level.
+
+Potential Issues:
+
+1) Sampling Bias: If the cookies were from the same production lot, the results may not generalize to all Oreos.
+
+2) Precision: The measurement tool's precision (grams) might hide smaller variations.
+
+Code Appendix
+
+The following R code was used to generate this report:
+

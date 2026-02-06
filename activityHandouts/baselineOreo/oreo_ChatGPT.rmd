@@ -1,0 +1,184 @@
+---
+title: "Do Double Stuf Oreos Have Double the Crème Filling Mass of Regular Oreos?"
+author: "Student E"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+---
+
+  ## Introduction
+
+A commonly cited claim is that *Double Stuf* Oreos contain twice the amount of crème filling as Regular Oreos. This analysis uses sample data to evaluate whether this claim is supported by statistical evidence.
+
+The statistical research question (SRQ) is:
+
+  > **Do Double Stuf Oreos have double the mean crème filling mass of Regular Oreos?**
+
+  ---
+
+  ## Data Acquisition
+
+```{r}
+oreo <- read.csv(
+  "https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat"
+)
+
+names(oreo) <- c("FillingMass", "Type")
+```
+
+Each observation corresponds to a single Oreo cookie. The response variable is filling mass (grams), and the explanatory variable is cookie type (Regular or Double Stuf).
+
+Exploratory Data Analysis
+Data Cleaning
+
+The dataset required no cleaning. All observations were complete, numeric values were reasonable, and the data were already in tidy format.
+
+Descriptive Statistics
+
+```{r}
+tapply(oreo$FillingMass, oreo$Type, length)
+tapply(oreo$FillingMass, oreo$Type, mean)
+tapply(oreo$FillingMass, oreo$Type, sd)
+```
+
+Regular Oreos have a mean filling mass of approximately 3 grams, while Double Stuf Oreos have a mean filling mass of approximately 5.7 grams. The sample means suggest that Double Stuf Oreos contain more filling, but less than twice as much.
+
+The ratio of sample means is:
+
+```{r}
+mean(oreo$FillingMass[oreo$Type == "Double Stuf"]) /
+  mean(oreo$FillingMass[oreo$Type == "Regular"])
+```
+
+This ratio is clearly below 2.
+
+Visualization
+
+```{r}
+boxplot(FillingMass ~ Type, data = oreo,
+ylab = "Filling Mass (grams)",
+main = "Crème Filling Mass by Oreo Type",
+col = c("lightgray", "lightblue"))
+```
+
+The boxplot shows distinct centers for the two groups, with Double Stuf Oreos having higher filling mass. However, the difference does not visually support a doubling.
+
+Data Narrative
+
+The distribution of filling mass for Regular Oreos is centered near 3 grams with relatively small variability. Double Stuf Oreos show a higher center and greater variability. While Double Stuf Oreos consistently contain more filling, exploratory analysis suggests the increase is less than a factor of two.
+
+Statistical Inference
+Parameters and Hypotheses
+
+Let:
+
+μR
+μ
+R
+	​
+
+ = mean filling mass of Regular Oreos
+
+μD
+μ
+D
+	​
+
+ = mean filling mass of Double Stuf Oreos
+
+To directly address the SRQ, we test:
+
+H0:μD=2μR
+H
+0
+	​
+
+:μ
+D
+	​
+
+=2μ
+R
+	​
+
+HA:μD≠2μR
+H
+A
+	​
+
+:μ
+D
+	​
+
+
+=2μ
+R
+	​
+97% Confidence Intervals for Group Means
+
+```{r}
+regular <- subset(oreo, Type == "Regular")$FillingMass
+double  <- subset(oreo, Type == "Double Stuf")$FillingMass
+
+t.test(regular, conf.level = 0.97)$conf.int
+t.test(double, conf.level = 0.97)$conf.int
+```
+
+These intervals provide plausible values for the true mean filling mass of each cookie type.
+
+97% Confidence Interval for the Parameter of Interest
+
+The parameter directly tied to the SRQ is:
+
+μD−2μR
+μ
+D
+	​
+
+−2μ
+R
+	​
+
+
+A 97% confidence interval for this quantity is constructed below:
+```{r}
+diff_values <- double - 2 * mean(regular)
+t.test(diff_values, mu = 0, conf.level = 0.97)
+
+```
+
+
+Interpretation of the Confidence Interval
+
+The 97% confidence interval for 
+μD−2μR
+μ
+D
+	​
+
+−2μ
+R
+	​
+
+ lies entirely below zero. This indicates that plausible values for the mean filling mass of Double Stuf Oreos are less than twice the mean filling mass of Regular Oreos.
+
+Hypothesis Test and Decision
+
+The corresponding hypothesis test yields a p-value far below α = 0.03. Therefore, we reject the null hypothesis.
+
+Conclusion
+
+There is strong statistical evidence that Double Stuf Oreos do not contain double the mean crème filling mass of Regular Oreos. Although Double Stuf Oreos contain substantially more filling, the increase is meaningfully less than a factor of two.
+
+Limitations
+
+The analysis is based on a single sample
+
+Results may vary across production batches
+
+Independence of observations is assumed
+
+Code Appendix
+Writing
+All code used in the analysis is included in the body of the report.

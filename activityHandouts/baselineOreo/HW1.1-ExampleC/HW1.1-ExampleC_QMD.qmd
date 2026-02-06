@@ -1,8 +1,8 @@
 ---
 title: "Exploring Double Stuf vs. Regular Oreos®"
 subtitle: "Homework #1.1-Example C"
-author: "C. Student"
-date: "1/24/2025"
+author: "Student C"
+date: "1/23/2026"
 latex-tinytex: false
 format:
   pdf:
@@ -265,7 +265,8 @@ groupStats %>%
     align = rep('c', 11),
     col.names = c("n", "Min", "Q1", "Median", "Q3", "Max", "MAD", "SAM", "SASD",
                   "Sample Skew", "Sample Ex. Kurtosis"),
-    booktabs = TRUE
+    booktabs = TRUE,
+    format = "latex"
   )  %>%
   kableExtra::kable_styling(
     latex_options = c("scale_down")
