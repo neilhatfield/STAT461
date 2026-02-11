@@ -62,6 +62,8 @@ While I will take input from each student, *I* will make the groups for the proj
 
 Let's take a look at the details a bit more closely. Short assignment names appear in parentheses.
 
+## Project Flow and Milestones
+
 1) Begin thinking about ideas and teams (Assignment GP #1)
 2) Teams get formed
     A) Neil will form teams of roughly 2-4 people. The creation of teams is a joint enterprise between the class and Neil. Be sure to check out the important notice at the end of this document.
@@ -112,6 +114,17 @@ Let's take a look at the details a bit more closely. Short assignment names appe
         9) Code Appendix
 9) Submit your Project Report (Assignment GP #4).
 10) Complete Peer Evaluations (Assignment GP #5)
+
+## Tentative Due Dates
+
+We will use the following tentative due dates
+
++ GP #1: Friday, Feb. 13th, 2026
++ GP #2: Friday, Mar. 6th, 2026
++ GP #3: OPTIONAL, Friday, Apr. 17th, 2026
++ GP #4: Class Vote on exact date during Finals Week (May 4-8, 2026)
++ GP #5: Concurrent/After GP #4
+
 
 # Important Note About Working in Groups
 
