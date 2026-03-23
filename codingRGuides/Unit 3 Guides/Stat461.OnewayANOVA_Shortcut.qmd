@@ -1,7 +1,13 @@
 ---
 title: "One-Way ANOVA"
-subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+subtitle: "Parametric Shortcut Guide"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -154,7 +160,7 @@ At this point in time, you should engage in exploratory data analysis including 
 
 ## Your Turn
 
-Explore the data from any of the three studies OR any other data you have access to. What do you find? What do you notice?
+Explore the data from any of the three studies used in this guide, the data from the class's first study, and/or any other data you have access to. What do you find? What do you notice?
 
 # Is ANOVA Even Appropriate?
 
@@ -167,6 +173,8 @@ Recall the base requirements for One-way ANOVA are:
   - you are working with an additive model,
   - you have estimable effects, and
   - you have estimable errors/residuals.
+
+## Checking the Unit 2 Requirements
 
 The first two requirements (from Unit 2) you can check quickly in R by using the `str` ("structure") function or by clicking on the blue circle with a white triangle to the left of each data frame's name in the Environment tab of R Studio. This is __*not*__ something that you put into any reports. Rather, this is something you should check for yourself. In essence, this is to make sure R is thinking about your data in the same way that you are.
 
@@ -183,9 +191,9 @@ str(resin)
 
 What we want to see is that for each factor, R has the word "`Factor`" immediately after their (column) name. For our response, we want to see either "`num`" or "`int`" after their (column) name. If we see these AND they match our expectations of the data, then we can say that we've met these two requirements.
 
-The last three base requirements (from Unit 3) stem from the Hasse diagram. Essentially, if you can build the Hasse diagram and have positive (i.e., non-zero and non-negative) degrees of freedom everywhere, then all three of these are satisfied.
+## Checking the Unit 3 Requirement: Hasse Diagrams
 
-## Hasse Diagrams
+The last three base requirements (from Unit 3) stem from the Hasse diagram. Essentially, if you can build the Hasse diagram and have positive (i.e., non-zero and non-negative) degrees of freedom everywhere, then all three of these are satisfied.
 
 Hasse diagrams can be included in your reports. The following is an example for how we might do so with the Honey study. For putting Hasse diagrams into your R Markdown/Quarto files, I recommend using the [Hasse Diagram App](https://psu-eberly.shinyapps.io/Hasse_Diagrams/) and copying the R code generated there.
 
@@ -685,7 +693,7 @@ We could take the data from the `summary`/`anova` call and make them look profes
 parameters::model_parameters( # <1>
   model = songModel,
   es_type = c("eta", "omega", "epsilon") 
-) %>%
+) |>
   knitr::kable(
   digits = 4, # <2>
   col.names = c(
@@ -695,7 +703,7 @@ parameters::model_parameters( # <1>
   booktabs = TRUE, 
   align = c("l", rep("c", 8)), # <5>
   # format = "latex" # <6>
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position") # <7>
@@ -757,7 +765,7 @@ Create and interpret a professional, modern ANOVA table for the Resin Lifetimes 
 parameters::model_parameters(
   model = resinModel,
   es_type = c("eta", "omega", "epsilon")
-) %>%
+) |>
   knitr::kable(
   digits = 4,
   col.names = c(
@@ -766,11 +774,11 @@ parameters::model_parameters(
   # caption = "Modern ANOVA Table for Resin Lifetimes Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
-  ) %>%
+  ) |>
   kableExtra::footnote(
     general = "Computer rounding has made the p-value look like zero.",
     general_title = "Note. ",
@@ -799,13 +807,13 @@ Alternatively, we could adopt the convention of reporting that the *p*-value is 
 parameters::model_parameters(
   model = resinModel,
   es_type = c("eta", "omega", "epsilon")
-) %>%
+) |>
   dplyr::mutate(
     p = case_when(
       is.na(p) ~ NA_character_,
       .default = pvalRound(p, digits = 3)
     )
-  ) %>%
+  ) |>
   knitr::kable(
   digits = 3,
   col.names = c(
@@ -814,7 +822,7 @@ parameters::model_parameters(
   # caption = "Modern ANOVA Table for Resin Lifetimes Study",
   booktabs = TRUE,
   align = c("l", rep("c", 8))
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -851,13 +859,13 @@ pointEst <- unlist(pointEst)
 names(pointEst) <- c("Grand Mean", "Junior", "Senior",
                      "Other") # <2>
 
-data.frame("Estimate" = pointEst) %>% # <3>
+data.frame("Estimate" = pointEst) |> # <3>
   knitr::kable(
   digits = 2,
   # caption = "Point Estimates from the Song Knowledge Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -893,13 +901,13 @@ pointEst <- unlist(pointEst)
 names(pointEst) <- c("Grand Mean", "175ºC", "194ºC",
                  "213ºC", "231ºC", "250ºC")
 
-data.frame("Estimate" = pointEst) %>%
+data.frame("Estimate" = pointEst) |>
   knitr::kable(
   digits = 2,
   # caption = "Point Estimates for the Resin Lifetimes Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -930,7 +938,7 @@ resinMeans <- emmeans(
 ) 
 
 resinMeans <- as.data.frame(resinMeans) # <5>
-resinMeans %>%
+resinMeans |>
   kable(
     digits = 4,
     # caption = "Marginal Mean Estimates from the Resin Lifetime Study",
@@ -938,7 +946,7 @@ resinMeans %>%
                   "Lower Bound", "Upper Bound"),
     booktabs = TRUE,
     align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -964,4 +972,9 @@ The key to building your fluency with any statistical software as well as new id
 # Code Appendix
 
 ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
+
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%203%20Guides/Stat461.OnewayANOVA_Shortcut.html">One-Way ANOVA: Parametric Shortcut Guide</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```
