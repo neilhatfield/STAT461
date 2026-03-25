@@ -1,7 +1,13 @@
 ---
 title: "Repeated Measures Designs"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -863,7 +870,7 @@ For our Within Subjects Repeated Measures design, we can see that there is a sta
 
 If Sphericity is violated (i.e., the spherecity plot and Mauchly's Test lead you to reject the null hypothesis), we are not out of luck. When we fit the model to check for Sphericity, we also automatically got two corrected tests: the Greenhouse-Geisser and the Huynh-Feldt corrections:
 
-```{r beerCorrected, echo=TRUE}
+```{r}
 #| label: tbl-beerCorrected
 #| tbl-cap: "Sphericity Corrections"
 #| html-table-processing: none
@@ -1170,7 +1177,7 @@ While they are two different models, Within Subjects and Nested Repeated Measure
 ### Gaussian Residuals
 
 As always, we can use a QQ plot and the *Sample Skewness* and *Sample Excess Kurtosis* values.
-```{r shoesQQRes, echo=TRUE}
+```{r}
 #| label: fig-shoesQQRes
 #| fig-cap: "QQ Plot of Shoe Sales Advertisement Study"
 #| fig-alt: "QQ plot for Shoe Ad study"
@@ -1264,7 +1271,7 @@ The *Sample Skewness* of the Market effects has a value of `r round(skew(marketE
 
 For homoscedasticity, we will make use of the Tukey-Anscombe plot once again.
 
-```{r shoesTA, echo=TRUE}
+```{r}
 #| label: fig-shoesTA
 #| fig-cap: "Tukey-Anscombe Plot for Shoe Sales Advertisment Study"
 #| fig-alt: "Tukey-Anscombe plot for Shoe Ad study"
@@ -1653,5 +1660,14 @@ We will not worry about effect sizes here.
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.RepeatedMeasures.html">Repeated Measures Designs</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

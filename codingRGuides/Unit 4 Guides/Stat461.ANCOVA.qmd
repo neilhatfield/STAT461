@@ -1,7 +1,13 @@
 ---
 title: "Analysis of Covariance (ANCOVA)"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -782,19 +789,19 @@ To do this informal check, you will want to keep your Unusualness Threshold and 
 car::Anova( 
   mod = interactionCheckKB,
   type = 3 # <1>
-) %>%
+) |>
   kable(
     digits = 3,
     col.names = c("Source", "SS", "DF", "F ratio", "p-value"),
     # caption = "Informal Test of Covariate-Factor Interaction",
     align = c('l', rep('c',4)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
     latex_options = c("scale_down", "HOLD_position")
-  ) %>%
+  ) |>
   row_spec( # <2>
     row = 4,
     bold = TRUE, # <3>
@@ -901,19 +908,19 @@ ggplot(
 car::Anova( 
   mod = legoCheck,
   type = 3
-) %>%
+) |>
   kable(
     digits = 3,
     col.names = c("Source", "SS", "DF", "F ratio", "p-value"),
     # caption = "Informal Test of Covariate-Factor Interaction",
     align = c('l', rep('c',4)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
     latex_options = c("scale_down", "HOLD_position")
-  ) %>%
+  ) |>
   row_spec( 
     row = 4,
     bold = TRUE, 
@@ -1099,7 +1106,7 @@ data.frame(
     residuals = residuals(legoModel),
     fitted = fitted.values(legoModel),
     collection = legoData$collection 
-) %>%
+) |>
   ggplot(
   mapping = aes(
     x = fitted,
@@ -1218,7 +1225,7 @@ kable(
   # caption = "Generalized Variance Inflation Factors",
   col.names = c("Source", "GVIF", "DF", "GVIF^(1/(2*Df))", "Squared"),
   align = "lcccc"
-) %>%
+) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1243,7 +1250,7 @@ kable(
   # caption = "Squared Multiple Correlation",
   col.names = c("Variable", "SMC"),
   align = "lc"
-) %>%
+) |>
   kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1275,21 +1282,21 @@ In this particular situation, we have a __balanced__ design, thus we do not need
 parameters::model_parameters(
   model = keyboardModel,
   es_type = c("eta", "omega", "epsilon")
-) %>%
+) |>
   dplyr::mutate( # <1> 
     Parameter = dplyr::case_when(
       Parameter == "hrs.kbd" ~ "Hours Spent Keyboarding",
       Parameter == "kbd.type" ~ "Keyboard Type",
       TRUE ~ Parameter
     ) 
-  ) %>%
+  ) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 3,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -1298,7 +1305,7 @@ parameters::model_parameters(
     format.args = list(big.mark = ","),
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1339,13 +1346,13 @@ names(rawPointEst) <- c( # <1>
   paste("Keyboard Type", levels(keyboardingData$kbd.type))
 )
 
-data.frame("Estimate" = rawPointEst) %>%
+data.frame("Estimate" = rawPointEst) |>
   knitr::kable(
   digits = 2,
   # caption = "Unadjusted Point Estimates from the Keyboarding Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -1380,7 +1387,7 @@ emmOutKey <- emmeans::emmeans(
 )
 
 ## Point Estimates
-as.data.frame(emmOutKey$emmeans) %>%
+as.data.frame(emmOutKey$emmeans) |>
   knitr::kable(
     digits = 4,
     col.names = c("Keyboard Type", "Marginal Mean","SE", "DF",
@@ -1388,7 +1395,7 @@ as.data.frame(emmOutKey$emmeans) %>%
     # caption = "Marginal Means-Tukey 90\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1429,7 +1436,7 @@ Just as with Factorial models, we will use the `{emmeans}` package here as well.
 #| echo: true
 # Demo code for Pairwise Comparisons in ANCOVA ----
 ## Keyboarding Study
-as.data.frame(emmOutKey$contrasts) %>%
+as.data.frame(emmOutKey$contrasts) |>
   knitr::kable(
     digits = 4,
     col.names = c("Comparison", "Difference","SE", "DF",
@@ -1437,7 +1444,7 @@ as.data.frame(emmOutKey$contrasts) %>%
     # caption = "Marginal Means-Tukey 90\\% Adjustment",
     align = c("l", rep("c", 5)),
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1465,19 +1472,19 @@ as.data.frame(
     sigma = sigma(keyboardModel),
     edf = df.residual(keyboardModel)
   ) 
-) %>%
+) |>
   dplyr::mutate(
     ps = probSup(effect.size),
     .after = effect.size
-  ) %>%
-  dplyr::select(contrast, effect.size, ps) %>%
+  ) |>
+  dplyr::select(contrast, effect.size, ps) |>
   knitr::kable(
     digits = 3,
     col.names = c("Keyboard Comparison", "Cohen's d", "Probability of Superiority"),
     align = "lccc",
     # caption = "Effect Sizes for Keyboard Type",
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1500,11 +1507,12 @@ There are actually five (5) different ANCOVA models. Each one is a slight variat
 
 This is the null model for ANCOVA: our factor(s) and our covariate(s) have absolutely no impact on the response. In this model, we have only used 1 *Degree of Freedom* as we only have to estimate the value of the *Grand Mean*. If this situation were true, then the blue horizontal line in @fig-constantMean would accurately describe the data. 
 
-```{r constantMean, echo=TRUE}
+```{r}
 #| label: fig-constantMean
 #| fig-cap: "Graph of the Constant Mean ANCOVA Model"
 #| fig-alt: "Constant Mean ANCOVA scatter plot"
 #| aria-describedby: "constantMeanLD"
+#| echo: true
 # Demo code for the Constant Mean ANCOVA Model ----
 ggplot(
   data = keyboardingData,
@@ -1557,7 +1565,7 @@ ggplot(
 
 The Single Line ANCOVA model posits that while the factor(s) have no impact on the response, the covariate does. Thus, we have a single line with a non-zero rate of change of the response with respect to the covariate. Again, if this were the case, the plotted line in @fig-singleLine would do a great job in describing the data. This model uses 2 *Degrees of Freedom* as we are estimating the *Grand Mean* and the Rate of Change of the response with respect to the covariate.
 
-```{r singleLine,  echo=TRUE}
+```{r}
 #| label: fig-singleLine
 #| fig-cap: "Graph of the Single Line ANCOVA Model"
 #| fig-alt: "Single Line ANCOVA model scatter plot"
@@ -1844,5 +1852,14 @@ The next three models visually do a better job in describing our data. We genera
 
 # Code Appendix {#codeAppendix}
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.ANCOVA.html">Analysis of Covariance (ANCOVA)</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

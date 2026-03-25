@@ -1,7 +1,13 @@
 ---
 title: "Simulation Approaches to ANOVA"
 subtitle: "Permutations and Bootstrapping"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -380,5 +387,14 @@ There are limits to what permutation simulations can do. Their primary usage is 
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.SimulationApproaches.html">Simulation Approaches to ANOVA</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

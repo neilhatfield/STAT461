@@ -1,7 +1,13 @@
 ---
 title: "Factorial Designs/Models"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -81,18 +88,18 @@ bears <- openxlsx::readWorkbook(
 )
 
 ## Clean Original Data ----
-bears <- bears %>%
+bears <- bears |>
   mutate(
     Team = str_to_sentence(Team), # <1>
     Angle = str_trim(str_to_sentence(Angle)), # <2>
     Position = str_trim(str_to_sentence(Position)) # <2>
-  ) %>%
+  ) |>
   mutate( # <3>
     Position = case_when(
       Position == "Friont" ~ "Front",
       .default = Position
     ) 
-  ) %>%
+  ) |>
   mutate(
     Team = as.factor(Team), # <4>
     Angle = factor(Angle, levels = c("Flat", "Low", "High")), # <4>
@@ -102,8 +109,8 @@ bears <- bears %>%
   )
 
 # Create Experimental Unit Data Frame ----
-spoonapults <- bears %>%
-  group_by(Team, Angle, Position, Spoonapult) %>%
+spoonapults <- bears |>
+  group_by(Team, Angle, Position, Spoonapult) |>
   summarize( # <6>
     SAM_in = mean(Distance_in),
     Med_in = median(Distance_in),
@@ -388,7 +395,7 @@ Keep in mind that the number of levels for an interaction term is the product of
 
 In addition to data visualizations, we also may make use of descriptive/incisive statistics. We've used the `describeBy` from the `{psych}` package in the past to break our response up into groups based upon our factor. We can do something similar in multi-factor situations.
 
-```{r descStatsBattery, echo=TRUE}
+```{r}
 #| label: descStatsBattery
 #| echo: true
 # Demo code for descriptive statistics for factorial treatment structure ----
@@ -418,11 +425,11 @@ Once we've used the `describeBy` function, we can view the results for ourselves
 #| echo: true
 # Demo code for professional table of descriptive statistics ----
 ## Battery Manufacturing study
-batteryStats %>%
-  tibble::remove_rownames() %>% # <1>
+batteryStats |>
+  tibble::remove_rownames() |> # <1>
   dplyr::select(
     group1, group2, n, min, Q0.25, median, Q0.75, max, mad, mean, sd, skew, kurtosis
-  ) %>%
+  ) |>
   knitr::kable(
     # caption = "Summary Statistics for Battery Life Spans",
     digits = 3,
@@ -432,7 +439,7 @@ batteryStats %>%
                   "Q3", "Max", "MAD", "SAM", "SASD", "Sample Skew",
                   "Sample Ex. Kurtosis"),
     booktabs = TRUE
-  )  %>%
+  )  |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position", "scale_down")
@@ -872,14 +879,14 @@ parameters::model_parameters(
   type = 3, # <1> 
   drop = "(Intercept)", # <2> 
   verbose = FALSE # <3> 
-) %>%
+) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 3,
     row.names = FALSE,
@@ -889,7 +896,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Battery Manufacturing Study",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -927,14 +934,14 @@ parameters::model_parameters(
   type = 3, 
   drop = "(Intercept)", 
   verbose = FALSE  
-) %>%
+) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 3,
     row.names = FALSE,
@@ -944,7 +951,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Spoonapult Study",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -980,13 +987,13 @@ names(pointEst) <- c(
   )
 )
 
-data.frame("Estimate" = pointEst) %>%
+data.frame("Estimate" = pointEst) |>
   knitr::kable(
   digits = 2,
   # caption = "Point Estimates from the Battery Manufacturing Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -1043,7 +1050,7 @@ knitr::kable(
   col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value"),
   align = "lccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1070,20 +1077,20 @@ plateEffects <- as.data.frame(
     sigma = sigma(batteryModel),
     edf = df.residual(batteryModel)
   ) 
-) %>%
+) |>
   dplyr::mutate( # <1> 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
-  ) %>%
+  ) |>
   dplyr::select(contrast, effect.size, ps)
 
 ### Build table
-as.data.frame(platePostHoc$contrasts) %>%
+as.data.frame(platePostHoc$contrasts) |>
   left_join(
     y = plateEffects,
     by = join_by(contrast == contrast)
-  ) %>%
+  ) |>
   knitr::kable(
   digits = 3,
   # caption = "Post Hoc Comparisons for Main Effect Plate Material",
@@ -1091,7 +1098,7 @@ as.data.frame(platePostHoc$contrasts) %>%
                 "Prob. of Superiority"),
   align = "lccccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1131,7 +1138,7 @@ knitr::kable(
   col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value"),
   align = "llccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1143,7 +1150,7 @@ knitr::kable(
 
 Just as before, we can add on effect size estimates to @tbl-plateGivenTempPostHoc1 as shown in @tbl-plateGivenTempPostHoc2 and the following code.
 
-```{r , echo=TRUE}
+```{r}
 #| label: tbl-plateGivenTempPostHoc2
 #| tbl-cap: "Post Hoc Comparisons for Plate Material Conditioned by Temperature"
 #| html-table-processing: none
@@ -1157,20 +1164,20 @@ plateTempEffects <- as.data.frame(
     sigma = sigma(batteryModel),
     edf = df.residual(batteryModel)
   ) 
-) %>%
+) |>
   dplyr::mutate( 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
-  ) %>%
+  ) |>
   dplyr::select(contrast, temperature, effect.size, ps)
 
 ### Build table
-as.data.frame(plateTempPostHoc$contrasts) %>%
+as.data.frame(plateTempPostHoc$contrasts) |>
   left_join(
     y = plateTempEffects,
     by = join_by(contrast == contrast, temperature == temperature)
-  ) %>%
+  ) |>
   knitr::kable(
   digits = 3,
   # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
@@ -1178,7 +1185,7 @@ as.data.frame(plateTempPostHoc$contrasts) %>%
                 "Cohen's d", "Prob. of Superiority"),
   align = "llccccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1220,20 +1227,20 @@ treatmentEffects <- as.data.frame(
     sigma = sigma(batteryModel),
     edf = df.residual(batteryModel)
   ) 
-) %>%
+) |>
   dplyr::mutate( 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
-  ) %>%
+  ) |>
   dplyr::select(contrast, effect.size, ps)
 
 ## Build table
-as.data.frame(treatmentPostHoc$contrasts) %>%
+as.data.frame(treatmentPostHoc$contrasts) |>
   left_join(
     y = treatmentEffects,
     by = join_by(contrast == contrast)
-  ) %>%
+  ) |>
   kable(
     digits = 3,
     # caption = "Post Hoc Comparisons of Battery Study Treatments",
@@ -1241,7 +1248,7 @@ as.data.frame(treatmentPostHoc$contrasts) %>%
                   "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1286,11 +1293,11 @@ plateContrasts1 <- emmeans::contrast(
 )
 
 ## Add effect sizes and make a nice looking table
-as.data.frame(plateContrasts1) %>%
+as.data.frame(plateContrasts1) |>
   dplyr::mutate(
     cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, 
     ps = probSup(cohen)
-  ) %>%
+  ) |>
   kable(
     digits = 3,
     # caption = "Battery Life Main Effects Contrast on Plate Material",
@@ -1298,7 +1305,7 @@ as.data.frame(plateContrasts1) %>%
                   "p-value", "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1340,11 +1347,11 @@ treatmentContrasts1 <- emmeans::contrast(
 )
 
 ## Add effect sizes and make a nice looking table
-as.data.frame(treatmentContrasts1) %>%
+as.data.frame(treatmentContrasts1) |>
   dplyr::mutate(
     cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d,
     ps = probSup(cohen)
-  ) %>%
+  ) |>
   kable(
     digits = 3,
     # caption = "Treatment Contrasts for Battery Study--Bonferroni Adjusted",
@@ -1352,7 +1359,7 @@ as.data.frame(treatmentContrasts1) %>%
                   "p-value", "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1413,14 +1420,14 @@ parameters::model_parameters(
   type = 1, # Type I SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
-) %>%
+) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -1429,7 +1436,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Running-Type I SSQs",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1451,14 +1458,14 @@ parameters::model_parameters(
   type = 2, # Type II SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
-) %>%
+) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -1467,7 +1474,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Running-Type II SSQs",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1489,14 +1496,14 @@ parameters::model_parameters(
   type = 3, # Type III SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
-) %>%
+) |>
   dplyr::mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
-  ) %>%
+  ) |>
   knitr::kable(
     digits = 4,
     row.names = FALSE,
@@ -1506,7 +1513,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Running-Type III SSQs",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1523,5 +1530,14 @@ Notice how the various corresponding values in @tbl-runningType1, @tbl-runningTy
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.FactorialDesigns.html">Factorial Designs/Models</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

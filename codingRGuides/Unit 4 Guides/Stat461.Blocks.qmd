@@ -1,7 +1,13 @@
 ---
 title: "ANOVA Models with a Block"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -895,7 +902,7 @@ parameters::model_parameters(
   type = 3, # <1> 
   drop = "(Intercept)",
   verbose = FALSE
-) %>%
+) |>
   knitr::kable(
     digits = 4,
     row.names = FALSE,
@@ -904,7 +911,7 @@ parameters::model_parameters(
     # caption = "ANOVA Table for Farming Barley Study",
     align = c('l',rep('c',8)),
     booktab = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -959,13 +966,13 @@ names(pEst) <- c(
   levels(barleyData$Varietal) # <1>
   )
 
-data.frame("Estimate" = pEst) %>%
+data.frame("Estimate" = pEst) |>
   knitr::kable(
   digits = 3,
   # caption = "Point Estimates from the Farming Barley Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -990,13 +997,13 @@ names(pEst) <- c(
   levels(barleyData$Varietal) # <2>
   )
 
-data.frame("Estimate" = pEst) %>%
+data.frame("Estimate" = pEst) |>
   knitr::kable(
   digits = 3,
   # caption = "Point Estimates from the Farming Barley Study",
   booktabs = TRUE,
   align = "c"
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -1035,20 +1042,20 @@ barleyEffects1 <- as.data.frame(
     sigma = sigma(barleyModel),
     edf = df.residual(barleyModel)
   ) 
-) %>%
+) |>
   dplyr::mutate( # <1>
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
-  ) %>%
+  ) |>
   dplyr::select(contrast, effect.size, ps)
 
 ### Build table
-as.data.frame(barleyPostHoc1$contrasts) %>%
+as.data.frame(barleyPostHoc1$contrasts) |>
   left_join(
     y = barleyEffects1,
     by = join_by(contrast == contrast)
-  ) %>%
+  ) |>
   knitr::kable(
   digits = 3,
   # caption = "Post Hoc Comparisons for Barley Varietal",
@@ -1056,7 +1063,7 @@ as.data.frame(barleyPostHoc1$contrasts) %>%
                 "Prob. of Superiority"),
   align = "lccccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1072,7 +1079,7 @@ as.data.frame(barleyPostHoc1$contrasts) %>%
 
 One catch with the `emmeans` approach is that you don't necessarily get confidence intervals. If you want intervals (and don't want to write the code to construct them yourself), you can turn to the `tukeyHSD` function instead. Since we are using a model beyond a classic One-way ANOVA, we need to add an additional argument to our call, `which`.
 
-```{r barleyTukey, echo=TRUE}
+```{r}
 #| label: tbl-barleyTukey
 #| tbl-cap: "Post Hoc Tukey HSD Comparisons"
 #| html-table-processing: none
@@ -1092,7 +1099,7 @@ knitr::kable(
                 "Upper Bound", "Adj. p-Value"),
   align = 'cccc',
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1145,7 +1152,7 @@ knitr::kable(
                 "Upper Bound", "Adj. p-Value"),
   align = 'lcccc',
   booktabs = TRUE,
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1177,7 +1184,7 @@ anova.PostHoc(
   aov.obj = barleyModel, # <1>
   response = "Yield", # <2>
   mainEffect = "Varietal" # <3>
-) %>%
+) |>
   knitr::kable(
     digits = 3,
     # caption = "Post Hoc Comparison Effect Sizes",
@@ -1185,7 +1192,7 @@ anova.PostHoc(
                   "Prob. of Superiority"),
     align = 'lccc',
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -1208,7 +1215,7 @@ Even with a block, we can still use make use of the idea of contrasts. For examp
 
 The `{emmeans}` approach will let us incorporate effect sizes into our results (@tbl-barleyContrast1).
 
-```{r barleyContrast1, echo=TRUE}
+```{r}
 #| label: tbl-barleyContrast1
 #| tbl-cap: "Barley Study Main Effects Contrast on Varietal Company"
 #| html-table-processing: none
@@ -1232,11 +1239,11 @@ barleyContrasts1 <- emmeans::contrast(
 )
 
 ## Add effect sizes and make a nice looking table
-as.data.frame(barleyContrasts1) %>%
+as.data.frame(barleyContrasts1) |>
   dplyr::mutate(
     cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # <5>
     ps = probSup(cohen) # <5>
-  ) %>%
+  ) |>
   kable(
     digits = 3,
     # caption = "Barley Study Main Effects Contrast on Varietal Company",
@@ -1244,7 +1251,7 @@ as.data.frame(barleyContrasts1) %>%
                   "p-value", "Cohen's d", "Prob. of Superiority"),
     align = "lccccccc",
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped", "condensed"),
     font_size = 12,
@@ -1300,7 +1307,7 @@ knitr::kable(
   # caption = "ANOVA Table for Barley Crop Yield Contrasts",
   booktabs = TRUE,
   align = rep("c", 5)
-) %>%
+) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -1317,5 +1324,14 @@ Using your transformed Dental Pain data, attempt to create the omnibus ANOVA tab
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.Blocks.html">ANOVA Models with a Block</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

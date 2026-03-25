@@ -1,7 +1,13 @@
 ---
 title: "Pairwise Post Hoc Analysis"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -67,7 +74,7 @@ To explore Pairwise Post Hoc analysis, we are going to primarily draw upon the "
 
 Take a moment to think about how you would read in the data then compare your code with the following:
 
-```{r loadData, echo=TRUE}
+```{r}
 #| label: loadData
 #| echo: true
 # Demo Code for Loading Data ----
@@ -129,7 +136,7 @@ To help us pick a method, we need to conceptualize our post hoc *testing family*
       - Ex: Seniors vs. Juniors, Seniors vs. Others, and Juniors vs. Others
   - Special Pairs
     - Compare to Null Treatment
-      - Ex: Strain A vs. No starting strain, Strain B vs. No starting Strain, Straings A & B vs. No starting strain
+      - Ex: Strain A vs. No starting strain, Strain B vs. No starting Strain, Strains A & B vs. No starting strain
     - Comparing to Standard Care
       - Ex: New Drug 1 vs. Current, New Drug 2 vs. Current, New Drug 3 vs. Current
     - Comparing to "Best" Treatment
@@ -204,7 +211,7 @@ cheeseModel <- aov(
 parameters::model_parameters(
   model = cheeseModel,
   es_type = c("eta", "omega", "epsilon")
-) %>%
+) |>
   knitr::kable(
   digits = 4,
   col.names = c(
@@ -213,7 +220,7 @@ parameters::model_parameters(
   # caption = "ANOVA Table for Free Amino Acids in Cheese Study", # <1>
   booktabs = TRUE,
   align = c("l", rep("c", 8))
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -272,7 +279,7 @@ knitr::kable(
   col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value"),
   align = "lccccc",
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -323,8 +330,8 @@ We can then pass the object `cheeseHSD` on to `knitr` to make a professional loo
 #| echo: true
 # Demo code for making a professional lookign table ----
 ## Tukey HSD
-as.data.frame(cheeseHSD$strain) %>% # <1>
-  tibble::rownames_to_column(var = "Pair") %>% # <2>
+as.data.frame(cheeseHSD$strain) |> # <1>
+  tibble::rownames_to_column(var = "Pair") |> # <2>
   knitr::kable(
     digits = 3,
     # caption = "Post Hoc Tukey HSD Comparisons",
@@ -332,7 +339,7 @@ as.data.frame(cheeseHSD$strain) %>% # <1>
                   "Upper Bound", "Adj. p-Value"),
     align = 'lcccc',
     booktabs = TRUE,
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -382,8 +389,8 @@ Again, we can take the output of `PostHocTest` and pass that along to make a nic
 #| echo: true
 # Demo Code for professional looking table ----
 ## DescTools
-as.data.frame(cheeseDesc$strain) %>% # <1>
-  tibble::rownames_to_column(var = "Pair") %>% # <2>
+as.data.frame(cheeseDesc$strain) |> # <1>
+  tibble::rownames_to_column(var = "Pair") |> # <2>
   knitr::kable(
     digits = 3,
     # caption = paste( # <3>
@@ -395,7 +402,7 @@ as.data.frame(cheeseDesc$strain) %>% # <1>
                   "Upper Bound", "Adj. p-Value"),
     align = 'lcccc',
     booktabs = TRUE,
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -442,8 +449,8 @@ Keep in mind the Dunnett's test contains its own adjustments for the Multiple Co
 #| echo: true
 # Demo Code for Professional Looking Table ----
 ## Dunnett's Test
-as.data.frame(cheeseDunnett$`None`) %>% # <1>
-  tibble::rownames_to_column(var = "Pair") %>%  # <2>
+as.data.frame(cheeseDunnett$`None`) |> # <1>
+  tibble::rownames_to_column(var = "Pair") |>  # <2>
   knitr::kable(
     digits = 3,
     # caption = paste("Post Hoc Comparisons--Dunnett's Test"),
@@ -451,7 +458,7 @@ as.data.frame(cheeseDunnett$`None`) %>% # <1>
                   "Upper Bound", "Adj. p-Value"),
     align = 'lcccc',
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -474,7 +481,7 @@ When you have used the parametric shortcuts, you'll want to use the `anova.PostH
 #| tbl-cap: "Post Hoc Comparison Effect Sizes"
 #| echo: true
 # Demo Code for Post Hoc Effect Sizes ----
-anova.PostHoc(cheeseModel) %>%
+anova.PostHoc(cheeseModel) |>
   knitr::kable(
     digits = 3,
     # caption = "Post Hoc Comparison Effect Sizes",
@@ -482,7 +489,7 @@ anova.PostHoc(cheeseModel) %>%
                   "Prob. Superiority"),
     align = 'lccc',
     booktabs = TRUE
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -587,5 +594,14 @@ Use the above examples to explore the Song Knowledge study in terms of Post Hoc 
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%203%20Guides/Stat461.Pairwise_PostHoc.html">Pairwise Post Hoc Analysis</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

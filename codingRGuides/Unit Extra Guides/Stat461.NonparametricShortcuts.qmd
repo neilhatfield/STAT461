@@ -1,7 +1,13 @@
 ---
 title: "Nonparametric Shortcuts for ANOVA Models"
 subtitle: "Alternative to Parametric Shortcuts"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -145,7 +152,7 @@ alfalfaData$Variety <- as.factor(alfalfaData$Variety)
 
 The final study is for how three different methods for rounding first base impact the time (seconds) it takes a runner to reach second base from the home plate. Twenty-two runners took part in the study, running the bases 6 times--twice for each of the three methods. The recorded data are the values of the *SAM* for each pair of run times by trial. This study is a Within Subjects Repeated Measures ANOVA design. These data are part of the `NSM3` package.
 
-```{r roundingData, echo=TRUE}
+```{r}
 #| label: loadRoundingData
 #| echo: true
 # Demo Code for loading data from NSM3 package ----
@@ -184,7 +191,7 @@ where $\theta_{\bullet\bullet}$ represents the *__Grand Median__*, $\tau_i$ repr
 
 The [Honey Study](#honeyStudy) is a good example of a one-way ANOVA situation that we could analyze via the Kruskal-Wallis *H* test. Keep in mind that we need the situation to amenable to ANOVA methods, regardless of whether we're using a nonparametric shortcut for the inference. @fig-honeyHD gives the Hasse diagram for this study. With our nine hives of the same species of bee, we can see that we have sufficient degrees of freedom to estimate the effects for our three levels of varietal and have degrees of freedom for our error term. Given that we're measuring our response (excess honey) in pounds, along with the additive model shown in @fig-honeyHD, a one-way ANOVA model is a valid approach.
 
-```{r honeyHD, echo=TRUE}
+```{r}
 #| label: fig-honeyHD
 #| fig-cap: "Hasse Diagram for Honey Study"
 #| fig-alt: "Hasse diagram for honey study"
@@ -232,7 +239,7 @@ We can assess the Independence of Observations by looking at an index plot (as w
 
 In the Honey Study, we only have a single factor and we know that the data are in measurement order. Thus, we can make an index plot (@fig-honeyIO).
 
-```{r honeyIO, echo=TRUE}
+```{r}
 #| label: fig-honeyIO
 #| fig-cap: "Index Plot for Honey Study"
 #| fig-alt: "Index plot for the honey study"
@@ -417,7 +424,7 @@ knitr::kable(
   # caption = "Post Hoc-Dwass-Steel-Critchlow-Fligner Tests",
   align = 'lcc',
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed"),
     font_size = 12,
@@ -459,7 +466,7 @@ knitr::kable(
   col.names = c("Comparison", "Adj. p-Value"),
   align = 'lc',
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -508,7 +515,7 @@ When you have used Nonparametric Shortcuts (either through Dunn's Test or the DS
 kw.PostHoc(
     response = alfalfaData$Larvae,
     treatments = alfalfaData$Treatment
-  ) %>%
+  ) |>
 knitr::kable(
   digits = 3,
   # caption = "Post Hoc Comparison Effect Sizes",
@@ -516,7 +523,7 @@ knitr::kable(
                 "Prob. Superiority"),
   align = 'lcc',
   booktabs = TRUE
-) %>%
+) |>
   kableExtra::kable_styling(
     bootstrap_options = c("condensed", "boardered"),
     font_size = 12,
@@ -767,13 +774,13 @@ If you attempt to use the WNMT in the Alfalfa Pest Study, you'll encounter an er
 #| echo: true
 # Demo Code for using WNMT with a Data Frame ----
 ## Make wide data frame
-alfWide <- alfalfaData %>%
-  dplyr::select(!Plot) %>%
+alfWide <- alfalfaData |>
+  dplyr::select(!Plot) |>
   pivot_wider(
     id_cols = Variety,
     names_from = Treatment,
     values_from = Larvae
-  ) %>%
+  ) |>
   tibble::column_to_rownames(var = "Variety")
 
 ## Create data matrix
@@ -830,7 +837,7 @@ alfalfaModel3 <- pMackSkil(
 
 ## Omnibus Results
 
-```{r mackSkillOmni, echo=TRUE}
+```{r}
 #| label: mackSkillOmni
 #| echo: true
 # Demo Code for Raw Output from Mack-Skillings ----
@@ -857,5 +864,14 @@ If you need to do Post Hoc analysis for this situation, come talk to me.
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%204%20Guides/Stat461.NonparametricShortcuts.html">Nonparametric Shortcuts for ANOVA Models</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```

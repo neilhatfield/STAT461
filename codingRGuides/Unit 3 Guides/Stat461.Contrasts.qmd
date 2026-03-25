@@ -1,7 +1,13 @@
 ---
 title: "Contrasts and ANOVA"
 subtitle: "Parametric Shortcut"
-author: "Neil J. Hatfield"
+author: 
+  - name: "Neil J. Hatfield"
+    orcid: 0000-0003-1807-6946
+copyright:
+  holder: Neil J. Hatfield
+  year: 2026
+license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
 format: 
@@ -15,6 +21,7 @@ format:
     toc-location: right
     cap-location: top
     link-external-newwindow: true
+    code-overflow: wrap
 execute: 
   echo: false
   warning: false
@@ -58,7 +65,7 @@ To explore Pairwise Post Hoc analysis, we are going to primarily draw upon the "
 
 Take a moment to think about how you would read in the data then compare your code with the following:
 
-```{r loadData, echo=TRUE}
+```{r}
 #| label: loadData
 #| echo: true
 # Demo Code for Loading Data ----
@@ -332,11 +339,11 @@ At this point we can print the results to our console by just typing `cheeseCont
 # Demo Code for using the {emmeans} package for contrasts ----
 ## Professional Table 
 
-as.data.frame(cheeseContrasts1) %>%
+as.data.frame(cheeseContrasts1) |>
   dplyr::mutate( # <1>
     cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, # <2>
     ps = probSup(cohen) # <3>
-  ) %>%
+  ) |>
   kable(
     digits = 3,
     # caption = "Cheese Study Contrasts Using {emmeans} Package", # <4>
@@ -346,12 +353,12 @@ as.data.frame(cheeseContrasts1) %>%
     align = "lccccccc",
     booktabs = TRUE,
     escape = FALSE # <5> 
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     bootstrap_options = c("striped"),
     font_size = 12,
     latex_options = c("HOLD_position")
-  ) %>%
+  ) |>
   kableExtra::footnote(
     symbol = "Adjusted via Benjamini-Hochberg method for controlling the False Discovery Rate.",
     footnote_as_chunk = TRUE
@@ -440,7 +447,7 @@ Now that we have stored the output that we need, `cheeseContrasts2`, we can impo
 adjustPValues( # <1>
   contrastObject = cheeseContrasts2, # <2>
   method = "fdr" # <3>
-) %>%
+) |>
   knitr::kable(
     digits = 3,
     col.names = c(
@@ -448,7 +455,7 @@ adjustPValues( # <1>
     # caption = "ANOVA Table for Free Amino Acids in Cheese Study",
     booktabs = TRUE,
     align = rep("c", 5)
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -536,15 +543,15 @@ Here is code for creating a professional looking table:
 #| html-table-processing: none
 # Demo code for Scheffe Testing Contrasts ----
 ## DescTools Scheffe Test Approach
-as.data.frame(cheeseContrasts3[[1]]) %>% # <1>
-  tibble::rownames_to_column(var = "Contrast") %>% # <2>
+as.data.frame(cheeseContrasts3[[1]]) |> # <1>
+  tibble::rownames_to_column(var = "Contrast") |> # <2>
   knitr::kable(
     digits = 4,
     col.names = c("Contrast", "Difference", "Lower Bound", "Upper Bound", "p-value"), 
     # caption = "Scheffe Test Results",
     booktabs = TRUE,
     align = c("l", rep("c", 4))
-  ) %>%
+  ) |>
   kableExtra::kable_styling(
     font_size = 12,
     latex_options = c("HOLD_position")
@@ -582,5 +589,15 @@ Since there is just one contrast in this family, you won't have to worry about a
 
 # Code Appendix
 
-```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+#| code-line-numbers: true
+```
+
+
+```{=html}
+<a href="https://neilhatfield.github.io/STAT461/codingRGuides/Unit%203%20Guides/Stat461.Contrast.html">Contrasts and ANOVA</a> © 2026 by <a href="https://neilhatfield.github.io/">Neil J. Hatfield</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 ```
