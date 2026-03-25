@@ -4,12 +4,14 @@ authors:
   - name: First Author
     role:
       - role 1
-      - role 2, etc.
+      - role 2, repeat new lines as needed
   - name: Second Author
     role:
       - role 1
-      - role 2
+      - role 2, repeat new lines as needed
   - name: Repeat as needed for each author
+    role:
+      - role 1, repeat new lines as needed
 format:
   pdf:
     toc: false
@@ -106,15 +108,47 @@ execute:
 
 <!--Final Paragraph: Be sure to end on a strong note with your last paragraph. -->
 
+## Author Contributions 
+<!-- List out each author's contributions in accordance with the Contributor Role Taxonomy (CRediT) found at https://credit.niso.org. You can make this by hand OR you can use the script below to automatically generate this PROVIDED you filled in the the role fields in the YAML header. -->
+
+```{r}
+#| label: authorContributions
+
+rawAuthors <- rmarkdown::metadata$authors
+
+authorsList <- list()
+for (i in 1:length(rawAuthors)) {
+  authorsList[[i]] <- tibble::as.tibble(rawAuthors[[i]]) |>
+    dplyr::select(name, role) |>
+    dplyr::group_by(name) |>
+    dplyr::summarize(
+      listRoles = paste(role, collapse = ", ")
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      listRoles = stringr::str_to_title(listRoles)
+    )
+}
+
+authorsDF <- dplyr::bind_rows(authorsList)
+
+baseText <- "__%s:__ %s."
+
+authorContribText <- sprintf(fmt = baseText, authorsDF$name, authorsDF$listRoles)
+
+```
+
+`r paste(authorContribText, collapse = " ")`
+<!-- You will need BOTH the above code chunk AND the above in-line code to render the author roles. -->
 
 {{< pagebreak >}}  
 
 # References  
-<!-- Quarto will automatically build refrences for you, IF you use the tools appropriately. -->
+<!-- Quarto will automatically build references for you, IF you use the tools appropriately. -->
 
-::: {#refs}
-:::
-
+<!-- Remove the "<!--" and "--\>" from lines 150-151 if you are having Quarto build your references. Otherwise keep these here to prevent a render error when you don't have any references included. -->
+<!--::: {#refs}
+::: -->
 
 {{< pagebreak >}}
 
