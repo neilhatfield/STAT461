@@ -1,0 +1,129 @@
+---
+title: "ANOVA Report Template"
+authors:
+  - name: First Author
+    role:
+      - role 1
+      - role 2, etc.
+  - name: Second Author
+    role:
+      - role 1
+      - role 2
+  - name: Repeat as needed for each author
+format:
+  pdf:
+    toc: false
+    number-sections: true
+    number-depth: 5
+    fig-align: center
+    cap-location: top
+    geometry: 
+      - top=1in
+      - left=1in
+      - right=1in
+      - bottom=1in
+    colorlinks: true
+    include-in-header: 
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{
+          commandchars=\\\{\},
+          breaklines, breaknonspaceingroup, breakanywhere
+        }
+execute: 
+  echo: false
+  warning: false
+---
+<!-- For additional support, see https://neilhatfield.github.io/STAT184/quarto_crash_course/ -->
+<!--If you give an abstract you will type that here and delete the Executive summary. The abstract should be no more than 250 words.-->
+
+# Executive Summary
+
+<!-- Summarize what was done, why that approach, what you found, and implications of those results. This should be no more than two pages and should have NO tables or graphs. Note: if you give an abstract, you should not include this section and vice versa. -->
+
+<!-- Delete this pagebrack if not using an abstract -->
+{{< pagebreak >}}
+
+# Introduction
+<!-- Introduce your context and build towards your SRQ. Be sure to explicitly and clearly state your SRQ(s). -->
+
+
+
+## Background Literature
+<!-- This section should highlight important background knowledge that will help your reader better understand the context of your problem and SRQ. Make sure you discuss any relevant studies that have been done previously. -->
+
+
+
+# Methods
+<!-- This is where you'll dicuss all of the elements that would allow someone to replicate your study. -->
+
+
+## Study Design and Data Collection
+<!-- Explain how you designed your study and how you (or someone else) collected the data. Be sure to include any decisions you made.  -->
+
+
+
+## Analysis Methods
+<!-- This is where you'll explain 1) your analytical plan (i.e, ANOVA), 2) which ANOVA model is most appropriate for your study design, 3) explain the model in context, and 4) explain why ANOVA is appropriate. -->
+
+### Inference Decision Rules
+<!-- Explain how you are going to make your inference decisions. That is, explain how you are going to handle the MC/SI Problem and use as your Unusualness Threshold. -->
+
+
+
+# Exploratory Data Anlysis
+<!-- In this section you'll do some general exploration of your data to help both your readers and yourself understand the data BEFORE doing anything directly for answering your SRQ. -->
+
+
+
+# Results
+<!-- You'll present your results in a set of sub-sections -->
+
+
+## Assessing Assumptions
+<!-- This is where you'll assess your assumptions and discuss consequences of your decisions here. -->
+
+
+
+## Omnibus Results
+<!-- This section is for your omnibus ANOVA results. Be sure to include point estimates/confidence intervals for model terms. -->
+
+
+
+## Post Hoc Results
+<!-- If you reject the omnibus null hypothesis and/or have pre-planned additional contrasts, you will move through your post hoc analyses in this section. Note: you may have multiple level three headings for sub-sub-sections. -->
+
+
+# Discussion
+<!-- This is where you'll discuss your results and the implications of your work for the SRQ and broader context. -->
+
+
+
+## Limitations and Recommendations for Future Work
+<!-- Discuss what limitations exist and how you recommend overcoming them in future studies. What new questions come to your minds given what you've learned? What would you recommend as next steps for inquiry? -->
+
+
+
+<!--Final Paragraph: Be sure to end on a strong note with your last paragraph. -->
+
+
+{{< pagebreak >}}  
+
+# References  
+<!-- Quarto will automatically build refrences for you, IF you use the tools appropriately. -->
+
+::: {#refs}
+:::
+
+
+{{< pagebreak >}}
+
+# Code Appendix
+<!-- Quarto will automatically build your code appendix with the following block. There is nothing for you to do in that block; just make sure that all of your code is included above. -->
+
+```{r}
+#| label: codeAppend
+#| ref-label: !expr knitr::all_labels()
+#| echo: true
+#| eval: false
+```
