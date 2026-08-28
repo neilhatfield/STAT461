@@ -1,6 +1,7 @@
 ---
 title: "Data Visualizations"
 author: "Neil J. Hatfield"
+lang: en
 date-modified: now
 latex-tinytex: true
 format: 
@@ -524,7 +525,7 @@ A possible alternative to pie charts is to make a "square pie chart" known as a 
 #| echo: true
 #| aria-describedby: waffle1LD
 # Create a waffle plot of penguin species ----
-# install.package(waffle)
+# pak::pak("waffle@1.0.2")
 library(waffle)
 
 ggplot(

@@ -1,6 +1,7 @@
 ---
 title: "Getting Started"
 author: "Neil J. Hatfield"
+lang: en
 date-modified: now
 latex-tinytex: false
 format: 
@@ -31,7 +32,7 @@ If you are using other statistical software, keep in mind that you are still res
 
 # Installing the Software
 
-If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.5.0 or higher; at the time of writing, the current version of R is 4.5.2.
+If you have not already done so, you will need to install R. You can either search online for the link or you can use this [Download R from CRAN](https://cran.r-project.org/) link. __Be sure that you are using a recent version of R.__ That is, you need to have R be on version 4.6.0 or higher; at the time of writing, the current version of R is 4.6.1.
 
 ## Check Your Version
 Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:
