@@ -17,7 +17,7 @@ execute:
 library(ggplot2)
 ```
 
-The intent/goal for this assignment is to act as a baseline for you to demonstrate what you know how to do at the start of the course. This assignment will *not* impact your grade in the course. However, at the end of the semester, you will have an assignment where you must reflect upon your growth over the course of the semester. This assignment (HW #1.1) provides you with a clear point from which to see your growth.
+The intent/goal for this assignment is to act as a baseline for you to demonstrate what you know how to do at the start of the course. This assignment will *not* impact your grade in the course. At the end of the semester, you will have an assignment where you must reflect upon your growth over the course of the semester. This assignment (HW #1.1) provides you with a clear point from which to see your growth.
 
 There are four links in Canvas that all connect to each other.
 
@@ -45,7 +45,7 @@ Food product marketing often invokes strong feelings from consumers. For example
 In 2017, I worked with an Introductory Statistics class to test out whether Double Stuf Oreos have twice the amount of stuf as Regular Oreos. ("Stuf" is the official term for the créme filling.) We designed a stochastic process (see [the last section](#furtherDetails) for more information) that allowed us to gather data in a statistically rigourous and sound way. This included
 
 1) Selecting a grocery store in Tempe, AZ, via a lottery,
-2) Conducting a stratified random sampling of Regular and Double Stuf Oreo packages (9 packages each), and
+2) Conducting a stratified, random cluster sampling of Regular and Double Stuf Oreo packages (9 packages each), and
 3) Weighing the amount of créme filling (in grams) for all cookies in each package. 
 
 The class was divided into 9 teams, thus we made 9 pairings of Double Stuf and Regular packages of cookies. Each team took a pair of packages to carry out data recording process.

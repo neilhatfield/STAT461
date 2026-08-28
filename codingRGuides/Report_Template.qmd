@@ -1,5 +1,6 @@
 ---
 title: "ANOVA Report Template"
+lang: en
 authors:
   - name: First Author
     role:
@@ -14,6 +15,7 @@ authors:
       - role 1, repeat new lines as needed
 format:
   pdf:
+    pdf-standard: ua-2
     toc: false
     number-sections: true
     number-depth: 5
@@ -27,6 +29,7 @@ format:
     colorlinks: true
     include-in-header: 
       text: |
+        \tagpdfsetup{math/alt/use}
         \usepackage{fvextra}
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{
           commandchars=\\\{\},
