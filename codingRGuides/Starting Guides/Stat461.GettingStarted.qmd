@@ -36,9 +36,9 @@ If you have not already done so, you will need to install R. You can either sear
 ## Check Your Version
 Not sure what version of R you currently have? When you first launch R, you should see several blocks of text get printed to the console like the following:
 
-    R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
-    Copyright (C) 2025 The R Foundation for Statistical Computing
-    Platform: aarch64-apple-darwin20
+    R version 4.6.1 (2026-06-24) -- "Happy Hop"
+    Copyright (C) 2026 The R Foundation for Statistical Computing
+    Platform: aarch64-apple-darwin23
 
     R is free software and comes with ABSOLUTELY NO WARRANTY.
     You are welcome to redistribute it under certain conditions.
@@ -74,12 +74,12 @@ R will come with a bare-bones set of tools for working with the R language. Howe
 + RStudio Desktop
   + RStudio Desktop is by the far the most common IDE for working with R.
   + [Download RStudio Desktop](https://posit.co/download/rstudio-desktop/)
-    + Use the most recent version; at time of writing, Version: 2026.01.0+392 
+    + Use the most recent version; at time of writing/revision, Version: 2026.08.2+200 
 + Visual Studio Code
   + VS Code can be used with a variety of different programming languages. However, you will need to [configure VS Code](#Config-VSCode) for using R.
   + [Download Visual Studio Code](https://code.visualstudio.com/download)
 + Positron
-  + This is a brand new IDE built by the Posit PBC. I will caution that it is still an early stage product and should only be treated with some care.
+  + This is a new-ish IDE built by the Posit PBC.
   + This is based upon Visual Studio Code but works with R (and Python) from the get go (provided you've installed R) with needing any additional setup.
   + [Download Positron](https://github.com/posit-dev/positron/releases)
 
@@ -109,7 +109,7 @@ checkSetup() # <2>
 1. The `source` function will tell R to go out to the listed website and pull the `checkSetup` function into your current R session.
 2. This command will run the `checkSetup` function.
 
-You can copy/paste the above lines into your R console and press Enter/Return. My `checkSetup` function runs *interactively*. Thus, you'll need to watch the console and respond to the questions. If you version of R is too old, the `checkSetup` function will tell you. At the end of successful run you should get the following message: `[1] "All finished. Your computer is ready for Stat 461!"`. 
+You can copy/paste the above lines into your R console and press Enter/Return. My `checkSetup` function runs <mark>__*interactively*__</mark>. Thus, you'll need to watch the console and respond to the questions. If you version of R is too old, the `checkSetup` function will tell you. At the end of successful run you should get the following message: `[1] "All finished. Your computer is ready for Stat 461!"`. 
 
 If you do not get that message and/or run into problems, please come see me.
 
@@ -167,8 +167,9 @@ To create a new Markdown-enabled file in RStudio Desktop, click on the File menu
 ### Markdown Templates
 I have created two templates that you can use. You can download and save these template files to your computer. To use them, you'll need to make a copy of the file and give the copy a new and meaningful file name. You can then double-click on the new file to open in RStudio (or other IDE).
 
++ [Quarto Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate_2024.qmd)--*Recommended*
 + [R Markdown Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate.Rmd)
-+ [Quarto Template](https://github.com/neilhatfield/STAT461/blob/main/hwTemplate_2024.qmd)
+
 :::
 
 Be sure to check out the section of this guide on [working with Markdown-enabled documents](#Working-MD) for more information.
