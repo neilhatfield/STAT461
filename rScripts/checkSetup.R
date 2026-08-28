@@ -1,11 +1,11 @@
 checkSetup <- function(){
   ## Check R Version ----
-  currentVersion <- "4.5.1"
+  currentVersion <- "4.6.1"
   errorMessages <- c()
   if (as.numeric(version$major) < 4) {
     stop("Your R version is too far out of date. Update before continuing.")
   } else if (as.numeric(version$minor) < 3) {
-    stop("You need to update your R to at least 4.5.0")
+    stop("You need to update your R to at least 4.6.0")
   } else if (paste(version$major, version$minor, sep = ".") < currentVersion) {
     warning("You should update your R when possible.")
   } else {
@@ -13,14 +13,14 @@ checkSetup <- function(){
   }
 
   ## Define package lists ----
-  corePackages <- c("tidyverse", "devtools", "knitr", "car", "psych",
-                   "parameters", "rcompanion", "DescTools", "dunn.test",
-                    "multcompView", "emmeans", "rstatix", "lme4",
-                    "nlme", "tinytex", "rmarkdown", "sjstats", "effectsize")
-  ### kableExtra is temporally a separate install 
+  corePackages <- c("tidyverse", "knitr", "car", "psych", "parameters",
+                    "rcompanion", "DescTools", "dunn.test", "multcompView",
+                    "emmeans", "rstatix", "lme4", "nlme", "tinytex",
+                    "rmarkdown", "sjstats", "effectsize", "pak", "kableExtra")
+  ### kableExtra is temporally a separate install
   optionalPackages <- c("lattice", "perm", "boot", "coin", "pwr", "WebPower",
                         "openxlsx", "NSM3", "agricolae")
-  
+
 
   ## Package installation ----
   pkgInstall <- menu(
@@ -51,12 +51,8 @@ checkSetup <- function(){
 
     ### Install hasseDiagrams package ----
     if (!("hasseDiagram" %in% installed.packages()[, "Package"])) {
-      devtools::install_version("hasseDiagram", "0.2.0")
+      pak::pak("hasseDiagram@0.2.0")
     }
-    
-    ### Install last working version of kableExtra ----
-    #### kableExtra v 1.4.0 is breaking on scale_down
-    devtools::install_version(package = "kableExtra", version = "1.3.4")
 
     print("Finished installing packages")
   }
