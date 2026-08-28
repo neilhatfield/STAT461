@@ -1,6 +1,7 @@
 ---
 title: "Statistical Inference"
 author: "Neil J. Hatfield"
+lang: en
 date-modified: now
 latex-tinytex: true
 format: 
@@ -23,7 +24,13 @@ execute:
 Welcome! This Getting Started guide focuses on Statistical Inference. I've woven R code with some key guidance and conventions throughout. Thus, even if you are not using R, I highly recommend that you read through the guide. If you are using R, I'll encourage you to try to mimic the code for yourself and recreate the examples. Then you can adapt the code to help you with other data collections (say, the data from HW #1.1).
 
 :::{.callout-caution}
-While I will use my Oreo Demo data here, I make no claims that 1) the methods I demonstrate here are appropriate for my data, 2) that these are exactly what you need to so in HW \#1.1, or 3) that you must use these methods in HW #1.1. Feel free to use the following as spring boards/launching platforms to do the analysis you see as appropriate in HW #1.1.
+While I will use my Oreo Demo data here, I make no claims that
+
+1) the methods I demonstrate here are appropriate for my data, 
+2) that these are exactly what you need to so in HW \#1.1, or 
+3) that you must use these methods in HW #1.1. 
+
+Feel free to use the following as spring boards/launching platforms to do the analysis you see as appropriate in HW #1.1.
 :::
 
 I will be focusing on only two elements of statistical significance in this guide: doing null hypothesis tests and confidence intervals. While not a predominate focus, I will demonstrate some data manipulation techniques. Further, while I mention both checking assumptions (which you should do) and practical significance, I will not be demonstrating either of those here. (*Note*: the prior guides provide you will all of the tools you need to evaluate assumptions.)

@@ -1,6 +1,7 @@
 ---
 title: "Practical Significance"
 author: "Neil J. Hatfield"
+lang: en
 date-modified: now
 latex-tinytex: true
 format: 
