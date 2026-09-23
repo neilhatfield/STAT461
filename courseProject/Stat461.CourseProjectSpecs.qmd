@@ -47,14 +47,14 @@ Within this framework, there are two basic types of projects. These types are ha
 
 If a group chooses Type 2, they will need to ensure that they can document all of the following items:
 
-+ That the data is *real* and not simulated.
++ That the data is *real* and not simulated (i.e., fake).
 + Who collected the data originally
 + How the data were originally collected
 + For what purpose(s) were the data originally collected.
 
 ## Forming Groups
 
-With relatively few exceptions each person *must* complete this project in a group with at least one other person. Only in special circumstances (e.g., using this project as an Honor's project or part of the Master's thesis) will I consider allowing a person to work alone. If you feel that you have a special situation, you need to tell me as soon as possible.
+With relatively few exceptions each person *must* complete this project in a group with at least one other person. Only in special circumstances (e.g., using this project as an Honor's Option project or part of the Master's thesis) will I consider allowing a person to work alone. If you feel that you have a special situation, you need to tell me as soon as possible.
 
 While I will take input from each student, *I* will make the groups for the project.
 
@@ -119,10 +119,10 @@ Let's take a look at the details a bit more closely. Short assignment names appe
 
 We will use the following tentative due dates
 
-+ GP #1: Friday, Feb. 13th, 2026
-+ GP #2: Friday, Mar. 6th, 2026
-+ GP #3: OPTIONAL, Friday, Apr. 17th, 2026
-+ GP #4: Class Vote on exact date during Finals Week (May 4-8, 2026)
++ GP #1: Friday, Sept. 25th, 2026
++ GP #2: Friday, Oct. 16th, 2026
++ GP #3: OPTIONAL, Friday, Dec. 4th, 2026
++ GP #4: Class Vote on exact date during Finals Week (Dec 14-18, 2026)
 + GP #5: Concurrent/After GP #4
 
 
@@ -134,7 +134,7 @@ A potentially useful way to think about this group project is to think of it as 
 + __Human Resources Office:__ I will also check in to see how well the team is working together. If there are interpersonal conflicts, I need to know so that I can help resolve them.
 + __Course Instructor:__ Ultimately, I will be assessing the final product your group produces.
 
-Given these many hats, I end up in the position where I might need to remove a member from a team. Thus, I reserve the right to remove individuals from any team for the course group project, at any time. Depending on when that removal happens, I might reassign them to another group, assign an alternative assignment, or score the student at Not Yet, Not Shown for all learning outcomes attached to the project. 
+Given these many hats, I end up in the position where I might need to remove a member from a team. Thus, I reserve the right to remove individuals from any team for the course group project, at any time. Depending on when that removal happens, I might reassign the removed individual(s) to another group, assign an alternative assignment, or score the student at Not Yet, Not Shown for all learning outcomes attached to the project. 
 
 Such removals can happen *after* the submission of the final report. These cases are generally the result of a team member ghosting their team and not contributing to the report. In such cases, it is my discretion about whether the removed student will have an opportunity to submit an alternative assignment.
 
@@ -166,15 +166,10 @@ Here are some ideas that have been done by students in the past:
 | popcorn brand, batch size, popcorn to oil ratio | yield of popcorn |
 | amount of yeast, amount of sugar, liquid type, rise temp, rise time | quality of bread |
 | hours of illumination, water temp, specific gravity of water | growth rate of algae |
-| blending speed, amount of water, water temp, soaking time | blending time for soy beans |
 | width/height ratio of balsa wood, slant angle, dihedral angle, weight added, wood thickness | flight length for model airplane |
 | type of drink, number of drinks, rate of drinking, hours after last meal | time to get ball through maze |
-| stamp type, zip code, time of day when mailed | days required for delivery of letter |
-| distance to target, type of gun, type of powder | number of shot penetrating 1ft diameter circle on target |
 | amounts of cooking wine, oyster sauce, sesame oil | taste of stewed chicken |
-| ambient temp, choke setting, number of charges | number of kicks to start motorcycle |
 | amounts of flour, eggs, milk | taste of pancakes (consensus of housemates) |
-| brand of tape deck, bass level, treble level, synthesizer | clearness and quality of sound |
 | child's weight, spring tension, swing orientation | number of swings and duration of an infant swing |
 | orientation of football, kick, steps taken prior, shoe type | distance football is kicked |
 | amount of detergent, bleach, fabric softener | ability to remove oil and grape juice stains |
@@ -196,3 +191,6 @@ Here are some ideas that have been done by students in the past:
 | Sport, Geographic Region | Season Win Percentage |
 | Game Title and Ore Type | Rupee Value of Item Drop |
 | Race/Ethnicity | Level of Spice Detection |
+| Beer brand, glass angle | Foam (head) height|
+| Species, curb location | Tree diameter |
+| Gender, Political affiliation | Time spent gaming |
