@@ -1,0 +1,262 @@
+---
+title: "Do Double Stuf Oreos Have Twice the Creme Filling of Regular Oreos?"
+author: "Student D"
+date: "9/4/2026"
+output:
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center")
+
+# Packages
+packages <- c("tidyverse", "knitr", "kableExtra", "car", "psych")
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if (length(new_packages)) install.packages(new_packages)
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(car)
+library(psych)
+```
+
+# Introduction
+
+Oreo cookies are marketed in a "Regular" form and a "Double Stuf" form, the
+latter implying (via its name and marketing) that it contains twice the amount
+of creme filling as the Regular version. This report uses measured filling
+mass data (in grams) from a sample of Regular and Double Stuf Oreo cookies to
+investigate the research question:
+
+> **Do Double Stuf Oreos have twice the creme filling of Regular Oreos?**
+
+We will explore the data, compare average filling mass between the two types,
+and formally test whether the mean filling mass of Double Stuf cookies is
+statistically consistent with being **exactly double** that of Regular
+cookies.
+
+# Data
+
+The data come from a `.dat` file (comma-separated) hosted by Prof. Neil
+Hatfield (Penn State, STAT 461) at:
+
+`https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat`
+
+Each row records the filling mass (grams) of a single cookie and its type
+(`Regular` or `Double Stuf`).
+
+```{r loadData}
+dataURL <- "https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat"
+
+oreoData <- read.csv(file = dataURL, header = TRUE, sep = ",",
+                      stringsAsFactors = FALSE)
+
+# Clean up column names for easier use
+names(oreoData) <- c("fillingMass", "type")
+
+oreoData <- oreoData %>%
+  mutate(
+    type = str_trim(type),
+    type = factor(type, levels = c("Regular", "Double Stuf"))
+  )
+
+str(oreoData)
+```
+
+```{r previewData}
+kable(head(oreoData, 10), caption = "First 10 rows of the Oreo filling data",
+      col.names = c("Filling Mass (g)", "Type")) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+# Exploratory Data Analysis
+
+## Sample Sizes and Summary Statistics
+
+```{r summaryStats}
+summaryTable <- oreoData %>%
+  group_by(type) %>%
+  summarise(
+    n = n(),
+    Mean = mean(fillingMass),
+    SD = sd(fillingMass),
+    Median = median(fillingMass),
+    Min = min(fillingMass),
+    Max = max(fillingMass)
+  )
+
+kable(summaryTable, digits = 3,
+      caption = "Summary statistics of filling mass (g) by Oreo type") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Visualizing the Distributions
+
+```{r boxplot, fig.width=6, fig.height=4}
+ggplot(oreoData, aes(x = type, y = fillingMass, fill = type)) +
+  geom_boxplot(alpha = 0.7, outlier.color = "red") +
+  geom_jitter(width = 0.08, alpha = 0.4) +
+  labs(
+    title = "Filling Mass by Oreo Type",
+    x = "Oreo Type",
+    y = "Filling Mass (g)"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+```{r histogram, fig.width=7, fig.height=4}
+ggplot(oreoData, aes(x = fillingMass, fill = type)) +
+  geom_histogram(binwidth = 0.25, color = "black", alpha = 0.7, position = "identity") +
+  facet_wrap(~type, ncol = 1, scales = "free_y") +
+  labs(
+    title = "Distribution of Filling Mass by Oreo Type",
+    x = "Filling Mass (g)",
+    y = "Count"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+```
+
+*Note:* A few observations appear unusually extreme relative to their labeled
+group (e.g., a very low value labeled "Double Stuf" and a very high value
+labeled "Regular"). These may be data entry errors, mislabeled cookies, or
+genuine measurement variability; they are retained here since we have no
+independent way to verify or correct them, but they are worth flagging as a
+limitation.
+
+## Observed Ratio of Means
+
+A simple, descriptive way to address the research question is to compute the
+ratio of the mean filling masses:
+
+```{r ratio}
+means <- summaryTable$Mean
+names(means) <- summaryTable$type
+
+observedRatio <- means["Double Stuf"] / means["Regular"]
+observedRatio
+```
+
+The Double Stuf cookies have, on average, about
+**`r round(observedRatio, 2)`** times the filling mass of Regular cookies —
+descriptively close to, but not exactly, double.
+
+# Formal Analysis
+
+To move beyond a purely descriptive comparison, we test whether the data are
+consistent with the claim that Double Stuf filling mass is *exactly* double
+the Regular filling mass, i.e., $\mu_{DS} = 2\mu_{R}$.
+
+## Approach
+
+We construct a new variable: for Regular cookies, we compare $2 \times$
+filling mass against the Double Stuf filling mass directly, using a two-sample
+$t$-test. Equivalently, we test:
+
+$$H_0: \mu_{DS} - 2\mu_{R} = 0 \quad \text{vs.} \quad H_A: \mu_{DS} - 2\mu_{R} \neq 0$$
+
+```{r checkAssumptions}
+# Check variance homogeneity (using doubled Regular values for a fair scale comparison)
+regularDoubled <- oreoData %>%
+  filter(type == "Regular") %>%
+  mutate(fillingMass = fillingMass * 2, type = "2x Regular")
+
+dsData <- oreoData %>% filter(type == "Double Stuf") %>%
+  mutate(type = as.character(type))
+
+compData <- bind_rows(regularDoubled, dsData) %>%
+  mutate(type = factor(type, levels = c("2x Regular", "Double Stuf")))
+
+leveneTest(fillingMass ~ type, data = compData)
+```
+
+```{r ttest}
+ttestResult <- t.test(
+  fillingMass ~ type,
+  data = compData,
+  var.equal = TRUE,   # update to FALSE if Levene's test indicates unequal variances
+  alternative = "two.sided"
+)
+
+ttestResult
+```
+
+```{r ttestTable}
+ttestSummary <- tibble(
+  `Mean (2x Regular)` = mean(regularDoubled$fillingMass),
+  `Mean (Double Stuf)` = mean(dsData$fillingMass),
+  `Difference` = ttestResult$estimate[2] - ttestResult$estimate[1],
+  `t statistic` = ttestResult$statistic,
+  `df` = ttestResult$parameter,
+  `p-value` = ttestResult$p.value
+)
+
+kable(ttestSummary, digits = 4,
+      caption = "Test comparing Double Stuf filling mass to 2x Regular filling mass") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover"))
+```
+
+## Interpretation
+
+- If the resulting **p-value is small** (e.g., below 0.05), we have evidence
+  that the mean Double Stuf filling mass is *significantly different* from
+  exactly twice the mean Regular filling mass — meaning the "double" claim
+  does **not** hold exactly.
+- If the p-value is **not small**, the data are consistent with the claim
+  that Double Stuf filling is (on average) twice that of Regular.
+
+```{r interpretationText}
+pval <- ttestResult$p.value
+diffEstimate <- ttestResult$estimate[2] - ttestResult$estimate[1]
+
+conclusionText <- if (pval < 0.05) {
+  paste0("The p-value (", format(pval, scientific = TRUE, digits = 3),
+         ") is less than 0.05, so we reject the null hypothesis. ",
+         "The mean Double Stuf filling mass is statistically significantly ",
+         "different from exactly double the mean Regular filling mass ",
+         "(estimated difference: ", round(diffEstimate, 3), " g).")
+} else {
+  paste0("The p-value (", round(pval, 4),
+         ") is not less than 0.05, so we fail to reject the null hypothesis. ",
+         "The data are consistent with Double Stuf filling being, on average, ",
+         "double that of Regular filling.")
+}
+
+conclusionText
+```
+
+# Conclusion
+
+Based on the sample data:
+
+- The **observed ratio** of mean filling masses (Double Stuf / Regular) is
+  approximately **`r round(observedRatio, 2)`**.
+- The formal hypothesis test comparing Double Stuf filling mass to *exactly*
+  twice the Regular filling mass yields `r conclusionText`
+
+**Practical takeaway:** Even if the ratio is statistically different from
+exactly 2, it may still be *practically* close to double, depending on the
+magnitude of the difference and the context (e.g., manufacturing tolerances).
+Readers should weigh both **statistical significance** and **practical
+significance** when interpreting these results.
+
+# Limitations
+
+- A handful of observations appear mismatched with their labeled type (e.g.,
+  an unusually small "Double Stuf" value and an unusually large "Regular"
+  value), which may reflect data entry errors or true manufacturing
+  variability. These were not removed, but a sensitivity analysis excluding
+  them could be a useful extension.
+- Sample sizes for each group are moderate (~30 each), which limits the power
+  of the test to detect small departures from the exact "double" claim.
+- Only one production batch/sample of cookies was measured; results may not
+  generalize to all Oreo products or manufacturing runs.
+
+# Appendix: Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```

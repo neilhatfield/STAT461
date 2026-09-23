@@ -2,10 +2,12 @@
 title: "Exploring Double Stuf vs. Regular Oreos®"
 subtitle: "Homework #1.1-Example C"
 author: "Student C"
-date: "1/23/2026"
+date: "9/4/2026"
+lang: en
 latex-tinytex: false
 format:
   pdf:
+    pdf-standard: ua-2
     toc: false
     number-sections: false
     geometry:
@@ -74,6 +76,7 @@ The original inquiry that began the most recent exploration started with a New Y
 #| label: fig-originalOreoData
 #| fig-cap: "Oreo Data (Anderson, 2013a)"
 #| out-width: "80%"
+#| fig-alt: "Anderson's original data in a hand drawn table showing weights for both 1 and 10 regular, double stuf, and mega stuf oreo cookies."
 # Add image of Dan Anderson's data ----
 knitr::include_graphics("dansData.jpg")
 ```
@@ -94,7 +97,9 @@ Most recently, @truthinadvertising.org2022 repeated Anderson's work and found th
 
 # Methodology
 
-To investigate whether Double Stuf Oreos have twice the créme filling mass as regular Oreos, I will make use of data previously collected for this purpose. Dr. Hatfield worked with an introductory statistics class to investigate whether Double Stuf Oreos have twice the créme filling as regular Oreos. They used a proper process to select a grocery store at random in Tempe, AZ and then to select 9 packages of regular and 9 packages of Double Stuf Oreos from the shelves. They then split these 9 packages into 9 pairs (one of each type of cookie) to measure the créme filling masses (in grams) for each cookie.
+To investigate whether Double Stuf Oreos have twice the créme filling mass as regular Oreos, I need a well designed study. In this situation, I am going to design our study to limit my Type I Error Rate to no more than 3% ($\epsilon_{I}=0.03$). Further, I'll set the Type II Error Rate to 20% ($\epsilon_{II}=0.2$); alternatively, I'll have the study have a power of 80%. Based on the prior studies, there is some evidence of large effect size in moving away from a ratio of 2 in filling masses. From these parameters, we would need 60 total cookies, evenly split between the two types for a balanced study. Given the provided data, we will have an imbalanced design with 36 regular Oreos and 30 Double Stuf Oreos. 
+
+I will make use of data previously collected for this purpose. Dr. Hatfield worked with an introductory statistics class to investigate whether Double Stuf Oreos have twice the créme filling as regular Oreos. They used a proper process to select a grocery store at random in Tempe, AZ and then to select 9 packages of regular and 9 packages of Double Stuf Oreos from the shelves. They then split these 9 packages into 9 pairs (one of each type of cookie) to measure the créme filling masses (in grams) for each cookie.
 
 I have been given one of these data sets (Oreo 3) to explore in context of the statistical research question "Do Double Stuf Oreos have double the créme filling mass as Regular Oreos?" The heart of this question is comparing the underlying filling processes for these cookies and how those processes behave in the long-run. That is to say, there is a process by which regular Oreos get their créme filling and that process has some level of performance, which I can measure in grams of filling per cookie. Similarly, Double Stuf Oreos have their own version of this process, which also has a performance I can measure in grams of filling per cookies. Ultimately, I want to see that the ratio of the two processes' performances is two. Given that the *sample arithmetic mean* is built to measure the performance of a collection towards some goal, this will make an excellent test statistic. To move beyond the present sample, I will make use of a parametric shortcut for testing a ratio of values of the *sample arithmetic mean*. I'll also use a simulation approach to further explore the data.
 
@@ -109,6 +114,7 @@ Throughout this study, I will adopt an Unusualness Threshold of 3%. That is to s
 #|   - "Original Data"
 #|   - "Fixed Data"
 #| layout-ncol: 2
+#| fig-alt: "The left box plots show the original data for the two types of Oreos while the right box plots show the corrected data for the mislabelled observations."
 
 # Box plots of Original and Fixed Data Collections ----
 ggplot(
@@ -160,6 +166,7 @@ I reached out to Dr. Hatfield about the issue and he confirmed that there was a 
 #| fig-cap: "Shadowgram of Filling Masses"
 #| fig-width: 4
 #| fig-height: 2
+#| fig-alt: "Two modal clumps appear reflecting the two types of Oreos."
 # Load shadowgram function ----
 source("https://raw.github.com/neilhatfield/STAT461/master/rScripts/shadowgram.R")
 
@@ -183,6 +190,7 @@ I also wanted to look at a histogram to get a better sense of the créme filling
 #| fig-width: 6
 #| fig-height: 2
 #| fig-pos: "H"
+#| fig-alt: "The left histogram shows the Double Stuf Oreos tending to have a little more than 7 grams of filling. The right histogram shows regular Oreos as having around 3.25 grams of filling."
 # Create side-by-side histograms -----
 ggplot(
   data = oreoData,
@@ -291,6 +299,7 @@ The last two statistics in @tbl-descStatsTable are *sample skewness* and *sample
 #| fig-cap: "Histogram of all pairwise ratios of créme filling masses"
 #| fig-width: 4
 #| fig-height: 3
+#| fig-alt: "All possible pairwise ratios of creme filling masses between Double Stuf and regular Oreos tends to be symmetric around 2.25." 
 # Split Oreos into separate vectors by type ----
 splitOreos <- unstack(
   x = oreoData,
@@ -351,11 +360,17 @@ To explore the research question, I will make use of a hypothesis test. The null
 $$H_0:\frac{\mu_D}{\mu_R} = 2 \qquad \text{vs.} \qquad H_1:\frac{\mu_D}{\mu_R} \neq 2$$
 where $\mu_T$ represents the performance of the underlying créme filling process for Oreos of type *T*. We will need to use a ratio test for two location parameters.
 
+Alternatively, we could express this in terms of a more conventional *t*-test by using a log transformation:
+
+$$H_0:\log(\mu_D)-\log(\mu_R) = \log(2) \qquad \text{vs.} \qquad H_1:\log(\mu_D)-\log(\mu_R) \neq \log(2)$$
+
+The log-transformation with a typically *t*-test and the ratio *t*-test are functionally equivalent.
+
 ## Assumptions
 
-The *t* test for the ratio of two group's values of the *sample arithmetic mean* makes two primary assumptions: Gaussian errors and independent observations. While the values of the *sample arithmetic standard deviation* are nearly identical, we will proceed with a test that allows for heteroscedasticity.
+The *t*-test for the ratio of two group's values of the *sample arithmetic mean* makes two primary assumptions: Gaussian errors and independent observations. While the values of the *sample arithmetic standard deviation* are nearly identical, we will proceed with a version of the test that allows for heteroscedasticity.
 
-@fig-qqPlots} provides QQ plots for both Regular and Double Stuf Oreos when compared against a Gaussian distribution. For the regular Oreos (@fig-qqPlots-1), there are three points (`r round(3/36, 2)*100`%) located just outside of the envelope. For the Double Stuf Oreos, there is just one point (`r round(1/30, 2)*100`%). Pairing these plots with the values of *sample skewness* and *sample excess kurtosis* in @tbl-descStatsTable provide evidence that the assumption is relatively satisfied. That is to say, our data are not overtly inconsistent with the Gaussian assumption. The one point of hesitancy is the fact that the two groups have slight skewness in opposite directions. This could magnify the differences between them. However, it is worth noting that Double Stuf Oreos have a negative skewness suggesting that potential outliers are underfilled while regular Oreos have a postivie skewness suggesting just the opposite.  
+@fig-qqPlots provides QQ plots for both Regular and Double Stuf Oreos when compared against a Gaussian distribution. For the regular Oreos (@fig-qqPlots-1), there are three points (`r round(3/36, 2)*100`%) located just outside of the envelope. For the Double Stuf Oreos, there is just one point (`r round(1/30, 2)*100`%). Pairing these plots with the values of *sample skewness* and *sample excess kurtosis* in @tbl-descStatsTable provide evidence that the assumption is relatively satisfied. That is to say, our data are not overtly inconsistent with the Gaussian assumption. The one point of hesitancy is the fact that the two groups have slight skewness in opposite directions. This could magnify the differences between them. However, it is worth noting that Double Stuf Oreos have a negative skewness suggesting that potential outliers are underfilled while regular Oreos have a postivie skewness suggesting just the opposite.  
 
 ```{r}
 #| label: fig-qqPlots
@@ -366,6 +381,7 @@ The *t* test for the ratio of two group's values of the *sample arithmetic mean*
 #| layout-ncol: 2
 #| fig-width: 2.75
 #| fig-height: 2.75
+#| fig-alt: "Left Q Q plot for regular Oreos shows little to be concerend about; same with the right Q Q plot for Double Stuf Oreos."
 # Create QQ Plots for Data ----
 par(mar = c(4, 4, .1, .1), cex = 0.75)
 car::qqPlot(
@@ -400,6 +416,7 @@ To assess the issue of independence, knowing the order in which measurements wer
 #| fig-width: 5
 #| fig-height: 2.5
 #| fig-pos: "H"
+#| fig-alt: "There do not appear to be any indications that the cookies suffer from problematic dependency captured by the measurement process."
 # Create Index Plot for Data ----
 ggplot(
   data = oreoData,
@@ -444,7 +461,22 @@ With the assumptions tentatively satisfied, I'll proceed with the parametric sho
 
 Taking this information together, I will reject the null hypothesis that the ratio is two and decide to act as if the ratio is some other value (greater than two).
 
-## Bootstrapping Ratio of *SAM* Values
+# Discussion
+
+The present work overcame shortcomings in several of the previously cited studies, primarily by incorporating the variation between individual cookies. Further, I ensured that I used an appropriate technique (the ratio test). I found sufficient evidence to reject the null hypothesis that the ratio of filling performance was 2 between Double Stuf and regular Oreos. My data indicate that Double Stuf Oreos may be getting slightly more than twice the créme filling as regular Oreos. In an Appendix, I also provide a bootstrapping approach that is consistent with my earlier results. 
+
+After exploring the data and doing statistical inference, I believe that Mondelēz International (Nabisco) are not engaged in false advertisement with their Double Stuf Oreos. While I can always find a pair of Oreos (one Regular, one Double Stuf) that shortchanges the consumer, I can also find pairs of Oreos where the consumer will have a Double Stuf Oreo with more than twice the créme filling of a regular Oreo (see @fig-pairwiseComparisons). However, there is a preponderance of evidence here to convince me to give the benefit of the doubt to Mondelēz International (Nabisco). Future work could take this study as a starting point and expand out. For example, I could take a random sampling of Oreo packages from across the country to limit any geographical influences. Additionally, I might consider the age of the Oreos when I take measurements. Oreos that are older might have altered masses. The number of experiments abounds when I think about Oreos and their compositions.
+
+{{< pagebreak >}}
+
+# References
+
+::: {#refs}
+:::
+
+{{< pagebreak >}}
+
+# Appendix: Bootstrapping the Ratio of *SAM* Values
 
 ```{r}
 #| label: boot
@@ -476,7 +508,7 @@ bootCI <- boot::boot.ci(bootOut, conf = 0.97, type = c("perc", "bca"))
 
 ```
 
-As a secondary approach that doesn't depend upon the Gaussian assumption, I conducted a bootstrap simulation on these data see what might emerge for the ratio of créme filling masses. Using a stratified resampling (by Type), I looked at 10,000 values of the ratio of values of the *SAM* (Double Stuf with respect to Regular). Figure \@fig-bootPlot shows the histogram for this simulated sampling distribution of the ratio. The black, dashed vertical line denotes our observed value of our statistic (`r round(bootCI$t0, 2)` grams/gram).
+As a secondary approach that doesn't depend upon the Gaussian assumption, I conducted a bootstrap simulation on these data see what might emerge for the ratio of créme filling masses. Using a stratified resampling (by Type), I looked at 10,000 values of the ratio of values of the *SAM* (Double Stuf with respect to Regular). @fig-bootPlot shows the histogram for this simulated sampling distribution of the ratio. The black, dashed vertical line denotes our observed value of our statistic (`r round(bootCI$t0, 2)` grams/gram).
 
 ```{r }
 #| label: fig-bootPlot
@@ -521,19 +553,6 @@ ggplot(
 ```
 
 The 97% *percentile* confidence interval is (`r round(bootCI$percent[1,4], digits = 3)`, `r round(bootCI$percent[1,5], digits = 3)`), which tells us that the middle 97% of the boostrapped sampling distribution for the ratio of *SAM* values is between `r round(bootCI$percent[1,4], digits = 3)` and `r round(bootCI$percent[1,5], digits = 3)`. The Bias Corrected and Accelerated (BC<sub>a</sub>) version of this interval is (`r round(bootCI$bca[1,4], digits = 3)`, `r round(bootCI$bca[1,5], digits = 3)`); the BC<sub>a</sub> interval bounds appear in @fig-bootPlot as the solid red lines. Worth noting here is that the minimum observed value of our test statistic in the bootstrapping simulation is approximately `r round(min(bootOut$t), 2)` grams/gram; which is just slightly above the null hypothesis value. Taking the bootstrap simulation results along with the parametric test, I feel more confident in my decision to reject the null hypothesis. The additional information from the bootstrap simulation is suggestive that the ratio of mean créme filling masses is greater than 2, but more work needs to be done to confirm this.
-
-# Discussion
-
-The present work overcame shortcomings in several of the previously cited studies, primarily by incorporating the variation between individual cookies. Further, I ensured that I used an appropriate technique (the ratio test) and I supplemented with a simulation method (bootstrapping). In both cases, I found sufficient evidence to reject the null hypothesis that the ratio of filling performance was 2 between Double Stuf and regular Oreos. My data indicate that Double Stuf Oreos may be getting slightly more than twice the créme filling as regular Oreos.
-
-After exploring the data and doing statistical inference, I believe that Mondelēz International (Nabisco) are not engaged in false advertisement with their Double Stuf Oreos. While I can always find a pair of Oreos (one Regular, one Double Stuf) that shortchanges the consumer, I can also find pairs of Oreos where the consumer will have a Double Stuf Oreo with more than twice the créme filling of a regular Oreo (see @fig-pairwiseComparisons). However, there is a preponderance of evidence here to convince me to give the benefit of the doubt to Mondelēz International (Nabisco). Future work could take this study as a starting point and expand out. For example, I could take a random sampling of Oreo packages from across the country to limit any geographical influences. Additionally, I might consider the age of the Oreos when I take measurements. Oreos that are older might have altered masses. The number of experiments abounds when I think about Oreos and their compositions.
-
-{{< pagebreak >}}
-
-# References
-
-::: {#refs}
-:::
 
 {{< pagebreak >}}
 

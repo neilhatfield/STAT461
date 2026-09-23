@@ -1,0 +1,116 @@
+---
+title: "Do Double Stuf Oreos Have Twice the Creme Filling of Regular Oreos?"
+author: "Student E"
+date: "9/4/2026"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
+                      fig.width = 7, fig.height = 4.5)
+```
+
+# Research question
+
+Do Double Stuf Oreos have **twice the mean creme filling mass** of regular Oreos?
+
+The response is filling mass (grams), and the explanatory variable is Oreo type
+(Regular or Double Stuf). The data are available from the STAT 461 repository at
+<https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat>.
+
+# Data and preparation
+
+```{r data}
+url <- "https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat"
+oreo <- read.csv(url, check.names = TRUE)
+
+# Put the groups in a meaningful order and use short labels in output.
+oreo$Type <- factor(oreo$Type, levels = c("Regular", "Double Stuf"))
+str(oreo)
+head(oreo)
+```
+
+# Exploratory analysis
+
+```{r summaries}
+summary_by_type <- aggregate(Filling.Mass ~ Type, data = oreo,
+                             FUN = function(x) c(n = length(x),
+                                                 mean = mean(x),
+                                                 sd = sd(x),
+                                                 median = median(x),
+                                                 min = min(x),
+                                                 max = max(x)))
+summary_by_type <- data.frame(Type = summary_by_type$Type,
+                              do.call(rbind, list(summary_by_type$Filling.Mass)),
+                              row.names = NULL)
+knitr::kable(summary_by_type, digits = 3,
+             caption = "Summary of filling mass (grams) by Oreo type.")
+
+means <- tapply(oreo$Filling.Mass, oreo$Type, mean)
+observed_ratio <- unname(means["Double Stuf"] / means["Regular"])
+observed_ratio
+```
+
+```{r plot}
+boxplot(Filling.Mass ~ Type, data = oreo,
+        col = c("#8ECae6", "#FFB703"),
+        ylab = "Filling mass (g)", xlab = "Oreo type",
+        main = "Creme filling mass by Oreo type")
+stripchart(Filling.Mass ~ Type, data = oreo, vertical = TRUE,
+           method = "jitter", pch = 16, col = "gray25", add = TRUE)
+```
+
+The observed ratio of the two sample means is
+**`r round(observed_ratio, 3)`**. Thus, the Double Stuf sample mean is about
+**`r round(100 * (observed_ratio - 1), 1)`%** greater than the Regular sample
+mean, rather than exactly 100% greater.
+
+# Statistical analysis
+
+To directly address “twice as much,” define the contrast
+
+$$L = \mu_{\text{Double Stuf}} - 2\mu_{\text{Regular}}.$$
+
+The hypotheses are
+
+$$H_0: L = 0 \qquad \text{versus} \qquad H_A: L \ne 0.$$
+
+A Welch two-sample *t* test is performed by comparing Double Stuf filling masses
+to twice the Regular filling masses. Welch's test does not assume equal variances.
+
+```{r hypothesis-test}
+regular <- subset(oreo, Type == "Regular")$Filling.Mass
+double_stuf <- subset(oreo, Type == "Double Stuf")$Filling.Mass
+
+contrast_test <- t.test(double_stuf, 2 * regular,
+                        alternative = "two.sided", var.equal = FALSE)
+contrast_test
+
+estimated_contrast <- mean(double_stuf) - 2 * mean(regular)
+ci <- contrast_test$conf.int
+```
+
+The estimated contrast is **`r round(estimated_contrast, 3)` g**. The 95% confidence
+interval for $$\mu_{\text{Double Stuf}} - 2\mu_{\text{Regular}}$$ is
+(**`r round(ci[1], 3)`**, **`r round(ci[2], 3)`**) g, and the two-sided *p*-value is
+**`r format.pval(contrast_test$p.value, digits = 3, eps = 0.001)`**.
+
+# Conclusion
+
+At the $$\alpha = 0.05$$ significance level, we
+**`r if (contrast_test$p.value < 0.05) "reject" else "fail to reject"`** the null
+hypothesis that Double Stuf Oreos contain exactly twice the *mean* creme filling
+of Regular Oreos. In this sample, the estimated mean ratio is
+**`r round(observed_ratio, 3)`**, so Double Stuf Oreos averaged somewhat less
+than twice the creme filling mass of Regular Oreos.
+
+This conclusion concerns the population represented by these sampled cookies and
+their measured filling masses. It does not establish that every individual Double
+Stuf Oreo has exactly twice the filling of every Regular Oreo.
+
+# Reproducibility
+
+```{r session-info}
+sessionInfo()
+```

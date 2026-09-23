@@ -1,0 +1,221 @@
+---
+title: "Oreo Data Analysis Report"
+author: "Data Analysis"
+date: "9/4/2026"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(corrplot)
+```
+
+## Data Import
+
+```{r data_import}
+# Download and load the Oreo data
+url <- "https://raw.githubusercontent.com/neilhatfield/STAT461/master/dataFiles/oreo1.dat"
+oreo_data <- read.table(url, header = TRUE, sep = ",")
+
+# Display first few rows
+head(oreo_data) %>% kable(caption = "First few rows of Oreo data")
+
+# Data dimensions
+cat("Dataset dimensions:", nrow(oreo_data), "rows,", ncol(oreo_data), "columns\n")
+cat("Variable names:", paste(names(oreo_data), collapse = ", "))
+```
+
+## Exploratory Data Analysis
+
+### Data Structure
+
+```{r data_structure}
+str(oreo_data)
+summary(oreo_data)
+```
+
+### Missing Values
+
+```{r missing_values}
+missing_data <- data.frame(
+  Variable = names(oreo_data),
+  Missing_Count = sapply(oreo_data, function(x) sum(is.na(x))),
+  Missing_Percent = round(sapply(oreo_data, function(x) sum(is.na(x))/length(x)*100), 2)
+)
+
+kable(missing_data, caption = "Missing Values Summary")
+```
+
+### Univariate Analysis
+
+```{r univariate, fig.width=10, fig.height=6}
+# Select numeric columns only
+numeric_cols <- sapply(oreo_data, is.numeric)
+numeric_data <- oreo_data[, numeric_cols]
+
+# Create visualizations for each numeric variable
+if(length(numeric_data) > 0) {
+  par(mfrow = c(2, ceiling(length(numeric_data)/2)))
+  
+  for(col in names(numeric_data)) {
+    hist(numeric_data[[col]], main = paste("Distribution of", col), 
+         xlab = col, col = "steelblue", breaks = 20)
+  }
+  
+  par(mfrow = c(1, 1))
+}
+```
+
+### Summary Statistics
+
+```{r summary_stats}
+summary_stats <- data.frame(
+  Variable = names(numeric_data),
+  Mean = round(sapply(numeric_data, mean, na.rm = TRUE), 4),
+  Median = round(sapply(numeric_data, median, na.rm = TRUE), 4),
+  Std_Dev = round(sapply(numeric_data, sd, na.rm = TRUE), 4),
+  Min = round(sapply(numeric_data, min, na.rm = TRUE), 4),
+  Max = round(sapply(numeric_data, max, na.rm = TRUE), 4)
+)
+
+kable(summary_stats, caption = "Summary Statistics for Numeric Variables")
+```
+
+## Bivariate Analysis
+
+### Correlation Matrix
+
+```{r correlation}
+if(ncol(numeric_data) > 1) {
+  correlation_matrix <- cor(numeric_data, use = "complete.obs")
+  corrplot(correlation_matrix, method = "circle", type = "upper", 
+           diag = TRUE, tl.cex = 0.8, title = "Correlation Matrix")
+}
+```
+
+### Pairwise Relationships
+
+```{r pairwise, fig.width=10, fig.height=8}
+if(ncol(numeric_data) > 1) {
+  pairs(numeric_data, main = "Pairwise Scatterplots",
+        pch = 19, col = rgb(0, 0, 0, 0.5))
+}
+```
+
+## Key Question: Do Double Stuf Oreos Have Twice the Creme Filling?
+
+### Creme Filling Comparison by Type
+
+```{r doublestuf_analysis}
+# Identify creme-related columns (looking for columns with creme measurements)
+creme_cols <- names(oreo_data)[grepl("creme|filling|stuff|stuf", names(oreo_data), ignore.case = TRUE)]
+
+# Check for type variable
+type_var <- names(oreo_data)[grepl("type|variety|kind", names(oreo_data), ignore.case = TRUE)]
+
+cat("Creme-related columns found:", ifelse(length(creme_cols) > 0, paste(creme_cols, collapse = ", "), "None\n"))
+cat("Type-related columns found:", ifelse(length(type_var) > 0, paste(type_var, collapse = ", "), "None\n"))
+
+# Display unique types if available
+if(length(type_var) > 0) {
+  cat("\nUnique Oreo types in dataset:\n")
+  print(table(oreo_data[[type_var[1]]]))
+}
+```
+
+```{r doublestuf_comparison}
+# Filter data for Double Stuf vs Regular
+# Adjust the filtering based on actual column names in the dataset
+
+if(length(creme_cols) > 0 & length(type_var) > 0) {
+  type_column <- type_var[1]
+  creme_column <- creme_cols[1]
+  
+  # Create comparison
+  comparison_data <- oreo_data %>%
+    select(all_of(type_column), all_of(creme_column)) %>%
+    na.omit()
+  
+  # Summary by type
+  comparison_summary <- comparison_data %>%
+    group_by(!!sym(type_column)) %>%
+    summarise(
+      Count = n(),
+      Mean_Creme = mean(!!sym(creme_column), na.rm = TRUE),
+      Median_Creme = median(!!sym(creme_column), na.rm = TRUE),
+      SD_Creme = sd(!!sym(creme_column), na.rm = TRUE),
+      Min_Creme = min(!!sym(creme_column), na.rm = TRUE),
+      Max_Creme = max(!!sym(creme_column), na.rm = TRUE)
+    ) %>%
+    mutate(across(where(is.numeric), ~round(., 4)))
+  
+  kable(comparison_summary, caption = "Creme Filling Comparison by Oreo Type")
+  
+  # Calculate ratio
+  if(nrow(comparison_summary) >= 2) {
+    means <- comparison_summary$Mean_Creme
+    ratio <- max(means) / min(means)
+    cat("\n\nRatio of highest to lowest mean creme filling:", round(ratio, 3), "\n")
+    cat("Is Double Stuf approximately twice the creme?", ifelse(ratio >= 1.8 & ratio <= 2.2, "YES", "NO"), "\n")
+  }
+}
+```
+
+### Visualization of Creme Filling by Type
+
+```{r doublestuf_plot}
+if(length(creme_cols) > 0 & length(type_var) > 0) {
+  type_column <- type_var[1]
+  creme_column <- creme_cols[1]
+  
+  plot_data <- oreo_data %>%
+    select(all_of(type_column), all_of(creme_column)) %>%
+    na.omit()
+  
+  ggplot(plot_data, aes(x = !!sym(type_column), y = !!sym(creme_column), fill = !!sym(type_column))) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.2, alpha = 0.3, size = 2) +
+    labs(title = "Creme Filling Amount by Oreo Type",
+         x = "Oreo Type",
+         y = "Creme Filling (grams)",
+         fill = "Type") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+```
+
+### Statistical Test
+
+```{r doublestuf_test}
+if(length(creme_cols) > 0 & length(type_var) > 0) {
+  type_column <- type_var[1]
+  creme_column <- creme_cols[1]
+  
+  test_data <- oreo_data %>%
+    select(all_of(type_column), all_of(creme_column)) %>%
+    na.omit()
+  
+  # Perform t-test if there are exactly 2 types
+  if(n_distinct(test_data[[type_column]]) == 2) {
+    types <- unique(test_data[[type_column]])
+    group1 <- test_data$!!sym(creme_column)[test_data[[type_column]] == types[1]]
+    group2 <- test_data$!!sym(creme_column)[test_data[[type_column]] == types[2]]
+    
+    t_test_result <- t.test(group1, group2)
+    cat("Two-sample t-test results:\n")
+    cat("t-statistic:", round(t_test_result$statistic, 4), "\n")
+    cat("p-value:", round(t_test_result$p.value, 6), "\n")
+    cat("Significant difference at α=0.05?", ifelse(t_test_result$p.value < 0.05, "YES", "NO"), "\n")
+  }
+}
+```
+
+## Conclusion
+
+This report provides a comprehensive analysis of the Oreo dataset, with special focus on answering whether Double Stuf Oreos have twice the creme filling as regular Oreos. The comparison analysis above directly addresses this question through descriptive statistics, visualizations, and statistical testing.
+
+---
+*Generated on `r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`*
