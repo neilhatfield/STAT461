@@ -59,6 +59,8 @@ lapply(
 
 The `lapply` function lets me apply the `library` call to all of the package names that I placed in the `packages` object. This allows me to not need to write eight separate `library` calls.
 
+If you do not have these packages installed (e.g., you attempt to run the above code and get an error message that R can't find something), please refer to the [Getting Started](https://neilhatfield.github.io/STAT461/codingRGuides/Starting%20Guides/Stat461.GettingStarted.html) guide for guidance on getting R set up.
+
 ## Set Global Options
 
 There are a couple of options that we should set at this time. These will help ensure that R works the way the we intend for *this* class. I generally set options right after I load packages.
@@ -71,7 +73,7 @@ To get R to use this constraint rather than its default, we need to run the foll
 ```{r}
 #| label: setConstraint
 #| echo: true
-# Demo code for setting the constraint ----
+# Code for setting the constraint ----
 options(contrasts = c("contr.sum", "contr.poly"))
 
 ```
@@ -87,7 +89,7 @@ To make professional looking tables in a R Markdown file, I recommend using the 
 ```{r}
 #| label: tableOption
 #| echo: true
-# Demo code for controlling table options ----
+# Code for controlling table options ----
 # Tell Knitr to use empty space instead of NA in printed tables
 options(knitr.kable.NA = "")
 
@@ -101,7 +103,7 @@ The following code demonstrates how we can read in the three data sets:
 ```{r}
 #| label: loadData
 #| echo: true
-# Demo Code for Loading Data ----
+# Code for Loading Data ----
 ## Song Data
 songData <- read.table(
   file = "https://raw.githubusercontent.com/neilhatfield/STAT461/main/dataFiles/songKnowledge_Fa23.csv",
@@ -148,7 +150,7 @@ Over the years I have created some additional tools which can be useful as you p
 #| eval: true
 #| results: hide
 
-# Demo code for loading Neil's extra tools ----
+# Code for loading Neil's extra tools ----
 source("https://raw.github.com/neilhatfield/STAT461/main/rScripts/ANOVATools.R")
 
 ```
@@ -157,7 +159,7 @@ This is typically the last line of code in my first code chunk of any R Markdown
 
 # Explore Your Data
 
-At this point in time, you should engage in exploratory data analysis including creating professional looking data visualizations (I recommend using the `{ggplot2}` package) as well as looking at descriptive statistics by groups (I recommend using `{psych}` or `{dplyr}` packages). For more details on both of these topics, see the starting guides for Data Visualizations and Descriptive Statistics I've posted.
+At this point in time, you should engage in exploratory data analysis including creating professional looking data visualizations (I recommend using the `{ggplot2}` package) as well as looking at descriptive statistics by groups (I recommend using `{psych}` or `{dplyr}` packages). For more details on both of these topics, see the starting guides for [Data Visualizations](https://neilhatfield.github.io/STAT461/codingRGuides/Starting%20Guides/Stat461.DataVisualizations.html) and [Descriptive Statistics](https://neilhatfield.github.io/STAT461/codingRGuides/Starting%20Guides/Stat461.DescriptiveStatistics.html).
 
 ## Your Turn
 
@@ -209,7 +211,7 @@ In investigating the effect of the type of varietal (species of flower) has on t
 #| fig-height: 2
 #| aria-describedby: honeyHDLD
 #| echo: true
-# Demo Code for a Hasse Diagram ----
+# Code for a Hasse Diagram ----
 ## The Honey Study
 modelLabels <- c("1 Make Honey 1", "3 Varietal 2", "9 (Hives) 6")
 modelMatrix <- matrix(
@@ -248,7 +250,7 @@ To fit our ANOVA model, we will primarily use the `aov` function that is part of
 ```{r}
 #| label: buildModels1
 #| echo: true
-# Demo code for building ANOVA Models ----
+# Code for Building ANOVA Models ----
 ## Song Knowledge study
 songModel <- aov( # <1>
   formula = Score ~ Year, # <2>
@@ -272,7 +274,7 @@ Try to emulate the `aov` call for the Honey and Resin Lifetime Studies. When you
 ```{r}
 #| label: buildModels2
 #| echo: true
-# Demo code for building ANOVA Models ----
+# Code for Building ANOVA Models ----
 ## Honey study
 honeyModel <- aov(
   formula = Amount ~ Varietal,
@@ -287,7 +289,7 @@ honeyModel <- aov(
 ```{r}
 #| label: buildModels3
 #| echo: true
-# Demo code for building ANOVA Models ----
+# Code for Building ANOVA Models ----
 ## Resin Lifetime study
 resinModel <- aov(
   formula = log10Lifetime ~ temp,
@@ -326,7 +328,7 @@ There are multiple functions that will produce QQ plots in R; one of the better 
 #| aria-describedby: songQQLD
 #| fig-height: 4
 #| echo: true
-# Demo code for making QQ Plot ----
+# Code for Making a QQ Plot of Residuals ----
 ## Song Knowledge Study
 car::qqPlot(
   x = songModel$residuals, # <1>
@@ -378,7 +380,7 @@ Try replicating the QQ plot for the Honey Study. When you are ready, take a look
 #| aria-describedby: honeyQQLD
 #| fig-height: 4
 #| echo: true
-# Demo code for making QQ Plot ----
+# Code for making QQ Plot of Residuals ----
 ## Honey Study
 car::qqPlot(
   x = honeyModel$residuals,
@@ -434,7 +436,7 @@ Use either the `describe` function or the pair of `skew` and `kurtosi` functions
 ```{r}
 #| label: honeyStats
 #| echo: true
-# Demo Code for getting skewness and excess kurtosis ----
+# Code for Getting Sample Skewness and Sample Excess Kurtosis ----
 ## Honey Study
 psych::skew(honeyModel$residuals)
 psych::kurtosi(honeyModel$residuals)
@@ -458,7 +460,7 @@ A strip chart is a variation on a scatter plot. If you have done regression, you
 #| aria-describedby: songSCLD
 #| fig-height: 4
 #| echo: true
-# Demo code for making strip charts ----
+# Code for Making Strip Charts ----
 ## Song Knowledge study
 ggplot(
   data = data.frame( # <1>
@@ -512,7 +514,7 @@ Build a strip chart for the Honey Study. When you're ready check your answer bel
 #| aria-describedby: honeySCLD
 #| fig-height: 4
 #| echo: true
-# Demo code for making strip charts ----
+# Code for Making Strip Charts ----
 ## Honey study
 ggplot(
   data = data.frame(
@@ -582,7 +584,7 @@ Since I knew measurement order when I created the data frame and placed the data
 #| aria-describedby: honeyIPLD
 #| fig-height: 3
 #| echo: true
-# Demo Code for Index Plots ----
+# Code for Index Plots ----
 ## Honey Study
 ggplot(
   data = data.frame( # <1>
@@ -656,7 +658,7 @@ If you have been following along with the Resin data, I feel that we can proceed
 
 Ideally, you'll have decided on your decision rule before you collect and analyze your data. The most common decision rule used in ANOVA contexts is the *p*-value method.
 
-Remember, that you need to choose an overall Type I risk level, $\mathcal{E}_{I}$ and use this to guide our selection of an *Unusualness Threshold*, *UT*. Keep in mind that the *UT* is going to serve as the way to decide whether we reject or fail to reject the null hypothesis. The Unusualness Threshold (also called "Level of Significance") is the maximum percentage of the time we anticipate seeing "unusual events" given the null hypothesis. This is a probability value and we're free to choose the value provided that $UT \leq \mathcal{E}_{I}$. (There are some subtle distinctions between the ideas of Unusualness Threshold/Level of Significance and Type I risk that we won't get into.)
+Remember, that you chose an overall Type I risk level, $\mathcal{E}_{I}$ during your study design process. You need to use that value to guide our selection of an *Unusualness Threshold*, *UT*. Keep in mind that the *UT* is going to serve as the way to decide whether we reject or fail to reject the null hypothesis. The Unusualness Threshold (also called "Level of Significance") is the maximum percentage of the time we anticipate seeing "unusual events" given the null hypothesis. This is a probability value and we're free to choose the value provided that $UT \leq \mathcal{E}_{I}$. (There are some subtle distinctions between the ideas of Unusualness Threshold/Level of Significance and Type I risk that we won't get into.)
 
 For this guide, I'm going to use $\mathcal{E}_{I}=0.05$ and $UT=0.03$.
 
@@ -667,7 +669,7 @@ Once we're ready to look at the results, we can quickly view them by using eithe
 ```{r}
 #| label: quickLook
 #| echo: true
-# Demo code for quickly looking at results ----
+# Code for Quickly Looking at Results ----
 ## Summary example with the Song Knowledge study
 summary(songModel)
 
@@ -689,7 +691,7 @@ We could take the data from the `summary`/`anova` call and make them look profes
 #| tbl-cap: "Modern ANOVA Table for Song Knowledge Study"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Professional, Modern ANOVA Tables ----
+# Code for Professional, Modern ANOVA Tables ----
 ## Song Knowledge study
 parameters::model_parameters( # <1>
   model = songModel,
@@ -705,9 +707,10 @@ parameters::model_parameters( # <1>
   align = c("l", rep("c", 8)), # <5>
   # format = "latex" # <6>
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position") # <7>
+  kableExtra::kable_classic(
+    html_font = "arial", # <7>
+    font_size = 14,
+    latex_options = c("HOLD_position") # <8>
   )
 
 ```
@@ -717,13 +720,15 @@ parameters::model_parameters( # <1>
 4. If you are using R Markdown or going to copy/paste the table to another system, be sure to use the `caption` argument (uncommented) to get a table title.
 5. The `align` argument allows you to specify the column alignment (left, center, right) for each column.
 6. If you are knitting/render to PDF and keep running into a table that spills over the left/right edges of the page, add the `format` argument with the value `"latex"`.
-7. The `latex_options` listed here are useful if you are using R Markdown/Quarto to create a PDF.
+7. You can ignore the `html_font` argument in your own code.
+8. The `latex_options` listed here are useful if you are using R Markdown/Quarto to create a PDF.
 
-The above table code is meant to be re-useable with the appropriate updates to match your current context. You'll need to change the value of the `model` and `caption` arguments at minimum. You can customize the appear of the table further with the `kable_styling` function as well as pre-set styles from the `{kableExtra}` package such as `kable_classic` or `kable_material`.
+The above table code is meant to be re-useable with the appropriate updates to match your current context. You'll need to change the value of the `model` and `caption` arguments at minimum. You can customize the appear of the table further with the `kable_classic` is a pre-set styles from the `{kableExtra}` package. There are additional pre-set table styles you can check out or you can use the `kable_styling` function to customize your table's appearance. Check out this useful page for additional examples: [kableExtra](https://haozhu233.github.io/kableExtra/).
 
 :::{.callout-warning}
 ### Quarto and `{kableExtra}`
 If you are using a Quarto Document, you'll want to make sure that you do each of the following:
+
 1. Use the `label` code chunk option with the form `tbl-name`,
 2. Use`tbl-cap` code chunk option to set the table title instead of the `caption` argument of `kable`.
 3. Use `html-table-processing: none` code chunk option to ensure that the your table gets processed correctly.
@@ -761,7 +766,7 @@ Create and interpret a professional, modern ANOVA table for the Resin Lifetimes 
 #| tbl-cap: "Modern ANOVA Table for Resin Lifetimes Study"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Professional, Modern ANOVA Tables ----
+# Code for Professional, Modern ANOVA Tables ----
 ## Resin Lifetime study
 parameters::model_parameters(
   model = resinModel,
@@ -776,8 +781,9 @@ parameters::model_parameters(
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
   ) |>
   kableExtra::footnote(
@@ -798,14 +804,14 @@ Notice that both @tbl-songTable and @tbl-resinTable look much more professional 
 Alternatively, we could adopt the convention of reporting that the *p*-value is less than a given threshold. Part of my suite of ANOVA tools is the `pvalRound` function. This function takes an input *p* and the argument `digits` to determine whether the input is less than $10^{-\text{digits}}$. If so, the function returns a character string such as "< 0.0001" for `digits = 4` (the default). If the input *p* is larger than $10^{-\text{digits}}$, then the function returns the input unchanged.
 
 ```{r}
-#| label: resinTable2
+#| label: tbl-resinTable2
 #| tbl-cap: "Modern ANOVA Table for Resin Lifetimes Study with Rounded P-Values"
 #| html-table-processing: none
 #| echo: true
 #| eval: true
-# Demo Code for Professional, Modern ANOVA Tables ----
+# Code for Professional, Modern ANOVA Tables ----
 ## Resin Lifetime study
-parameters::model_parameters(
+model_parameters(
   model = resinModel,
   es_type = c("eta", "omega", "epsilon")
 ) |>
@@ -815,17 +821,18 @@ parameters::model_parameters(
       .default = pvalRound(p, digits = 3)
     )
   ) |>
-  knitr::kable(
-  digits = 3,
-  col.names = c(
-    "Source", "SS", "df", "MS", "F", "p-value",
-    "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
-  # caption = "Modern ANOVA Table for Resin Lifetimes Study",
-  booktabs = TRUE,
-  align = c("l", rep("c", 8))
+  kable(
+    digits = 3,
+    col.names = c(
+      "Source", "SS", "df", "MS", "F", "p-value",
+      "Eta Sq.", "Omega Sq.", "Epsilon Sq."), 
+    # caption = "Modern ANOVA Table for Resin Lifetimes Study",
+    booktabs = TRUE,
+    align = c("l", rep("c", 8))
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
   )
 
@@ -850,7 +857,7 @@ To get these point estimates, we will use the `dummy.coef` function. To make the
 #| tbl-cap: "Point Estimates for the Song Knowledge Study"
 #| html-table-processing: none
 #| echo: true
-# Demo making a profession table of coefficients/point estimates ----
+# Making a Profession Table of Coefficients/Point Estimates ----
 ## If you want to quickly look, just enter dummy.coef(songModel) into the console
 
 ## Song Knowledge study
@@ -861,21 +868,24 @@ names(pointEst) <- c("Grand Mean", "Junior", "Senior",
                      "Other") # <2>
 
 data.frame("Estimate" = pointEst) |> # <3>
-  knitr::kable(
-  digits = 2,
-  # caption = "Point Estimates from the Song Knowledge Study",
-  booktabs = TRUE,
-  align = "c"
+  kable(
+    digits = 2,
+    # caption = "Point Estimates from the Song Knowledge Study",
+    booktabs = TRUE,
+    align = "c"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE # <4>
   ) 
 
 ```
 1. Look at the output of `pointEst` before continuing so you know in what order the estimates appear so that you can apply more meaningful names.
 2. You MUST look at the output of `pointEst` before you assign new names to the elements inside `pointEst`. If you don't, you'll risk misnaming elements.
 3. From here down is just making a professional looking table of the point estimates.
+4. The `full_width` argument is only needed in HTML outputs. When rendering to PDF, the LaTeX engine will automatically ensure the table doesn't use up the entire width of the page.
 
 If you just call `dummy.coef(songModel)` in the console, you'll see a value labelled `(Intercept)`; this is the value of the *Grand Sample Arithmetic Mean*. The other values should be labelled by factor name and level name. These point estimates are what will fill our various screens (plus the residuals).
 
@@ -894,7 +904,7 @@ Attempt to come up with the code that makes table of point estimates for the Res
 #| tbl-cap: "Point Estimates for the Resin Lifetimes Study"
 #| html-table-processing: none
 #| echo: true
-# Demo making a profession table of coefficients/point estimates ----
+# Making a Profession Table of Coefficients/Point Estimates ----
 
 ## Resin Lifetimes study
 pointEst <- dummy.coef(resinModel)
@@ -903,15 +913,17 @@ names(pointEst) <- c("Grand Mean", "175ºC", "194ºC",
                  "213ºC", "231ºC", "250ºC")
 
 data.frame("Estimate" = pointEst) |>
-  knitr::kable(
-  digits = 2,
-  # caption = "Point Estimates for the Resin Lifetimes Study",
-  booktabs = TRUE,
-  align = "c"
+  kable(
+    digits = 2,
+    # caption = "Point Estimates for the Resin Lifetimes Study",
+    booktabs = TRUE,
+    align = "c"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   ) 
 
 ```
@@ -930,7 +942,7 @@ One of the easiest approaches is to use the `{emmeans}` package to build confide
 #| tbl-cap: "Marginal Mean Estimates from the Resin Lifetime Study"
 #| html-table-processing: none
 #| echo: true
-# Produce Point and Interval Estimates for Marginal Means ----
+# Producing Point and Interval Estimates for Marginal Means ----
 resinMeans <- emmeans(
   object = resinModel, # <1>
   specs = ~ temp, # <2> 
@@ -941,17 +953,23 @@ resinMeans <- emmeans(
 resinMeans <- as.data.frame(resinMeans) # <5>
 resinMeans |>
   kable(
-    digits = 4,
+    digits = 2,
     # caption = "Marginal Mean Estimates from the Resin Lifetime Study",
     col.names = c("Stress Temp. (ºC)", "Marginal Mean", "SE", "df",
                   "Lower Bound", "Upper Bound"),
     booktabs = TRUE,
     align = "c"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  ) |>
+  footnote(
+    general = "Bonferroni Adjustment for an overall 10% Type I Error Rate.",
+    footnote_as_chunk = TRUE
+  )
 
 ```
 1. Pass your ANOVA object.
@@ -960,7 +978,7 @@ resinMeans |>
 4. List which adjustment method you want used; more on this choice in the next guide.
 5. From here down is to make a professional looking table of the interval estimates.
 
-@tbl-resinInt shows the results of using the `{emmeans}` package. By saving the output of `emmeans` function to the object `resinMeans`, I can then access these values whenever I want. This makes writing out an interpretation sentence a bit easier (especially for updating). For example, I might want to say the following: Using our particular sample and 95% Bonferroni adjusted method, the lifetime performance of the resin (in log10 hours) when heated to `r resinMeans$temp[1]`ºC might be between `r round(resinMeans$lower.CL[1], digits = 2)` and `r round(resinMeans$upper.CL[1], digits = 2)` log10 hours per circuit. 
+@tbl-resinInt shows the results of using the `{emmeans}` package. By saving the output of `emmeans` function to the object `resinMeans`, I can then access these values whenever I want. This makes writing out an interpretation sentence a bit easier (especially for updating). For example, I might want to say the following: Using our particular sample and 90% Bonferroni adjusted method, the lifetime performance of the resin (in log10 hours) when heated to `r resinMeans$temp[1]`ºC might be between `r round(resinMeans$lower.CL[1], digits = 2)` and `r round(resinMeans$upper.CL[1], digits = 2)` log10 hours per circuit. 
 
 If you want, you can convert the estimates in @tbl-resinInt by subtracting the value of the *GSAM* from the Marginal Means, Lower Bound, and Upper Bound columns. This will move you back to the factor effects model that our ANOVA table and point estimates (@tbl-resinCoeffs) are centered around.
 
