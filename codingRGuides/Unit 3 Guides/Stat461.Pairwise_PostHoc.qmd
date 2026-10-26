@@ -77,7 +77,7 @@ Take a moment to think about how you would read in the data then compare your co
 ```{r}
 #| label: loadData
 #| echo: true
-# Demo Code for Loading Data ----
+# Code for Loading Data ----
 ## Cheese study via manual entry
 cheeseData <- data.frame(
   strain = as.factor( # <1>
@@ -113,19 +113,25 @@ The difference between `factor` and `as.factor` might seem small but the consequ
 
 # Key Decisions for Post Hoc Analysis
 
-When we think about Post Hoc Analysis (either the pairwise explorations of this guide or contrasts/linear combinations in aother guide), there are some steps that we need to take first.
+When we think about Post Hoc Analysis (either the pairwise explorations of this guide or contrasts/linear combinations in another guide), there are some steps that we need to take first.
 
 ## Study Design Decisions
 
 Our first steps for Post Hoc Analysis actually relate to our study design. Post Hoc analyses are different from our initial approach in that we engage in these analyses __*after*__ we've seen the data. In fact, we only engage in Post Hoc analyses when we have a statistical discovery (i.e., reject the null hypothesis) for the (One-way) ANOVA model. To help guard ourselves against any claims that we might be up to problematic behaviors, we often add a couple of sentences to our study design such as the following:
 
-> After getting and cleaning the data, we'll use the parametric ANOVA *F* test to answer the research question at a 5% level of significance. For Post Hoc analysis, we'll use an overall Type I Error Rate of 5% using Tukey's HSD.
+> After getting and cleaning the data, we'll use the parametric ANOVA *F* test to answer the research question at a 5% level of significance. For Post Hoc analysis, we'll control our Simulatenous Confidence Interval Type I Error Rate (SCI) at 5% using Tukey's HSD.
 
 *Note:* if you want a high quality set of sentences, you can start with the above example and then add on a few more sentences that explain/justify your choice of method and level.
 
-Some of the above example statement should feel familiar: 1) choice of the parametric shortcut, 2) statement of our Unusualness Threshold (level of significance), and 3) a statement of our overall Type I Risk. However, this third element has slightly different language--"Error Rate" vs. "Risk". There is an additional element of method ("Tukey's HSD").
+Some of the above example statement should feel familiar: 
 
-There are several different ways in which we can operationalize or quantify Type I Risk. We refer to these ways as "Type I Error Rates" and there are five common types. We have to pick one of these types of error rates to then select a method.
+1) choice of the parametric shortcut, 
+2) statement of our Unusualness Threshold (level of significance), and 
+3) a statement of our overall Type I approach. 
+
+This third element is where the differences reveal themselves. Instead of talking about Type I Risk (which is for a single act of inference), we've specified a specific Type I Error Rate (here, SCI) and we've ended with the mention of a specific method ("Tukey's HSD").
+
+There are several different ways in which we can operationalize or quantify Type I Rates. We refer to these ways as "Type I Error Rates" and there are five common types. We have to pick one of these types of error rates to then select a method.
 
 ### Testing Families
 
@@ -163,6 +169,8 @@ Once you conceptualize your testing family, you can ask yourself "Which Type I E
 
 After picking which Error Rate you want to control, you choose an appropriate method. There are some pieces of guidance you can follow for choosing the particular method. However, a lot comes down to personal preference.
 
+#### Questions to Help you Pick
+
 If you aren't sure what method to pick, ask yourself the following questions:
 
 + Am I looking at all possible pairwise comparisons?
@@ -194,20 +202,21 @@ Generally speaking, we want to use parametric shortcuts whenever possible. This 
 
 We generally engage in post hoc analysis *after* we've made a statistical discovery through the omnibus test. Since we've not previously worked with the Cheese study, I'm going to present omnibus test results using a parametric shortcut. (We'll operate under the assumptions being satisfied.)
 
-For this example, I'm going to work with an overall Type I Error Rate of 0.1 and set my Unsualness Threshold at 0.1.
+For this example, I'm going to work with an overall SCI Type I Error Rate of 0.1 and set my Unsualness Threshold at 0.1.
 
 ```{r}
 #| label: tbl-cheeseANOVA
 #| tbl-cap: "ANOVA Table for Free Amino Acids in Cheese Study"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Fitting a One-way ANOVA Model ----
+# Code for Fitting a One-way ANOVA Model ----
 cheeseModel <- aov(
   formula = acids ~ strain,
   data = cheeseData,
   na.action = "na.omit"
 )
 
+# Display modern ANOVA table ----
 parameters::model_parameters(
   model = cheeseModel,
   es_type = c("eta", "omega", "epsilon")
@@ -221,10 +230,11 @@ parameters::model_parameters(
   booktabs = TRUE,
   align = c("l", rep("c", 8))
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
-  ) 
+  )
 
 ```
 1. Remember that you'll need to uncomment these `caption` lines when you are working in R scripts or R Markdown files.
@@ -248,7 +258,8 @@ We saw the `{emmeans}` package in the One-way ANOVA guide for the omnibus test. 
 ```{r}
 #| label: emmeans1
 #| echo: true
-# Demo Code for emmeans Post Hoc ----
+# Code Using {emmeans} for Post Hoc Analysis ----
+## Cheese Study
 cheeseEMPairs <- emmeans::emmeans(
   object = cheeseModel, # <1>
   specs = pairwise ~ strain, # <2> 
@@ -270,7 +281,7 @@ The `emmeans` function understands the following Type I Error Rate adjustment me
 #| label: tbl-emmeans2
 #| tbl-cap: "Pairwise Post Hoc Comparison via Sidak's Adjustment"
 #| echo: true
-# Demo code for a professional looking table ----
+# Code for a professional looking table ----
 ## Emmeans Object
 knitr::kable(
   x = cheeseEMPairs$contrasts, # <1> 
@@ -280,9 +291,9 @@ knitr::kable(
   align = "lccccc",
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
   )
 
@@ -312,7 +323,7 @@ Using `tukeyHSD` is straightforward.
 ```{r}
 #| label: tukeyHSD1
 #| echo: true
-# Demo Code for Using Tukey HSD Post Hoc ----
+# Code for Using Base R for Tukey HSD ----
 cheeseHSD <- TukeyHSD(
   x = cheeseModel, # <1>
   conf.level = 0.9 # <2>
@@ -328,7 +339,7 @@ We can then pass the object `cheeseHSD` on to `knitr` to make a professional loo
 #| label: tbl-tukeyHSD2
 #| tbl-cap: "Post Hoc Tukey HSD Comparisons"
 #| echo: true
-# Demo code for making a professional lookign table ----
+# Code for Making a Professional Looking Table ----
 ## Tukey HSD
 as.data.frame(cheeseHSD$strain) |> # <1>
   tibble::rownames_to_column(var = "Pair") |> # <2>
@@ -340,9 +351,9 @@ as.data.frame(cheeseHSD$strain) |> # <1>
     align = 'lcccc',
     booktabs = TRUE,
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
   )
 
@@ -361,7 +372,7 @@ The `{DescTools}` package has a useful function for post hoc pairwise comparison
 ```{r}
 #| label: desctools1
 #| echo: true
-# Demo Code for DescTool Pairwise Post Hoc ----
+# Code for using {DescTools} for Pairwise Post Hoc ----
 cheeseDesc <- DescTools::PostHocTest(
   x = cheeseModel, # <1> 
   method = "lsd", # <2>
@@ -387,7 +398,7 @@ Again, we can take the output of `PostHocTest` and pass that along to make a nic
 #| label: tbl-desctools2
 #| tbl-cap: !expr 'paste("Post Hoc", attr(cheeseDesc, "method"), "Comparisons")'
 #| echo: true
-# Demo Code for professional looking table ----
+# Code for a Professional Looking Table ----
 ## DescTools
 as.data.frame(cheeseDesc$strain) |> # <1>
   tibble::rownames_to_column(var = "Pair") |> # <2>
@@ -403,10 +414,10 @@ as.data.frame(cheeseDesc$strain) |> # <1>
     align = 'lcccc',
     booktabs = TRUE,
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position")
   )
 
 ```
@@ -426,7 +437,7 @@ There are situations where we do not want to look at all possible pairwise compa
 ```{r}
 #| label: dunnett1
 #| echo: true
-# Demo Code for Special Pairwise Comparisons ----
+# Code for Special Pairwise Comparisons ----
 ## Dunnett's Test via DescTools
 cheeseDunnett <- DescTools::DunnettTest(
   formula = acids ~ strain, # <1>
@@ -447,7 +458,7 @@ Keep in mind the Dunnett's test contains its own adjustments for the Multiple Co
 #| label: tbl-dunnett2
 #| tbl-cap: "Post Hoc Comparisons--Dunnett's Test"
 #| echo: true
-# Demo Code for Professional Looking Table ----
+#  Code for a Professional Looking Table ----
 ## Dunnett's Test
 as.data.frame(cheeseDunnett$`None`) |> # <1>
   tibble::rownames_to_column(var = "Pair") |>  # <2>
@@ -459,10 +470,10 @@ as.data.frame(cheeseDunnett$`None`) |> # <1>
     align = 'lcccc',
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position")
   )
 
 ```
@@ -480,7 +491,7 @@ When you have used the parametric shortcuts, you'll want to use the `anova.PostH
 #| label: tbl-postHocEffects
 #| tbl-cap: "Post Hoc Comparison Effect Sizes"
 #| echo: true
-# Demo Code for Post Hoc Effect Sizes ----
+# Code for Post Hoc Effect Sizes ----
 anova.PostHoc(cheeseModel) |>
   knitr::kable(
     digits = 3,
@@ -490,10 +501,10 @@ anova.PostHoc(cheeseModel) |>
     align = 'lccc',
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position")
   )
 
 ```
@@ -516,7 +527,7 @@ One of the most common visualizations is called a *Connecting Letters Report* an
 ```{r}
 #| label: clr1
 #| echo: true
-# Demo Code for Connecting Letters Report ----
+# Code for Connecting Letters Report ----
 multcompView::multcompLetters4(
   object = cheeseModel, # <1> 
   comp = cheeseHSD, # <2> 
@@ -540,7 +551,7 @@ We can combine a box plot of the response values for each factor level/grouping 
 #| fig-height: 4
 #| aria-describedby: "boxCLRLD"
 #| echo: true
-# Demo Code for a Box Plot with Connecting Letters ----
+# Code for a Box Plot with Connecting Letters ----
 multcompView::multcompBoxplot(
   formula = acids ~ strain, # <1>
   data = cheeseData, # <2>
