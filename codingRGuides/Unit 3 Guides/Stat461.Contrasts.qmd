@@ -1,6 +1,7 @@
 ---
 title: "Contrasts and ANOVA"
 subtitle: "Parametric Shortcut"
+lang: en
 author: 
   - name: "Neil J. Hatfield"
     orcid: 0000-0003-1807-6946
@@ -68,7 +69,7 @@ Take a moment to think about how you would read in the data then compare your co
 ```{r}
 #| label: loadData
 #| echo: true
-# Demo Code for Loading Data ----
+# Code for Loading Data ----
 ## Cheese study via manual entry
 cheeseData <- data.frame(
   strain = as.factor(
@@ -162,7 +163,7 @@ To define our contrasts we need to know two things: the order of the factor leve
 ```{r}
 #| label: checkLevels
 #| echo: true
-# Demo Code for Checking Order of Factor Levels ----
+# Code for Checking the Order of Factor Levels ----
 levels(cheeseData$strain)
 
 ```
@@ -174,7 +175,7 @@ To create a weight vector, we can use the combine function (`c`) to make a vecto
 ```{r}
 #| label: makeContrasts1
 #| echo: true
-# Demo Code for Making a Weight Vector ----
+# Code for Making a Weight Vector ----
 contrast1 <- c(1/3, 1/3, 1/3, -1)
 
 ```
@@ -188,7 +189,7 @@ Come up with the code that would make a weight vector for our second contrast: h
 ```{r}
 #| label: makeContrasts2
 #| echo: true
-# Demo Code for Making a Weight Vector ----
+# Code for Making a Second Weight Vector ----
 contrast2 <- c(1/2, -1, 1/2, 0)
 
 ```
@@ -205,19 +206,19 @@ Checking that our weight vectors sum to zero is quite straight forward: we just 
 ```{r}
 #| label: sumContrasts
 #| echo: true
-# Demo Code for Checking Weight Vectors Add to Zero ----
+# Code for Checking Weight Vectors Add to Zero ----
 sum(contrast1)
 sum(contrast2)
 
 ```
 
-Again, we don't need to report the output of these calls as this is more for our benefit. You might notice that `sum(contrast1)` has a non-zero value of `r sum(contrast1)`. This is an example of computer arithmetic and this value is essentially zero (notice the --17 exponent). If you were to see a non-zero value such as 0.01, then that would be a sign that there is a problem with our weights.
+Again, we don't need to report the output of these calls as this is more for our benefit. You might encounter a situation where when you do `sum(your_contrast_vector)` you get a non-zero result along the lines of `1.23435e-17`. This is an example of computer arithmetic and you can treat this as being a zero. The non-zero values you want to watch out for will be larger.
 
 ### Checking Orthogonality
 
-When we have multiple contrasts, we often like to have "orthogonal contrasts". We like orthogonal contrasts for two reasons. First, this means that they are independent from each other. Second, orthogonal contrasts will perfectly partition the sums of squares for the factor they are applied to. This fact is especially useful in situations where we want to compare a set of new treatments to a standard care or null treatment. 
+When we have multiple contrasts, we often like to have orthogonal contrasts. Orthogonal contrasts are great for two reasons. First, this means that they are independent from each other. Second, orthogonal contrasts will perfectly partition the sums of squares for the factor they are applied to. This fact is especially useful in situations where we want to compare a set of new treatments to a standard care or null treatment. 
 
-Two contrasts, $w_i$ and $w_i^{\star}$, are said to be orthogonal if the weighted sum of their *i*-th components add to zero (the weighted dot product of the two contrast vectors). That is,
+Two contrasts, $w_i$ and $w_i^{\star}$, are said to be orthogonal if the weighted sum of their *i*-th components add to zero (i.e., the weighted dot product of the two contrast vectors). That is,
 $$\sum_{i=1}^g\frac{w_i\cdot w_i^{\star}}{n_i}$$
 
 In this formula, the weighting of the weights comes from the sample size for each component, $n_i$. For our two Cheese study contrasts, we have $w_i= \langle 1/3, 1/3, 1/3, -1\rangle$, $w_i^{\star}=\langle -1/2, 1, -1/2, 0\rangle$ and $n_i=\langle 2, 2, 2, 2\rangle$, yielding
@@ -235,14 +236,14 @@ We can use R to help us check orthogonality of our contrasts:
 ```{r}
 #| label: orthoCheck
 #| echo: true
-# Demo code for checking orthogonality of two contrasts ----
+# Code for Checking Orthogonality of Two Contrasts ----
 n <- c(2,2,2,2) # <1>
 
 ## Approach 1
 sum((contrast1*contrast2)/n) # <2>
 
 ## Approach 2 
-(contrast1/n) %*% (contrast2 / n) # <3>
+(contrast1/n) %*% (contrast2/n) # <3>
 
 ```
 1. Make a vector of sample sizes for each level of the factor. Watch out of imbalanced designs.
@@ -278,7 +279,7 @@ The first tasks that we need to do before we can test the contrasts is to fit th
 ```{r}
 #| label: emmeans1
 #| echo: true
-# Demo Code for using the {emmeans} package for contrasts ----
+# Code for Using the {emmeans} Package for Contrasts ----
 ## Initial Steps 
 cheeseModel <- aov(
   formula = acids ~ strain,
@@ -303,7 +304,7 @@ The `{emmeans}` package contains a function called `contrast` that does exactly 
 ```{r}
 #| label: emmeans2
 #| echo: true
-# Demo Code for using the {emmeans} package for contrasts ----
+# Code for Using the {emmeans} Package for Contrasts ----
 ## Test the Contrasts 
 cheeseContrasts1 <- emmeans::contrast(
   object = cheeseMeans, # <1>
@@ -336,7 +337,7 @@ At this point we can print the results to our console by just typing `cheeseCont
 #| tbl-cap: "Cheese Study Contrasts Using {emmeans} Package"
 #| echo: true
 #| html-table-processing: none
-# Demo Code for using the {emmeans} package for contrasts ----
+# Code for Using the {emmeans} Package for Contrasts ----
 ## Professional Table 
 
 as.data.frame(cheeseContrasts1) |>
@@ -354,9 +355,9 @@ as.data.frame(cheeseContrasts1) |>
     booktabs = TRUE,
     escape = FALSE # <5> 
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped"),
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
   ) |>
   kableExtra::footnote(
@@ -386,7 +387,7 @@ Before we run our ANOVA model with the `aov` function, we must first apply our w
 ```{r}
 #| label: rContrast1
 #| echo: true
-# Demo code for setting contrasts in the Cheese study ----
+# Code for Setting Contrasts in the Cheese Study ----
 ## Base R Approach
 contrasts(cheeseData$strain) <- cbind(contrast1, contrast2) # <1>
 
@@ -398,7 +399,7 @@ Notice that we assign a matrix of our contrast weights to the `contrasts` call o
 ```{r}
 #| label: rContrasts2
 #| echo: true
-# Demo code for setting contrasts in the Cheese study ----
+# Code for Setting Contrasts in the Cheese Study ----
 ## Base R Approach
 cheeseModel2 <- aov(
   formula = acids ~ strain,
@@ -416,7 +417,7 @@ Now we get to a bit of a tricky point: we need to isolate the appropriate portio
 ```{r}
 #| label: rContrasts3
 #| echo: true
-# Demo code for setting contrasts in the Cheese study ----
+# Code for Setting Contrasts in the Cheese Study ----
 ## Base R Approach
 cheeseContrasts2 <- summary(
   object = cheeseModel2,
@@ -442,7 +443,7 @@ Now that we have stored the output that we need, `cheeseContrasts2`, we can impo
 #| tbl-cap: "ANOVA Table for Free Amino Acids in Cheese Study"
 #| echo: true
 #| html-table-processing: none
-# Demo code for adjusting p-values and making a professional table ----
+# Code for Adjusting p-Values and Making a Professional Table ----
 ## Base R Approach
 adjustPValues( # <1>
   contrastObject = cheeseContrasts2, # <2>
@@ -456,10 +457,11 @@ adjustPValues( # <1>
     booktabs = TRUE,
     align = rep("c", 5)
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
-  ) 
+  )
 
 ```
 1. The `adjustPValues` function comes from my ANOVA Tools.
@@ -504,13 +506,14 @@ To use the `ScheffeTest` we must first fit our ANVOA model via the `aov` functio
 ```{r}
 #| label: descTools1
 #| echo: true
-# Demo code for Scheffe Testing Contrasts ----
+# Code for Scheffe Testing Contrasts ----
 ## DescTools Scheffe Test Approach
 cheeseModel3 <- aov(
   formula = acids ~ strain,
   data = cheeseData,
   na.action = "na.omit"
 )
+
 ```
 
 Once we have done that we can then use the `ScheffeTest` function along with our contrasts' weight vectors.
@@ -518,13 +521,14 @@ Once we have done that we can then use the `ScheffeTest` function along with our
 ```{r}
 #| label: descTools2
 #| echo: true
-# Demo code for Scheffe Testing Contrasts ----
+# Code for Scheffe Testing Contrasts ----
 ## DescTools Scheffe Test Approach
 cheeseContrasts3 <- DescTools::ScheffeTest(
   x = cheeseModel, # <1>
   contrasts = cbind(contrast1, contrast2), # <2>
   conf.level = 0.9, # <3>
 )
+
 ```
 1. Notice that we pass our ANOVA model object to the `x` argument.
 2. The `contrasts` argument is where we'll pass a matrix of our weight vectors.
@@ -541,7 +545,7 @@ Here is code for creating a professional looking table:
 #| tbl-cap: "Scheffe Test Results"
 #| echo: true
 #| html-table-processing: none
-# Demo code for Scheffe Testing Contrasts ----
+# Code for Scheffe Testing Contrasts ----
 ## DescTools Scheffe Test Approach
 as.data.frame(cheeseContrasts3[[1]]) |> # <1>
   tibble::rownames_to_column(var = "Contrast") |> # <2>
@@ -552,10 +556,12 @@ as.data.frame(cheeseContrasts3[[1]]) |> # <1>
     booktabs = TRUE,
     align = c("l", rep("c", 4))
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
+  kableExtra::kable_classic(
+    html_font = "arial",
+    font_size = 14,
     latex_options = c("HOLD_position")
-  ) 
+  )
+
 ```
 1. We need to extract the appropriate element from the `cheeseContrasts3` output. This should be done with `[[1]]` for other contexts.
 2. As in the Pairwise, we'll change the row names into a column so that we can give them a proper header.

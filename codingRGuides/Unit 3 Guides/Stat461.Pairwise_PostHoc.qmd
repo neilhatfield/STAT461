@@ -1,6 +1,7 @@
 ---
 title: "Pairwise Post Hoc Analysis"
 subtitle: "Parametric Shortcut"
+lang: en
 author: 
   - name: "Neil J. Hatfield"
     orcid: 0000-0003-1807-6946
