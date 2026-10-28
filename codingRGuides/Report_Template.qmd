@@ -15,7 +15,6 @@ authors:
       - role 1, repeat new lines as needed
 format:
   pdf:
-    pdf-standard: ua-2
     toc: false
     number-sections: true
     number-depth: 5
@@ -29,7 +28,6 @@ format:
     colorlinks: true
     include-in-header: 
       text: |
-        \tagpdfsetup{math/alt/use}
         \usepackage{fvextra}
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{
           commandchars=\\\{\},
@@ -46,7 +44,7 @@ execute:
 
 <!-- Summarize what was done, why that approach, what you found, and implications of those results. This should be no more than two pages and should have NO tables or graphs. Note: if you give an abstract, you should not include this section and vice versa. -->
 
-<!-- Delete this pagebrack if not using an abstract -->
+<!-- Delete this page break if not using an executive summary -->
 {{< pagebreak >}}
 
 # Introduction
@@ -117,6 +115,10 @@ execute:
 ```{r}
 #| label: authorContributions
 
+# You may use this code block as is PROVIDED you fill in the roles in the YAML
+# header for each other. If you leave those out, this will throw errors and 
+# should be removed.
+
 rawAuthors <- rmarkdown::metadata$authors
 
 authorsList <- list()
@@ -142,7 +144,8 @@ authorContribText <- sprintf(fmt = baseText, authorsDF$name, authorsDF$listRoles
 ```
 
 `r paste(authorContribText, collapse = " ")`
-<!-- You will need BOTH the above code chunk AND the above in-line code to render the author roles. -->
+<!-- You will need BOTH the above code chunk AND the above in-line code to render the author roles automatically. Alternatively you can manually fill in this
+section. -->
 
 {{< pagebreak >}}  
 
