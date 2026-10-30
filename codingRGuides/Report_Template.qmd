@@ -1,5 +1,6 @@
 ---
 title: "ANOVA Report Template"
+documentclass: article
 lang: en
 authors:
   - name: First Author
@@ -15,6 +16,7 @@ authors:
       - role 1, repeat new lines as needed
 format:
   pdf:
+    pdf-standard: ua-2
     toc: false
     number-sections: true
     number-depth: 5

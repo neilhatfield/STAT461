@@ -10,6 +10,7 @@ copyright:
 license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
+lang: en
 format: 
   html:
     embed-resources: true
@@ -105,7 +106,7 @@ We want to see how three different varietals (types of plant) impact the amount 
 ```{r}
 #| label: loadHoneyData
 #| echo: true
-# Demo code for loading Honey data ----
+# Code for Loading the Honey Data ----
 honeyData <- data.frame(
   Amount = c(150, 50, 100, 85, 90, 95, 130, 50, 80),
   Varietal = rep(c("Clover", "Orange Blossom", "Alfalfa"), each = 3)
@@ -131,7 +132,7 @@ The response in this study will be the number of whole alfalfa weevil larvae fou
 ```{r }
 #| label: loadWeevilData
 #| echo: true
-# Demo Code for loading Alfalfa study data ----
+# Code for Loading the Alfalfa Study Data ----
 rootPath <- "https://static-content.springer.com/esm/chp%3A10.1007%2F978-3-319-30634-6_7/" # <1>
 filePath <- "MediaObjects/385146_1_En_7_MOESM1_ESM.csv"
 
@@ -155,7 +156,7 @@ The final study is for how three different methods for rounding first base impac
 ```{r}
 #| label: loadRoundingData
 #| echo: true
-# Demo Code for loading data from NSM3 package ----
+# Code for Loading Data from the NSM3 Package ----
 data("rounding.times", package = "NSM3")
 
 colnames(rounding.times) <- c("Round Out", "Narrow Angle", "Wide Angle") # <1>
@@ -198,7 +199,7 @@ The [Honey Study](#honeyStudy) is a good example of a one-way ANOVA situation th
 #| aria-describedby: "honeyHDLD"
 #| fig-height: 4
 #| echo: false
-# Demo code for Hasse Diagram for the Honey Study ----
+# Hasse Diagram Code for the Honey Study ----
 modelLabels <- c("1 Make Honey 1", "3 Varietal 2", "9 (Hives) 6")
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE),
@@ -231,7 +232,7 @@ The Kruskal-Wallis *H* test makes two assumptions:
   1) Independence of Observations
   2) The response follows some *continuous* distribution that differs between groups by location (*Medians*) at most.
 
-If these assumptions are satisfied, then our test statistic, *H*, follows a $\chi^2$ with $k-1$ *degrees of freedom* (where we have *k* levels to our factor) under the null hypothesis of no impact due to our factor.
+If these assumptions are satisfied, then our test statistic, *H*, follows a $\chi^2$ distribution with $k-1$ *degrees of freedom* (where we have *k* levels to our factor) under the null hypothesis of no impact due to our factor.
 
 ### Assessing Independence of Observations
 
@@ -245,7 +246,7 @@ In the Honey Study, we only have a single factor and we know that the data are i
 #| fig-alt: "Index plot for the honey study"
 #| aria-describedby: "honeyIOLD"
 #| echo: true
-# Demo code of an index plot using the response for Honey Study ----
+# Code for an Index Plot using the Honey Study's Response ----
 ggplot(
   data = honeyData,
   mapping = aes(
@@ -306,7 +307,7 @@ The following code shows how we run fit the nonparametric model for the test.
 ```{r}
 #| label: honeyKW
 #| echo: true
-# Demo code for running the Kruskal-Wallis test in base R ----
+# Code for Running the Kruskal-Wallis Test in Base R ----
 honeyOmni <- kruskal.test(
   formula = Amount ~ Varietal,
   data = honeyData,
@@ -330,7 +331,7 @@ To quickly view our results from the Kruskal-Wallis test, we just need to call t
 ```{r}
 #| label: honeyOmniOut
 #| echo: true
-## Demo Code for showing Kruskal-Wallis results ----
+## Code for Showing the Kruskal-Wallis Test Results ----
 honeyOmni
 
 ```
@@ -350,7 +351,7 @@ To get a measure of effect size, we will use *Epsilon-Squared*. However, we must
 ```{r}
 #| label: honeyES
 #| echo: true
-# Demo Code for measuring practical significance for Kruskal-Wallis ----
+# Code for Measuring Practical Significance for Kruskal-Wallis ----
 ## Honey Study
 honeyEffectSize <- rcompanion::epsilonSquared(
   x = honeyData$Amount,
@@ -391,7 +392,7 @@ Here are the raw outputs of the Kruskal-Wallis *H* for this context.
 ```{r }
 #| label: alfalfaStudy
 #| echo: true
-# Demo Code for fitting Oneway Alfalfa Study ----
+# Code for Fitting Oneway Alfalfa Study ----
 ## KW Results
 alfalfaModel0 <- kruskal.test(
   formula = Larvae ~ Treatment,
@@ -411,13 +412,13 @@ The Dwass-Steel-Critchlow-Fligner (DSCF) Test is the nonparametric equivalent of
 #| tbl-cap: "Post Hoc-Dwass-Steel-Critchlow-Fligner Tests"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for the DSCF Test ----
+# Code for the DSCF Test ----
 dscf <- dscfTest(
   response = alfalfaData$Larvae, # <1>
   factor = alfalfaData$Treatment
 )
 # Kable Code for DSCF
-knitr::kable(
+kable(
   x = dscf,
   digits = 3,
   col.names = c("Comparison", "Observed W", "Adj. p-value"),
@@ -425,11 +426,12 @@ knitr::kable(
   align = 'lcc',
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed"),
-    font_size = 12,
-    latex_options = "HOLD_position"
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  )
 ```
 1. Notice that we call the individual response and factor columns instead of using a `formula` argument.
 
@@ -444,7 +446,7 @@ Dunn's Test (which is different from *Dunnet's Test*) is part of the `{dunn.test
 #| tbl-cap: "Post Hoc Dunn's Test--Bonferroni Adjustment"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for using Dunn's Test ----
+# Code for Using Dunn's Test ----
 dunn <- purrr::quietly(dunn.test::dunn.test)( # <1>
   x = alfalfaData$Larvae, # <2> 
   g = alfalfaData$Treatment, 
@@ -456,7 +458,7 @@ dunn <- purrr::quietly(dunn.test::dunn.test)( # <1>
 )$result # <8> 
 
 ## Kable Code for Dunn's Test
-knitr::kable(
+kable(
   x = data.frame(
     comparison = dunn$comparisons,
     pvalues = dunn$P.adjusted
@@ -467,10 +469,11 @@ knitr::kable(
   align = 'lc',
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -511,12 +514,12 @@ When you have used Nonparametric Shortcuts (either through Dunn's Test or the DS
 #| tbl-cap: "Post Hoc Comparison Effect Sizes"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Post Hoc Effect Size for Nonparametric One-way ANOVA ----
+# Code for Post Hoc Effect Size for Nonparametric One-way ANOVA ----
 kw.PostHoc(
     response = alfalfaData$Larvae,
     treatments = alfalfaData$Treatment
   ) |>
-knitr::kable(
+kable(
   digits = 3,
   # caption = "Post Hoc Comparison Effect Sizes",
   col.names = c("Pairwise Comparison","Hodges Lehmann Estimate",
@@ -524,10 +527,11 @@ knitr::kable(
   align = 'lcc',
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 ```
 
@@ -577,7 +581,7 @@ Just as we've done in the past, we will want to look at an interaction plot. A m
 #| fig-alt: "Interaction plot for alfalfa pest study"
 #| aria-describedby: "alfalfaIntLD"
 #| echo: true
-# Demo Code for Interaction Plot in Alfalfa Pest Study ----
+# Code for an Interaction Plot in the Alfalfa Pest Study ----
 ggplot2::ggplot(
   data = alfalfaData,
   mapping = aes(
@@ -644,7 +648,7 @@ Here is an example of invoking fitting the model for Friedman's test.
 ```{r}
 #| label: friedman1
 #| echo: true
-# Demo Code for Fitting a Model for Friedman's Test ----
+# Code for Fitting a Model for Friedman's Test ----
 alfalfaModel1 <- friedman.test(
   formula = Larvae ~ Treatment | Variety, # <1>
   data = alfalfaData
@@ -658,7 +662,7 @@ If our data aren't in a data frame, that is not a problem. The `friedman.test` f
 ```{r}
 #| label: friedman2
 #| echo: true
-# Demo Code for Fitting a Model for Friedman's Test ----
+# Code for Fitting a Model for Friedman's Test ----
 roundingModel1 <- friedman.test(
   y = rounding.times
 )
@@ -672,7 +676,7 @@ Just like the Kruskal-Wallis *H* test, we do not have an ANOVA table for Friedma
 ```{r}
 #| label: friedmanRaw
 #| echo: true
-# Demo Code for Getting Raw Output for Friedman's Test ----
+# Code for Getting Raw Output for Friedman's Test ----
 alfalfaModel1
 
 roundingModel1
@@ -695,7 +699,7 @@ The `{agricolae}` package does not support a formula statement but will provide 
 ```{r}
 #| label: agricolae1
 #| echo: true
-# Demo Code for Fitting the Model for Friedman's Test via Agricolae ----
+# Code for Fitting the Model for Friedman's Test via Agricolae ----
 alfalfaModel2 <- friedman(
   judge = alfalfaData$Variety, # <1> 
   trt = alfalfaData$Treatment, # <2>
@@ -716,7 +720,7 @@ Just as with the other approaches in this guide, we will need to form a narrativ
 ```{r}
 #| label: agricolae2
 #| echo: true
-# Demo Code for Raw Output from agricolae's Friedman's test ----
+# Code for Raw Output from agricolae's Friedman's test ----
 alfalfaModel2
 
 ```
@@ -747,7 +751,7 @@ For the Rounding Study, we would run the following command to run the Wilcoxon, 
 ```{r}
 #| label: wnmt1
 #| echo: true
-# Demo Code for WNMT  with a Matrix ----
+# Code for WNMT  with a Matrix ----
 postHocRounding <- pWNMT(
   x = rounding.times, # <1>
   method = "Monte Carlo", # <2>
@@ -772,7 +776,7 @@ If you attempt to use the WNMT in the Alfalfa Pest Study, you'll encounter an er
 ```{r}
 #| label: wnmt2
 #| echo: true
-# Demo Code for using WNMT with a Data Frame ----
+# Code for using WNMT with a Data Frame ----
 ## Make wide data frame
 alfWide <- alfalfaData |>
   dplyr::select(!Plot) |>
@@ -801,7 +805,7 @@ To give ourselves a key for understand what treatments 1, 2, 3, and 4 represent,
 ```{r}
 #| label: wnmtColNames
 #| echo: true
-# Demo Code for getting column names from data matrix ----
+# Code for Getting Column Names from a Data Matrix ----
 colnames(alfMatrix)
 
 ```
@@ -818,7 +822,7 @@ If you have 1) a balanced design, and 2) 1+ replicates per group, you can use th
 ```{r }
 #| label: mackSkil
 #| echo: true
-# Demo Code for Mack-Skillings Test ----
+# Code for Mack-Skillings Test ----
 alfalfaModel3 <- pMackSkil(
   x = alfalfaData$Larvae, # <1>
   b = alfalfaData$Variety, # <2>
@@ -840,7 +844,7 @@ alfalfaModel3 <- pMackSkil(
 ```{r}
 #| label: mackSkillOmni
 #| echo: true
-# Demo Code for Raw Output from Mack-Skillings ----
+# Code for Raw Output from Mack-Skillings ----
 alfalfaModel3
 
 ```
