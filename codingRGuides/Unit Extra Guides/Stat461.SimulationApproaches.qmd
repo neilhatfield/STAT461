@@ -10,6 +10,7 @@ copyright:
 license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
+lang: en
 format: 
   html:
     embed-resources: true
@@ -69,9 +70,9 @@ In this particular guide, we will focus on just two kinds of simulation approach
 
 # Permutation Simulations
 
-Permutation simulations are an interesting approach we can take for inference that take the nil hypothesis as the key starting point. Recall that a nil hypothesis is a specific type of null hypothesis of no statistically significant difference. If we act as if the nil hypothesis is true, then any grouping labels are arbitrary and have no impact on the response. Since these grouping labels don't matter, then we could swap the labels between the measurement units without changing the underlying phenomenon. 
+Permutation simulations are an interesting approach we can take for inference that take the nil hypothesis as the key starting point. Recall that a nil hypothesis is a specific type of null hypothesis where we specify no statistically significant differences exist. If we act as if the nil hypothesis is true, then any grouping labels are arbitrary and have no impact on the response. Since these grouping labels don't matter, then we could swap the labels between the measurement units without changing the underlying phenomenon. 
 
-For example, let's consider your Paper Airplane study. Our null hypothesis there was that the type/design of the paper airplane had no statistically significant impact on how far the planes traveled. Under this nil hypothesis, the design label (Basic, Dart, Stable) is simply a mark we might put on the plane (i.e., a B, D, or S) and has no consequential impact on the distance. Further, we could have written a different letter on each plane, essentially saying that each plane was any of the three designs.
+For example, let's consider your Paper Airplane study. Our null hypothesis there was that the type/design of the paper airplane had no statistically significant impact on how far the planes traveled. Under this nil hypothesis, the design label (Basic Dart, Raven, Trooper, Wedge) is simply a mark we might put on the plane (i.e., a B, R, T, or W) and has no consequential impact on the distance. Further, we could have written a different letter on each plane, essentially saying that each plane was any of the three designs.
 
 This swapping of grouping labels under the nil hypothesis provides the genesis for the name of this method. The core idea is that if the grouping labels are just arbitrary, then we should be able to permute (shuffle) the cases (measurement/experimental units) with each other. For each permutation of the cases, we can then calculate the value of our test statistic, building what we refer to as the *Permutation (Sampling) Distribution* for our statistic.
 
@@ -146,7 +147,6 @@ planeData <- read.xlsx(
 planeData$design <- as.factor(planeData$design)
 
 ```
-
 
 ### Get the Observed Value of Your Statistic
 
@@ -376,6 +376,8 @@ Notice that the results from the permutation simulation are inline with those fr
 There are limits to what permutation simulations can do. Their primary usage is for testing a nil hypothesis by helping us to estimate a *p*-value. This method is __great__ for this purpose. However, this approach is not ideal for trying to generate any measure of effect size. This is primarily due to the fact that permutation distributions do not allow us to get dependable estimates of the sampling variation for any test statistic. Due to this, we should not use a permutation simulation to attempt to build a confidence interval for our test statistic. If we want such a confidence interval, we should consider the next simulation method.
 
 # Bootstrapping
+
+To be added.
 
 ## Assumptions
 
