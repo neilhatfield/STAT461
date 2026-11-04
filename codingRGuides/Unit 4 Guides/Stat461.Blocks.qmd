@@ -10,6 +10,7 @@ copyright:
 license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
+lang: en
 format: 
   html:
     embed-resources: true
@@ -185,8 +186,9 @@ Additionally, we can use Hasse diagrams to check whether ANOVA + Block is approp
 #| fig-height: 2
 #| aria-describedby: "barleyHDLD"
 #| echo: true
-# Demo code of Barley Hasse Diagram ----
+# Code of Barley Hasse Diagram ----
 modelLabels <- c("1 Grow Barley 1", "4 Field 3", "4 Variety 3", "16 (Field Sections) 9")
+
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
            FALSE, TRUE, TRUE, TRUE, FALSE),
@@ -194,7 +196,8 @@ modelMatrix <- matrix(
   ncol = 4,
   byrow = FALSE
 )
-hasseDiagram::hasse(
+
+hasse(
  data = modelMatrix,
  labels = modelLabels
 )
@@ -227,9 +230,10 @@ The following code and image (@fig-dentalHD) are the Hasse diagram for the Denta
 #| fig-height: 3
 #| aria-describedby: "dentalHDLD"
 #| echo: true
-# Demo code for Dental Pain Hasse Diagram ----
+# Code for Dental Pain Hasse Diagram ----
 modelLabels <- c("1 Relieve Pain 1", "8 Pain Tolerance 7", "2 Drug 1", "2 Acupuncture 1",
                  "4 Drug × Acupuncture 1", "32 (Patients) 21")
+
 modelMatrix <- matrix(
   data = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE,
            FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE,
@@ -239,7 +243,8 @@ modelMatrix <- matrix(
   ncol = 6,
   byrow = FALSE
 )
-hasseDiagram::hasse(
+
+hasse(
  data = modelMatrix,
  labels = modelLabels
 )
@@ -274,7 +279,7 @@ ANOVA models with a block are set up *almost* like you would set up a factorial 
 ```{r}
 #| label: fitModels
 #| echo: true
-# Demo code for fitting models ----
+# Code for Fitting Models ----
 
 ## Farming Barley Study ----
 barleyModel <- aov(
@@ -310,9 +315,9 @@ Just as with one-way ANOVA, we can make use of a QQ plot of our residuals as wel
 #| fig-height: 4
 #| aria-describedby: "barleyQQLD"
 #| echo: true
-# Demo Code for QQ Plot ----
+# Code for QQ Plot ----
 ## Barley Study
-car::qqPlot(
+qqPlot(
   x = residuals(barleyModel), 
   distribution = "norm",
   envelope = 0.90,
@@ -360,9 +365,9 @@ Assess this assumption for the Dental Pain study; when ready check your work.
 #| fig-height: 4
 #| aria-describedby: "dentalQQLD"
 #| echo: true
-# Demo Code for QQ Plot ----
+# Code for QQ Plot ----
 ## Dental Pain Study
-car::qqPlot(
+qqPlot(
   x = residuals(dentalModel), 
   distribution = "norm",
   envelope = 0.90,
@@ -410,7 +415,7 @@ The code to make a Tukey-Anscombe plot is very similar to that for the strip cha
 #| fig-height: 3
 #| aria-describedby: "barleyVarLD"
 #| echo: true
-# Demo code for making Tukey-Anscombe plot ----
+# Code for Making Tukey-Anscombe plot ----
 ## Farming Barley Study
 ggplot(
   data = data.frame(
@@ -427,7 +432,7 @@ ggplot(
   ) +
   geom_smooth( # <2>
     formula = y ~ x,
-    method = stats::loess,
+    method = "loess",
     method.args = list(degree = 1),
     se = FALSE,
     linewidth = 0.5
@@ -483,8 +488,7 @@ Assess this assumption for the Dental Pain study; when ready check your work.
 #| fig-height: 3
 #| aria-describedby: "dentalVarLD"
 #| echo: true
-# Demo code for making Tukey-Anscombe plot ----
-## Farming Barley Study
+# Code for Making Tukey-Anscombe plot ----
 ## Dental Pain Study
 ggplot(
   data = data.frame(
@@ -501,7 +505,7 @@ ggplot(
   ) +
   geom_smooth(
     formula = y ~ x,
-    method = stats::loess,
+    method = "loess",
     method.args = list(degree = 1),
     se = FALSE,
     linewidth = 0.5
@@ -556,7 +560,7 @@ In the Farming Barley study, we happen to know measurement order as the farmer p
 #| fig-height: 2
 #| aria-describedby: "barleyIO1LD"
 #| echo: true
-# Demo code for index plots ----
+# Code for Index Plot ----
 ## Farming Barley Study
 ggplot(
   data = data.frame(
@@ -605,11 +609,12 @@ As shown in class, we can also look at an alternative form of the index plots. R
 ```{r}
 #| label: fig-barleyIO2
 #| fig-cap: "Alternative Index Plot for Farming Barley Study"
+#| fig-alt: "Alternative Index plot for Farming Barley Study"
 #| fig-width: 6
 #| fig-height: 3
 #| aria-describedby: "barleyIO2LD"
 #| echo: true
-# Demo code for Alternative Index Plot for Barley Yields ----
+# Code for Alternative Index Plot for Barley Yields ----
 ggplot(
   data = barleyData,
   mapping = aes(
@@ -674,9 +679,9 @@ For an interaction plot, we will plot the values of the *Sample Arithmetic Mean*
 #| fig-width: 5
 #| aria-describedby: "barleyInteractionLD"
 #| echo: true
-# Demo code for an interaction plot ----
+# Code for an Interaction Plot ----
 ## Farming Barley Study
-ggplot2::ggplot(
+ggplot(
   data = barleyData,
   mapping = aes(
     x = Varietal,
@@ -698,6 +703,7 @@ ggplot2::ggplot(
     legend.position = "right"
   ) +
   scale_color_manual(values = psuPalette) # <4>
+
 ```
 1. Here I chose to set the block to color, shape, and line type. This helps to distinguish the fields from one another. You should avoid using color alone to encode important information.
 2. The grouping argument is vital to ensure that the line segments get drawn correctly and that the values are calculated in the appropriate ways.
@@ -735,9 +741,9 @@ When our base ANOVA model involves multiple factors, the assumption of no intera
 #| layout-ncol: 2
 #| layout-align: center
 #| echo: true
-# Demo code for an interaction plots ----
-## Interaction Plot for Tolerance and Drug
-ggplot2::ggplot(
+# Code for Interaction Plots ----
+## Interaction Plot for Tolerance and Drug ----
+ggplot(
   data = dentalData,
   mapping = aes(
     x = tolerance,
@@ -750,7 +756,6 @@ ggplot2::ggplot(
 ) +
   stat_summary(fun = "mean", geom = "point") +
   stat_summary(fun = "mean", geom = "line") +
-  ggplot2::theme_bw() +
   labs(
     x = "Pain Tolerance",
     y = "Relief",
@@ -758,13 +763,14 @@ ggplot2::ggplot(
     linetype = "Drug",
     shape = "Drug"
   ) +
+  theme_bw() +
   theme(
     legend.position = "right"
   ) +
   scale_color_manual(values = psuPalette)
 
-## Interaction Plot for Tolerance and Acupuncture
-ggplot2::ggplot(
+## Interaction Plot for Tolerance and Acupuncture ----
+ggplot(
   data = dentalData,
   mapping = aes(
     x = tolerance,
@@ -777,7 +783,6 @@ ggplot2::ggplot(
 ) +
   stat_summary(fun = "mean", geom = "point") +
   stat_summary(fun = "mean", geom = "line") +
-  ggplot2::theme_bw() +
     labs(
     x = "Pain Tolerance",
     y = "Relief",
@@ -785,13 +790,14 @@ ggplot2::ggplot(
     linetype = "Acupuncture",
     shape = "Acupuncture"
   ) +
+  theme_bw() +
   theme(
     legend.position = "right"
   ) +
   scale_color_manual(values = psuPalette)
 
-## Interaction Plot for Tolerance and Treatments
-ggplot2::ggplot(
+## Interaction Plot for Tolerance and Treatments ----
+ggplot(
   data = dentalData,
   mapping = aes(
     x = tolerance,
@@ -804,7 +810,6 @@ ggplot2::ggplot(
 ) +
   stat_summary(fun = "mean", geom = "point") +
   stat_summary(fun = "mean", geom = "line") +
-  ggplot2::theme_bw() +
     labs(
     x = "Pain Tolerance",
     y = "Relief",
@@ -812,6 +817,7 @@ ggplot2::ggplot(
     linetype = "Treatment",
     shape = "Treatment"
   ) +
+  theme_bw() +
   theme(
     legend.position = "right"
   ) +
@@ -896,7 +902,7 @@ We generate our omnibus results *almost* exactly like we would for a one-way ANO
 #| echo: true
 # Omnibus Test/Modern ANOVA Table ----
 ## Farming Barley Study
-parameters::model_parameters(
+model_parameters(
   model = barleyModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 3, # <1> 
@@ -912,10 +918,11 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -932,7 +939,7 @@ One of the things that Randomized Complete Block Designs can help with is design
 ```{r}
 #| label: barleyRE
 #| echo: true
-# Demo code for Relative Efficiency of the Block ----
+# Code for Relative Efficiency of the Block ----
 ## Farming Barley Study
 block.RelEff(
   aov.obj = barleyModel,
@@ -950,6 +957,8 @@ __NOTE:__ The `block.RelEff` function currently only works for One-way ANOVA + B
 
 ## Point Estimates
 
+### Block and Factor Effects
+
 If we want to get point estimates for our Grand Mean, Treatment Effects, and Block Effects, we can. We use the same methods as before. I recommend that you first run `dummy.coef(anovaModel)` (replacing `anovaModel` with your model object's name) in your console so you can see the order of terms.
 
 ```{r}
@@ -957,7 +966,7 @@ If we want to get point estimates for our Grand Mean, Treatment Effects, and Blo
 #| tbl-cap: "Point Estimates from the Farming Barley Study"
 #| html-table-processing: none
 #| echo: true
-# Point Estimates for Farming Barley
+# Point Estimates for Farming Barley ----
 pEst <- dummy.coef(barleyModel)
 pEst <- unlist(pEst)
 names(pEst) <- c(
@@ -970,13 +979,16 @@ data.frame("Estimate" = pEst) |>
   knitr::kable(
   digits = 3,
   # caption = "Point Estimates from the Farming Barley Study",
+  col.names = c("Source", "Estimate"),
   booktabs = TRUE,
-  align = "c"
+  align = "lc"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  )
 
 ```
 1. I know that this is the correct order because I ran `dummy.coef(barleyModel)` in my console first.
@@ -990,6 +1002,7 @@ If you don't want the estimates for the block, you can do the following:
 #| tbl-cap: "Point Estimates from the Farming Barley Study"
 #| html-table-processing: none
 #| echo: true
+# Getting Point Estimates without Block Effects ----
 pEst <- dummy.coef(barleyModel)
 pEst <- unlist(pEst[which(names(pEst) != "Field")]) # <1>
 names(pEst) <- c(
@@ -1001,18 +1014,127 @@ data.frame("Estimate" = pEst) |>
   knitr::kable(
   digits = 3,
   # caption = "Point Estimates from the Farming Barley Study",
+  col.names = c("Source", "Estimate"),
   booktabs = TRUE,
-  align = "c"
+  align = "lc"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
 1. This command will get rid of the Field estimates.
 2. Using `levels` here will help stop the accidental mislabeling of estimates.
 
+### Marginal Means
+
+You can also generate the margin means and get confidence intervals using the `{emmeans}` package. Keep in mind that the marginal means ($\mu_{i}$) are just the sum of the Grand Mean ($\mu_{\bullet\bullet\bullet}$) and the Factor effects ($\alpha_{i}$); that is, $\mu_{i}=\mu_{\bullet\bullet\bullet} + \alpha_{i}$
+
+:::{.callout-note}
+Keep in mind that we now index our data along three dimensions for a One-way ANOVA + Block model: *i* for the level of the factor, *j* for which block, and *k* for the replicate number. The Grand Mean is over *all* of the indices hence the use of three bullets in the subscript. Often times for the other terms we'll leave the bullets implicit.
+
+:::
+
+#### Unadjusted Marginal Means for the Factor
+
+Generally, we're really just interested in the marginal means and confidence intervals for the levels of our factor. Thus, we can focus on just that term, ignoring other terms in the model.
+
+```{r}
+#| label: tbl-barleyMeans1
+#| tbl-cap: "Marginal Mean Estimates for Varietal in Barley Study"
+#| html-table-processing: none
+#| echo: true
+# Producing Point and Interval Estimates for Marginal Means ----
+varietalMeans <- emmeans(
+  object = barleyModel, # <1>
+  specs = ~ Varietal, # <2> 
+  level = 0.9, # <3> 
+  adjust = "sidak" # <4> 
+) 
+
+varietalMeans |>
+  kable(
+    digits = 2,
+    # caption = "Marginal Mean Estimates for Varietal in Barley Study",
+    col.names = c("Varietal", "Marginal Mean", "SE", "df",
+                  "Lower Bound", "Upper Bound"),
+    booktabs = TRUE,
+    align = "c"
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  ) |>
+  footnote(
+    general = "Sidak's Adjustment for an overall 10% Type I Error Rate.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+1. Pass your ANOVA object.
+2. Specify what element you want (i.e, your factor).
+3. This should be the result of 1 - Type I Error.
+4. List which adjustment method you want used; more on this choice in the next guide.
+
+#### Adjusted Marginal Means for the Factor
+
+There are times where we might be interested in the marginal means for the factor that adjust for the presence of the blocks. This will necessitate conditioning the marginal means for a given level of the block. Fortunately, the `{emmeans}` package makes this really easy to do.
+
+```{r}
+#| label: tbl-barleyMeans2
+#| tbl-cap: "Conditional Marginal Mean Estimates for Varietal in Barley Study"
+#| html-table-processing: none
+#| echo: true
+# Producing Point and Interval Estimates for Marginal Means ----
+conditionalMeans <- emmeans(
+  object = barleyModel,
+  specs = ~ Varietal | Field, # <1> 
+  level = 0.9, 
+  adjust = "sidak"
+) 
+
+conditionalMeans |>
+  as.data.frame() |> # <2>
+  dplyr::select(!Field) |> # <2>
+  kable(
+    digits = 2,
+    # caption = "Conditional Marginal Mean Estimates for Varietal in Barley Study",
+    col.names = c("Varietal", "Marginal Mean", "SE", "df",
+                  "Lower Bound", "Upper Bound"),
+    booktabs = TRUE,
+    align = "c"
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  ) |>
+  group_rows(group_label = "Field 1", start_row = 1, end_row = 4) |> # <3>
+  group_rows(group_label = "Field 2", start_row = 5, end_row = 8) |>
+  group_rows(group_label = "Field 3", start_row = 9, end_row = 12) |>
+  group_rows(group_label = "Field 4", start_row = 13, end_row = 16) |>
+  footnote(
+    general = "Sidak's Adjustment for an overall 10% Type I Error Rate.",
+    footnote_as_chunk = TRUE
+  )
+
+```
+1. The format for the `specs` argument is `factor | block`.
+2. The wrangling steps here are to remove the Field column since I'm adding row grouping later on.
+3. Because I've looked at the ungrouped table, I know my starting/ending rows and can use the `group_rows` function to create groupings for rows by the different blocks.
+
+:::{.callout-caution}
+##### Replicates Necessary
+
+In this last example, we need to be careful of the context and study context. In the barely study, we did not have replicates within each grouping of Varietal-Field pairing. This can be a bit problematic for interpreting these conditional marginal means. In this situation, we essentially have the predicted values for each observation (i.e., realized data value minus any residuals). The conditional marginal means would be better if we had replicates.
+
+:::
 
 ## Post Hoc--Pairwise
 
@@ -1027,7 +1149,7 @@ We can use the `{emmeans}` package with out block models. This package gives som
 #| tbl-cap: "Post Hoc Comparisons for Barley Varietal"
 #| html-table-processing: none
 #| echo: true
-# Demo code for post hoc pairwise via emmeans ----
+# Code for Pairwise Post Hoc Analysis via emmeans ----
 ## Barley Study
 barleyPostHoc1 <- emmeans::emmeans(
   object = barleyModel,
@@ -1064,10 +1186,11 @@ as.data.frame(barleyPostHoc1$contrasts) |>
   align = "lccccccc",
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1091,23 +1214,28 @@ barleyPH <- TukeyHSD(
   conf.level = 0.9
 )
 
-knitr::kable(
-  barleyPH$Varietal,
-  digits = 4,
-  # caption = "Post Hoc Tukey HSD Comparisons",
-  col.names = c("Difference", "Lower Bound",
-                "Upper Bound", "Adj. p-Value"),
-  align = 'cccc',
-  booktabs = TRUE
-) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+barleyPH$Varietal |>
+  as.data.frame() |> # <2>
+  rownames_to_column("comparison") |> # <3>
+  kable(
+    digits = 4,
+    # caption = "Post Hoc Tukey HSD Comparisons",
+    col.names = c("Comparison", "Difference", "Lower Bound",
+                  "Upper Bound", "Adj. p-Value"),
+    align = 'lcccc',
+    booktabs = TRUE
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
 1. We need to specify which model term we want with the `which` argument.
+2. `TukeyHSD` will produce a list with the elements named by the factor. We need to extract the element and ensure that it is a data frame.
+3. From the `{tibble}` package that got loaded with `{tidyverse}`, we can convert row names to a column. This allows us to put a column heading in the table.
 
 Notice that we added on the `which` argument to the `TukeyHSD` call. This isolates the appropriate portion of the Tukey HSD output related to our factor of interest. If you omit this, you'll get Tukey HSD reports for every term in the model. In the Farming Barley situation, one for Field and one for Varietal.
 
@@ -1140,27 +1268,30 @@ dtPH <- DescTools::PostHocTest(
 #| html-table-processing: none
 #| echo: true
 # Making a nice table ----
-knitr::kable(
-  x = dtPH$Varietal, # <1>
-  digits = 3,
-  # caption = paste( # <2> 
-  #   "Post Hoc",
-  #   attr(dtPH, "method"), 
-  #   "Comparisons"
-  # ),
-  col.names = c("Difference", "Lower Bound",
-                "Upper Bound", "Adj. p-Value"),
-  align = 'lcccc',
-  booktabs = TRUE,
-) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = "HOLD_position"
+dtPH$Varietal |> # <1>
+  as.data.frame() |> 
+  rownames_to_column("comparison") |>
+  kable(
+    digits = 3,
+    # caption = paste( # <2> 
+    #   "Post Hoc",
+    #   attr(dtPH, "method"), 
+    #   "Comparisons"
+    # ),
+    col.names = c("Comparison", "Difference", "Lower Bound",
+                  "Upper Bound", "Adj. p-Value"),
+    align = 'lcccc',
+    booktabs = TRUE,
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
-1. Notice the use of the factor name
+1. Just like `TukeyHSD`, `DescTools` approach also makes a list object we need to extract our results from.
 2. Creates a nice title; copy at will.
 
 As before, we interpret the information shown in @tbl-secondPairwise just as we would in Unit 3.
@@ -1220,7 +1351,7 @@ The `{emmeans}` approach will let us incorporate effect sizes into our results (
 #| tbl-cap: "Barley Study Main Effects Contrast on Varietal Company"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Contrasts using emmeans ----
+# Code for Contrasts using emmeans ----
 ## Get the means
 barleyMeans <- emmeans::emmeans(
   object = barleyModel,
@@ -1252,10 +1383,11 @@ as.data.frame(barleyContrasts1) |>
     align = "lccccccc",
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("HOLD_position", "scale_down")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1274,7 +1406,7 @@ We can also use the base `R` approach will let us incorporate our contrast direc
 #| tbl-cap: "ANOVA Table for Barley Crop Yield Contrasts"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for Contrasts via base R ----
+# Code for Contrasts via Base R ----
 ## Define the contrast
 company <- c(1/2, 1/2, -1/2, -1/2)
 
@@ -1299,19 +1431,21 @@ conOut <- summary.aov(
 )
 
 ## Make a nice table
-knitr::kable(
-  x = conOut[[1]], 
-  digits = 4,
-  col.names = c(
-    "DF", "SS", "MS", "F", "p-value"), 
-  # caption = "ANOVA Table for Barley Crop Yield Contrasts",
-  booktabs = TRUE,
-  align = rep("c", 5)
-) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  ) 
+conOut[[1]] |>
+  rownames_to_column("source") |>
+  kable(
+    digits = 4,
+    col.names = c("Source", "DF", "SS", "MS", "F", "p-value"),
+    # caption = "ANOVA Table for Barley Crop Yield Contrasts",
+    booktabs = TRUE,
+    align = c("lccccc")
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  )
 
 ```
 
