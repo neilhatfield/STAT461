@@ -10,6 +10,7 @@ copyright:
 license: "CC BY-NC-SA"
 date-modified: now
 latex-tinytex: true
+lang: en
 format: 
   html:
     embed-resources: true
@@ -35,7 +36,7 @@ As always, we need to ensure that we have get R set up for us to have success. T
 
 ## Loading Packages, Setting Options, Loading Additional Tools
 
-In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, `{DescTols}`, and `{openxlsx}`. 
+In this guide, we will make use of several packages. Specifically, we will use `{tidyverse}`, `{hasseDiagram}`, `{knitr}`, `{kableExtra}`, `{psych}`, `{car}`, `{parameters}`, `{emmeans}`, `{DescTols}`, `{effectsize}` and `{openxlsx}`. 
 
 We also need to specify that we're using the [factor] effects sum to zero constraint (side condition). I'll also use the option to keep empty table cells empty. We can also load my helper tools. The following code chunk shows doing all three of these tasks. 
 
@@ -45,7 +46,8 @@ We also need to specify that we're using the [factor] effects sum to zero constr
 #| results: hide
 # Load useful packages ----
 packages <- c("tidyverse", "hasseDiagram", "knitr", "kableExtra",
-              "car", "psych", "parameters", "emmeans", "DescTools", "openxlsx")
+              "car", "psych", "parameters", "emmeans", "DescTools",
+              "effectsize", "openxlsx")
 lapply(
   X = packages,
   FUN = library,
@@ -147,8 +149,8 @@ His questions:
 ```{r}
 #| label: loadBattery
 #| echo: true
-## Demo code for loading and cleaning data ----
-## Load battery data
+## Code for Loading and Cleaning Data from a Battery Life Study ----
+## Load battery data ----
 batteryData <- read.table(
   file = "https://raw.github.com/neilhatfield/STAT461/master/dataFiles/batteryLife.dat",
   header = TRUE,
@@ -350,7 +352,7 @@ Previously, we've used side-by-side box plots to compare the structural aspects 
 #| fig-alt: "Box plot of battery life spans by temperature and plate material"
 #| aria-describedby: "boxplot1LD"
 #| echo: true
-# Demo code for box plot of interaction of factors ----
+# Code for a Box Plot for Exploring the Interaction of Factors ----
 ## Battery Manufacturing Study
 ggplot(
   data = batteryData,
@@ -398,7 +400,7 @@ In addition to data visualizations, we also may make use of descriptive/incisive
 ```{r}
 #| label: descStatsBattery
 #| echo: true
-# Demo code for descriptive statistics for factorial treatment structure ----
+# Code for Descriptive Statistics for Factorial Treatment Structure ----
 ## Using the {psych} package's describeBy function
 ## Battery Manufacturing 
 batteryStats <- psych::describeBy(
@@ -423,7 +425,7 @@ Once we've used the `describeBy` function, we can view the results for ourselves
 #| tbl-cap: "Summary Statistics for Battery Life Spans"
 #| html-table-processing: none
 #| echo: true
-# Demo code for professional table of descriptive statistics ----
+# Code for Professional Table of Descriptive Statistics ----
 ## Battery Manufacturing study
 batteryStats |>
   tibble::remove_rownames() |> # <1>
@@ -440,10 +442,12 @@ batteryStats |>
                   "Sample Ex. Kurtosis"),
     booktabs = TRUE
   )  |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position", "scale_down")
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  )
 
 ```
 1. This removes meaningless, auto-generated row names. 
@@ -473,7 +477,7 @@ Consider the following interaction plot for the Battery Manufacturing study.
 #| fig-alt: "Interaction plot for the battery manufacturing study"
 #| aria-describedy: "batteryIntLD"
 #| echo: true
-# Demo code for making interaction plot ----
+# Code for Making an Interaction Plot ----
 ## Battery Manufacturing study
 ggplot(
   data = batteryData,
@@ -542,7 +546,7 @@ The code for the plot appears as part of the Code Appendix under the heading Spo
 #| fig-alt: "Interaction plot for the spoonapult study"
 #| aria-describedy: "spoonapultIntLD"
 #| echo: false
-# Spoonapult interaction plot ----
+# Code for an Interaction Plot in the Spoonapult Study ----
 ggplot(
   data = spoonapults,
   mapping = aes(
@@ -612,7 +616,7 @@ I'll show both approaches here.
 ```{r}
 #| label: factorialModels
 #| echo: true
-# Demo code for forming the factorial models ----
+# Code for Forming Factorial Models ----
 ## Fitting by hand--Battery Manufacturing Study
 batteryModel <- aov(
   formula = life ~ temperature + material + temperature:material,
@@ -641,7 +645,7 @@ Use a QQ plot like usual.
 #| fig-alt: "QQ Plot for residuals in battery manufacturing study"
 #| aria-describedby: batteryQQLD
 #| echo: true
-# Demo code for QQ plot ----
+# Code for Making a  QQ plot ----
 ## Battery Manufacturing
 car::qqPlot(
   x = residuals(batteryModel), 
@@ -689,7 +693,8 @@ Code for the plot may be found in the Code Appendix under the heading Spoonapult
 #| fig-alt: "QQ Plot for Spoonapult Residuals"
 #| aria-describedby: spoonQQLD
 #| echo: false
-# Spoonapult QQ Plot ----
+# Code for Making a QQ Plot ----
+## Spoonapult
 car::qqPlot(
   x = residuals(spoonModel), 
   distribution = "norm",
@@ -734,7 +739,7 @@ Much like with Block designs, we will replace the Strip Chart with the more gene
 #| fig-alt: "Tukey-Anscombe plot for battery manufacturing study"
 #| aria-describedby: "batteryVarLD"
 #| echo: true
-# Demo code for making a Tukey-Anscombe Plot ----
+# Code for Making a Tukey-Anscombe Plot ----
 ## Battery Manufacturing Study 
 ggplot(
   data = data.frame(
@@ -789,7 +794,8 @@ Code for the Tukey-Anscombe plot for the Spoonapult study may be found in the Co
 #| fig-alt: "Tukey-Anscombe plot for spoonapult study"
 #| aria-describedby: "spoonVarLD"
 #| echo: false
-# Spoonauplt Tukey-Anscombe Plot ---- 
+# Code for Making a Tukey-Anscombe Plot ----
+## Spoonauplt Study 
 ggplot(
   data = data.frame(
     residuals = residuals(spoonModel),
@@ -871,23 +877,23 @@ For the Battery Manufacturing and Gummy Bears studies, we have __balanced__ desi
 #| tbl-cap: "ANOVA Table for Battery Manufacturing Study"
 #| html-table-processing: none
 #| echo: true
-# Omnibus Test/Modern ANOVA Table ---
+# Code for the Omnibus Test/Modern ANOVA Table ---
 ## Battery Model
-parameters::model_parameters(
+model_parameters(
   model = batteryModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 3, # <1> 
   drop = "(Intercept)", # <2> 
   verbose = FALSE # <3> 
 ) |>
-  dplyr::mutate(
+  mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
   ) |>
-  knitr::kable(
+  kable(
     digits = 3,
     row.names = FALSE,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -897,10 +903,11 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -922,27 +929,28 @@ Make the modern ANOVA table for the Spoonapult Study. Write a paragraph to go wi
 :::{.callout-note collapse="true"}
 #### Spoonapult Omnibus Results
 Code for the table can be found in the Code Appendix under the heading Spoonapult Omnibus ANOVA Table.
+
 ```{r}
 #| label: tbl-spoonModel
 #| tbl-cap: "ANOVA Table for Spoonapult Study"
 #| html-table-processing: none
 #| echo: false
 # Spoonapult Omnibus ANOVA Table ----
-parameters::model_parameters(
+model_parameters(
   model = spoonModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 3, 
   drop = "(Intercept)", 
   verbose = FALSE  
 ) |>
-  dplyr::mutate(
+  mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
   ) |>
-  knitr::kable(
+  kable(
     digits = 3,
     row.names = FALSE,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -952,10 +960,11 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -971,7 +980,7 @@ You can get point estimates for your main effects and treatment effects using th
 #| tbl-cap: "Point Estimates from the Battery Manufacturing Study"
 #| html-table-processing: none
 #| echo: true
-# Demo code for Point Estimates ----
+# Code for Point Estimates ----
 ## Battery Manufacturing Study
 pointEst <- dummy.coef(batteryModel)
 pointEst <- unlist(pointEst)
@@ -988,16 +997,23 @@ names(pointEst) <- c(
 )
 
 data.frame("Estimate" = pointEst) |>
-  knitr::kable(
+  rownames_to_column("source") |>
+  kable(
   digits = 2,
   # caption = "Point Estimates from the Battery Manufacturing Study",
+  col.names = c("Source", "Estimate"),
   booktabs = TRUE,
-  align = "c"
+  align = "lc"
   ) |>
-  kableExtra::kable_styling(
-    font_size = 12,
-    latex_options = c("HOLD_position")
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  ) |>
+  group_rows(group_label = "Operating Temp.", start_row = 2, end_row = 4) |>
+  group_rows(group_label = "Plate Material", start_row = 5, end_row = 7) |>
+  group_rows(group_label = "Interaction Terms", start_row = 8, end_row = 16)
 
 ```
 
@@ -1034,16 +1050,16 @@ Given that the plate material came up as being an important contributor to how l
 #| tbl-cap: "Post Hoc Comparisons for Main Effect Plate Material"
 #| html-table-processing: none
 #| echo: true
-# Demo code for main effects pairwise comparisons ----
-## Battery Life Example, Plate Material
-platePostHoc <- emmeans::emmeans(
+# Code for Conducting Pairwise Comparisons of Main Effects ----
+## Battery Life Example, Plate Material ----
+platePostHoc <- emmeans(
   object = batteryModel,
   specs = pairwise ~ material,
   adjust = "tukey",
   level = 0.9
 )
 
-knitr::kable(
+kable(
   x = platePostHoc$contrasts,
   digits = 3,
   # caption = "Post Hoc Comparisons for Main Effect Plate Material",
@@ -1051,10 +1067,11 @@ knitr::kable(
   align = "lccccc",
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1068,8 +1085,8 @@ We can add measures of effect size to @tbl-platePostHoc1. In the following examp
 #| tbl-cap: "Post Hoc Comparisons for Main Effect Plate Material"
 #| html-table-processing: none
 #| echo: true
-# Demo code for main effects pairwise with effect sizes ----
-## Battery Life Study, Plate Material
+# Code for Conducting Pairwise Comparisons of Main Effect & Effect Sizes ----
+## Battery Life Study, Plate Material ----
 ### Create effect size table
 plateEffects <- as.data.frame(
   eff_size(
@@ -1078,7 +1095,7 @@ plateEffects <- as.data.frame(
     edf = df.residual(batteryModel)
   ) 
 ) |>
-  dplyr::mutate( # <1> 
+  mutate( # <1> 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
@@ -1091,18 +1108,19 @@ as.data.frame(platePostHoc$contrasts) |>
     y = plateEffects,
     by = join_by(contrast == contrast)
   ) |>
-  knitr::kable(
-  digits = 3,
-  # caption = "Post Hoc Comparisons for Main Effect Plate Material",
-  col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
-                "Prob. of Superiority"),
-  align = "lccccccc",
-  booktabs = TRUE
-) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable(
+    digits = 3,
+    # caption = "Post Hoc Comparisons for Main Effect Plate Material",
+    col.names = c("Pair", "Difference", "SE", "DF", "t", "p-value", "Cohen's d",
+                  "Prob. of Superiority"),
+    align = "lccccccc",
+    booktabs = TRUE
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 
@@ -1122,16 +1140,16 @@ For this kind of pairwise comparison, we might pose the question of which plate 
 #| tbl-cap: "Post Hoc Comparisons for Plate Material Conditioned by Temperature"
 #| html-table-processing: none
 #| echo: true
-# Demo code for conditional pairwise comparisons ----
-## Battery Life Example, Plate Material Conditioned on Temp
-plateTempPostHoc <- emmeans::emmeans(
+# Code for Conditional Pairwise Comparisons ----
+## Battery Life Example, Plate Material Conditioned on Temp ----
+plateTempPostHoc <- emmeans(
   object = batteryModel,
   specs = pairwise ~ material | temperature, # <1> 
   adjust = "BH",
   level = 0.92
 )
 
-knitr::kable(
+kable(
   x = plateTempPostHoc$contrasts,
   digits = 3,
   # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
@@ -1139,10 +1157,11 @@ knitr::kable(
   align = "llccccc",
   booktabs = TRUE
 ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1155,8 +1174,8 @@ Just as before, we can add on effect size estimates to @tbl-plateGivenTempPostHo
 #| tbl-cap: "Post Hoc Comparisons for Plate Material Conditioned by Temperature"
 #| html-table-processing: none
 #| echo: true
-# Demo code for conditional pairwise comparisons with effect sizes ----
-## Battery Life Study, Plate Material Conditioned on Temp
+# Code for Conditional Pairwise Comparisons with Effect Sizes ----
+## Battery Life Study, Plate Material Conditioned on Temp ----
 ### Create effect size table
 plateTempEffects <- as.data.frame(
   eff_size(
@@ -1165,7 +1184,7 @@ plateTempEffects <- as.data.frame(
     edf = df.residual(batteryModel)
   ) 
 ) |>
-  dplyr::mutate( 
+  mutate( 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
@@ -1178,18 +1197,19 @@ as.data.frame(plateTempPostHoc$contrasts) |>
     y = plateTempEffects,
     by = join_by(contrast == contrast, temperature == temperature)
   ) |>
-  knitr::kable(
-  digits = 3,
-  # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
-  col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value",
-                "Cohen's d", "Prob. of Superiority"),
-  align = "llccccccc",
-  booktabs = TRUE
-) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("HOLD_position", "scale_down")
+  kable(
+    digits = 3,
+    # caption = "Post Hoc Comparisons for Plate Material Conditioned by Temperature",
+    col.names = c("Pair", "Temp.", "Difference", "SE", "DF", "t", "p-value",
+                  "Cohen's d", "Prob. of Superiority"),
+    align = "llccccccc",
+    booktabs = TRUE
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1209,11 +1229,11 @@ For this example testing family, we'll control SCI at 10% using Tukey's adjustme
 #| tbl-cap: "Post Hoc Comparisons of Battery Study Treatments"
 #| html-table-processing: none
 #| echo: true
-# Demo code for Pairwise Comparison of Interaction Term ----
-## Battery Study, Treatments
+# Code for Making Pairwise Comparisons of Interaction Term/Treatments ----
+## Battery Study, Treatments ----
 
 ## Generate pairwise comparisons
-treatmentPostHoc <- emmeans::emmeans(
+treatmentPostHoc <- emmeans(
   object = batteryModel,
   specs = pairwise ~ material:temperature, # notice the interaction
   ajust = "tukey",
@@ -1228,7 +1248,7 @@ treatmentEffects <- as.data.frame(
     edf = df.residual(batteryModel)
   ) 
 ) |>
-  dplyr::mutate( 
+  mutate( 
     contrast = gsub(pattern = "[()]", replacement = "", x = contrast),
     ps = probSup(effect.size),
     .after = effect.size
@@ -1249,10 +1269,11 @@ as.data.frame(treatmentPostHoc$contrasts) |>
     align = "lccccccc",
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("condensed", "boardered"),
-    font_size = 12,
-    latex_options = c("scale_down")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1274,9 +1295,9 @@ Let's do a contrast on plate materials where we compare plate material 1 to the 
 #| tbl-cap: "Battery Life Main Effects Contrast on Plate Material"
 #| html-table-processing: none
 #| echo: true
-# Demo Code for main effects contrasts ----
+# Code for Contrasts on a Main Effect ----
 ## Get the appropriate means from the model
-plateMeans <- emmeans::emmeans(
+plateMeans <- emmeans(
   object = batteryModel,
   specs = ~ material # <1> 
 )
@@ -1284,7 +1305,7 @@ plateMeans <- emmeans::emmeans(
 # plateMeans # <2> 
 
 ## Apply the contrasts
-plateContrasts1 <- emmeans::contrast(
+plateContrasts1 <- contrast(
   object = plateMeans, # <3> 
   method = list(
     "Plate 1 vs. Plates 2 & 3" = c(1, -1/2, -1/2)
@@ -1294,8 +1315,8 @@ plateContrasts1 <- emmeans::contrast(
 
 ## Add effect sizes and make a nice looking table
 as.data.frame(plateContrasts1) |>
-  dplyr::mutate(
-    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d, 
+  mutate(
+    cohen = t_to_d(t = t.ratio, df_error = df)$d, 
     ps = probSup(cohen)
   ) |>
   kable(
@@ -1306,11 +1327,13 @@ as.data.frame(plateContrasts1) |>
     align = "lccccccc",
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("HOLD_position", "scale_down")
-  ) 
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  )
+
 ```
 1. Nothing goes on the left of `~`; list what term you want to build a contrast of main effects for.
 2. Look at the raw output object to double check the order of levels before proceeding with adapting the rest of the code.
@@ -1326,9 +1349,9 @@ We can also run contrasts on our treatments. This includes pairwise comparisons,
 ```{r , echo=TRUE}
 #| label: tbl-batteryContrast2
 #| tbl-cap: "Treatment Contrasts for Battery Study--Bonferroni Adjusted"
-# Demo Code for main effects contrasts ----
+# Code for Treatment Contrasts ----
 ## Get the appropriate means from the model
-treatmentMeans <- emmeans::emmeans(
+treatmentMeans <- emmeans(
   object = batteryModel,
   specs = ~ material:temperature
 )
@@ -1336,7 +1359,7 @@ treatmentMeans <- emmeans::emmeans(
 # treatmentMeans # <1> 
 
 ## Apply the contrasts
-treatmentContrasts1 <- emmeans::contrast(
+treatmentContrasts1 <- contrast(
   object = treatmentMeans, # <2> 
   method = list(
     "Plate 1 at 15ºF vs. Plate 2 at 70ºF" = c(1,0,0,0,-1,0,0,0,0),
@@ -1349,7 +1372,7 @@ treatmentContrasts1 <- emmeans::contrast(
 ## Add effect sizes and make a nice looking table
 as.data.frame(treatmentContrasts1) |>
   dplyr::mutate(
-    cohen = effectsize::t_to_d(t = t.ratio, df_error = df)$d,
+    cohen = t_to_d(t = t.ratio, df_error = df)$d,
     ps = probSup(cohen)
   ) |>
   kable(
@@ -1360,10 +1383,11 @@ as.data.frame(treatmentContrasts1) |>
     align = "lccccccc",
     booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("HOLD_position", "scale_down")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1389,7 +1413,7 @@ Look at how the various values change across the tables.
 ```{r}
 #| label: runningData
 #| echo: true
-# Demo Code of Imbalanced Designs
+# Code for Imbalanced Designs ----
 # Load Running Data
 running <- read.table(
   file = "http://stat.ethz.ch/~meier/teaching/data/running.dat", 
@@ -1412,23 +1436,23 @@ runningModel <- aov(
 #| tbl-cap: "ANOVA Table for Running-Type I SSQs"
 #| html-table-processing: none
 #| echo: true
-# Demo Code
-# Type I SSQs
-parameters::model_parameters(
+# Code for Using Type I SSQs ----
+
+model_parameters(
   model = runningModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 1, # Type I SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
 ) |>
-  dplyr::mutate(
+  mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
   ) |>
-  knitr::kable(
+  kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
                   "Partial Omega Sq.", "Partial Eta Sq.",
@@ -1437,10 +1461,11 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1450,23 +1475,23 @@ parameters::model_parameters(
 #| tbl-cap: "ANOVA Table for Running-Type II SSQs"
 #| html-table-processing: none
 #| echo: true
-# Demo Code
-# Type II SSQs
-parameters::model_parameters(
+# Demo Code for Using Type II SSQs ----
+
+model_parameters(
   model = runningModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 2, # Type II SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
 ) |>
-  dplyr::mutate(
+  mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
   ) |>
-  knitr::kable(
+  kable(
     digits = 4,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
                   "Partial Omega Sq.", "Partial Eta Sq.",
@@ -1475,10 +1500,11 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
 
 ```
@@ -1488,23 +1514,22 @@ parameters::model_parameters(
 #| tbl-cap: "ANOVA Table for Running-Type III SSQs"
 #| html-table-processing: none
 #| echo: true
-# Demo Code
-# Type III SSQs
-parameters::model_parameters(
+# Code for Using Type III SSQs ----
+model_parameters(
   model = runningModel,
   es_type = c("eta", "omega", "epsilon"),
   type = 3, # Type III SSQs
   drop = "(Intercept)", 
   verbose = FALSE 
 ) |>
-  dplyr::mutate(
+  mutate(
     p = ifelse(
       test = is.na(p),
       yes = NA,
       no = pvalRound(p)
     )
   ) |>
-  knitr::kable(
+  kable(
     digits = 4,
     row.names = FALSE,
     col.names = c("Source", "SS", "df", "MS", "F", "p-value",
@@ -1514,12 +1539,12 @@ parameters::model_parameters(
     align = c('l',rep('c',8)),
     booktab = TRUE
   ) |>
-  kableExtra::kable_styling(
-    bootstrap_options = c("striped", "condensed"),
-    font_size = 12,
-    latex_options = c("scale_down", "HOLD_position")
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
   )
-
 
 ```
 
