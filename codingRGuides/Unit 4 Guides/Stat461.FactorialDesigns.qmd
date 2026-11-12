@@ -971,7 +971,7 @@ model_parameters(
 According to your study design document, you set your overall Type I Error at 5% (0.05) this would mean that your Unusualness Threshold can be no larger that 5%. Based upon the results in @tbl-spoonModel, none of the main effects or interactions are statistically significant. The launch angle potentially explains around 12-15% of the variation in spoonapult performance, which is not much. 
 :::
 
-## Point Estimates
+## Point Estimates for Main Effects and Interactions
 
 You can get point estimates for your main effects and treatment effects using the `dummy.coef` function. 
 
@@ -1026,6 +1026,86 @@ The interpretation of interaction terms may be thought of as the "differences in
 ### Your Turn
 
 Get the point estimates for the Spoonapult Study. Give interpretations for the *GSAM*, one level of each main effect, and one interaction level.
+
+## Interval Estimates for Main Effects and Interactions 
+
+We can also get interval estimates for the *marginal means* for our main effects and interaction terms. To do this, we will want to use the `{emmeans}` package. However, we will need to work in stages. Due to this, you will want to critically think about what your testing family consists of here. The following code shows the process for a testing family consisting of estimating intervals for both main effects and the final interaction term (i.e., the treatments) with SCI at 90% using Sidak's method.
+
+```{r}
+#| label: ieMEIntCalc
+#| echo: true
+# Code of Interval Estimates for Main Effects and Interactions ----
+## Battery Manufacturing Study
+### Temperature Main Effect ----
+tempIntervals <- emmeans(
+  object = batteryModel, # <1>
+  specs = ~ temperature, # <2>
+  level = 0.9 # <3>
+)
+
+### Material Main Effect ----
+materialIntervals <- emmeans(
+  object = batteryModel,
+  specs = ~ material,
+  level = 0.9
+)
+
+### Interaction Effect ----
+trtIntervals <- emmeans(
+  object = batteryModel,
+  specs = ~ temperature:material,
+  level = 0.9
+)
+
+## Combine into One Testing Family ----
+effectIntervals <- rbind(
+  tempIntervals,
+  materialIntervals,
+  trtIntervals,
+  adjust = "sidak" # <4>
+)
+
+```
+1. As is typically with the `emmeans` call, we give our ANOVA model object.
+2. For the `specs` argument, we will give a one-sided formula of the form `~ term`, where `term` must match either the variable we've used for a main effect OR is the
+interaction term.
+3. We will set the level BUT we will omit the adjustment method here.
+4. When we bring all of the parts together using `rbind` we can now specify the adjustment method as part of the call.
+
+The above use of `rbind` to bring together the three separate `emmeans` objects allows us to treat them as __one__ testing family. If we were to specify `adjust = "sidak"` in each of the `emmeans` calls, the method would treat each one as their own family, not accounting for the other tests. We can then produce a professional looking table.
+
+```{r}
+#| label: tbl-intEstBattery
+#| tbl-cap: "Interval Estimates from the Battery Manufacturing Study"
+#| html-table-processing: none
+#| echo: true
+# Code for Creating Professional Table of Interval Estimates ----
+## Battery Manufacturing Study
+effectIntervals |>
+  as.data.frame() |>
+  mutate(
+    temperature = na_if(x = temperature, "."),
+    material = na_if(x = material, ".")
+  ) |>
+  kable(
+    digits = 2,
+    col.names = c("Op. Temp.", "Plate Material", "Marginal Mean", "SE", "df",
+                  "Lower Bound", "Upper Bound"),
+    align = "llccccc",
+    booktabs = TRUE
+  ) |>
+  kable_classic(
+    html_font = "arial",
+    font_size = 14,
+    latex_options = c("HOLD_position"),
+    full_width = FALSE
+  ) |>
+  footnote(
+    general = "Sidak's Adjustment for an overall 10% Type I Error Rate.",
+    footnote_as_chunk = TRUE
+  )
+
+```
 
 # Pairwise Comparisons for Post Hoc Analysis
 
